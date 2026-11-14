@@ -16,12 +16,14 @@ let package = Package(
     .library(name: "ShadowCore", targets: ["ShadowCore"]),
     .library(name: "ShadowNetworking", targets: ["ShadowNetworking"]),
     .library(name: "ShadowKeychain", targets: ["ShadowKeychain"]),
+    .library(name: "ShadowDesignSystem", targets: ["ShadowDesignSystem"]),
     .library(name: "ShadowTestSupport", targets: ["ShadowTestSupport"]),
   ],
   targets: [
     .target(name: "ShadowCore", swiftSettings: swiftSettings),
     .target(name: "ShadowNetworking", dependencies: ["ShadowCore"], swiftSettings: swiftSettings),
     .target(name: "ShadowKeychain", dependencies: ["ShadowCore"], swiftSettings: swiftSettings),
+    .target(name: "ShadowDesignSystem", swiftSettings: swiftSettings + [.defaultIsolation(MainActor.self)]),
     .target(name: "ShadowTestSupport", dependencies: ["ShadowNetworking", "ShadowKeychain"], swiftSettings: swiftSettings),
 
     .testTarget(name: "ShadowCoreTests", dependencies: ["ShadowCore"], swiftSettings: swiftSettings),
