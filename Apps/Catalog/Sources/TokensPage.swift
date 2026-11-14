@@ -39,7 +39,7 @@ struct TokensPage: View {
       }
       .frame(maxWidth: ShadowMetrics.readableWidth, alignment: .leading)
       .padding(Spacing.space4)
-      .frame(maxWidth: .infinity)
+      .frame(maxWidth: .infinity, alignment: .leading)
     }
     .catalogScrollAnchor()
     .background(ShadowColor.surfaceApp)

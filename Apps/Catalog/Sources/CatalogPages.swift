@@ -8,6 +8,17 @@ extension CatalogComponent {
     case .button: ButtonPage()
     case .iconButton: IconButtonPage()
     case .card: CardPage()
+    case .textField: TextFieldPage()
+    case .searchField: SearchFieldPage()
+    case .textEditor: TextEditorPage()
+    case .toggle: TogglePage()
+    case .stepper: StepperPage()
+    case .slider: SliderPage()
+    case .segmentedControl: SegmentedControlPage()
+    case .picker: PickerPage()
+    case .datePicker: DatePickerPage()
+    case .colorPicker: ColorPickerPage()
+    case .fileImporter: FileImporterPage()
     default: PendingComponentPage(component: self)
     }
   }
