@@ -37,6 +37,10 @@ extension CatalogComponent {
     case .swipeActions: SwipeActionsPage()
     case .refreshControl: RefreshControlPage()
     case .notificationList: NotificationListPage()
+    case .table: TablePage()
+    case .chart: ChartPage()
+    case .steps: StepsPage()
+    case .timeline: TimelinePage()
     default: PendingComponentPage(component: self)
     }
   }
