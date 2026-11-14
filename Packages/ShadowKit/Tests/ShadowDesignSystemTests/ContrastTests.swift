@@ -36,6 +36,11 @@ struct ContrastCase: Sendable, CustomTestStringConvertible {
     + pairs([.warningTextOnSubtle], on: [.warningBgSubtle])
     + pairs([.dangerTextOnSubtle], on: [.dangerBgSubtle])
     + pairs([.infoTextOnSubtle], on: [.infoBgSubtle])
+    + pairs([.onAccent], on: [.accent])
+    + pairs([.dangerOnSolid], on: [.dangerSolid])
+    + pairs([.neutralOnSolid], on: [.neutralSolid])
+    + pairs([.textPrimary], on: [.bgHover, .bgPressed])
+    + pairs([.accentText], on: [.surfaceCard])
 }
 
 @Suite("Text contrast")

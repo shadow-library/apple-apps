@@ -68,7 +68,7 @@ public struct ShadowFlowLayout: Layout {
     var current = Line()
     for index in subviews.indices {
       let item = measure(subviews[index], index: index, maxWidth: maxWidth)
-      if !current.items.isEmpty, current.width + spacing + item.size.width > maxWidth {
+      if !current.items.isEmpty, current.width + spacing + item.size.width > maxWidth + 0.5 {
         lines.append(current)
         current = Line()
       }

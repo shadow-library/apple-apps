@@ -86,8 +86,8 @@ public struct ShadowTokenField<Value: Hashable & Sendable>: View {
     ShadowFlowLayout(spacing: Spacing.space1 + Spacing.space05) {
       ForEach(tokens, id: \.self) { value in
         let index = tokens.firstIndex(of: value) ?? 0
-        ShadowTokenChip(
-          label: rules.label(value),
+        ShadowTag(
+          verbatim: rules.label(value),
           isSelected: index == visibleSelection,
           removeLabel: removeLabel(value),
           select: { select(index) },
@@ -245,46 +245,6 @@ extension ShadowTokenField where Value == String {
     self.init(
       title, tokens: tokens, text: text, prompt: prompt, suggestions: suggestions,
       rules: ShadowTokenRules(maximumCount: maximumCount, comparison: comparison), removeLabel: removeLabel)
-  }
-}
-
-struct ShadowTokenChip: View {
-  let label: String
-  let isSelected: Bool
-  let removeLabel: Text
-  let select: () -> Void
-  let remove: () -> Void
-
-  @Environment(\.isEnabled) private var isEnabled
-  @ScaledMetric(relativeTo: .subheadline) private var height = ShadowDensity.current == .touch ? ShadowMetrics.controlTouchSm : 22
-
-  private var isTouch: Bool { ShadowDensity.current == .touch }
-
-  var body: some View {
-    HStack(spacing: isTouch ? Spacing.space1 : Spacing.space05) {
-      Text(verbatim: label)
-        .lineLimit(1)
-        .truncationMode(.middle)
-        .accessibilityAddTraits(isSelected ? .isSelected : [])
-      Button(action: remove) {
-        Image(systemName: "xmark")
-          .imageScale(.small)
-          .fontWeight(.semibold)
-          .frame(minWidth: isTouch ? Spacing.space5 : Spacing.space4, minHeight: height)
-          .contentShape(Rectangle().inset(by: isTouch ? -Spacing.space1 : 0))
-      }
-      .buttonStyle(.plain)
-      .accessibilityLabel(removeLabel)
-    }
-    .font(Font.shadow(isTouch ? .iosSubheadline : .macBody).weight(.medium))
-    .foregroundStyle(isSelected ? ShadowColor.onAccent : ShadowColor.accentText)
-    .padding(.leading, isTouch ? Spacing.space3 : Spacing.space2)
-    .padding(.trailing, isTouch ? Spacing.space1 + Spacing.space05 : Spacing.space1)
-    .frame(minHeight: height)
-    .background(isSelected ? ShadowColor.accent : ShadowColor.accentSoft, in: .capsule)
-    .contentShape(.capsule)
-    .onTapGesture { if isEnabled { select() } }
-    .accessibilityElement(children: .contain)
   }
 }
 

@@ -22,6 +22,14 @@ extension CatalogComponent {
     case .oneTimeCodeField: OneTimeCodeFieldPage()
     case .tokenField: TokenFieldPage()
     case .rating: RatingPage()
+    case .badge: BadgePage()
+    case .tag: TagPage()
+    case .avatar: AvatarPage()
+    case .callout: CalloutPage()
+    case .progressView: ProgressViewPage()
+    case .skeleton: SkeletonPage()
+    case .contentUnavailable: ContentUnavailablePage()
+    case .statistic: StatisticPage()
     default: PendingComponentPage(component: self)
     }
   }

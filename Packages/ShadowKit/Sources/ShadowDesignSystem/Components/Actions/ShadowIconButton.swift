@@ -33,54 +33,10 @@ public struct ShadowIconButton: View {
       }
     }
     .buttonStyle(ShadowButtonStyle(variant, layout: .icon))
+    .shadowBadge(count: badgeCount)
     .dynamicTypeSize(...DynamicTypeSize.large)
     .accessibilityShowsLargeContentViewer()
     .help(title)
-    .overlay(alignment: .topTrailing) {
-      if let badgeCount, badgeCount > 0 { ShadowIconButtonBadge(count: badgeCount) }
-    }
-    .modifier(BadgeValueModifier(count: badgeCount))
-  }
-}
-
-private struct BadgeValueModifier: ViewModifier {
-  let count: Int?
-
-  func body(content: Content) -> some View {
-    if let count, count > 0 {
-      content.accessibilityValue(Text(count, format: .number))
-    } else {
-      content
-    }
-  }
-}
-
-private struct ShadowIconButtonBadge: View {
-  static let maximumShown = 99
-  let count: Int
-  private let isTouch = ShadowDensity.current == .touch
-  @Environment(\.isEnabled) private var isEnabled
-
-  var body: some View {
-    Group {
-      if count > Self.maximumShown {
-        Text("\(Self.maximumShown)+")
-      } else {
-        Text(count, format: .number)
-      }
-    }
-    .font(.system(.caption2, weight: .semibold))
-    .monospacedDigit()
-    .foregroundStyle(ShadowColor.dangerOnSolid)
-    .padding(.horizontal, Spacing.space1)
-    .frame(minWidth: isTouch ? Spacing.space5 : Spacing.space4, minHeight: isTouch ? Spacing.space5 : Spacing.space4)
-    .background(ShadowColor.dangerSolid, in: .capsule)
-    .fixedSize()
-    .opacity(isEnabled ? 1 : ShadowOpacity.disabled)
-    .alignmentGuide(.top) { $0[VerticalAlignment.center] - (isTouch ? Spacing.space2 : 0) }
-    .alignmentGuide(.trailing) { $0[.leading] + (isTouch ? Spacing.space4 : Spacing.space2) }
-    .allowsHitTesting(false)
-    .accessibilityHidden(true)
   }
 }
 
