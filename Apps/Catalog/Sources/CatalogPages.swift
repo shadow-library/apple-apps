@@ -45,3 +45,18 @@ extension CatalogComponent {
     }
   }
 }
+
+extension CatalogComponent {
+  @ViewBuilder
+  var demo: some View {
+    switch self {
+    case .tabBar: TabBarPage()
+    case .navigationBar: NavigationBarPage()
+    case .toolbar: ToolbarPage()
+    case .sidebar: SidebarPage()
+    case .splitView: SplitViewPage()
+    case .inspector: InspectorPage()
+    default: PendingDemo(component: self)
+    }
+  }
+}

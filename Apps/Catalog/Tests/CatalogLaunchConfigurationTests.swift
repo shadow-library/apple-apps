@@ -99,6 +99,7 @@ struct CatalogLaunchConfigurationTests {
   @MainActor
   func modelColumns() {
     let deepLinked = CatalogModel(launch: CatalogLaunchConfiguration(arguments: ["-component", "Glass"]))
+    deepLinked.openLaunchPage()
     #expect(deepLinked.selection == .component(.glass))
     #expect(deepLinked.columnVisibility == .detailOnly)
     let plain = CatalogModel(launch: CatalogLaunchConfiguration(arguments: []))

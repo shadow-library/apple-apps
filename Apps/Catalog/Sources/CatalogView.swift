@@ -5,11 +5,27 @@ struct CatalogView: View {
   @Bindable var model: CatalogModel
 
   var body: some View {
+    #if os(macOS)
+      if let demo = model.demo {
+        CatalogDemoHost(component: demo, close: model.closeDemo)
+      } else {
+        catalog
+      }
+    #else
+      catalog
+        .fullScreenCover(item: $model.demo) { demo in
+          CatalogDemoHost(component: demo, close: model.closeDemo)
+        }
+    #endif
+  }
+
+  private var catalog: some View {
     NavigationSplitView(columnVisibility: $model.columnVisibility) {
-      CatalogSidebar(selection: $model.selection)
+      CatalogSidebar(selection: $model.sidebarSelection)
     } detail: {
       CatalogDetail(page: model.selection, appearance: $model.appearance)
     }
+    .task { model.openLaunchPage() }
   }
 }
 
@@ -34,18 +50,6 @@ struct CatalogDetail: View {
   let page: CatalogPage?
   @Binding var appearance: CatalogAppearance
 
-  #if !os(macOS)
-    @Environment(\.horizontalSizeClass) private var horizontalSizeClass
-
-    private var titleDisplayMode: ToolbarTitleDisplayMode {
-      switch page?.layout {
-      case .fullBleed: .inline
-      case .list where horizontalSizeClass == .compact: .inline
-      default: .automatic
-      }
-    }
-  #endif
-
   var body: some View {
     Group {
       switch page {
@@ -55,9 +59,6 @@ struct CatalogDetail: View {
       }
     }
     .navigationTitle(page?.title ?? "Catalog")
-    #if !os(macOS)
-      .toolbarTitleDisplayMode(titleDisplayMode)
-    #endif
     .toolbar {
       if page != nil {
         ToolbarItem { AppearanceMenu(appearance: $appearance) }
