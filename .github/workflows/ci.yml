@@ -41,8 +41,12 @@ jobs:
       - run: mise run test:packages
 
   apps:
-    name: Apps
+    name: Apps (${{ matrix.platform }})
     runs-on: xcode-27
+    strategy:
+      fail-fast: false
+      matrix:
+        platform: [iOS, macOS, visionOS]
     steps:
       - uses: actions/checkout@v7
       - uses: maxim-lobanov/setup-xcode@v1
@@ -51,4 +55,4 @@ jobs:
       - uses: jdx/mise-action@v5
       - run: tuist install
       - run: mise run lint:graph
-      - run: tuist test
+      - run: tuist test --platform ${{ matrix.platform }}
