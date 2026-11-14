@@ -30,6 +30,13 @@ extension CatalogComponent {
     case .skeleton: SkeletonPage()
     case .contentUnavailable: ContentUnavailablePage()
     case .statistic: StatisticPage()
+    case .list: ListPage()
+    case .labeledContent: LabeledContentPage()
+    case .disclosureGroup: DisclosureGroupPage()
+    case .outlineGroup: OutlineGroupPage()
+    case .swipeActions: SwipeActionsPage()
+    case .refreshControl: RefreshControlPage()
+    case .notificationList: NotificationListPage()
     default: PendingComponentPage(component: self)
     }
   }

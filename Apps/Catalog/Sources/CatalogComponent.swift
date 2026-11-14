@@ -69,6 +69,7 @@ enum CatalogComponent: String, CaseIterable, Identifiable, Hashable, Sendable {
   var layout: CatalogPageLayout {
     switch self {
     case .navigationBar, .tabBar, .toolbar, .sidebar, .splitView, .inspector, .iPhoneScreens, .iPadScreen, .macScreen: .fullBleed
+    case .list, .swipeActions, .refreshControl, .notificationList, .outlineGroup: .list
     default: .scroll
     }
   }
@@ -154,5 +155,6 @@ enum CatalogComponent: String, CaseIterable, Identifiable, Hashable, Sendable {
 
 enum CatalogPageLayout: Sendable {
   case scroll
+  case list
   case fullBleed
 }

@@ -34,6 +34,18 @@ struct CatalogDetail: View {
   let page: CatalogPage?
   @Binding var appearance: CatalogAppearance
 
+  #if !os(macOS)
+    @Environment(\.horizontalSizeClass) private var horizontalSizeClass
+
+    private var titleDisplayMode: ToolbarTitleDisplayMode {
+      switch page?.layout {
+      case .fullBleed: .inline
+      case .list where horizontalSizeClass == .compact: .inline
+      default: .automatic
+      }
+    }
+  #endif
+
   var body: some View {
     Group {
       switch page {
@@ -44,7 +56,7 @@ struct CatalogDetail: View {
     }
     .navigationTitle(page?.title ?? "Catalog")
     #if !os(macOS)
-      .navigationBarTitleDisplayMode(page?.layout == .fullBleed ? .inline : .automatic)
+      .toolbarTitleDisplayMode(titleDisplayMode)
     #endif
     .toolbar {
       if page != nil {

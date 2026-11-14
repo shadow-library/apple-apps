@@ -1,5 +1,5 @@
 import Foundation
-import ShadowDesignSystem
+@_spi(Preview) import ShadowDesignSystem
 import SwiftUI
 
 #if canImport(UIKit)
@@ -24,6 +24,7 @@ struct CatalogApp: App {
       CatalogView(model: model)
         .shadowTheme()
         .environment(\.catalogScrollFraction, model.launch.scrollFraction)
+        .shadowPreviewHoverEffects(model.launch.snapshotURL == nil)
         .preferredColorScheme(model.appearance.colorScheme)
         .transaction { transaction in
           guard model.launch.isAutomated else { return }

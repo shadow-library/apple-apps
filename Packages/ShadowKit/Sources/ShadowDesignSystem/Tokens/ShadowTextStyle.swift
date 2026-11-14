@@ -86,7 +86,8 @@ nonisolated extension ShadowTextStyle {
   public static var headline: Self { platform(touch: .iosHeadline, mac: .macHeadline) }
   public static var body: Self { platform(touch: .iosBody, mac: .macBody) }
   public static var callout: Self { platform(touch: .iosCallout, mac: .macCallout) }
-  public static var subheadline: Self { platform(touch: .iosSubheadline, mac: .macSubheadline) }
+  public static var subheadline: Self { platform(touch: .iosSubheadline, mac: .macFootnote) }
+  public static var sectionHeader: Self { platform(touch: .iosSubheadline, mac: .macSubheadline) }
   public static var footnote: Self { platform(touch: .iosFootnote, mac: .macFootnote) }
   public static var caption: Self { platform(touch: .iosCaption, mac: .macCaption) }
   public static var caption2: Self { platform(touch: .iosCaption2, mac: .macCaption) }

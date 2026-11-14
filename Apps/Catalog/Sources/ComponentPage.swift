@@ -30,6 +30,63 @@ private struct CatalogScrollAnchor: ViewModifier {
   }
 }
 
+extension View {
+  func catalogListPage(_ component: CatalogComponent, anchors: [String]) -> some View {
+    modifier(CatalogListAnchor(anchors: anchors))
+      .background(ShadowColor.surfaceApp)
+      .accessibilityIdentifier("component-\(component.id)")
+  }
+}
+
+private struct CatalogListAnchor: ViewModifier {
+  let anchors: [String]
+  @Environment(\.catalogScrollFraction) private var fraction
+
+  func body(content: Content) -> some View {
+    ScrollViewReader { proxy in
+      content.task {
+        guard let last = anchors.indices.last else { return }
+        guard let fraction, fraction > 0 else { return }
+        let index = min(last, Int((fraction * Double(last)).rounded()))
+        for delay in [0.4, 1.2] {
+          try? await Task.sleep(for: .seconds(delay))
+          proxy.scrollTo(anchors[index], anchor: fraction >= 1 ? .bottom : .top)
+        }
+      }
+    }
+  }
+}
+
+struct StateListSection<Content: View>: View {
+  let title: String
+  let note: LocalizedStringKey?
+  @ViewBuilder let content: Content
+
+  init(_ title: String, note: LocalizedStringKey? = nil, @ViewBuilder content: () -> Content) {
+    self.title = title
+    self.note = note
+    self.content = content()
+  }
+
+  var body: some View {
+    Section {
+      content
+    } header: {
+      ShadowSectionHeader(LocalizedStringKey(title))
+    } footer: {
+      if let note {
+        Text(note)
+          .shadowFont(.footnote)
+          .foregroundStyle(ShadowColor.textSecondary)
+      }
+    }
+    #if os(macOS)
+      .listSectionSeparator(.hidden)
+    #endif
+    .id(title)
+  }
+}
+
 struct ComponentPage<Content: View>: View {
   let component: CatalogComponent
   @ViewBuilder let content: Content

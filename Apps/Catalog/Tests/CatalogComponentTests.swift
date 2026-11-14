@@ -56,6 +56,13 @@ struct CatalogComponentTests {
     #expect(CatalogComponent.button.layout == .scroll)
   }
 
+  @Test("should let list components own their scroll view")
+  func listLayout() {
+    for component in [CatalogComponent.list, .swipeActions, .refreshControl, .notificationList, .outlineGroup] {
+      #expect(component.layout == .list)
+    }
+  }
+
   @Test("should resolve page ids case-insensitively and reject unknown ids")
   func pageLookup() {
     #expect(CatalogPage(id: "TabBar") == .component(.tabBar))

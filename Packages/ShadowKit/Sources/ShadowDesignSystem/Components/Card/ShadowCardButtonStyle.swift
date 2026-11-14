@@ -16,6 +16,7 @@ private struct ShadowCardButtonBody: View {
   let configuration: ButtonStyleConfiguration
 
   @Environment(\.isEnabled) private var isEnabled
+  @Environment(\.shadowHoverEffectsEnabled) private var hoverEffectsEnabled
   @Environment(\.accessibilityReduceMotion) private var reduceMotion
   @Environment(\.shadowPreviewInteraction) private var previewInteraction
   @State private var isHovered = false
@@ -23,7 +24,7 @@ private struct ShadowCardButtonBody: View {
   private var interaction: ShadowButtonInteraction {
     if let previewInteraction { return previewInteraction }
     if configuration.isPressed { return .pressed }
-    return isHovered && isEnabled ? .hovered : .idle
+    return isHovered && isEnabled && hoverEffectsEnabled ? .hovered : .idle
   }
 
   var body: some View {
