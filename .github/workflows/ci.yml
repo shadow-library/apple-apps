@@ -28,6 +28,13 @@ jobs:
           xcode-version: ${{ env.XCODE_VERSION }}
       - uses: jdx/mise-action@v5
       - run: mise run lint
+      - name: Check generated design tokens
+        env:
+          GENERATED_TOKENS: Packages/ShadowKit/Sources/ShadowDesignSystem/Tokens/Generated
+        run: |
+          mise run tokens
+          git add --intent-to-add "$GENERATED_TOKENS"
+          git diff --exit-code -- "$GENERATED_TOKENS"
 
   packages:
     name: Shared packages

@@ -17,10 +17,10 @@ public struct ShadowButtonStyle: ButtonStyle {
   public func makeBody(configuration: Configuration) -> some View {
     configuration.label
       .font(.headline)
-      .padding(.vertical, Spacing.sm)
-      .padding(.horizontal, Spacing.lg)
+      .padding(.vertical, Spacing.space2)
+      .padding(.horizontal, Spacing.space4)
       .foregroundStyle(foreground)
-      .background(background, in: .rect(cornerRadius: CornerRadius.md))
+      .background(background, in: .rect(cornerRadius: Radius.xl))
       .opacity(isEnabled ? 1 : 0.4)
       .scaleEffect(configuration.isPressed ? 0.97 : 1)
       .animation(.snappy(duration: 0.15), value: configuration.isPressed)

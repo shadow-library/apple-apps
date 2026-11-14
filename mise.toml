@@ -13,6 +13,10 @@ run = "tuist generate"
 description = "Fail on implicit or redundant module dependencies"
 run = "tuist inspect dependencies"
 
+[tasks.tokens]
+description = "Regenerate the design-token Swift sources from Design/tokens.json"
+run = "swift Scripts/generate-design-tokens.swift"
+
 [tasks."test:packages"]
 description = "Run the shared package tests with SwiftPM"
 run = "swift test --package-path Packages/ShadowKit"
@@ -27,11 +31,11 @@ depends = ["test:packages", "test:apps"]
 
 [tasks.lint]
 description = "Check formatting and style"
-run = "swift format lint --strict --recursive --parallel Apps Packages Tuist Tuist.swift Workspace.swift"
+run = "swift format lint --strict --recursive --parallel Apps Packages Scripts Tuist Tuist.swift Workspace.swift"
 
 [tasks.format]
 description = "Format sources in place"
-run = "swift format format --in-place --recursive --parallel Apps Packages Tuist Tuist.swift Workspace.swift"
+run = "swift format format --in-place --recursive --parallel Apps Packages Scripts Tuist Tuist.swift Workspace.swift"
 
 [tasks.new-app]
 description = "Scaffold a new app under Apps/"

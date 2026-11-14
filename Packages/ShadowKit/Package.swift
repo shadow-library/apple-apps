@@ -29,5 +29,6 @@ let package = Package(
     .testTarget(name: "ShadowCoreTests", dependencies: ["ShadowCore"], swiftSettings: swiftSettings),
     .testTarget(name: "ShadowNetworkingTests", dependencies: ["ShadowNetworking", "ShadowTestSupport"], swiftSettings: swiftSettings),
     .testTarget(name: "ShadowKeychainTests", dependencies: ["ShadowKeychain", "ShadowTestSupport"], swiftSettings: swiftSettings),
+    .testTarget(name: "ShadowDesignSystemTests", dependencies: ["ShadowDesignSystem"], swiftSettings: swiftSettings),
   ]
 )
