@@ -41,7 +41,7 @@ Tuist.swift  Workspace.swift  mise.toml  .swift-format
 | `ShadowCore`         | `ShadowError` protocol for typed domain errors, `Logger(category:)`         | —                                |
 | `ShadowNetworking`   | `APIClient` (async, typed throws), `Endpoint`, middleware, JSON coding      | `ShadowCore`                     |
 | `ShadowKeychain`     | `SecureStore` protocol and `KeychainStore` (data-protection keychain)       | `ShadowCore`                     |
-| `ShadowDesignSystem` | Spacing/radius tokens, `ShadowButtonStyle`, `.shadowCard()`                 | —                                |
+| `ShadowDesignSystem` | Tokens, `.shadowGlass`, `ShadowButtonStyle`, `ShadowIconButton`, `ShadowCard` | —                                |
 | `ShadowTestSupport`  | `StubHTTPTransport`, `InMemorySecureStore` — test targets only              | `ShadowNetworking`, `ShadowKeychain` |
 
 Apps depend on modules through the typed helper, so a typo fails at manifest compile time:

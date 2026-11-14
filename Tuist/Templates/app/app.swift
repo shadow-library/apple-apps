@@ -47,7 +47,7 @@ let template = Template(
           var body: some View {
             Text("\(name)")
               .font(.largeTitle)
-              .padding(Spacing.lg)
+              .padding(Spacing.space4)
           }
         }
 
