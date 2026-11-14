@@ -1,0 +1,48 @@
+[tools]
+tuist = "4.216.6"
+
+[tasks.bootstrap]
+description = "Resolve dependencies and generate the workspace"
+run = ["tuist install", "tuist generate --no-open"]
+
+[tasks.generate]
+description = "Generate and open the workspace"
+run = "tuist generate"
+
+[tasks."lint:graph"]
+description = "Fail on implicit or redundant module dependencies"
+run = "tuist inspect dependencies"
+
+[tasks."test:packages"]
+description = "Run the shared package tests with SwiftPM"
+run = "swift test --package-path Packages/ShadowKit"
+
+[tasks."test:apps"]
+description = "Run the app test targets"
+run = "tuist test"
+
+[tasks.test]
+description = "Run every test"
+depends = ["test:packages", "test:apps"]
+
+[tasks.lint]
+description = "Check formatting and style"
+run = "swift format lint --strict --recursive --parallel Apps Packages Tuist Tuist.swift Workspace.swift"
+
+[tasks.format]
+description = "Format sources in place"
+run = "swift format format --in-place --recursive --parallel Apps Packages Tuist Tuist.swift Workspace.swift"
+
+[tasks.new-app]
+description = "Scaffold a new app under Apps/"
+usage = '''
+arg "<name>" help="App name in PascalCase, e.g. Memoir"
+flag "--platform <platform>" default="ios" help="Target platform" {
+  choices "ios" "macos" "multiplatform" "watchos" "tvos" "visionos"
+}
+'''
+run = ['tuist scaffold app --name "$usage_name" --platform "$usage_platform"', "tuist generate --no-open"]
+
+[tasks.clean]
+description = "Remove generated projects and build artifacts"
+run = "tuist clean && rm -rf Derived Packages/ShadowKit/.build"

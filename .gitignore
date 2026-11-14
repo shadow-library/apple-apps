@@ -1,0 +1,26 @@
+.DS_Store
+
+# Tuist generates these from the Swift manifests; they are never committed
+*.xcodeproj
+*.xcworkspace
+Derived/
+Tuist/.build/
+
+# SwiftPM
+.build/
+.swiftpm/
+Package.resolved
+!Tuist/Package.resolved
+
+# Xcode
+xcuserdata/
+DerivedData/
+*.xcresult
+*.ipa
+*.dSYM.zip
+*.dSYM
+
+# Environment
+.env
+.env.*
+!.env.example
