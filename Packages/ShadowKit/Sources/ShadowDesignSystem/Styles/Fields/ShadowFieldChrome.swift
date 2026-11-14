@@ -10,7 +10,6 @@ struct ShadowFieldChrome<Leading: View, Trailing: View>: ViewModifier {
   @Environment(\.isEnabled) private var isEnabled
   @Environment(\.shadowValidationMessage) private var message
   @Environment(\.shadowPreviewFieldFocus) private var previewFocus
-  @Environment(\.colorSchemeContrast) private var contrast
   @FocusState private var isFocused: Bool
 
   private var metrics: ShadowFieldMetrics { ShadowFieldMetrics(kind: kind) }
@@ -48,31 +47,11 @@ struct ShadowFieldChrome<Leading: View, Trailing: View>: ViewModifier {
       .padding(.horizontal, metrics.horizontalPadding)
       .padding(.vertical, metrics.verticalPadding)
       .frame(minHeight: metrics.minHeight, alignment: kind == .multiline ? .top : .center)
-      .background { chrome(metrics) }
+      .background { ShadowFieldSurface(phase: phase, metrics: metrics) }
       .opacity(isEnabled ? 1 : ShadowOpacity.disabled)
       .contentShape(.rect)
       .onTapGesture { if externalFocus == nil { isFocused = true } }
     }
-  }
-
-  private func shape(_ metrics: ShadowFieldMetrics) -> RoundedRectangle {
-    RoundedRectangle(cornerRadius: metrics.cornerRadius, style: .continuous)
-  }
-
-  private func chrome(_ metrics: ShadowFieldMetrics) -> some View {
-    let shape = shape(metrics)
-    return
-      shape
-      .fill(fill(metrics))
-      .overlay { shape.strokeBorder(border(metrics), lineWidth: metrics.borderWidth) }
-      .overlay {
-        if phase.showsHalo {
-          shape
-            .inset(by: -metrics.haloWidth / 2)
-            .stroke(phase.isInvalid ? ShadowColor.focusFieldRingError : ShadowColor.focusFieldRing, lineWidth: metrics.haloWidth)
-            .allowsHitTesting(false)
-        }
-      }
   }
 
   private func invalidRing(_ metrics: ShadowFieldMetrics) -> some View {
@@ -82,22 +61,6 @@ struct ShadowFieldChrome<Leading: View, Trailing: View>: ViewModifier {
       shape.strokeBorder(ShadowColor.dangerSolid, lineWidth: metrics.borderWidth)
     }
     .allowsHitTesting(false)
-  }
-
-  private func fill(_ metrics: ShadowFieldMetrics) -> Color {
-    if phase.isFocused { return ShadowColor.surfaceCard }
-    switch (metrics.density, kind) {
-    case (.touch, _): return ShadowColor.surfaceWell
-    case (.compact, .search): return ShadowColor.surfaceWell
-    case (.compact, _): return ShadowColor.surfaceCard
-    }
-  }
-
-  private func border(_ metrics: ShadowFieldMetrics) -> Color {
-    if phase.isInvalid { return ShadowColor.dangerSolid }
-    if phase.isFocused { return ShadowColor.borderFocus }
-    if metrics.density == .compact || contrast == .increased { return ShadowColor.borderDefault }
-    return .clear
   }
 }
 

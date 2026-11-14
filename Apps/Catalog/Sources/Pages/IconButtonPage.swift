@@ -14,7 +14,7 @@ struct IconButtonPage: View {
         }
       }
       StateSection("In content", note: "Filled, tinted or plain; a destructive action also uses the trash symbol. Counts sit on the top-trailing corner.") {
-        FlowRow(spacing: Spacing.space4) {
+        ShadowFlowLayout(spacing: Spacing.space4, lineSpacing: Spacing.space3) {
           if ShadowDensity.current == .touch {
             ShadowIconButton("New quest", systemImage: "plus", variant: .filled) {}
             ShadowIconButton("Favourite", systemImage: "heart", variant: .tinted) {}
@@ -52,7 +52,7 @@ struct IconButtonPage: View {
         }
       }
       StateSection("Hover and pressed", note: "Pointer hover adds bg-hover; touch-down uses bg-pressed or the active accent.") {
-        FlowRow(spacing: Spacing.space4) {
+        ShadowFlowLayout(spacing: Spacing.space4, lineSpacing: Spacing.space3) {
           ForEach(ShadowButtonInteraction.allCases, id: \.self) { interaction in
             ShadowIconButton("Favourite", systemImage: "heart", variant: .tinted) {}.shadowPreviewInteraction(interaction)
           }
@@ -62,7 +62,7 @@ struct IconButtonPage: View {
         }
       }
       StateSection("Disabled") {
-        FlowRow(spacing: Spacing.space4) {
+        ShadowFlowLayout(spacing: Spacing.space4, lineSpacing: Spacing.space3) {
           ShadowIconButton("New quest", systemImage: "plus", variant: .filled) {}
           ShadowIconButton("Favourite", systemImage: "heart", variant: .tinted) {}
           ShadowIconButton("Share", systemImage: "square.and.arrow.up", variant: .bordered) {}
@@ -71,7 +71,7 @@ struct IconButtonPage: View {
         .disabled(true)
       }
       StateSection("Counts", note: "Counts use danger-solid, tabular figures, and cap at 99+.") {
-        FlowRow(spacing: Spacing.space4) {
+        ShadowFlowLayout(spacing: Spacing.space4, lineSpacing: Spacing.space3) {
           ShadowIconButton("Notifications", systemImage: "bell", badgeCount: 3) {}
           ShadowIconButton("Messages", systemImage: "tray", badgeCount: 12) {}
           ShadowIconButton("Mentions", systemImage: "at", badgeCount: 120) {}

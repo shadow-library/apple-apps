@@ -117,7 +117,7 @@ private struct SuggestionRow: View {
   }
 #endif
 
-private struct SearchSampleSheet: View {
+struct SearchSampleSheet: View {
   enum Scope: Hashable { case all, novels, chapters }
   enum SearchToken: String, Identifiable, Hashable, CaseIterable {
     case reading = "Reading"

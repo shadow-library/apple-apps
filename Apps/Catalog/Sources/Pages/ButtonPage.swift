@@ -7,7 +7,7 @@ struct ButtonPage: View {
   var body: some View {
     ComponentPage(component: .button) {
       StateSection("Variants", note: "One filled button per view carries the primary action; everything else is tinted, bordered or plain.") {
-        FlowRow {
+        ShadowFlowLayout(spacing: Spacing.space3) {
           Button("Continue reading") {}.buttonStyle(.shadowFilled)
           Button("Save", systemImage: "bookmark") {}.buttonStyle(.shadowTinted)
           Button("Share") {}.buttonStyle(.shadowBordered)
@@ -15,7 +15,7 @@ struct ButtonPage: View {
         }
       }
       StateSection("Destructive", note: "role: .destructive uses danger-solid fills and destructive-label text, never a custom red.") {
-        FlowRow {
+        ShadowFlowLayout(spacing: Spacing.space3) {
           Button("Remove", role: .destructive) {}.buttonStyle(.shadowTinted)
           Button("Delete chapter", role: .destructive) {}.buttonStyle(.shadowFilled)
           Button("Delete…", role: .destructive) {}.buttonStyle(.shadowBordered)
@@ -25,7 +25,7 @@ struct ButtonPage: View {
       StateSection("Hover and pressed", note: "The pointer on iPad and Mac adds accent-hover or bg-hover; touch-down uses accent-active or bg-pressed.") {
         VStack(alignment: .leading, spacing: Spacing.space3) {
           ForEach(InteractionRow.all) { row in
-            FlowRow {
+            ShadowFlowLayout(spacing: Spacing.space3) {
               Button(row.title) {}.buttonStyle(.shadowFilled).shadowPreviewInteraction(row.interaction)
               Button(row.title) {}.buttonStyle(.shadowTinted).shadowPreviewInteraction(row.interaction)
               Button(row.title) {}.buttonStyle(.shadowBordered).shadowPreviewInteraction(row.interaction)
@@ -35,7 +35,7 @@ struct ButtonPage: View {
         }
       }
       StateSection("Disabled", note: "Disabled buttons fade to disabled-opacity and ignore input.") {
-        FlowRow {
+        ShadowFlowLayout(spacing: Spacing.space3) {
           Button("Continue reading") {}.buttonStyle(.shadowFilled)
           Button("Save", systemImage: "bookmark") {}.buttonStyle(.shadowTinted)
           Button("Share") {}.buttonStyle(.shadowBordered)
@@ -44,7 +44,7 @@ struct ButtonPage: View {
         .disabled(true)
       }
       StateSection("Loading", note: "A progress view replaces the label at the same width, and the button is disabled until the work finishes.") {
-        FlowRow {
+        ShadowFlowLayout(spacing: Spacing.space3) {
           Button("Publish") {}.buttonStyle(.shadowFilled).shadowLoading(true)
           Button("Save draft") {}.buttonStyle(.shadowTinted).shadowLoading(true)
           Button("Sync") {}.buttonStyle(.shadowBordered).shadowLoading(true)
@@ -55,13 +55,13 @@ struct ButtonPage: View {
       }
       StateSection("Sizes", note: "Touch: 36, 44 and 50pt capsules. Mac: 24, 28 and 32pt rounded rectangles.") {
         VStack(alignment: .leading, spacing: Spacing.space3) {
-          FlowRow {
+          ShadowFlowLayout(spacing: Spacing.space3) {
             Button("Small") {}.controlSize(.small)
             Button("Medium") {}
             Button("Large") {}.controlSize(.large)
           }
           .buttonStyle(.shadowFilled)
-          FlowRow {
+          ShadowFlowLayout(spacing: Spacing.space3) {
             Button("Small") {}.controlSize(.small)
             Button("Medium") {}
             Button("Large") {}.controlSize(.large)
@@ -77,7 +77,7 @@ struct ButtonPage: View {
         .controlSize(.large)
       }
       StateSection("Label with icon", note: "SF Symbols in the regular weight, at the label's text style.") {
-        FlowRow {
+        ShadowFlowLayout(spacing: Spacing.space3) {
           Button("Continue reading", systemImage: "book") {}.buttonStyle(.shadowFilled)
           Button("Add to library", systemImage: "plus") {}.buttonStyle(.shadowTinted)
           Button("Share", systemImage: "square.and.arrow.up") {}.buttonStyle(.shadowBordered)

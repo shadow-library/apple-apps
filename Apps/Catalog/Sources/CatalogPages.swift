@@ -19,6 +19,9 @@ extension CatalogComponent {
     case .datePicker: DatePickerPage()
     case .colorPicker: ColorPickerPage()
     case .fileImporter: FileImporterPage()
+    case .oneTimeCodeField: OneTimeCodeFieldPage()
+    case .tokenField: TokenFieldPage()
+    case .rating: RatingPage()
     default: PendingComponentPage(component: self)
     }
   }
