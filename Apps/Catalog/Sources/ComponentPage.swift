@@ -1,6 +1,35 @@
 import ShadowDesignSystem
 import SwiftUI
 
+extension EnvironmentValues {
+  @Entry var catalogScrollFraction: Double?
+}
+
+extension View {
+  func catalogScrollAnchor() -> some View { modifier(CatalogScrollAnchor()) }
+}
+
+private struct CatalogScrollAnchor: ViewModifier {
+  @Environment(\.catalogScrollFraction) private var fraction
+  @State private var position = ScrollPosition()
+
+  func body(content: Content) -> some View {
+    if let fraction {
+      content
+        .scrollPosition($position)
+        .onScrollGeometryChange(for: ClosedRange<CGFloat>.self) { geometry in
+          let insets = geometry.contentInsets
+          let lowerBound = -insets.top
+          return lowerBound...max(lowerBound, geometry.contentSize.height + insets.bottom - geometry.containerSize.height)
+        } action: { _, offsets in
+          position.scrollTo(y: offsets.lowerBound + (offsets.upperBound - offsets.lowerBound) * fraction)
+        }
+    } else {
+      content
+    }
+  }
+}
+
 struct ComponentPage<Content: View>: View {
   let component: CatalogComponent
   @ViewBuilder let content: Content
@@ -14,6 +43,7 @@ struct ComponentPage<Content: View>: View {
       .padding(Spacing.space4)
       .frame(maxWidth: .infinity)
     }
+    .catalogScrollAnchor()
     .background(ShadowColor.surfaceApp)
     .accessibilityIdentifier("component-\(component.id)")
   }

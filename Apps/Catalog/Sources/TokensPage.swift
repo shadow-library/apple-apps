@@ -41,6 +41,7 @@ struct TokensPage: View {
       .padding(Spacing.space4)
       .frame(maxWidth: .infinity)
     }
+    .catalogScrollAnchor()
     .background(ShadowColor.surfaceApp)
   }
 }

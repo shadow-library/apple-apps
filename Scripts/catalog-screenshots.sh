@@ -21,6 +21,7 @@ readonly SIM_MAX_POLLS=10
 platforms="all"
 components="all"
 appearances="both"
+scrolls="0"
 out_dir="$REPO_ROOT/scratch-pad/shots/latest"
 skip_build=false
 keep_booted=false
@@ -42,12 +43,14 @@ Options:
   --platform iphone|ipad|macos|all     Platforms to capture, comma-separated (default: all)
   --component <id>[,<id>...]|all       Page ids, case-insensitive (default: all). Ids come from the app: Catalog -list-components
   --appearance light|dark|both         Appearances to capture (default: both)
+  --scroll <f>[,<f>...]                Scroll positions from 0 (top) to 1 (bottom) for scrolling pages (default: 0).
+                                       Full-bleed pages ignore it. Example: --scroll 0,0.5,1
   --out <dir>                          Output directory (default: scratch-pad/shots/latest)
   --skip-build                         Reuse the last build in scratch-pad/derived-data
   --keep-booted                        Leave the simulators booted (faster reruns); otherwise those booted here are shut down
   -h, --help                           Show this help
 
-Output: <out>/<platform>/<id>-<appearance>.png
+Output: <out>/<platform>/<id>-<appearance>.png, plus <id>-<appearance>-s<percent>.png for each non-zero --scroll position
 
 How each platform is captured:
   iphone  $IPHONE_NAME ($SIM_RUNTIME), portrait, via simctl io screenshot.
@@ -81,6 +84,7 @@ parse_arguments() {
       --platform) platforms="${2:?--platform needs a value}"; shift 2 ;;
       --component) components="${2:?--component needs a value}"; shift 2 ;;
       --appearance) appearances="${2:?--appearance needs a value}"; shift 2 ;;
+      --scroll) scrolls="${2:?--scroll needs a value}"; shift 2 ;;
       --out) out_dir="${2:?--out needs a value}"; shift 2 ;;
       --skip-build) skip_build=true; shift ;;
       --keep-booted) keep_booted=true; shift ;;
@@ -105,6 +109,13 @@ parse_arguments() {
     light | dark) ;;
     *) fail "unknown appearance '$appearances'" ;;
   esac
+
+  local fraction
+  scrolls="${scrolls//,/ }"
+  [[ -n "${scrolls// /}" ]] || fail "--scroll needs at least one position"
+  for fraction in $scrolls; do
+    [[ "$fraction" =~ ^(0|1|0?\.[0-9]+|1\.0+|0\.0+)$ ]] || fail "invalid --scroll position '$fraction' (expected a number from 0 to 1)"
+  done
 
   mkdir -p "$out_dir"
   out_dir="$(cd "$out_dir" && pwd)"
@@ -191,17 +202,24 @@ resolve_page_ids() {
 }
 
 shot_count() {
-  local ids modes
+  local ids modes positions
   read -ra ids <<<"$page_ids"
   read -ra modes <<<"$appearances"
-  printf '%s' $((${#ids[@]} * ${#modes[@]}))
+  read -ra positions <<<"$scrolls"
+  printf '%s' $((${#ids[@]} * ${#modes[@]} * ${#positions[@]}))
+}
+
+scroll_suffix() {
+  local percent
+  percent="$(perl -e 'printf "%d", $ARGV[0] * 100 + 0.5' "$1")"
+  ((percent == 0)) || printf -- '-s%d' "$percent"
 }
 
 capture_simulator() {
-  local udid="$1" id="$2" appearance="$3" file="$4"
+  local udid="$1" id="$2" appearance="$3" file="$4" scroll="$5"
   local previous="$file.previous.png" current="$file.current.png" poll
   rm -f "$file" "$previous" "$current"
-  xcrun simctl launch --terminate-running-process "$udid" "$BUNDLE_ID" -component "$id" -appearance "$appearance" >/dev/null || return 1
+  xcrun simctl launch --terminate-running-process "$udid" "$BUNDLE_ID" -component "$id" -appearance "$appearance" -scroll "$scroll" >/dev/null || return 1
   sleep "$SIM_SETTLE"
   if ! xcrun simctl io "$udid" screenshot "$previous" >/dev/null 2>&1; then
     rm -f "$previous"
@@ -225,10 +243,10 @@ capture_simulator() {
 }
 
 capture_mac() {
-  local id="$1" appearance="$2" file="$3" errors="$3.stderr" waited=0 pid
+  local id="$1" appearance="$2" file="$3" scroll="$4" errors="$3.stderr" waited=0 pid
   rm -f "$file" "$errors"
   open -n -W --stderr "$errors" -a "$MAC_APP" --args \
-    -component "$id" -appearance "$appearance" -snapshot "$file" -ApplePersistenceIgnoreState YES &
+    -component "$id" -appearance "$appearance" -scroll "$scroll" -snapshot "$file" -ApplePersistenceIgnoreState YES &
   pid=$!
   while kill -0 "$pid" 2>/dev/null; do
     if ((waited >= MAC_TIMEOUT * 5)); then
@@ -260,15 +278,18 @@ run_platform() {
   for appearance in $appearances; do
     if [[ -n "$udid" ]]; then xcrun simctl ui "$udid" appearance "$appearance"; fi
     for id in $page_ids; do
-      index=$((index + 1))
-      file="$platform_dir/$id-$appearance.png"
-      shot_started="$(now)"
-      if capture "$udid" "$id" "$appearance" "$file"; then
-        log "[$platform $index/$total] $id ($appearance) $(elapsed "$shot_started")s"
-      else
-        log "[$platform $index/$total] $id ($appearance) FAILED"
-        printf '%s\n' "$platform/$id-$appearance" >>"$run_dir/failures"
-      fi
+      for scroll in $scrolls; do
+        index=$((index + 1))
+        name="$id-$appearance$(scroll_suffix "$scroll")"
+        file="$platform_dir/$name.png"
+        shot_started="$(now)"
+        if capture "$udid" "$id" "$appearance" "$file" "$scroll"; then
+          log "[$platform $index/$total] $name $(elapsed "$shot_started")s"
+        else
+          log "[$platform $index/$total] $name FAILED"
+          printf '%s\n' "$platform/$name" >>"$run_dir/failures"
+        fi
+      done
     done
   done
   seconds="$(elapsed "$started")"

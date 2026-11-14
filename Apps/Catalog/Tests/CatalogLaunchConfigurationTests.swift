@@ -68,6 +68,33 @@ struct CatalogLaunchConfigurationTests {
     #expect(!CatalogLaunchConfiguration(arguments: ["Catalog"]).listsComponents)
   }
 
+  @Test("should parse the scroll fraction")
+  func parsesScroll() {
+    #expect(CatalogLaunchConfiguration(arguments: ["-scroll", "0.5"]).scrollFraction == 0.5)
+    #expect(CatalogLaunchConfiguration(arguments: ["-scroll", "0"]).scrollFraction == 0)
+    #expect(CatalogLaunchConfiguration(arguments: ["-scroll", "1"]).scrollFraction == 1)
+  }
+
+  @Test("should clamp a scroll fraction above one")
+  func clampsScroll() {
+    #expect(CatalogLaunchConfiguration(arguments: ["-scroll", "7"]).scrollFraction == 1)
+  }
+
+  @Test("should ignore an invalid scroll fraction")
+  func invalidScroll() {
+    #expect(CatalogLaunchConfiguration(arguments: ["-scroll", "middle"]).scrollFraction == nil)
+    #expect(CatalogLaunchConfiguration(arguments: ["-scroll", "nan"]).scrollFraction == nil)
+    #expect(CatalogLaunchConfiguration(arguments: ["-scroll", "inf"]).scrollFraction == nil)
+    #expect(CatalogLaunchConfiguration(arguments: ["-scroll", "-0.5"]).scrollFraction == nil)
+  }
+
+  @Test("should leave the scroll fraction unset when missing")
+  func missingScroll() {
+    #expect(CatalogLaunchConfiguration(arguments: ["-scroll"]).scrollFraction == nil)
+    #expect(CatalogLaunchConfiguration(arguments: ["-scroll", "-appearance", "dark"]).scrollFraction == nil)
+    #expect(CatalogLaunchConfiguration(arguments: ["Catalog"]).scrollFraction == nil)
+  }
+
   @Test("should start the model detail-only when a component is requested")
   @MainActor
   func modelColumns() {

@@ -23,6 +23,7 @@ struct CatalogApp: App {
     WindowGroup {
       CatalogView(model: model)
         .shadowTheme()
+        .environment(\.catalogScrollFraction, model.launch.scrollFraction)
         .preferredColorScheme(model.appearance.colorScheme)
         .transaction { transaction in
           guard model.launch.isAutomated else { return }
