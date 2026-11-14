@@ -1,3 +1,4 @@
+import Foundation
 import SwiftUI
 import Testing
 
@@ -51,6 +52,20 @@ struct CatalogLaunchConfigurationTests {
   func lastWins() {
     let launch = CatalogLaunchConfiguration(arguments: ["-appearance", "light", "-appearance", "DARK"])
     #expect(launch.appearance == .dark)
+  }
+
+  @Test("should parse the snapshot path and treat it as automated")
+  func parsesSnapshot() {
+    let launch = CatalogLaunchConfiguration(arguments: ["-component", "Glass", "-snapshot", "/tmp/shots/Glass-dark.png"])
+    #expect(launch.snapshotURL == URL(filePath: "/tmp/shots/Glass-dark.png"))
+    #expect(launch.isAutomated)
+    #expect(CatalogLaunchConfiguration(arguments: ["-snapshot"]).snapshotURL == nil)
+  }
+
+  @Test("should detect the list-components flag")
+  func parsesListComponents() {
+    #expect(CatalogLaunchConfiguration(arguments: ["Catalog", "-list-components"]).listsComponents)
+    #expect(!CatalogLaunchConfiguration(arguments: ["Catalog"]).listsComponents)
   }
 
   @Test("should start the model detail-only when a component is requested")

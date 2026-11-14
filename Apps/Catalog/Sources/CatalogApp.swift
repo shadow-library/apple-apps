@@ -1,3 +1,4 @@
+import Foundation
 import ShadowDesignSystem
 import SwiftUI
 
@@ -11,6 +12,7 @@ struct CatalogApp: App {
 
   init() {
     let launch = CatalogLaunchConfiguration(arguments: ProcessInfo.processInfo.arguments)
+    if launch.listsComponents { Self.listPagesAndExit() }
     #if canImport(UIKit)
       if launch.isAutomated { UIView.setAnimationsEnabled(false) }
     #endif
@@ -29,8 +31,14 @@ struct CatalogApp: App {
         }
         #if os(macOS)
           .frame(minWidth: 900, minHeight: 600)
+          .catalogSnapshot(to: model.launch.snapshotURL)
         #endif
     }
     .defaultSize(width: 1280, height: 820)
+  }
+
+  private static func listPagesAndExit() -> Never {
+    print(CatalogPage.all.map(\.id).joined(separator: "\n"))
+    exit(EXIT_SUCCESS)
   }
 }

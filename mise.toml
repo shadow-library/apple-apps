@@ -50,3 +50,7 @@ run = ['tuist scaffold app --name "$usage_name" --platform "$usage_platform"', "
 [tasks.clean]
 description = "Remove generated projects and build artifacts"
 run = "tuist clean && rm -rf Derived Packages/ShadowKit/.build"
+
+[tasks.screenshots]
+description = "Capture Catalog pages on iPhone, iPad and Mac (see --help)"
+run = "Scripts/catalog-screenshots.sh"
