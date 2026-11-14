@@ -24,3 +24,6 @@ DerivedData/
 .env
 .env.*
 !.env.example
+
+# Agent scratch space
+scratch-pad/
