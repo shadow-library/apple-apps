@@ -85,6 +85,9 @@ nonisolated public enum ShadowColor {
   /// Neutral solid fill while pressed.
   public static let neutralSolidActive: Color = ShadowColorToken.neutralSolidActive.color
 
+  /// Neutral fill that carries white text in both themes, such as a swipe action. neutral-solid turns light in dark mode.
+  public static let neutralSolidStrong: Color = ShadowColorToken.neutralSolidStrong.color
+
   /// Text and glyphs on the neutral solid fill.
   public static let neutralOnSolid: Color = ShadowColorToken.neutralOnSolid.color
 
@@ -133,6 +136,9 @@ nonisolated public enum ShadowColor {
 
   /// Warning solid fill while pressed.
   public static let warningSolidActive: Color = ShadowColorToken.warningSolidActive.color
+
+  /// Warning fill that carries white text, such as a swipe action. warning-solid is too light for text.
+  public static let warningSolidStrong: Color = ShadowColorToken.warningSolidStrong.color
 
   /// Text and glyphs on the warning solid fill.
   public static let warningOnSolid: Color = ShadowColorToken.warningOnSolid.color

@@ -265,7 +265,7 @@ private struct PulseOverview: View {
     ShadowTable(PulseDelivery.all.sorted(using: sortOrder), selection: $selection, sortOrder: $sortOrder) {
       TableColumn(Text("Template").shadowTableHeader(), value: \.template) { ShadowTableIdentifier($0.template) }
         .width(min: 168, ideal: 240)
-      TableColumn(Text("Channel").shadowTableHeader(), value: \.channel) { Text(verbatim: $0.channel) }
+      TableColumn(Text("Channel").shadowTableHeader(), value: \.channel) { Text(verbatim: $0.channel).shadowTableCell() }
         .width(min: 72, ideal: 120)
       TableColumn(Text("Sent").shadowTableHeader(), value: \.sent) { ShadowTableNumber(Text($0.sent, format: .number)) }
         .width(min: 64, ideal: 88)

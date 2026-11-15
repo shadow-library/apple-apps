@@ -131,6 +131,7 @@ public struct ShadowNotificationSections<ID: Hashable & Sendable>: View {
             ShadowNotificationRow(notification, now: now, unreadLabel: labels.unread, reservesIconSlot: reservesIconSlot)
           }
           .buttonStyle(.plain)
+          .shadowListRowChrome()
           .shadowRowActions(leading: [toggleAction(notification)], trailing: [deleteAction(notification)])
         }
       } header: {
@@ -200,6 +201,7 @@ public struct ShadowMarkAllReadButton: View {
 
   public var body: some View {
     Button(title, systemImage: "checkmark.circle", action: action)
+      .shadowBarItem()
       .disabled(unreadCount == 0)
   }
 }

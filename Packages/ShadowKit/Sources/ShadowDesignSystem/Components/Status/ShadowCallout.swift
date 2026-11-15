@@ -75,12 +75,12 @@ public struct ShadowCallout<Action: View>: View {
       Image(systemName: "xmark")
         .imageScale(.small)
         .fontWeight(.semibold)
-        .frame(width: ShadowMetrics.tapTarget - Spacing.space3, height: ShadowMetrics.tapTarget - Spacing.space3)
+        .frame(width: ShadowMetrics.tapTarget, height: ShadowMetrics.tapTarget)
         .contentShape(.rect)
     }
     .buttonStyle(.plain)
     .accessibilityLabel(Text(dismiss.label))
-    .padding(-Spacing.space2)
+    .padding(-(Spacing.space2 + Spacing.space3 / 2))
   }
 }
 

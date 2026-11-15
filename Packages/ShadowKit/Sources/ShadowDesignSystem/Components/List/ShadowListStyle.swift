@@ -69,8 +69,14 @@ extension View {
     modifier(ShadowListStyleModifier(kind: kind))
   }
 
+  /// Re-applies `ShadowListRow` insets and chrome on a wrapper (a `Button` or `NavigationLink`), because List reads row modifiers only from the outermost row view.
   public func shadowListRowChrome() -> some View {
-    listRowBackground(ShadowColor.surfaceCard)
+    shadowListRowChrome(background: ShadowColor.surfaceCard)
+  }
+
+  func shadowListRowChrome(background: (some View)?) -> some View {
+    listRowInsets(ShadowListMetrics().rowInsets)
+      .listRowBackground(background)
       .listRowSeparatorTint(ShadowColor.borderDefault)
   }
 }

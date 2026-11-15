@@ -1,3 +1,4 @@
+import SwiftUI
 import Testing
 
 @testable import ShadowDesignSystem
@@ -50,5 +51,18 @@ struct ShadowDismissGuardTests {
     #expect(guardState.allowsInteractiveDismiss)
     let dismissed = guardState.requestDismiss()
     #expect(dismissed)
+  }
+}
+
+@Suite("Fitted detents")
+struct ShadowFittedDetentsTests {
+  @Test("should start at medium until the content is measured")
+  func unmeasured() {
+    #expect(ShadowFittedDetents.detents(contentHeight: nil) == [.medium])
+  }
+
+  @Test("should fit the measured height, rounded up")
+  func measured() {
+    #expect(ShadowFittedDetents.detents(contentHeight: 211.2) == [.height(212)])
   }
 }

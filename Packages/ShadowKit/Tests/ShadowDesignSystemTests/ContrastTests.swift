@@ -29,15 +29,15 @@ struct ContrastCase: Sendable, CustomTestStringConvertible {
     + pairs([.destructiveLabel, .textTertiary], on: [.surfaceCard])
     + pairs([.accentText], on: [.accentSoft])
     + pairs([.neutralText, .infoText], on: [.surfaceCard, .surfaceApp])
-    + pairs([.dangerText], on: [.surfaceCard])
-    + pairs([.dangerText], on: [.surfaceApp], in: [.dark])
+    + pairs([.dangerText], on: [.surfaceCard, .surfaceApp])
     + pairs([.neutralTextOnSubtle], on: [.neutralBgSubtle])
     + pairs([.successTextOnSubtle], on: [.successBgSubtle])
     + pairs([.warningTextOnSubtle], on: [.warningBgSubtle])
     + pairs([.dangerTextOnSubtle], on: [.dangerBgSubtle])
     + pairs([.infoTextOnSubtle], on: [.infoBgSubtle])
-    + pairs([.onAccent], on: [.accent])
-    + pairs([.dangerOnSolid], on: [.dangerSolid])
+    + pairs([.onAccent], on: [.accent, .accentHover, .accentActive, .selectionRow])
+    + pairs([.dangerOnSolid], on: [.dangerSolid, .dangerSolidHover, .dangerSolidActive])
+    + pairs([.warningOnSolid], on: [.warningSolidStrong])
     + pairs([.neutralOnSolid], on: [.neutralSolid])
     + pairs([.textPrimary], on: [.bgHover, .bgPressed])
     + pairs([.accentText], on: [.surfaceCard])
@@ -50,12 +50,10 @@ struct ContrastTests {
     #expect(pair.ratio >= 4.5, "\(pair.testDescription) is \(pair.ratio):1")
   }
 
-  @Test("should report danger-text on surface-app in light, an unflagged source shortfall")
-  func reportsDangerTextShortfall() {
-    let pair = ContrastCase(foreground: .dangerText, background: .surfaceApp, colorScheme: .light)
-    withKnownIssue("danger-text is 4.47:1 on surface-app in light; the brand book flags only three pairs") {
-      #expect(pair.ratio >= 4.5)
-    }
+  @Test("should reach 4.5:1 for white text on every swipe tile", arguments: ShadowRowActionKind.allCases, ColorScheme.allCases)
+  func swipeTileContrast(kind: ShadowRowActionKind, scheme: ColorScheme) {
+    let pair = ContrastCase(foreground: .onAccent, background: kind.token, colorScheme: scheme)
+    #expect(pair.ratio >= 4.5, "\(pair.testDescription) is \(pair.ratio):1")
   }
 
   @Test("should compute WCAG contrast at its extremes")

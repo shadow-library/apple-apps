@@ -50,7 +50,7 @@ struct MenuPage: View {
         } label: {
           Label("View options", systemImage: "slider.horizontal.3")
         }
-        .buttonStyle(.shadowBordered)
+        .shadowMenuButton()
       }
       StateSection("Primary action", note: "A click runs the main action; the arrow or a long press shows the alternatives.") {
         Menu {
@@ -61,15 +61,14 @@ struct MenuPage: View {
           Label("Export", systemImage: "square.and.arrow.up")
         } primaryAction: {
         }
-        .menuStyle(.button)
-        .buttonStyle(.shadowBordered)
+        .shadowMenuButton()
         .fixedSize()
       }
       StateSection("Disabled", note: "A menu with nothing to act on stays visible but dimmed.") {
         Menu("Collaborators") {
           Button("Invite…") {}
         }
-        .buttonStyle(.shadowBordered)
+        .shadowMenuButton()
         .fixedSize()
         .disabled(true)
       }

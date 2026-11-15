@@ -91,10 +91,12 @@ struct ShadowAvatarTintContrastTests {
     #expect(ratio >= 4.5, "chart \(slot) in \(scheme) is \(ratio):1")
   }
 
-  @Test("should cap the group overflow label at 99+")
+  @Test("should cap the group overflow label at 99+ with a single plus sign")
   func overflowText() {
     #expect(ShadowAvatarGroupLayout(total: 7, maximumVisible: 3).overflowText == "+4")
-    #expect(ShadowAvatarGroupLayout(total: 128, maximumVisible: 3).overflowText == "+99+")
     #expect(ShadowAvatarGroupLayout(total: 102, maximumVisible: 3).overflowText == "+99")
+    #expect(ShadowAvatarGroupLayout(total: 103, maximumVisible: 3).overflowText == "99+")
+    #expect(ShadowAvatarGroupLayout(total: 128, maximumVisible: 3).overflowText == "99+")
+    #expect(ShadowAvatarGroupLayout(total: 128, maximumVisible: 3).overflowText.filter { $0 == "+" }.count == 1)
   }
 }

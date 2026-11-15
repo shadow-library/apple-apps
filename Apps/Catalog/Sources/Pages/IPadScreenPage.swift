@@ -260,7 +260,7 @@ private struct ForgeChapters: View {
     ShadowTable(rows, selection: $selection, sortOrder: $sortOrder) {
       TableColumn(Text("#").shadowTableHeader(), value: \.id) { ShadowTableNumber(Text($0.id, format: .number.grouping(.never))) }
         .width(min: 36, ideal: 44, max: 64)
-      TableColumn(Text("Title").shadowTableHeader(), value: \.title) { Text(verbatim: $0.title) }
+      TableColumn(Text("Title").shadowTableHeader(), value: \.title) { Text(verbatim: $0.title).shadowTableCell() }
         .width(min: 120, ideal: 200)
       TableColumn(Text("Words").shadowTableHeader(), value: \.words) { ShadowTableNumber(Text(verbatim: $0.wordCount)) }
         .width(min: 56, ideal: 64)

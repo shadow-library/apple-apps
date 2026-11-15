@@ -13,7 +13,7 @@ private struct ShadowScreenModifier: ViewModifier {
       .scrollContentBackground(.hidden)
       .background(ShadowColor.surfaceApp)
       .modifier(ScrollEdgeModifier())
-      .modifier(TitleModeModifier(level: level))
+      .modifier(BarAppearanceModifier(level: level))
   }
 }
 
@@ -27,12 +27,14 @@ private struct ScrollEdgeModifier: ViewModifier {
   }
 }
 
-private struct TitleModeModifier: ViewModifier {
+private struct BarAppearanceModifier: ViewModifier {
   let level: ShadowScreenLevel
 
   func body(content: Content) -> some View {
     #if os(iOS)
       content.toolbarTitleDisplayMode(level == .root ? .large : .inline)
+    #elseif os(macOS)
+      content.toolbarBackgroundVisibility(.hidden, for: .windowToolbar)
     #else
       content
     #endif

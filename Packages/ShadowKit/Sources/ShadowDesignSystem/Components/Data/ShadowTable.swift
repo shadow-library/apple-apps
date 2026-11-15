@@ -12,6 +12,14 @@ nonisolated public enum ShadowTableLayout: Hashable, Sendable {
 nonisolated public enum ShadowTableMetrics {
   public static let skeletonRowCount = 5
 
+  static func headerHeight(density: ShadowDensity = .current) -> CGFloat {
+    density == .touch ? ShadowMetrics.rowTouch : ShadowMetrics.rowMac
+  }
+
+  static func alternatesRows(density: ShadowDensity = .current) -> Bool {
+    density == .compact
+  }
+
   public static func skeletonRows(_ requested: Int) -> Int {
     min(max(requested, 1), 12)
   }
@@ -96,36 +104,46 @@ where Columns.TableRowValue == Value, Columns.TableColumnSortComparator == KeyPa
   }
 
   public var body: some View {
-    Group {
-      if isLoading {
-        ShadowTableSkeleton(columns: skeletonColumns, isList: layout == .list, label: loadingLabel)
-      } else {
-        content
-      }
-    }
-    .environment(\.defaultMinListRowHeight, ShadowMetrics.rowHeight)
-    .environment(\.shadowMaterialLayer, .content)
-    .background(ShadowColor.surfaceCard)
-    .overlay {
-      if rows.isEmpty && !isLoading { empty }
-    }
+    content
+      .environment(\.defaultMinListRowHeight, ShadowMetrics.rowHeight)
+      .environment(\.shadowMaterialLayer, .content)
+      .background(ShadowColor.surfaceCard)
   }
 
   @ViewBuilder
   private var content: some View {
     switch layout {
     case .grid:
-      Table(rows, selection: selection, sortOrder: sortOrder) { columns }
+      Table(isLoading ? [] : rows, selection: selection, sortOrder: sortOrder) { columns }
         .tableStyle(.inset)
-        .modifier(ShadowTableBackdrop(isEmpty: rows.isEmpty))
+        .modifier(ShadowTableBackdrop(isEmpty: rows.isEmpty || isLoading))
         .scrollContentBackground(.hidden)
-    case .list:
-      List(rows, selection: selection) { row in compact(row) }
-        .shadowListStyle(.plain)
-        .contentMargins(.top, 0, for: .scrollContent)
-        .safeAreaInset(edge: .top, spacing: 0) {
-          if let compactSort { ShadowTableSortMenu(sort: compactSort, sortOrder: sortOrder) }
+        .overlay {
+          Group {
+            if isLoading {
+              ShadowTableSkeleton(columns: skeletonColumns, label: loadingLabel)
+            } else if rows.isEmpty {
+              empty
+            }
+          }
+          .padding(.top, ShadowTableMetrics.headerHeight())
         }
+    case .list:
+      Group {
+        if isLoading {
+          ShadowTableSkeleton(columns: skeletonColumns, isList: true, label: loadingLabel)
+        } else {
+          List(rows, selection: selection) { row in compact(row) }
+            .shadowListStyle(.plain)
+        }
+      }
+      .contentMargins(.top, 0, for: .scrollContent)
+      .safeAreaInset(edge: .top, spacing: 0) {
+        if let compactSort { ShadowTableSortMenu(sort: compactSort, sortOrder: sortOrder).disabled(isLoading) }
+      }
+      .overlay {
+        if rows.isEmpty && !isLoading { empty }
+      }
     }
   }
 }
@@ -209,43 +227,54 @@ public struct ShadowTableSkeleton: View {
   }
 
   public var body: some View {
-    VStack(spacing: 0) {
-      ForEach(0..<rows, id: \.self) { index in
-        row
-          .frame(minHeight: rowHeight)
-          .background(index.isMultiple(of: 2) || isList ? Color.clear : ShadowColor.surfaceWell)
+    Group {
+      if isList {
+        List(0..<rows, id: \.self) { _ in ShadowTableSkeletonListRow() }
+          .shadowListStyle(.plain)
+          .scrollDisabled(true)
+      } else {
+        VStack(spacing: 0) {
+          ForEach(0..<rows, id: \.self) { index in
+            gridRow
+              .frame(minHeight: rowHeight)
+              .background(ShadowTableMetrics.alternatesRows() && !index.isMultiple(of: 2) ? ShadowColor.surfaceWell : Color.clear)
+          }
+          Spacer(minLength: 0)
+        }
       }
-      Spacer(minLength: 0)
     }
+    .allowsHitTesting(false)
     .accessibilityElement(children: .ignore)
     .accessibilityLabel(label.map { Text($0) } ?? Text(verbatim: ""))
     .accessibilityHidden(label == nil)
   }
 
-  @ViewBuilder
-  private var row: some View {
-    if isList {
-      VStack(alignment: .leading, spacing: Spacing.space1) {
-        ShadowSkeletonLine(.title, widthFraction: 0.5)
-        ShadowSkeletonLine(widthFraction: 0.3)
-      }
-      .padding(.vertical, Spacing.space2)
-      .padding(.horizontal, ShadowListMetrics().horizontalPadding)
-      .frame(maxWidth: .infinity, alignment: .leading)
-    } else {
-      GeometryReader { proxy in
-        let gap = Spacing.space3
-        let available = proxy.size.width - gap * CGFloat(columns.count + 1)
-        let total = columns.reduce(0, +)
-        HStack(spacing: gap) {
-          ForEach(Array(columns.enumerated()), id: \.offset) { _, fraction in
-            ShadowSkeletonLine().frame(width: max(0, available * fraction / total))
-          }
+  private var gridRow: some View {
+    GeometryReader { proxy in
+      let gap = Spacing.space3
+      let available = proxy.size.width - gap * CGFloat(columns.count + 1)
+      let total = columns.reduce(0, +)
+      HStack(spacing: gap) {
+        ForEach(Array(columns.enumerated()), id: \.offset) { _, fraction in
+          ShadowSkeletonLine().frame(width: max(0, available * fraction / total))
         }
-        .padding(.horizontal, gap)
-        .frame(maxHeight: .infinity)
       }
+      .padding(.horizontal, gap)
+      .frame(maxHeight: .infinity)
     }
+  }
+}
+
+private struct ShadowTableSkeletonListRow: View {
+  @ScaledMetric(relativeTo: .caption) private var badgeHeight = ShadowDensity.current == .touch ? Spacing.space6 : Spacing.space5
+
+  var body: some View {
+    ShadowListRow(
+      title: Text(verbatim: String(repeating: "0", count: 14)),
+      subtitle: Text(verbatim: String(repeating: "0", count: 22)),
+      trailing: Capsule().fill(ShadowColor.fillTrack).frame(width: badgeHeight * 3, height: badgeHeight)
+    )
+    .redacted(reason: .placeholder)
   }
 }
 

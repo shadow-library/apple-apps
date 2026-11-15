@@ -103,7 +103,7 @@ public struct ShadowCapacityStatistic: View {
 
   public var body: some View {
     HStack(spacing: Spacing.space4) {
-      ShadowCapacityGauge(title: label, value: value, in: range)
+      ShadowCapacityGauge(title: label, value: value, in: range, showsTitle: false)
       VStack(alignment: .leading, spacing: Spacing.space05) {
         label
           .shadowFont(.footnote)

@@ -24,6 +24,7 @@ public struct ShadowLabeledContent<Content: View>: View {
           .shadowFont(.body)
           .foregroundStyle(ShadowColor.textSecondary)
       }
+      .padding(.vertical, Spacing.space1)
     #else
       ShadowListRow(
         title: title,

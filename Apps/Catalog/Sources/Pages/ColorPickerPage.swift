@@ -48,7 +48,6 @@ struct ColorPickerPage: View {
           FormSection {
             ColorPicker("Highlight colour", selection: $highlight, supportsOpacity: false)
               .disabled(true)
-              .opacity(ShadowOpacity.disabled)
           }
         }
       }

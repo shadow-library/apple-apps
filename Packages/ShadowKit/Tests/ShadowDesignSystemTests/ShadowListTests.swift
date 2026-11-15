@@ -77,6 +77,59 @@ struct ShadowListRowPaletteTests {
       #expect(ShadowListRowPalette(density: density, phase: phase, isDestructive: true).title == .destructiveLabel)
     }
   }
+
+  @Test("should switch every label to on-accent over a prominent native selection")
+  func prominentSelection() {
+    for density in ShadowDensity.allCases {
+      let palette = ShadowListRowPalette(density: density, phase: .onProminentBackground, isDestructive: true)
+      #expect([palette.title, palette.secondary, palette.accessory].allSatisfy { $0 == .onAccent })
+    }
+    #expect(!ShadowListRowPhase.onProminentBackground.hasBackground)
+  }
+}
+
+@Suite("List row phase")
+struct ShadowListRowPhaseTests {
+  private func phase(
+    isSelected: Bool = false, isHovered: Bool = false, appearsActive: Bool = true, isProminent: Bool = false, isInList: Bool = true, density: ShadowDensity
+  ) -> ShadowListRowPhase {
+    ShadowListRowPhase(isSelected: isSelected, isHovered: isHovered, appearsActive: appearsActive, isProminent: isProminent, isInList: isInList, density: density)
+  }
+
+  @Test("should leave Mac list selection to the native List so only one layer paints")
+  func macListSelectionIsNative() {
+    #expect(phase(isSelected: true, density: .compact) == .standard)
+    #expect(phase(isSelected: true, isHovered: true, density: .compact) == .standard)
+    #expect(!phase(isSelected: true, density: .compact).hasBackground)
+  }
+
+  @Test("should draw its own selection outside a List and on touch")
+  func ownSelection() {
+    #expect(phase(isSelected: true, isInList: false, density: .compact) == .selected)
+    #expect(phase(isSelected: true, appearsActive: false, isInList: false, density: .compact) == .selectedInactive)
+    #expect(phase(isSelected: true, density: .touch) == .selected)
+  }
+
+  @Test("should follow a prominent container background before anything else", arguments: ShadowDensity.allCases)
+  func prominent(density: ShadowDensity) {
+    #expect(phase(isSelected: true, isProminent: true, density: density) == .onProminentBackground)
+    #expect(phase(isProminent: true, isInList: false, density: density) == .onProminentBackground)
+  }
+
+  @Test("should hover only unselected rows")
+  func hover() {
+    #expect(phase(isHovered: true, density: .compact) == .hovered)
+    #expect(phase(density: .compact) == .standard)
+  }
+
+  @Test("should publish its padding as list row insets", arguments: ShadowDensity.allCases)
+  func rowInsets(density: ShadowDensity) {
+    let metrics = ShadowListMetrics(density: density)
+    #expect(metrics.rowInsets.leading == metrics.horizontalPadding)
+    #expect(metrics.rowInsets.trailing == metrics.horizontalPadding)
+    #expect(metrics.rowInsets.top == metrics.verticalPadding)
+    #expect(metrics.rowInsets.bottom == metrics.verticalPadding)
+  }
 }
 
 @Suite("Row actions")
@@ -113,9 +166,9 @@ struct ShadowRowActionTests {
   @Test("should map kinds to solid tokens")
   func tokens() {
     #expect(ShadowRowActionKind.accent.token == .accent)
-    #expect(ShadowRowActionKind.warning.token == .warningSolid)
+    #expect(ShadowRowActionKind.warning.token == .warningSolidStrong)
     #expect(ShadowRowActionKind.destructive.token == .dangerSolid)
-    #expect(ShadowRowActionKind.neutral.token == .neutralSolid)
+    #expect(ShadowRowActionKind.neutral.token == .neutralSolidStrong)
   }
 }
 

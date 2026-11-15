@@ -15,6 +15,8 @@ nonisolated public enum ShadowRatingFill: Hashable, Sendable, CaseIterable {
 }
 
 nonisolated public struct ShadowRatingScale: Hashable, Sendable {
+  static let previewOpacity = 0.5
+
   public let maximum: Int
 
   public init(maximum: Int = 5) {
@@ -38,6 +40,11 @@ nonisolated public struct ShadowRatingScale: Hashable, Sendable {
     let remainder = displayValue(value) - Double(index)
     if remainder >= 1 { return .full }
     return remainder >= 0.5 ? .half : .empty
+  }
+
+  func isPreviewed(at index: Int, committed: Double, shown: Double) -> Bool {
+    let position = Double(index) + 1
+    return position > displayValue(committed) && position <= displayValue(shown)
   }
 
   public func value(atOffset offset: CGFloat, width: CGFloat) -> Int {

@@ -131,9 +131,11 @@ private struct BookRow: View {
         Text(verbatim: book.title)
           .shadowFont(.body)
           .foregroundStyle(ShadowColor.textPrimary)
+          .shadowSkeletonText()
         Text(verbatim: book.progress)
           .shadowFont(.subheadline)
           .foregroundStyle(ShadowColor.textSecondary)
+          .shadowSkeletonText()
       }
       Spacer(minLength: 0)
     }

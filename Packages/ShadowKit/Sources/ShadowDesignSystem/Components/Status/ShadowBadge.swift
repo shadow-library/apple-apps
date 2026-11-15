@@ -93,7 +93,7 @@ private struct ShadowBadgeLabel: View {
           .fontWeight(.bold)
           .accessibilityHidden(true)
       }
-      title.lineLimit(1)
+      title.lineLimit(1).truncationMode(.tail)
     }
     .font(Font.shadow(.caption).weight(.semibold))
     .foregroundStyle(intent.foreground)
@@ -101,7 +101,8 @@ private struct ShadowBadgeLabel: View {
     .frame(minHeight: height)
     .background(intent.background, in: .capsule)
     .overlay { Capsule().strokeBorder(intent.border, lineWidth: intent == .accent ? 0 : 1) }
-    .fixedSize()
+    .fixedSize(horizontal: false, vertical: true)
+    .layoutPriority(1)
     .opacity(isEnabled ? 1 : ShadowOpacity.disabled)
   }
 }
@@ -145,6 +146,50 @@ private struct ShadowBadgeDot: View {
   }
 }
 
+nonisolated struct ShadowBadgePlacement: Hashable, Sendable {
+  let maximumOverlap: CGFloat
+
+  init(density: ShadowDensity = .current) {
+    maximumOverlap = density == .touch ? Spacing.space2 : Spacing.space1 + Spacing.space05
+  }
+
+  func anchor(in content: CGSize) -> CGPoint {
+    let inset = min(content.width, content.height) * (1 - 1 / 2.squareRoot()) / 2
+    return CGPoint(x: content.width - inset, y: inset)
+  }
+
+  func origin(for badge: CGSize, in content: CGSize) -> CGPoint {
+    let anchor = anchor(in: content)
+    return CGPoint(x: anchor.x - min(badge.height / 2, maximumOverlap), y: anchor.y - badge.height / 2)
+  }
+}
+
+private struct ShadowBadgeLayout: Layout {
+  let placement: ShadowBadgePlacement
+
+  func sizeThatFits(proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) -> CGSize {
+    subviews.first?.sizeThatFits(proposal) ?? .zero
+  }
+
+  func placeSubviews(in bounds: CGRect, proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) {
+    guard let content = subviews.first else { return }
+    content.place(at: bounds.origin, proposal: ProposedViewSize(bounds.size))
+    for badge in subviews.dropFirst() {
+      let size = badge.sizeThatFits(.unspecified)
+      let origin = placement.origin(for: size, in: bounds.size)
+      badge.place(at: CGPoint(x: bounds.minX + origin.x, y: bounds.minY + origin.y), proposal: ProposedViewSize(size))
+    }
+  }
+}
+
+private struct ShadowBadgeAccessibilityValue: ViewModifier {
+  let value: Text?
+
+  func body(content: Content) -> some View {
+    content.accessibilityValue(value ?? Text(verbatim: ""), isEnabled: value != nil)
+  }
+}
+
 private struct ShadowBadgeOverlay: ViewModifier {
   let badge: ShadowBadge
   let isShown: Bool
@@ -152,25 +197,17 @@ private struct ShadowBadgeOverlay: ViewModifier {
   let ring: Color?
 
   private static let ringWidth: CGFloat = 2
-  private let isTouch = ShadowDensity.current == .touch
 
-  @ViewBuilder
   func body(content: Content) -> some View {
-    let overlaid = content.overlay(alignment: .topTrailing) {
+    ShadowBadgeLayout(placement: ShadowBadgePlacement()) {
+      content.modifier(ShadowBadgeAccessibilityValue(value: isShown ? value : nil))
       if isShown {
         badge
           .padding(ring == nil ? 0 : Self.ringWidth)
           .background(ring ?? .clear, in: .capsule)
-          .alignmentGuide(.top) { $0[VerticalAlignment.center] - (isTouch ? Spacing.space2 : Spacing.space1) }
-          .alignmentGuide(.trailing) { $0[.leading] + (isTouch ? Spacing.space4 : Spacing.space2 + Spacing.space1) }
           .allowsHitTesting(false)
           .accessibilityHidden(true)
       }
-    }
-    if isShown, let value {
-      overlaid.accessibilityValue(value)
-    } else {
-      overlaid
     }
   }
 }

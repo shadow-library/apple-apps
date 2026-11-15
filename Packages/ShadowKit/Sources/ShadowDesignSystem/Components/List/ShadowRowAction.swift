@@ -9,8 +9,8 @@ nonisolated public enum ShadowRowActionKind: Hashable, Sendable, CaseIterable {
   public var token: ShadowColorToken {
     switch self {
     case .accent: .accent
-    case .warning: .warningSolid
-    case .neutral: .neutralSolid
+    case .warning: .warningSolidStrong
+    case .neutral: .neutralSolidStrong
     case .destructive: .dangerSolid
     }
   }

@@ -24,7 +24,7 @@ struct PopoverPage: View {
           .popover(isPresented: $showsTextSettings, arrowEdge: .top) {
             TextSettingsPanel()
               .presentationCompactAdaptation(.sheet)
-              .presentationDetents([.medium])
+              .shadowFittedDetents()
               .presentationDragIndicator(.visible)
           }
         }

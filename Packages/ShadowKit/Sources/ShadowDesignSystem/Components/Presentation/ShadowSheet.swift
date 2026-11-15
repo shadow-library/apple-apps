@@ -64,6 +64,11 @@ public struct ShadowSheetConfirm {
 }
 
 extension View {
+  /// Supplies its own scroll view, so pass content that does not scroll by itself; a List or ScrollView inside would collapse.
+  public func shadowFittedDetents() -> some View {
+    modifier(ShadowFittedDetentsModifier())
+  }
+
   public func shadowSheetStyle(_ style: ShadowSheetStyle) -> some View {
     modifier(ShadowSheetStyleModifier(style: style))
   }
@@ -92,6 +97,24 @@ extension View {
       } message: {
         if let message { message }
       }
+  }
+}
+
+nonisolated enum ShadowFittedDetents {
+  static func detents(contentHeight: CGFloat?) -> Set<PresentationDetent> {
+    [contentHeight.map { .height($0.rounded(.up)) } ?? .medium]
+  }
+}
+
+private struct ShadowFittedDetentsModifier: ViewModifier {
+  @State private var contentHeight: CGFloat?
+
+  func body(content: Content) -> some View {
+    ScrollView {
+      content.onGeometryChange(for: CGFloat.self, of: { $0.size.height }, action: { contentHeight = $0 })
+    }
+    .scrollBounceBehavior(.basedOnSize)
+    .presentationDetents(ShadowFittedDetents.detents(contentHeight: contentHeight))
   }
 }
 
@@ -172,9 +195,7 @@ private struct ShadowSheetHeaderModifier: ViewModifier {
   private var toolbar: some ToolbarContent {
     ToolbarItem(placement: .cancellationAction) {
       Button(role: .cancel, action: cancel.perform) { ShadowSheetActionLabel(title: cancel.title, systemImage: cancel.systemImage) }
-        #if !os(macOS)
-          .shadowBarItem()
-        #endif
+        .shadowBarItem()
     }
     if let confirm {
       ToolbarItem(placement: .confirmationAction) {
@@ -184,6 +205,7 @@ private struct ShadowSheetHeaderModifier: ViewModifier {
         #else
           Button(action: confirm.perform) { ShadowSheetActionLabel(title: confirm.title, systemImage: confirm.systemImage) }
             .shadowToolbarProminent()
+            .keyboardShortcut(.defaultAction)
             .disabled(confirm.isDisabled)
         #endif
       }

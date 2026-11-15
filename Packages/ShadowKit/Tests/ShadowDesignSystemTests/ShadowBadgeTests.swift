@@ -35,3 +35,46 @@ struct ShadowBadgeCountTests {
     #expect(ShadowBadgeCount(5, maximum: 0).text(locale: english) == "1+")
   }
 }
+
+@Suite("Badge placement")
+struct ShadowBadgePlacementTests {
+  @Test("should anchor on the 45-degree point of a circular control", arguments: [ShadowDensity.touch, .compact])
+  func anchorsOnCircle(density: ShadowDensity) {
+    let side: CGFloat = density == .touch ? 44 : 28
+    let anchor = ShadowBadgePlacement(density: density).anchor(in: CGSize(width: side, height: side))
+    let radius = side / 2
+    let distance = ((anchor.x - radius) * (anchor.x - radius) + (anchor.y - radius) * (anchor.y - radius)).squareRoot()
+    #expect(abs(distance - radius) < 0.001)
+    #expect(anchor.x > radius && anchor.y < radius)
+  }
+
+  @Test("should keep the leading edge fixed so wider counts grow outward")
+  func growsOutward() {
+    let placement = ShadowBadgePlacement(density: .touch)
+    let content = CGSize(width: 44, height: 44)
+    let one = placement.origin(for: CGSize(width: 20, height: 20), in: content)
+    let many = placement.origin(for: CGSize(width: 34, height: 20), in: content)
+    #expect(one == many)
+  }
+
+  @Test("should overlap the content by at most the density's limit", arguments: [ShadowDensity.touch, .compact])
+  func limitsOverlap(density: ShadowDensity) {
+    let placement = ShadowBadgePlacement(density: density)
+    let content = CGSize(width: 44, height: 44)
+    let badge = CGSize(width: 30, height: 24)
+    let origin = placement.origin(for: badge, in: content)
+    #expect(placement.anchor(in: content).x - origin.x == placement.maximumOverlap)
+    #expect(origin.y + badge.height / 2 == placement.anchor(in: content).y)
+  }
+
+  @Test("should centre a dot on the anchor")
+  func centresDot() {
+    let placement = ShadowBadgePlacement(density: .touch)
+    let content = CGSize(width: 32, height: 32)
+    let dot = CGSize(width: 10, height: 10)
+    let origin = placement.origin(for: dot, in: content)
+    let anchor = placement.anchor(in: content)
+    #expect(abs(origin.x + dot.width / 2 - anchor.x) < 0.001)
+    #expect(abs(origin.y + dot.height / 2 - anchor.y) < 0.001)
+  }
+}

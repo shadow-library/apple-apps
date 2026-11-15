@@ -127,9 +127,10 @@ private struct RevealedRow: View {
         isEmphasized: update.isUnread,
         leading: { Circle().fill(update.isUnread ? ShadowColor.accent : Color.clear).frame(width: 8, height: 8) }
       )
+      .padding(ShadowListMetrics().rowInsets)
       .frame(maxWidth: .infinity)
       if edge == .trailing {
-        tile("Flag", "flag", ShadowColor.warningSolid)
+        tile("Flag", "flag", ShadowRowActionKind.warning.token.color)
         tile("Delete", "trash", ShadowColor.dangerSolid)
       }
     }

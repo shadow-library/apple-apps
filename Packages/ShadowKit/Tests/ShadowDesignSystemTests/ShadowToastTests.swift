@@ -233,3 +233,17 @@ struct ShadowToastCenterTests {
     #expect(center.queue.isEmpty)
   }
 }
+
+@Suite("Toast anchor")
+struct ShadowToastAnchorTests {
+  @Test("should push a presenter at the window top below the status bar")
+  func belowStatusBar() {
+    #expect(ShadowToastAnchor.topInset(windowSafeTop: 62, presenterMinY: 0) == 62)
+  }
+
+  @Test("should add nothing when the presenter already starts below the status bar")
+  func belowSafeArea() {
+    #expect(ShadowToastAnchor.topInset(windowSafeTop: 62, presenterMinY: 120) == 0)
+    #expect(ShadowToastAnchor.topInset(windowSafeTop: 62, presenterMinY: 40) == 22)
+  }
+}

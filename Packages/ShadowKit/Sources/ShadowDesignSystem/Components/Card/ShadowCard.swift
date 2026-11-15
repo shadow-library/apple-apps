@@ -61,6 +61,7 @@ public struct ShadowCardHeader<Accessory: View>: View {
         title
           .shadowFont(.headline)
           .foregroundStyle(ShadowColor.textPrimary)
+          .shadowSkeletonText()
           .frame(maxWidth: .infinity, alignment: .leading)
           .accessibilityAddTraits(.isHeader)
         accessory
@@ -69,6 +70,7 @@ public struct ShadowCardHeader<Accessory: View>: View {
         subtitle
           .shadowFont(.footnote)
           .foregroundStyle(ShadowColor.textSecondary)
+          .shadowSkeletonText()
       }
     }
   }

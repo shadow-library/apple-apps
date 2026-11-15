@@ -136,3 +136,13 @@ struct ShadowCapacityTests {
     #expect(abs(ShadowCapacity.fraction(value: value, in: lower...upper) - expected) < 0.000_001)
   }
 }
+
+@Suite("Capacity level")
+struct ShadowCapacityLevelTests {
+  @Test(
+    "should warn near the limit and alarm at it",
+    arguments: [(0.0, ShadowCapacityLevel.normal), (0.89, .normal), (0.9, .nearLimit), (0.99, .nearLimit), (1.0, .atLimit), (1.2, .atLimit)])
+  func level(fraction: Double, expected: ShadowCapacityLevel) {
+    #expect(ShadowCapacityLevel(fraction: fraction) == expected)
+  }
+}

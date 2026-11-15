@@ -1,4 +1,5 @@
 import Foundation
+import SwiftUI
 import Testing
 
 @testable import ShadowDesignSystem
@@ -47,5 +48,22 @@ struct ShadowRatingScaleTests {
   @Test("should keep at least one star")
   func minimum() {
     #expect(ShadowRatingScale(maximum: 0).maximum == 1)
+  }
+
+  @Test("should mark only the stars between the committed value and the hover as previewed")
+  func previewedStars() {
+    let previewed = (0..<5).filter { scale.isPreviewed(at: $0, committed: 2, shown: 4) }
+    #expect(previewed == [2, 3])
+    #expect((0..<5).allSatisfy { !scale.isPreviewed(at: $0, committed: 4, shown: 2) })
+    #expect((0..<5).allSatisfy { !scale.isPreviewed(at: $0, committed: 3, shown: 3) })
+  }
+
+  @Test("should give empty stars at least 3:1 against card surfaces")
+  @MainActor
+  func emptyStarContrast() {
+    for scheme in ColorScheme.allCases {
+      let ratio = ShadowColorToken.textTertiary.rgba(for: scheme).contrastRatio(against: ShadowColorToken.surfaceCard.rgba(for: scheme))
+      #expect(ratio >= 3, "empty star in \(scheme) is \(ratio):1")
+    }
   }
 }

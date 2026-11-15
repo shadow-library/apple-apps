@@ -51,6 +51,20 @@ struct ShadowFlowLayoutTests {
     #expect(bitmap.swatch(x: 20, y: 15) == .blue)
   }
 
+  @Test("should keep a line whose items overflow by less than half a point, absorbing rounding")
+  func toleratesRounding() throws {
+    let bitmap = try #require(render(.leftToRight, width: 29.6, height: 20))
+    #expect(bitmap.swatch(x: 25, y: 5) == .blue)
+    #expect(bitmap.swatch(x: 5, y: 15) == nil)
+  }
+
+  @Test("should wrap once the items overflow by more than half a point")
+  func wrapsBeyondTolerance() throws {
+    let bitmap = try #require(render(.leftToRight, width: 29.4, height: 20))
+    #expect(bitmap.swatch(x: 5, y: 15) == .blue)
+    #expect(bitmap.swatch(x: 25, y: 5) == nil)
+  }
+
   private struct Bitmap {
     let width: Int
     let pixels: [UInt8]

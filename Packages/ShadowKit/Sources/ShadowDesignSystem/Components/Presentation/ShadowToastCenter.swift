@@ -94,9 +94,77 @@ private struct ShadowToastPresenter: ViewModifier {
         .animation(.shadow(.emphasized, reduceMotion: reduceMotion), value: center.current?.id)
         .padding(.horizontal, metrics.edgeInset)
         .padding(edge == .top ? .top : .bottom, metrics.edgeInset)
+        .modifier(ShadowToastWindowTopAnchor(isActive: edge == .top))
       }
   }
 }
+
+nonisolated enum ShadowToastAnchor {
+  static func topInset(windowSafeTop: CGFloat, presenterMinY: CGFloat) -> CGFloat {
+    max(windowSafeTop - presenterMinY, 0)
+  }
+}
+
+private struct ShadowToastWindowTopAnchor: ViewModifier {
+  let isActive: Bool
+
+  @State private var windowSafeTop: CGFloat = 0
+  @State private var presenterMinY: CGFloat = 0
+
+  func body(content: Content) -> some View {
+    #if os(iOS)
+      if isActive {
+        content
+          .padding(.top, ShadowToastAnchor.topInset(windowSafeTop: windowSafeTop, presenterMinY: presenterMinY))
+          .frame(maxHeight: .infinity, alignment: .top)
+          .onGeometryChange(for: CGFloat.self, of: { $0.frame(in: .global).minY }, action: { presenterMinY = $0 })
+          .background { ShadowWindowSafeAreaReader(top: $windowSafeTop) }
+          .ignoresSafeArea(.container, edges: .top)
+      } else {
+        content
+      }
+    #else
+      content
+    #endif
+  }
+}
+
+#if os(iOS)
+  private struct ShadowWindowSafeAreaReader: UIViewRepresentable {
+    @Binding var top: CGFloat
+
+    func makeUIView(context: Context) -> ProbeView {
+      let view = ProbeView()
+      view.isUserInteractionEnabled = false
+      view.onChange = { top = $0 }
+      return view
+    }
+
+    func updateUIView(_ uiView: ProbeView, context: Context) {}
+
+    final class ProbeView: UIView {
+      var onChange: ((CGFloat) -> Void)?
+
+      override func didMoveToWindow() {
+        super.didMoveToWindow()
+        report()
+      }
+
+      override func layoutSubviews() {
+        super.layoutSubviews()
+        report()
+      }
+
+      private func report() {
+        guard let top = window?.safeAreaInsets.top, top != reported else { return }
+        reported = top
+        DispatchQueue.main.async { [weak self] in self?.onChange?(top) }
+      }
+
+      private var reported: CGFloat?
+    }
+  }
+#endif
 
 private struct ShadowToastHost: View {
   let toast: ShadowToast

@@ -116,7 +116,27 @@ private struct ShadowSkeletonShapeModifier<S: InsettableShape>: ViewModifier {
   }
 }
 
+private struct ShadowRedactedTextModifier: ViewModifier {
+  @Environment(\.redactionReasons) private var reasons
+
+  func body(content: Content) -> some View {
+    if reasons.contains(.placeholder) {
+      content.hidden().overlay {
+        RoundedRectangle(cornerRadius: Radius.sm, style: .continuous)
+          .fill(ShadowColor.fillTrack)
+          .scaleEffect(x: 1, y: 0.72)
+      }
+    } else {
+      content
+    }
+  }
+}
+
 extension View {
+  public func shadowSkeletonText() -> some View {
+    modifier(ShadowRedactedTextModifier())
+  }
+
   public func shadowSkeleton(_ isLoading: Bool, label: LocalizedStringKey? = nil) -> some View {
     modifier(ShadowSkeletonModifier(isLoading: isLoading, label: label))
   }

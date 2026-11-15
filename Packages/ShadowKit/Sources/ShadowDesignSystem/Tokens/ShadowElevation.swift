@@ -27,7 +27,9 @@ private struct ShadowElevationModifier: ViewModifier {
   func body(content: Content) -> some View {
     let layers = elevation.layers(for: colorScheme)
     // Both slots always exist, so switching appearance never changes the content's view identity.
+    // Without the compositing group every glyph and divider inside the content casts its own shadow.
     content
+      .compositingGroup()
       .modifier(ShadowLayerModifier(layer: layers.first))
       .modifier(ShadowLayerModifier(layer: layers.dropFirst().first))
   }

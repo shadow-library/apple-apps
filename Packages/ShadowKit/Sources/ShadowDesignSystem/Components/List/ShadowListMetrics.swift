@@ -31,6 +31,10 @@ nonisolated public struct ShadowListMetrics: Hashable, Sendable {
     }
   }
 
+  public var rowInsets: EdgeInsets {
+    EdgeInsets(top: verticalPadding, leading: horizontalPadding, bottom: verticalPadding, trailing: horizontalPadding)
+  }
+
   public func separatorInset(leadingWidth: CGFloat?) -> CGFloat {
     guard let leadingWidth else { return horizontalPadding }
     return horizontalPadding + leadingWidth + leadingGap
@@ -42,6 +46,21 @@ nonisolated public enum ShadowListRowPhase: Hashable, Sendable {
   case hovered
   case selected
   case selectedInactive
+  case onProminentBackground
+
+  init(isSelected: Bool, isHovered: Bool, appearsActive: Bool, isProminent: Bool, isInList: Bool, density: ShadowDensity) {
+    if isProminent {
+      self = .onProminentBackground
+    } else if isSelected && isInList && density == .compact {
+      self = .standard
+    } else if isSelected {
+      self = appearsActive ? .selected : .selectedInactive
+    } else {
+      self = isHovered ? .hovered : .standard
+    }
+  }
+
+  var hasBackground: Bool { self == .hovered || self == .selected || self == .selectedInactive }
 }
 
 nonisolated public struct ShadowListRowPalette: Hashable, Sendable {
@@ -53,6 +72,11 @@ nonisolated public struct ShadowListRowPalette: Hashable, Sendable {
   public init(density: ShadowDensity, phase: ShadowListRowPhase, isDestructive: Bool = false) {
     let destructive: ShadowColorToken? = isDestructive ? .destructiveLabel : nil
     switch (density, phase) {
+    case (_, .onProminentBackground):
+      background = .selectionRow
+      title = .onAccent
+      secondary = .onAccent
+      accessory = .onAccent
     case (.touch, .selected), (.touch, .selectedInactive):
       background = .accentSoft
       title = destructive ?? .accentText

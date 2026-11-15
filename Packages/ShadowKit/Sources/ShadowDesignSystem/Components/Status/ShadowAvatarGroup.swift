@@ -27,7 +27,7 @@ nonisolated public struct ShadowAvatarGroupLayout: Hashable, Sendable {
   public static let overflowCap = 99
 
   public var overflowText: String {
-    overflow > Self.overflowCap ? "+\(Self.overflowCap)+" : "+\(overflow)"
+    overflow > Self.overflowCap ? "\(Self.overflowCap)+" : "+\(overflow)"
   }
 }
 

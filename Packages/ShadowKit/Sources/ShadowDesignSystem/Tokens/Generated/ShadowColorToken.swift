@@ -28,6 +28,7 @@ nonisolated public enum ShadowColorToken: String, CaseIterable, Sendable {
   case neutralSolid = "neutral-solid"
   case neutralSolidHover = "neutral-solid-hover"
   case neutralSolidActive = "neutral-solid-active"
+  case neutralSolidStrong = "neutral-solid-strong"
   case neutralOnSolid = "neutral-on-solid"
   case neutralBgSubtle = "neutral-bg-subtle"
   case neutralTextOnSubtle = "neutral-text-on-subtle"
@@ -44,6 +45,7 @@ nonisolated public enum ShadowColorToken: String, CaseIterable, Sendable {
   case warningSolid = "warning-solid"
   case warningSolidHover = "warning-solid-hover"
   case warningSolidActive = "warning-solid-active"
+  case warningSolidStrong = "warning-solid-strong"
   case warningOnSolid = "warning-on-solid"
   case warningBgSubtle = "warning-bg-subtle"
   case warningTextOnSubtle = "warning-text-on-subtle"
@@ -123,6 +125,7 @@ nonisolated public enum ShadowColorToken: String, CaseIterable, Sendable {
     case .neutralSolid: ShadowRGBA(hex: 0x202226)
     case .neutralSolidHover: ShadowRGBA(hex: 0x343842)
     case .neutralSolidActive: ShadowRGBA(hex: 0x111214)
+    case .neutralSolidStrong: ShadowRGBA(hex: 0x525866)
     case .neutralOnSolid: ShadowRGBA(hex: 0xFFFFFF)
     case .neutralBgSubtle: ShadowRGBA(hex: 0xF5F6F8)
     case .neutralTextOnSubtle: ShadowRGBA(hex: 0x343842)
@@ -139,6 +142,7 @@ nonisolated public enum ShadowColorToken: String, CaseIterable, Sendable {
     case .warningSolid: ShadowRGBA(hex: 0xD97706)
     case .warningSolidHover: ShadowRGBA(hex: 0xB45309)
     case .warningSolidActive: ShadowRGBA(hex: 0x92400E)
+    case .warningSolidStrong: ShadowRGBA(hex: 0xB45309)
     case .warningOnSolid: ShadowRGBA(hex: 0xFFFFFF)
     case .warningBgSubtle: ShadowRGBA(hex: 0xFFFBEB)
     case .warningTextOnSubtle: ShadowRGBA(hex: 0xB45309)
@@ -150,7 +154,7 @@ nonisolated public enum ShadowColorToken: String, CaseIterable, Sendable {
     case .dangerOnSolid: ShadowRGBA(hex: 0xFFFFFF)
     case .dangerBgSubtle: ShadowRGBA(hex: 0xFEF2F2)
     case .dangerTextOnSubtle: ShadowRGBA(hex: 0xB91C1C)
-    case .dangerText: ShadowRGBA(hex: 0xDC2626)
+    case .dangerText: ShadowRGBA(hex: 0xD92525)
     case .dangerBorder: ShadowRGBA(hex: 0xFECACA)
     case .destructiveLabel: ShadowRGBA(hex: 0xB91C1C)
     case .fillTrack: ShadowRGBA(hex: 0xE5E7EB)
@@ -207,8 +211,8 @@ nonisolated public enum ShadowColorToken: String, CaseIterable, Sendable {
     case .textPlaceholder: ShadowRGBA(hex: 0x707784)
     case .textOnTooltip: ShadowRGBA(hex: 0x111214)
     case .accent: ShadowRGBA(hex: 0x5B5CEB)
-    case .accentHover: ShadowRGBA(hex: 0x8283F0)
-    case .accentActive: ShadowRGBA(hex: 0xA5A6F5)
+    case .accentHover: ShadowRGBA(hex: 0x4F46E5)
+    case .accentActive: ShadowRGBA(hex: 0x4338CA)
     case .accentSoft: ShadowRGBA(hex: 0x5B5CEB, alpha: 0.15)
     case .onAccent: ShadowRGBA(hex: 0xFFFFFF)
     case .accentText: ShadowRGBA(hex: 0x8283F0)
@@ -220,6 +224,7 @@ nonisolated public enum ShadowColorToken: String, CaseIterable, Sendable {
     case .neutralSolid: ShadowRGBA(hex: 0xE5E7EB)
     case .neutralSolidHover: ShadowRGBA(hex: 0xC8CDD4)
     case .neutralSolidActive: ShadowRGBA(hex: 0xF5F6F8)
+    case .neutralSolidStrong: ShadowRGBA(hex: 0x525866)
     case .neutralOnSolid: ShadowRGBA(hex: 0x111214)
     case .neutralBgSubtle: ShadowRGBA(hex: 0x202226)
     case .neutralTextOnSubtle: ShadowRGBA(hex: 0xC8CDD4)
@@ -236,14 +241,15 @@ nonisolated public enum ShadowColorToken: String, CaseIterable, Sendable {
     case .warningSolid: ShadowRGBA(hex: 0xD97706)
     case .warningSolidHover: ShadowRGBA(hex: 0xF59E0B)
     case .warningSolidActive: ShadowRGBA(hex: 0xFBBF24)
+    case .warningSolidStrong: ShadowRGBA(hex: 0xB45309)
     case .warningOnSolid: ShadowRGBA(hex: 0xFFFFFF)
     case .warningBgSubtle: ShadowRGBA(hex: 0xD97706, alpha: 0.15)
     case .warningTextOnSubtle: ShadowRGBA(hex: 0xFCD34D)
     case .warningText: ShadowRGBA(hex: 0xFBBF24)
     case .warningBorder: ShadowRGBA(hex: 0xF59E0B, alpha: 0.3)
     case .dangerSolid: ShadowRGBA(hex: 0xDC2626)
-    case .dangerSolidHover: ShadowRGBA(hex: 0xEF4444)
-    case .dangerSolidActive: ShadowRGBA(hex: 0xF87171)
+    case .dangerSolidHover: ShadowRGBA(hex: 0xB91C1C)
+    case .dangerSolidActive: ShadowRGBA(hex: 0x991B1B)
     case .dangerOnSolid: ShadowRGBA(hex: 0xFFFFFF)
     case .dangerBgSubtle: ShadowRGBA(hex: 0xDC2626, alpha: 0.15)
     case .dangerTextOnSubtle: ShadowRGBA(hex: 0xFCA5A5)

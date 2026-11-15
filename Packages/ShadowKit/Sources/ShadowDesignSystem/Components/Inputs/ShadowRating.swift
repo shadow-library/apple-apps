@@ -92,7 +92,8 @@ public struct ShadowRating: View {
       ForEach(0..<scale.maximum, id: \.self) { index in
         let fill = scale.fill(at: index, for: shownValue)
         Image(systemName: fill.systemImage)
-          .foregroundStyle(fill == .empty ? ShadowColor.borderStrong : ShadowColor.warningSolid)
+          .foregroundStyle(fill == .empty ? ShadowColor.textTertiary : ShadowColor.warningSolid)
+          .opacity(scale.isPreviewed(at: index, committed: value, shown: shownValue) ? ShadowRatingScale.previewOpacity : 1)
       }
     }
     .shadowFont(textStyle)

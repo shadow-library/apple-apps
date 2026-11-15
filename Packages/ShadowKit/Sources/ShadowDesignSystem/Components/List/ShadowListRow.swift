@@ -73,6 +73,7 @@ public struct ShadowListRow<Leading: View, Trailing: View>: View {
   @Environment(\.shadowHoverEffectsEnabled) private var hoverEffectsEnabled
   @Environment(\.appearsActive) private var appearsActive
   @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+  @Environment(\.backgroundProminence) private var backgroundProminence
   @ScaledMetric(relativeTo: .body) private var minimumHeight = ShadowListMetrics().minimumRowHeight
   @State private var leadingWidth = ShadowListMetrics().tileSize
   @State private var isHovered = false
@@ -112,14 +113,18 @@ public struct ShadowListRow<Leading: View, Trailing: View>: View {
   }
 
   private var phase: ShadowListRowPhase {
-    if isSelected { return appearsActive ? .selected : .selectedInactive }
-    return isHovered && isEnabled && hoverEffectsEnabled ? .hovered : .standard
+    ShadowListRowPhase(
+      isSelected: isSelected, isHovered: isHovered && isEnabled && hoverEffectsEnabled, appearsActive: appearsActive, isProminent: backgroundProminence == .increased,
+      isInList: !drawsBackground, density: .current)
   }
 
   public var body: some View {
     let metrics = ShadowListMetrics()
+    let phase = phase
     let palette = ShadowListRowPalette(density: .current, phase: phase, isDestructive: role == .destructive)
     let inset = metrics.separatorInset(leadingWidth: hasLeading ? leadingWidth : nil)
+    let padding = drawsBackground ? metrics.rowInsets : EdgeInsets()
+    let listInsets = drawsBackground ? 0 : metrics.rowInsets.top + metrics.rowInsets.bottom
     HStack(alignment: .center, spacing: metrics.leadingGap) {
       if hasLeading {
         leading.onGeometryChange(for: CGFloat.self, of: { $0.size.width }, action: { leadingWidth = $0 })
@@ -132,11 +137,10 @@ public struct ShadowListRow<Leading: View, Trailing: View>: View {
           .accessibilityHidden(true)
       }
     }
-    .padding(.horizontal, metrics.horizontalPadding)
-    .padding(.vertical, metrics.verticalPadding)
-    .frame(minHeight: minimumHeight, alignment: .center)
+    .padding(padding)
+    .frame(minHeight: max(0, minimumHeight - listInsets), alignment: .center)
     .frame(maxWidth: .infinity, alignment: .leading)
-    .background(drawsBackground && phase != .standard ? palette.background.color : Color.clear)
+    .background(drawsBackground && phase.hasBackground ? palette.background.color : Color.clear)
     .overlay(alignment: .bottom) {
       if drawsBackground {
         Rectangle()
@@ -149,24 +153,20 @@ public struct ShadowListRow<Leading: View, Trailing: View>: View {
     .contentShape(.rect)
     .opacity(isEnabled ? 1 : ShadowOpacity.disabled)
     .accessibilityAddTraits(isSelected ? .isSelected : [])
-    .listRowInsets(EdgeInsets())
-    .listRowBackground(rowBackground(palette))
-    .listRowSeparatorTint(ShadowColor.borderDefault)
-    .alignmentGuide(.listRowSeparatorLeading) { $0[.leading] + inset }
+    .shadowListRowChrome(background: rowBackground(phase: phase, palette: palette))
     #if os(macOS)
       .onHover { isHovered = $0 }
     #endif
   }
 
-  @ViewBuilder
-  private func rowBackground(_ palette: ShadowListRowPalette) -> some View {
-    if ShadowDensity.current == .compact && phase != .standard {
+  private func rowBackground(phase: ShadowListRowPhase, palette: ShadowListRowPalette) -> AnyView? {
+    let isCompact = ShadowDensity.current == .compact
+    guard phase.hasBackground else { return isCompact ? nil : AnyView(ShadowColor.surfaceCard) }
+    guard isCompact else { return AnyView(palette.background.color) }
+    return AnyView(
       RoundedRectangle(cornerRadius: Radius.md, style: .continuous)
         .fill(palette.background.color)
-        .padding(.horizontal, Spacing.space2)
-    } else {
-      palette.background.color
-    }
+        .padding(.horizontal, Spacing.space2))
   }
 
   @ViewBuilder
@@ -183,33 +183,39 @@ public struct ShadowListRow<Leading: View, Trailing: View>: View {
           .fontWeight(isEmphasized ? .semibold : nil)
           .foregroundStyle(palette.title.color)
           .lineLimit(lineLimit)
+          .shadowSkeletonText()
         if let subtitle {
           subtitle
             .shadowFont(.subheadline)
             .foregroundStyle(palette.secondary.color)
             .lineLimit(lineLimit)
+            .shadowSkeletonText()
         }
         if let caption {
           caption
             .shadowFont(.footnote)
             .foregroundStyle(palette.secondary.color)
             .lineLimit(lineLimit)
+            .shadowSkeletonText()
         }
         if stacksValue, let value {
           value
             .shadowFont(.body)
             .foregroundStyle(palette.secondary.color)
+            .shadowSkeletonText()
         }
       }
       .fixedSize(horizontal: false, vertical: true)
       .layoutPriority(1)
       .frame(maxWidth: .infinity, alignment: .leading)
+      .alignmentGuide(.listRowSeparatorLeading) { $0[.leading] }
       if !stacksValue, let value {
         value
           .shadowFont(.body)
           .foregroundStyle(palette.secondary.color)
           .lineLimit(lineLimit)
           .multilineTextAlignment(.trailing)
+          .shadowSkeletonText()
       }
       trailing
     }

@@ -5,7 +5,6 @@ public struct ShadowStepper: View {
   @Binding private var value: Int
   private let range: ClosedRange<Int>
   private let step: Int
-  @Environment(\.isEnabled) private var isEnabled
 
   public init(_ title: LocalizedStringKey, value: Binding<Int>, in range: ClosedRange<Int>, step: Int = 1) {
     self.title = title
@@ -23,6 +22,7 @@ public struct ShadowStepper: View {
       LabeledContent(title) {
         HStack(spacing: Spacing.space1) {
           TextField(title, value: clampedValue, format: .number)
+            .textFieldStyle(.roundedBorder)
             .labelsHidden()
             .multilineTextAlignment(.trailing)
             .monospacedDigit()
@@ -40,7 +40,6 @@ public struct ShadowStepper: View {
         }
       }
       .accessibilityValue(Text(value, format: .number))
-      .opacity(isEnabled ? 1 : ShadowOpacity.disabled)
     #endif
   }
 
