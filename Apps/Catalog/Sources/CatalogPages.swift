@@ -8,6 +8,8 @@ extension CatalogComponent {
     case .button: ButtonPage()
     case .iconButton: IconButtonPage()
     case .card: CardPage()
+    case .menu: MenuPage()
+    case .confirmationDialog: ConfirmationDialogPage()
     case .textField: TextFieldPage()
     case .searchField: SearchFieldPage()
     case .textEditor: TextEditorPage()
@@ -41,6 +43,12 @@ extension CatalogComponent {
     case .chart: ChartPage()
     case .steps: StepsPage()
     case .timeline: TimelinePage()
+    case .accountMenu: AccountMenuPage()
+    case .commandPalette: CommandPalettePage()
+    case .sheet: SheetPage()
+    case .alert: AlertPage()
+    case .popover: PopoverPage()
+    case .toast: ToastPage()
     default: PendingComponentPage(component: self)
     }
   }

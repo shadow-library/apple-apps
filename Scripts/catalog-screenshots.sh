@@ -15,6 +15,7 @@ readonly IPHONE_NAME="${CATALOG_IPHONE:-iPhone 17 Pro}"
 readonly IPAD_NAME="${CATALOG_IPAD:-iPad Pro 13-inch (M5)}"
 readonly MAC_TIMEOUT=30
 readonly SIM_SETTLE=0.6
+readonly SIM_PRESENT_SETTLE=2.5
 readonly SIM_POLL=0.3
 readonly SIM_MAX_POLLS=10
 
@@ -25,6 +26,7 @@ scrolls="0"
 out_dir="$REPO_ROOT/scratch-pad/shots/latest"
 skip_build=false
 keep_booted=false
+present=false
 
 iphone_udid=""
 ipad_udid=""
@@ -46,11 +48,14 @@ Options:
   --scroll <f>[,<f>...]                Scroll positions from 0 (top) to 1 (bottom) for scrolling pages (default: 0).
                                        Full-bleed pages ignore it. Example: --scroll 0,0.5,1
   --out <dir>                          Output directory (default: scratch-pad/shots/latest)
+  --present                            Launch with -present so presentation pages open their primary sample (sheet, alert,
+                                       popover, toast, palette) before the shot; files get a -presented suffix
   --skip-build                         Reuse the last build in scratch-pad/derived-data
   --keep-booted                        Leave the simulators booted (faster reruns); otherwise those booted here are shut down
   -h, --help                           Show this help
 
 Output: <out>/<platform>/<id>-<appearance>.png, plus <id>-<appearance>-s<percent>.png for each non-zero --scroll position
+        and <id>-<appearance>-presented.png with --present
 
 How each platform is captured:
   iphone  $IPHONE_NAME ($SIM_RUNTIME), portrait, via simctl io screenshot.
@@ -88,6 +93,7 @@ parse_arguments() {
       --out) out_dir="${2:?--out needs a value}"; shift 2 ;;
       --skip-build) skip_build=true; shift ;;
       --keep-booted) keep_booted=true; shift ;;
+      --present) present=true; shift ;;
       -h | --help) usage; exit 0 ;;
       --) shift ;;
       *) fail "unknown option '$1' (see --help)" ;;
@@ -215,12 +221,17 @@ scroll_suffix() {
   ((percent == 0)) || printf -- '-s%d' "$percent"
 }
 
+present_arguments() { if [[ "$present" == true ]]; then printf '%s' "-present"; fi; }
+
 capture_simulator() {
   local udid="$1" id="$2" appearance="$3" file="$4" scroll="$5"
-  local previous="$file.previous.png" current="$file.current.png" poll
+  local previous="$file.previous.png" current="$file.current.png" poll settle="$SIM_SETTLE"
+  [[ "$present" == true ]] && settle="$SIM_PRESENT_SETTLE"
   rm -f "$file" "$previous" "$current"
-  xcrun simctl launch --terminate-running-process "$udid" "$BUNDLE_ID" -component "$id" -appearance "$appearance" -scroll "$scroll" >/dev/null || return 1
-  sleep "$SIM_SETTLE"
+  # shellcheck disable=SC2046
+  xcrun simctl launch --terminate-running-process "$udid" "$BUNDLE_ID" -component "$id" -appearance "$appearance" -scroll "$scroll" \
+    $(present_arguments) >/dev/null || return 1
+  sleep "$settle"
   if ! xcrun simctl io "$udid" screenshot "$previous" >/dev/null 2>&1; then
     rm -f "$previous"
     return 1
@@ -245,8 +256,9 @@ capture_simulator() {
 capture_mac() {
   local id="$1" appearance="$2" file="$3" scroll="$4" errors="$3.stderr" waited=0 pid
   rm -f "$file" "$errors"
+  # shellcheck disable=SC2046
   open -n -W --stderr "$errors" -a "$MAC_APP" --args \
-    -component "$id" -appearance "$appearance" -scroll "$scroll" -snapshot "$file" -ApplePersistenceIgnoreState YES &
+    -component "$id" -appearance "$appearance" -scroll "$scroll" -snapshot "$file" -ApplePersistenceIgnoreState YES $(present_arguments) &
   pid=$!
   while kill -0 "$pid" 2>/dev/null; do
     if ((waited >= MAC_TIMEOUT * 5)); then
@@ -281,6 +293,7 @@ run_platform() {
       for scroll in $scrolls; do
         index=$((index + 1))
         name="$id-$appearance$(scroll_suffix "$scroll")"
+        [[ "$present" == true ]] && name="$name-presented"
         file="$platform_dir/$name.png"
         shot_started="$(now)"
         if capture "$udid" "$id" "$appearance" "$file" "$scroll"; then

@@ -45,7 +45,6 @@ struct SidebarPage: View {
   var body: some View {
     NavigationSplitView(preferredCompactColumn: $compactColumn) {
       List(selection: $selection) {
-        DemoOrganisationSwitcher()
         Section {
           ForEach(SidebarDemoItem.writing) { item in SidebarDemoRow(item: item) }
         } header: {
@@ -63,6 +62,11 @@ struct SidebarPage: View {
         }
       }
       .shadowListStyle(.sidebar)
+      .safeAreaInset(edge: .bottom) {
+        DemoAccountMenu(labelStyle: .avatarAndName)
+          .padding(.horizontal, DemoLayout.margin)
+          .padding(.vertical, Spacing.space3)
+      }
       .navigationTitle("Novel Forge")
       .shadowColumnWidth(.sidebar)
       .toolbar { CatalogDemoCloseItem() }
@@ -80,39 +84,6 @@ private struct SidebarDemoRow: View {
   var body: some View {
     ShadowSidebarLabel(Text(verbatim: item.rawValue), systemImage: item.systemImage, badge: item.badge)
       .tag(item)
-  }
-}
-
-struct DemoOrganisationSwitcher: View {
-  var body: some View {
-    Menu {
-      Button("Shadow Library · Novel Forge", systemImage: "checkmark") {}
-      Button("Shadow Library · Memoir") {}
-      Divider()
-      Button("Manage organisations…") {}
-    } label: {
-      HStack(spacing: Spacing.space3) {
-        ShadowAvatar(name: "Shadow Library", kind: .organization, size: ShadowDensity.current == .touch ? .medium : .small)
-        VStack(alignment: .leading, spacing: 0) {
-          Text(verbatim: "Shadow Library")
-            .shadowFont(.headline)
-            .foregroundStyle(ShadowColor.textPrimary)
-          Text(verbatim: "Novel Forge")
-            .shadowFont(.footnote)
-            .foregroundStyle(ShadowColor.textSecondary)
-        }
-        .lineLimit(1)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        Image(systemName: "chevron.up.chevron.down")
-          .shadowFont(.footnote)
-          .foregroundStyle(ShadowColor.textSecondary)
-      }
-      .contentShape(.rect)
-    }
-    .menuStyle(.button)
-    .buttonStyle(.plain)
-    .menuIndicator(.hidden)
-    .accessibilityLabel("Organisation: Shadow Library, Novel Forge")
   }
 }
 

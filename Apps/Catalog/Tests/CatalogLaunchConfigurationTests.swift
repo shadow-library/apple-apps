@@ -95,6 +95,12 @@ struct CatalogLaunchConfigurationTests {
     #expect(CatalogLaunchConfiguration(arguments: ["Catalog"]).scrollFraction == nil)
   }
 
+  @Test("should detect the present flag")
+  func parsesPresent() {
+    #expect(CatalogLaunchConfiguration(arguments: ["-component", "Sheet", "-present"]).presentsSample)
+    #expect(!CatalogLaunchConfiguration(arguments: ["-component", "Sheet"]).presentsSample)
+  }
+
   @Test("should start the model detail-only when a component is requested")
   @MainActor
   func modelColumns() {

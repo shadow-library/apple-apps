@@ -6,21 +6,27 @@ struct CatalogLaunchConfiguration: Equatable, Sendable {
   static let snapshotFlag = "-snapshot"
   static let listComponentsFlag = "-list-components"
   static let scrollFlag = "-scroll"
+  static let presentFlag = "-present"
 
   let page: CatalogPage?
   let appearance: CatalogAppearance?
   let snapshotURL: URL?
   let listsComponents: Bool
   let scrollFraction: Double?
+  let presentsSample: Bool
 
   var isAutomated: Bool { page != nil || appearance != nil || snapshotURL != nil }
 
-  init(page: CatalogPage? = nil, appearance: CatalogAppearance? = nil, snapshotURL: URL? = nil, listsComponents: Bool = false, scrollFraction: Double? = nil) {
+  init(
+    page: CatalogPage? = nil, appearance: CatalogAppearance? = nil, snapshotURL: URL? = nil, listsComponents: Bool = false, scrollFraction: Double? = nil,
+    presentsSample: Bool = false
+  ) {
     self.page = page
     self.appearance = appearance
     self.snapshotURL = snapshotURL
     self.listsComponents = listsComponents
     self.scrollFraction = scrollFraction
+    self.presentsSample = presentsSample
   }
 
   init(arguments: [String]) {
@@ -29,6 +35,7 @@ struct CatalogLaunchConfiguration: Equatable, Sendable {
     snapshotURL = Self.value(of: Self.snapshotFlag, in: arguments).map { URL(filePath: $0) }
     listsComponents = arguments.contains(Self.listComponentsFlag)
     scrollFraction = Self.value(of: Self.scrollFlag, in: arguments).flatMap { Double($0) }.flatMap { $0.isFinite ? min($0, 1) : nil }
+    presentsSample = arguments.contains(Self.presentFlag)
   }
 
   private static func value(of flag: String, in arguments: [String]) -> String? {
