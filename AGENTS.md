@@ -10,11 +10,18 @@ Read `README.md` first; it covers layout, modules and tasks.
 - Code reused by a second app belongs in `Packages/ShadowKit`, not copied between apps.
 - `ShadowTestSupport` is for test targets only; never link it into an app target.
 - Third-party dependencies are added to `Tuist/Package.swift` (for apps) or `Packages/ShadowKit/Package.swift` (for shared modules) and need the user's approval.
+- `ShadowDesignSystem`: use semantic tokens only (`ShadowColor`, `Spacing`, `Radius`), never primitives or literal colours; the library has no user-facing strings.
+- Glass goes on the navigation layer only (bars, sidebars, menus, popovers, sheets), never on content. Use `.shadowGlass` and `ShadowGlassGroup`, never a hand-drawn effect.
+- Tokens come from `Design/tokens.json`; run `mise run tokens` and never edit `Tokens/Generated/`.
+- `@_spi(Preview)` is for preview and capture hooks (Catalog, screenshots), never for app code.
+- Tests are named `should…`; Swift Testing tests that resolve `Color` or `Font` need `@MainActor`.
 
 ## Verifying a change
 
 - Shared packages: `mise run test:packages` — fastest loop, needs no generation.
 - Apps: `mise run bootstrap && tuist test <Scheme>`; add `--platform macOS` if simulators are unavailable.
+- Use `--no-selective-testing` with `tuist test`, or unchanged targets are skipped. CI passes `--skip-ui-tests` on macOS and visionOS.
+- `mise run screenshots` and anything touching simulators or the window server needs the command sandbox disabled, or it hangs.
 - Always finish with `mise run lint` and `mise run lint:graph`.
 
 Tuist requires the repository to have at least one commit; `tuist generate` fails on a fresh `git init`.

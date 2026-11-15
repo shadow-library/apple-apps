@@ -41,7 +41,7 @@ Tuist.swift  Workspace.swift  mise.toml  .swift-format
 | `ShadowCore`         | `ShadowError` protocol for typed domain errors, `Logger(category:)`         | —                                |
 | `ShadowNetworking`   | `APIClient` (async, typed throws), `Endpoint`, middleware, JSON coding      | `ShadowCore`                     |
 | `ShadowKeychain`     | `SecureStore` protocol and `KeychainStore` (data-protection keychain)       | `ShadowCore`                     |
-| `ShadowDesignSystem` | Tokens, `.shadowGlass`, `ShadowButtonStyle`, `ShadowIconButton`, `ShadowCard` | —                                |
+| `ShadowDesignSystem` | Tokens, Liquid Glass helpers and native-first SwiftUI components (see below) | —                                |
 | `ShadowTestSupport`  | `StubHTTPTransport`, `InMemorySecureStore` — test targets only              | `ShadowNetworking`, `ShadowKeychain` |
 
 Apps depend on modules through the typed helper, so a typo fails at manifest compile time:
@@ -61,6 +61,99 @@ let project = Project.app(
 2. Add a case to `SharedModule` in `Tuist/ProjectDescriptionHelpers/SharedModule.swift`.
 3. `mise run bootstrap`.
 
+## ShadowDesignSystem
+
+Shadow UI for Apple: the brand (indigo accent, tinted neutrals, flat opaque content) on native SwiftUI controls, with Liquid Glass for the navigation layer only. Minimum OS 26 on every platform. It contains no user-facing strings.
+
+### Adopting it in an app
+
+1. Depend on it in the app's `Project.swift`: `dependencies: [.shared(.designSystem)]`, then `mise run bootstrap`.
+2. Apply the theme and a toast presenter once at the root:
+
+```swift
+import ShadowDesignSystem
+
+WindowGroup {
+  RootView()
+    .shadowTheme()
+    .shadowToastPresenter()
+}
+```
+
+3. Use semantic tokens only (`ShadowColor.textPrimary`, `Spacing.space4`, `Radius.section`), never primitive palette values or literal colours.
+4. Keep glass on bars, toolbars, sidebars, menus, popovers and sheets. Content (cards, rows, fields) stays flat on `ShadowColor.surfaceCard`.
+
+The DocC catalog has a getting-started article, the token and contrast reference, the glass rules, and the platform decisions that deviate from the Shadow UI design spec.
+
+### Regenerating tokens
+
+`Design/tokens.json` is the source for colours, spacing, radii, metrics, opacity and elevation. After editing it:
+
+```sh
+mise run tokens
+```
+
+This rewrites `Packages/ShadowKit/Sources/ShadowDesignSystem/Tokens/Generated/`. Never edit those files by hand. CI regenerates them and fails on a diff. Every text pair in `ContrastTests` must still pass `mise run test:packages`.
+
+### Building the docs
+
+The catalog is `Packages/ShadowKit/Sources/ShadowDesignSystem/ShadowDesignSystem.docc`. Build it with Xcode, which needs no extra package:
+
+```sh
+cd Packages/ShadowKit
+xcodebuild docbuild -scheme ShadowDesignSystem -destination 'generic/platform=macOS' -derivedDataPath .build/docbuild
+```
+
+The archive is written to `.build/docbuild/Build/Products/Debug/ShadowDesignSystem.doccarchive`; open it in Xcode. `swift package generate-documentation` would need `swift-docc-plugin`, which is not a dependency of this repository.
+
+## Catalog app
+
+`Apps/Catalog` is a gallery of every component and token page in light and dark, with the presentation and device-screen demos. It is also the pipeline's smoke test and the subject of the screenshot harness. Run the `Catalog` scheme from the workspace, or `Catalog -list-components` to print the page ids.
+
+Launch arguments: `-component <id>`, `-appearance light|dark`, `-scroll <0..1>`, `-screen <name>`, `-present`.
+
+### Screenshot harness
+
+```sh
+mise run screenshots -- --platform iphone,macos --component Button,Card --appearance both
+mise run screenshots -- --help
+```
+
+Output goes to `scratch-pad/shots/latest/<platform>/<id>-<appearance>[-s<percent>][-<screen>][-presented][-landscape].png`.
+
+| Option                             | Effect                                                                                                       |
+| ---------------------------------- | ------------------------------------------------------------------------------------------------------------ |
+| `--platform iphone,ipad,macos`     | Platforms to capture (default all)                                                                           |
+| `--component <id>,…`               | Page ids from `Catalog -list-components` (default all)                                                       |
+| `--appearance light,dark,both`     | Appearances (default both)                                                                                   |
+| `--scroll <f>,…`                   | Scroll positions from 0 to 1 on scrolling pages, for example `0,0.5,1`                                       |
+| `--screen <name>,…`                | Sub-screens of pages that have several, such as `library`, `today` and `stepup` on iPhoneScreens             |
+| `--present`                        | Open the page's sample sheet, alert, popover, toast or palette before the shot; files get `-presented`       |
+| `--orientation portrait,landscape` | iPad orientation. Landscape runs a UI test (`CatalogUITests/CatalogShotTests`)                               |
+| `--content-size <name>`            | Simulator Dynamic Type size, such as `accessibility-extra-extra-extra-large`; the next default run resets it |
+| `--out <dir>`                      | Output directory                                                                                             |
+| `--skip-build`, `--keep-booted`    | Reuse the last build in `scratch-pad/derived-data`; leave simulators booted                                  |
+
+How it captures:
+
+- iPhone and iPad use `simctl io screenshot` on iOS 26.5 simulators. Each shot is retaken until two consecutive frames match.
+- iPad landscape runs the iOS UI test, which rotates the device and screenshots with `XCUIScreen`. The harness writes the shot list to a file and passes its path in `CATALOG_SHOT_PLAN`; the test skips when the variable is absent.
+- Mac needs no permission: the app composites its own windows into a PNG (`-snapshot <png>`), without Screen Recording access.
+
+Simulators and the window server require running outside any command sandbox. Inside one the run hangs.
+
+## Testing
+
+```sh
+mise run test:packages                      # shared packages with SwiftPM; no generation needed
+mise run test:apps                          # tuist test --skip-ui-tests
+tuist test Catalog --platform macOS --no-selective-testing
+```
+
+- Pass `--no-selective-testing` when verifying a change: Tuist otherwise skips targets it considers unchanged.
+- CI runs `swift test` for the packages, then `tuist test` per platform: iOS with UI tests, macOS and visionOS with `--skip-ui-tests`.
+- Swift Testing tests that resolve `Color` or `Font` must be `@MainActor`.
+
 ## Adding an app
 
 ```sh
@@ -76,6 +169,9 @@ This creates `Apps/Memoir` with app, test target and scheme, bundle ID `com.shad
 | `mise run bootstrap`      | `tuist install` + `tuist generate --no-open`          |
 | `mise run test`           | Package tests (`swift test`) and app tests (`tuist test`) |
 | `mise run test:packages`  | Shared package tests only — no project generation     |
+| `mise run test:apps`      | App tests without UI tests (`tuist test --skip-ui-tests`) |
+| `mise run tokens`         | Regenerates design-token sources from `Design/tokens.json` |
+| `mise run screenshots`    | Captures Catalog pages (see Screenshot harness)       |
 | `mise run lint`           | `swift format lint --strict`                          |
 | `mise run lint:graph`     | Fails on implicit or redundant module dependencies    |
 | `mise run format`         | Formats sources in place                              |
