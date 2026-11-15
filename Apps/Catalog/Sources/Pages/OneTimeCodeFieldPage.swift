@@ -134,28 +134,23 @@ private struct LiveVerification: View {
 
 private struct VerificationSheet: View {
   @Environment(\.dismiss) private var dismiss
+  @Environment(\.catalogIsAutomated) private var isAutomated
   @State private var code = ""
 
   var body: some View {
-    NavigationStack {
-      VStack(alignment: .leading, spacing: Spacing.space5) {
-        VerificationHeader()
-        ShadowOneTimeCodeField("Verification code", code: $code, value: digitsEntered) { _ in dismiss() }
-        Spacer(minLength: 0)
-      }
-      .padding(Spacing.space5)
-      .navigationTitle("Verify it’s you")
-      #if !os(macOS)
-        .navigationBarTitleDisplayMode(.inline)
-      #endif
-      .toolbar {
-        ToolbarItem(placement: .cancellationAction) { Button("Cancel") { dismiss() } }
-      }
+    VStack(alignment: .leading, spacing: Spacing.space5) {
+      VerificationHeader()
+      ShadowOneTimeCodeField("Verification code", code: $code, value: digitsEntered) { _ in dismiss() }
+        .shadowPreviewFieldFocus(isAutomated ? true : nil)
     }
-    .presentationDetents([.medium])
+    .padding(.horizontal, Spacing.space5)
+    .padding(.vertical, Spacing.space4)
+    .frame(maxWidth: .infinity, alignment: .leading)
     #if os(macOS)
-      .frame(minWidth: 420, minHeight: 260)
+      .frame(minWidth: 420)
     #endif
+    .shadowFittedDetents()
+    .shadowSheetHeader(Text("Verify it’s you"), cancel: ShadowSheetCancel("Cancel") { dismiss() })
   }
 }
 

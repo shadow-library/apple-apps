@@ -24,6 +24,7 @@ nonisolated public enum ShadowColorToken: String, CaseIterable, Sendable {
   case borderDefault = "border-default"
   case borderStrong = "border-strong"
   case borderInteractive = "border-interactive"
+  case borderControl = "border-control"
   case borderFocus = "border-focus"
   case neutralSolid = "neutral-solid"
   case neutralSolidHover = "neutral-solid-hover"
@@ -121,6 +122,7 @@ nonisolated public enum ShadowColorToken: String, CaseIterable, Sendable {
     case .borderDefault: ShadowRGBA(hex: 0xE5E7EB)
     case .borderStrong: ShadowRGBA(hex: 0xC8CDD4)
     case .borderInteractive: ShadowRGBA(hex: 0x9CA3AF)
+    case .borderControl: ShadowRGBA(hex: 0x79808D)
     case .borderFocus: ShadowRGBA(hex: 0x5B5CEB)
     case .neutralSolid: ShadowRGBA(hex: 0x202226)
     case .neutralSolidHover: ShadowRGBA(hex: 0x343842)
@@ -220,6 +222,7 @@ nonisolated public enum ShadowColorToken: String, CaseIterable, Sendable {
     case .borderDefault: ShadowRGBA(hex: 0x202226)
     case .borderStrong: ShadowRGBA(hex: 0x343842)
     case .borderInteractive: ShadowRGBA(hex: 0x525866)
+    case .borderControl: ShadowRGBA(hex: 0x79808D)
     case .borderFocus: ShadowRGBA(hex: 0x8283F0)
     case .neutralSolid: ShadowRGBA(hex: 0xE5E7EB)
     case .neutralSolidHover: ShadowRGBA(hex: 0xC8CDD4)

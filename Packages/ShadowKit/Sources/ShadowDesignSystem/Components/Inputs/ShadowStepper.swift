@@ -5,6 +5,7 @@ public struct ShadowStepper: View {
   @Binding private var value: Int
   private let range: ClosedRange<Int>
   private let step: Int
+  @Environment(\.isEnabled) private var isEnabled
 
   public init(_ title: LocalizedStringKey, value: Binding<Int>, in range: ClosedRange<Int>, step: Int = 1) {
     self.title = title
@@ -32,14 +33,21 @@ public struct ShadowStepper: View {
         }
       }
     #else
-      Stepper(value: $value, in: range, step: step) {
-        LabeledContent(title) {
-          Text(value, format: .number)
-            .monospacedDigit()
-            .foregroundStyle(ShadowColor.textSecondary)
-        }
+      HStack(spacing: Spacing.space3) {
+        Text(title)
+          .frame(maxWidth: .infinity, alignment: .leading)
+        Text(value, format: .number)
+          .monospacedDigit()
+          .foregroundStyle(ShadowColor.textSecondary)
+        Stepper(title, value: $value, in: range, step: step)
+          .labelsHidden()
+          .fixedSize()
+          .opacity(isEnabled ? 1 : ShadowOpacity.disabled)
       }
-      .accessibilityValue(Text(value, format: .number))
+      .accessibilityRepresentation {
+        Stepper(title, value: $value, in: range, step: step)
+          .accessibilityValue(Text(value, format: .number))
+      }
     #endif
   }
 

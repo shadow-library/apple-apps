@@ -68,8 +68,9 @@ struct DatePickerPage: View {
       StateSection("Disabled") {
         FormBlock {
           FormSection {
-            DatePicker("Starts", selection: $starts)
-              .disabled(true)
+            DisabledControlRow("Starts") {
+              DatePicker("Starts", selection: $starts)
+            }
           }
         }
       }

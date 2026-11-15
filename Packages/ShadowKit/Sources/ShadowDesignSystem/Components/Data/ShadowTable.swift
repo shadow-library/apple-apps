@@ -229,9 +229,12 @@ public struct ShadowTableSkeleton: View {
   public var body: some View {
     Group {
       if isList {
-        List(0..<rows, id: \.self) { _ in ShadowTableSkeletonListRow() }
-          .shadowListStyle(.plain)
-          .scrollDisabled(true)
+        List(0..<rows, id: \.self) { index in
+          ShadowTableSkeletonListRow()
+            .listRowSeparator(index == rows - 1 ? .hidden : .automatic, edges: .bottom)
+        }
+        .shadowListStyle(.plain)
+        .scrollDisabled(true)
       } else {
         VStack(spacing: 0) {
           ForEach(0..<rows, id: \.self) { index in
@@ -266,13 +269,13 @@ public struct ShadowTableSkeleton: View {
 }
 
 private struct ShadowTableSkeletonListRow: View {
-  @ScaledMetric(relativeTo: .caption) private var badgeHeight = ShadowDensity.current == .touch ? Spacing.space6 : Spacing.space5
-
   var body: some View {
     ShadowListRow(
       title: Text(verbatim: String(repeating: "0", count: 14)),
       subtitle: Text(verbatim: String(repeating: "0", count: 22)),
-      trailing: Capsule().fill(ShadowColor.fillTrack).frame(width: badgeHeight * 3, height: badgeHeight)
+      trailing: ShadowBadge(LocalizedStringKey(String(repeating: "0", count: 9)), systemImage: "circle")
+        .hidden()
+        .overlay { Capsule().fill(ShadowColor.fillTrack) }
     )
     .redacted(reason: .placeholder)
   }

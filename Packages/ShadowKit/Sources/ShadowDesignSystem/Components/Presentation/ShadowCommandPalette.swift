@@ -49,7 +49,7 @@ nonisolated public struct ShadowCommandPaletteMetrics: Hashable, Sendable {
     }
   }
 
-  public func fadeHeight(resultsHeight: CGFloat?) -> CGFloat {
+  func fadeHeight(resultsHeight: CGFloat?) -> CGFloat {
     guard let resultsHeight, resultsHeight > maximumResultsHeight else { return 0 }
     return rowHeight / 2
   }
@@ -124,7 +124,7 @@ public struct ShadowCommandPalette: View {
     }
     .onChange(of: query) { refresh(resetsSelection: true) }
     .onChange(of: cursor.selection) { _, selection in announce(selection) }
-    .onChange(of: previewSelection) { _, selection in if let selection { cursor.select(selection) } }
+    .onChange(of: previewSelection, initial: true) { _, selection in if let selection { cursor.select(selection) } }
   }
 
   private func searchField(_ metrics: ShadowCommandPaletteMetrics) -> some View {

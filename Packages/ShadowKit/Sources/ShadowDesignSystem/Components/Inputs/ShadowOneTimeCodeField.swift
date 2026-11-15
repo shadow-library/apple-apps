@@ -162,7 +162,7 @@ public struct ShadowOneTimeCodeField: View {
     let isActive = showsFocus && !showsSelection && index == format.activeIndex(in: code)
     let character = index < characters.count ? characters[index] : nil
     return ZStack {
-      ShadowFieldSurface(phase: ShadowFieldPhase(isFocused: isActive, isInvalid: message != nil), metrics: metrics)
+      ShadowFieldSurface(phase: ShadowFieldPhase(isFocused: isActive, isInvalid: message != nil), metrics: metrics, isOutlined: true)
       if showsSelection, character != nil {
         RoundedRectangle(cornerRadius: Radius.sm, style: .continuous)
           .fill(ShadowColor.accentSoft)

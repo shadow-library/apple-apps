@@ -42,8 +42,9 @@ struct ColorPickerPage: View {
       StateSection("Disabled") {
         FormBlock {
           FormSection {
-            ColorPicker("Highlight colour", selection: $highlight, supportsOpacity: false)
-              .disabled(true)
+            DisabledControlRow("Highlight colour") {
+              ColorPicker("Highlight colour", selection: $highlight, supportsOpacity: false)
+            }
           }
         }
       }

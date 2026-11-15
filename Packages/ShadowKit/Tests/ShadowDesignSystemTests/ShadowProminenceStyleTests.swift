@@ -22,4 +22,15 @@ struct ShadowProminenceStyleTests {
     environment.backgroundProminence = .standard
     #expect(style.resolve(in: environment).resolve(in: environment) == ShadowColorToken.textPrimary.color.resolve(in: environment))
   }
+
+  @Test("should adapt list row labels at render time only on macOS", arguments: [ShadowColorToken.textPrimary, .accentText])
+  func listRowLabel(standard: ShadowColorToken) {
+    let style = ShadowProminenceStyle.listRowLabel(standard)
+    #if os(macOS)
+      #expect(style.token(for: .increased) == .onAccent)
+    #else
+      #expect(style.token(for: .increased) == standard)
+    #endif
+    #expect(style.token(for: .standard) == standard)
+  }
 }

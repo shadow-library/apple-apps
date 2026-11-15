@@ -147,7 +147,7 @@ struct ComponentPage<Content: View>: View {
       .frame(maxWidth: ShadowMetrics.readableWidth, alignment: .leading)
       .padding(.horizontal, margin)
       .padding(.vertical, Spacing.space4)
-      .frame(maxWidth: .infinity)
+      .frame(maxWidth: .infinity, alignment: .leading)
     }
     .catalogScrollAnchor()
     .background(ShadowColor.surfaceApp)

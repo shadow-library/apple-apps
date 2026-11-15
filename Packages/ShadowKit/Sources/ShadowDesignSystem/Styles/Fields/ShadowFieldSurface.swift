@@ -4,6 +4,7 @@ struct ShadowFieldSurface: View {
   let phase: ShadowFieldPhase
   let metrics: ShadowFieldMetrics
   var cornerRadius: CGFloat?
+  var isOutlined = false
 
   @Environment(\.colorSchemeContrast) private var contrast
 
@@ -37,6 +38,7 @@ struct ShadowFieldSurface: View {
   private var border: Color {
     if phase.isInvalid { return ShadowColor.dangerSolid }
     if phase.isFocused { return ShadowColor.borderFocus }
+    if isOutlined { return ShadowColor.borderControl }
     if metrics.density == .compact || contrast == .increased { return ShadowColor.borderDefault }
     return .clear
   }

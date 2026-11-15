@@ -73,6 +73,10 @@ nonisolated public enum ShadowColor {
   /// Checkbox and radio outlines on Mac; field border under the pointer.
   public static let borderInteractive: Color = ShadowColorToken.borderInteractive.color
 
+  /// Apple addition: resting outline of a control that has no other visible edge, such as one-time-code boxes on glass. 3:1 or better on
+  /// surface-card, surface-app, surface-raised and surface-well in both themes.
+  public static let borderControl: Color = ShadowColorToken.borderControl.color
+
   /// Field border while editing (iOS) or key focus (Mac).
   public static let borderFocus: Color = ShadowColorToken.borderFocus.color
 

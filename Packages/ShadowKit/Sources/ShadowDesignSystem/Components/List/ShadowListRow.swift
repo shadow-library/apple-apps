@@ -149,7 +149,7 @@ public struct ShadowListRow<Leading: View, Trailing: View>: View {
       if accessory == .chevron && metrics.showsChevron {
         Image(systemName: "chevron.forward")
           .font(.footnote.weight(.semibold))
-          .foregroundStyle(ShadowProminenceStyle(palette.accessory))
+          .foregroundStyle(ShadowProminenceStyle.listRowLabel(palette.accessory))
           .accessibilityHidden(true)
       }
     }
@@ -197,28 +197,28 @@ public struct ShadowListRow<Leading: View, Trailing: View>: View {
         title
           .shadowFont(.body)
           .fontWeight(isEmphasized ? .semibold : nil)
-          .foregroundStyle(ShadowProminenceStyle(palette.title))
+          .foregroundStyle(ShadowProminenceStyle.listRowLabel(palette.title))
           .lineLimit(metrics.titleLineLimit(isAccessibilitySize: dynamicTypeSize.isAccessibilitySize, isSingleLine: titleTruncation != nil))
           .truncationMode(titleTruncation ?? .tail)
           .shadowSkeletonText()
         if let subtitle {
           subtitle
             .shadowFont(.subheadline)
-            .foregroundStyle(ShadowProminenceStyle(palette.secondary))
+            .foregroundStyle(ShadowProminenceStyle.listRowLabel(palette.secondary))
             .lineLimit(lineLimit)
             .shadowSkeletonText()
         }
         if let caption {
           caption
             .shadowFont(.footnote)
-            .foregroundStyle(ShadowProminenceStyle(palette.secondary))
+            .foregroundStyle(ShadowProminenceStyle.listRowLabel(palette.secondary))
             .lineLimit(lineLimit)
             .shadowSkeletonText()
         }
         if stacksValue, let value {
           value
             .shadowFont(.body)
-            .foregroundStyle(ShadowProminenceStyle(palette.secondary))
+            .foregroundStyle(ShadowProminenceStyle.listRowLabel(palette.secondary))
             .shadowSkeletonText()
         }
       }
@@ -229,7 +229,7 @@ public struct ShadowListRow<Leading: View, Trailing: View>: View {
       if !stacksValue, let value {
         value
           .shadowFont(.body)
-          .foregroundStyle(ShadowProminenceStyle(palette.secondary))
+          .foregroundStyle(ShadowProminenceStyle.listRowLabel(palette.secondary))
           .lineLimit(lineLimit)
           .multilineTextAlignment(.trailing)
           .shadowSkeletonText()

@@ -98,6 +98,7 @@ private struct ReaderPreview<Control: View>: View {
 struct TextSettingsPanel: View {
   @State private var theme = ReadingTheme.sepia
   @State private var size = 0.45
+  @State private var pickerWidth: CGFloat?
 
   var body: some View {
     VStack(alignment: .leading, spacing: Spacing.space3) {
@@ -115,7 +116,11 @@ struct TextSettingsPanel: View {
       }
       .pickerStyle(.segmented)
       .labelsHidden()
-      .frame(maxWidth: .infinity)
+      #if os(macOS)
+        .onGeometryChange(for: CGFloat.self, of: \.size.width) { pickerWidth = $0 }
+      #else
+        .frame(maxWidth: .infinity)
+      #endif
       HStack(spacing: Spacing.space3) {
         Image(systemName: "textformat.size.smaller")
           .accessibilityHidden(true)
@@ -128,6 +133,9 @@ struct TextSettingsPanel: View {
           .accessibilityHidden(true)
       }
       .foregroundStyle(ShadowColor.textSecondary)
+      #if os(macOS)
+        .frame(width: pickerWidth)
+      #endif
       Spacer(minLength: 0)
     }
     .padding(Spacing.space4)

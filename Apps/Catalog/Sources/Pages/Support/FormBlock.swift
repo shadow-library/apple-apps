@@ -143,3 +143,28 @@ enum FieldMetrics {
   static let macFieldWidth: CGFloat = 360
   static let macLabelWidth: CGFloat = 140
 }
+
+// iOS 26 ColorPicker and DatePicker draw no disabled state, so on touch the control dims and its label stays; Mac dims them natively.
+struct DisabledControlRow<Control: View>: View {
+  let title: LocalizedStringKey
+  @ViewBuilder let control: Control
+
+  init(_ title: LocalizedStringKey, @ViewBuilder control: () -> Control) {
+    self.title = title
+    self.control = control()
+  }
+
+  var body: some View {
+    #if os(macOS)
+      control.disabled(true)
+    #else
+      LabeledContent(title) {
+        control
+          .labelsHidden()
+          .opacity(ShadowOpacity.disabled)
+      }
+      .disabled(true)
+      .accessibilityElement(children: .combine)
+    #endif
+  }
+}

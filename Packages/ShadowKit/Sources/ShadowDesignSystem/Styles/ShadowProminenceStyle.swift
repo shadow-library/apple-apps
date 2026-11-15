@@ -11,6 +11,15 @@ nonisolated struct ShadowProminenceStyle: ShapeStyle {
     self.prominent = prominent
   }
 
+  // Touch list rows take on-accent from their body-time phase; iPad also reports `.increased` under the row's own accent-soft selection.
+  static func listRowLabel(_ token: ShadowColorToken) -> Self {
+    #if os(macOS)
+      Self(token)
+    #else
+      Self(token, prominent: token)
+    #endif
+  }
+
   func resolve(in environment: EnvironmentValues) -> Color {
     token(for: environment.backgroundProminence).color
   }

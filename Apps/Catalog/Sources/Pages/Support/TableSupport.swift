@@ -39,8 +39,9 @@ private struct DemoTableFrame: ViewModifier {
   func body(content: Content) -> some View {
     content
       .scrollDisabled(contentHeight != nil && height == contentHeight)
-      .onScrollGeometryChange(for: CGFloat.self) {
-        $0.contentSize.height
+      .onScrollGeometryChange(for: CGFloat.self) { geometry in
+        guard geometry.contentSize.height > 0 else { return 0 }
+        return (geometry.contentSize.height + geometry.contentInsets.top + geometry.contentInsets.bottom).rounded(.up)
       } action: { _, newValue in
         if newValue > 0 && !isFixed { contentHeight = newValue }
       }

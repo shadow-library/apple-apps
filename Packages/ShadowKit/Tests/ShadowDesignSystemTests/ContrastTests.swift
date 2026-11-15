@@ -56,6 +56,13 @@ struct ContrastTests {
     #expect(pair.ratio >= 4.5, "\(pair.testDescription) is \(pair.ratio):1")
   }
 
+  @Test(
+    "should reach 3:1 for control outlines on every surface they sit on",
+    arguments: ContrastCase.pairs([.borderControl], on: [.surfaceCard, .surfaceApp, .surfaceRaised, .surfaceWell]))
+  func reachesControlOutlineContrast(pair: ContrastCase) {
+    #expect(pair.ratio >= 3, "\(pair.testDescription) is \(pair.ratio):1")
+  }
+
   @Test("should compute WCAG contrast at its extremes")
   func computesReferenceRatios() {
     let black = ShadowRGBA(red: 0, green: 0, blue: 0)

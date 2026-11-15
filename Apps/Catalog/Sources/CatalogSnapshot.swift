@@ -5,6 +5,7 @@
   enum CatalogSnapshotError: Error, CustomStringConvertible {
     case captureUnavailable
     case captureFailed(windowNumber: Int)
+    case inactive
     case encodingFailed
     case writeFailed(URL, underlying: any Error)
 
@@ -12,6 +13,7 @@
       switch self {
       case .captureUnavailable: "CGWindowListCreateImage is not available on this system"
       case .captureFailed(let windowNumber): "could not capture window \(windowNumber)"
+      case .inactive: "another app kept focus, so the window never rendered active; retake the shot"
       case .encodingFailed: "could not encode the capture as PNG"
       case .writeFailed(let url, let underlying): "could not write \(url.path): \(underlying.localizedDescription)"
       }
@@ -60,6 +62,12 @@
       let origin = origins.first { !CGRect(origin: $0, size: windowSize).contains(mouse) } ?? origins[0]
       window.isRestorable = false
       window.setFrame(CGRect(origin: origin, size: windowSize), display: true)
+      activate(window)
+    }
+
+    private static var isActive: Bool { NSApp.isActive && NSApp.keyWindow != nil }
+
+    private static func activate(_ window: NSWindow) {
       window.makeKeyAndOrderFront(nil)
       NSApp.activate()
     }
@@ -69,10 +77,15 @@
       var previous = try image(of: window, includesPresentations: includesPresentations)
       for _ in 0..<maximumPolls {
         try? await Task.sleep(for: pollInterval)
+        guard isActive else {
+          activate(window)
+          continue
+        }
         let current = try image(of: window, includesPresentations: includesPresentations)
         if current.dataProvider?.data == previous.dataProvider?.data { return (current, true) }
         previous = current
       }
+      guard isActive else { throw .inactive }
       return (previous, false)
     }
 
