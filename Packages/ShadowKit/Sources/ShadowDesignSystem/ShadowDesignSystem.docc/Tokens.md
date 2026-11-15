@@ -72,5 +72,6 @@ These values differ from the Shadow UI design spec so that every pair above pass
 - Dark `dangerSolidHover` and `dangerSolidActive` use red-700 and red-800.
 - Light `dangerText` is `#d92525`.
 - `warningSolidStrong` and `neutralSolidStrong` are added for warning and neutral swipe tiles.
+- `borderControl` is an Apple addition for control outlines. It reaches 3:1 on `surfaceCard`, `surfaceApp`, `surfaceRaised` and `surfaceWell` in both themes.
 
 A change to any token that appears in `ContrastTests` needs a passing run of `mise run test:packages`. Tests that resolve `Color` or `Font` must be `@MainActor`.

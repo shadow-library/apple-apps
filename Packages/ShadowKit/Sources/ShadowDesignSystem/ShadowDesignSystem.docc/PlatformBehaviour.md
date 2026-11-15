@@ -45,7 +45,9 @@ Toasts anchor to the top safe area of the window on iPhone and iPad, wherever ``
 
 ## Other decisions
 
-- Disabled controls follow the platform: labels stay, the control dims by ``ShadowOpacity``.
+- On iPhone and iPad, a disabled ``ShadowStepper`` dims only the stepper by ``ShadowOpacity`` and stays one VoiceOver element. The touch stepper is drawn without its own label, so its track is the standalone native one, which is slightly darker.
+- Native `ColorPicker` and `DatePicker` do not dim themselves when disabled on iOS 26. Callers dim them with ``ShadowOpacity`` and keep the label.
+- ``ShadowOneTimeCodeField`` boxes are outlined with `borderControl` on every platform so they reach 3:1 non-text contrast. The spec draws borderless boxes on touch.
 - Empty rating stars use `textTertiary` instead of `borderStrong` to reach 3:1.
 - Static ``ShadowTag`` is a borderless `surfaceWell` capsule so it never reads as a filter.
 - Avatar tints are chosen by a hash of the name, so a name always gets the same tint; changing the hash changes existing tints.
