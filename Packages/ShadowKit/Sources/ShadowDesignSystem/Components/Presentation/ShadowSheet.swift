@@ -101,20 +101,22 @@ extension View {
 }
 
 nonisolated enum ShadowFittedDetents {
-  static func detents(contentHeight: CGFloat?) -> Set<PresentationDetent> {
-    [contentHeight.map { .height($0.rounded(.up)) } ?? .medium]
+  static func detents(contentHeight: CGFloat?, barHeight: CGFloat = 0) -> Set<PresentationDetent> {
+    [contentHeight.map { .height(($0 + barHeight).rounded(.up)) } ?? .medium]
   }
 }
 
 private struct ShadowFittedDetentsModifier: ViewModifier {
   @State private var contentHeight: CGFloat?
+  @State private var barHeight: CGFloat = 0
 
   func body(content: Content) -> some View {
     ScrollView {
       content.onGeometryChange(for: CGFloat.self, of: { $0.size.height }, action: { contentHeight = $0 })
     }
     .scrollBounceBehavior(.basedOnSize)
-    .presentationDetents(ShadowFittedDetents.detents(contentHeight: contentHeight))
+    .onGeometryChange(for: CGFloat.self, of: { $0.safeAreaInsets.top }, action: { barHeight = $0 })
+    .presentationDetents(ShadowFittedDetents.detents(contentHeight: contentHeight, barHeight: barHeight))
   }
 }
 

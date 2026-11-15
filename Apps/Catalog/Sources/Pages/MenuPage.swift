@@ -14,7 +14,7 @@ struct MenuPage: View {
           "Native menus are glass and open in their own window, which screenshots can’t capture. This panel mirrors one: symbols lead, a titled section holds the choice, the destructive action comes last."
       ) {
         StaticIllustration {
-          PresentationBackdrop(height: ShadowDensity.current == .touch ? 470 : 300, alignment: .topTrailing) {
+          PresentationBackdrop(alignment: .topTrailing) {
             VStack(alignment: .trailing, spacing: Spacing.space2) {
               moreButton
               StaticMenuPanel(items: ShadowDensity.current == .touch ? Self.touchItems : Self.macItems)
@@ -22,8 +22,8 @@ struct MenuPage: View {
           }
         }
       }
-      StateSection("Pull-down menu", note: "Tap the glass button for the real menu: sections, a sort picker with a checkmark, and Remove download last.") {
-        PresentationBackdrop(height: 160, alignment: .topTrailing) {
+      StateSection("Pull-down menu", note: "Tap or click the glass button for the real menu: sections, a sort picker with a checkmark, and Remove download last.") {
+        PresentationBackdrop(alignment: .topTrailing, coverRows: 0) {
           moreButton
         }
       }

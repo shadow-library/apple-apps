@@ -43,7 +43,7 @@ private struct TabBarLibraryScreen: View {
   var body: some View {
     ScrollView {
       VStack(alignment: .leading, spacing: Spacing.space6) {
-        DemoCoverGrid()
+        DemoCoverShelf()
         ShadowGroupedSection {
           DemoBookRows()
         } header: {
@@ -90,7 +90,7 @@ private struct TabBarDiscoverScreen: View {
         }
         VStack(alignment: .leading, spacing: Spacing.space2) {
           ShadowSectionHeader("Because you read Salt Kings")
-          DemoCoverGrid(books: Array(CatalogBook.shelf.suffix(6)))
+          DemoCoverShelf(books: Array(CatalogBook.shelf.suffix(6)))
         }
       }
       .padding(DemoLayout.margin)

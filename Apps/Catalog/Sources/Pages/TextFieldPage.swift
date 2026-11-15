@@ -17,6 +17,7 @@ struct TextFieldPage: View {
   @State private var firstName = ""
   @State private var lastName = ""
   @FocusState private var focus: Name?
+  @Environment(\.catalogTakesSnapshot) private var takesSnapshot
 
   private enum Name: Hashable { case first, last }
 
@@ -39,7 +40,7 @@ struct TextFieldPage: View {
               .shadowField()
               .shadowPreviewFieldFocus(true)
           }
-          FieldRow(title: "Home page URL", help: "Placeholder text is a hint, never the label.") {
+          FieldRow(title: "Home page URL", help: "Placeholder text is a hint, never the label.", isWide: true) {
             TextField("Home page URL", text: $homePage, prompt: Text("https://"))
               .textContentType(.URL)
               .shadowField()
@@ -47,22 +48,31 @@ struct TextFieldPage: View {
         }
       }
       StateSection(
-        "Caller-owned focus", note: "Apply your own .focused outside .shadowField and pass the same state in, so the focused look follows it. Return moves to the next field."
+        "Caller-owned focus",
+        note:
+          "Apply your own .focused outside .shadowField and pass the same state in, so the focused look follows it. Return moves to the next field. Mac screenshots focus First name to show the state."
       ) {
         FieldStack {
           FieldRow(title: "First name") {
-            TextField("First name", text: $firstName)
+            TextField("First name", text: $firstName, prompt: Text("Ada"))
               .focused($focus, equals: .first)
               .shadowField(isFocused: focus == .first)
               .submitLabel(.next)
               .onSubmit { focus = .last }
           }
           FieldRow(title: "Last name") {
-            TextField("Last name", text: $lastName)
+            TextField("Last name", text: $lastName, prompt: Text("Lovelace"))
               .focused($focus, equals: .last)
               .shadowField(isFocused: focus == .last)
           }
         }
+        #if os(macOS)
+          .task {
+            guard takesSnapshot else { return }
+            try? await Task.sleep(for: .milliseconds(300))
+            focus = .first
+          }
+        #endif
       }
       StateSection("Secure field", note: "Password fields always carry a show toggle. Toggling keeps the caret and the keyboard.") {
         FieldStack {
@@ -82,13 +92,13 @@ struct TextFieldPage: View {
               .shadowField()
               .shadowValidation(displayName.count < 2 ? Text("Use at least 2 characters.") : nil)
           }
-          FieldRow(title: "ACS URL") {
+          FieldRow(title: "ACS URL", isWide: true) {
             TextField("ACS URL", text: $acsURL)
               .textContentType(.URL)
               .shadowField()
               .shadowValidation(acsURL.hasPrefix("https://") ? nil : Text("Enter a URL that starts with https://"))
           }
-          FieldRow(title: "ACS URL, focused") {
+          FieldRow(title: "ACS URL, focused", isWide: true) {
             TextField("ACS URL", text: $acsURL)
               .shadowField()
               .shadowValidation(Text("Enter a URL that starts with https://"))
@@ -112,11 +122,11 @@ struct TextFieldPage: View {
       }
       StateSection("Prefix and suffix", note: "Fixed context goes inside the field, so the typed value stays short.") {
         FieldStack {
-          FieldRow(title: "Handle") {
+          FieldRow(title: "Handle", isWide: true) {
             TextField("Handle", text: $handle)
               .shadowField(leading: { Text("@") }, trailing: { Text("on Shadow Library").shadowFont(.footnote) })
           }
-          FieldRow(title: "Pledge") {
+          FieldRow(title: "Pledge", isWide: true) {
             TextField("Pledge", text: $amount)
               #if !os(macOS)
                 .keyboardType(.decimalPad)
@@ -128,7 +138,7 @@ struct TextFieldPage: View {
       }
       StateSection("Long value", note: "The value scrolls inside the field; the field never grows taller.") {
         FieldStack {
-          FieldRow(title: "Home page URL") {
+          FieldRow(title: "Home page URL", isWide: true) {
             TextField("Home page URL", text: $longValue)
               .shadowField()
           }

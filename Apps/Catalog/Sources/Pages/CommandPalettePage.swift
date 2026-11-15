@@ -32,7 +32,7 @@ struct CommandPalettePage: View {
 
   private var livePalettePage: some View {
     StateSection("Palette", note: "⌘K opens the live palette over the page; recent items rank first.") {
-      PresentationBackdrop(height: 640, alignment: .top) {
+      PresentationBackdrop(minHeight: 640, alignment: .top) {
         Button("Open command palette", systemImage: "command") { isPresented = true }
           .buttonStyle(.shadowGlass)
       }
@@ -49,20 +49,20 @@ struct CommandPalettePage: View {
         Button("Open command palette", systemImage: "command") { isPresented = true }
           .buttonStyle(.shadowBordered)
           .help("Open command palette (⌘K)")
-        PresentationBackdrop(height: 360, alignment: .top) {
+        PresentationBackdrop(minHeight: 360, alignment: .top) {
           ShadowCommandPalette(
             sections: sections, query: $query, prompt: "Search chapters and commands", emptyTitle: "No matches", focusesSearchOnAppear: false, onClose: {})
         }
       }
     }
     StateSection("Before typing", note: "Recent items rank first, then commands and pages.") {
-      PresentationBackdrop(height: 420, alignment: .top) {
+      PresentationBackdrop(minHeight: ShadowDensity.current == .touch ? 600 : 420, alignment: .top) {
         ShadowCommandPalette(
           sections: sections, query: $emptyQuery, prompt: "Search chapters and commands", emptyTitle: "No matches", focusesSearchOnAppear: false, onClose: {})
       }
     }
     StateSection("No matches", note: "The palette says so plainly and keeps the query for editing.") {
-      PresentationBackdrop(height: 220, alignment: .top) {
+      PresentationBackdrop(minHeight: 220, alignment: .top) {
         ShadowCommandPalette(
           sections: sections, query: $missingQuery, prompt: "Search chapters and commands", emptyTitle: "No matches", focusesSearchOnAppear: false, onClose: {})
       }

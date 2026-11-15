@@ -15,6 +15,8 @@ enum DemoPlatform {
       true
     #endif
   }
+
+  static var hasPointer: Bool { opensDetail }
 }
 
 enum DemoChapterStatus: String, CaseIterable, Hashable {
@@ -148,6 +150,24 @@ struct DemoCoverGrid: View {
           .aspectRatio(0.75, contentMode: .fit)
       }
     }
+  }
+}
+
+struct DemoCoverShelf: View {
+  var books = CatalogBook.shelf
+
+  var body: some View {
+    ScrollView(.horizontal) {
+      LazyHStack(spacing: Spacing.space2) {
+        ForEach(books) { book in
+          CoverArt(book: book)
+            .frame(width: 110, height: 146)
+        }
+      }
+    }
+    .scrollIndicators(.hidden)
+    .contentMargins(.horizontal, DemoLayout.margin, for: .scrollContent)
+    .padding(.horizontal, -DemoLayout.margin)
   }
 }
 

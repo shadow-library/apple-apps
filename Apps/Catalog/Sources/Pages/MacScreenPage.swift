@@ -280,6 +280,7 @@ private struct PulseOverview: View {
         title: Text(verbatim: delivery.template), subtitle: Text("\(delivery.sent, format: .number) sent · \(delivery.time, format: .dateTime.hour().minute())"),
         isSelected: selection.contains(delivery.id), trailing: delivery.status.badge)
     }
+    .catalogSnapshotFocus()
     .demoTableFrame(.fitsContent(estimatedRows: PulseDelivery.all.count))
   }
 }

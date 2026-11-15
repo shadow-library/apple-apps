@@ -420,7 +420,11 @@ private struct IPhoneStepUpScreen: View {
         }
     }
     .sheet(isPresented: $showsSheet) {
-      StepUpSheet().shadowSheetStyle(.partial)
+      #if os(iOS)
+        StepUpSheet()
+      #else
+        StepUpSheet().shadowSheetStyle(.partial)
+      #endif
     }
   }
 }
@@ -431,29 +435,29 @@ private struct StepUpSheet: View {
   @Environment(\.catalogScreen) private var launchScreen
 
   var body: some View {
-    ScrollView {
-      VStack(spacing: Spacing.space4) {
-        ShadowSymbolTile(systemImage: "shield", style: .filled, size: .large)
-        Text("Finalizing into canon needs a fresh check. Enter the 6-digit code from your authenticator app.")
-          .shadowFont(.subheadline)
-          .foregroundStyle(ShadowColor.textSecondary)
-          .multilineTextAlignment(.center)
-        ShadowOneTimeCodeField("Verification code", code: $code, value: { Text("\($0.entered) of \($0.length) digits entered") }) { _ in dismiss() }
-          .shadowPreviewFieldFocus(launchScreen == nil ? nil : true)
-        Button {
-          dismiss()
-        } label: {
-          Text("Verify").frame(maxWidth: .infinity)
-        }
-        .buttonStyle(.shadowFilled)
-        .controlSize(.large)
-        .disabled(code.count < 6)
-        Button("Use a passkey instead", systemImage: "person.badge.key") {}
-          .buttonStyle(.shadowPlain)
+    VStack(spacing: Spacing.space4) {
+      ShadowSymbolTile(systemImage: "shield", style: .filled, size: .large)
+      Text("Finalizing into canon needs a fresh check. Enter the 6-digit code from your authenticator app.")
+        .shadowFont(.subheadline)
+        .foregroundStyle(ShadowColor.textSecondary)
+        .multilineTextAlignment(.center)
+      ShadowOneTimeCodeField("Verification code", code: $code, value: { Text("\($0.entered) of \($0.length) digits entered") }) { _ in dismiss() }
+        .shadowPreviewFieldFocus(launchScreen == nil ? nil : true)
+      Button {
+        dismiss()
+      } label: {
+        Text("Verify").frame(maxWidth: .infinity)
       }
-      .padding(.horizontal, DemoLayout.margin)
-      .padding(.bottom, Spacing.space4)
+      .buttonStyle(.shadowFilled)
+      .controlSize(.large)
+      .disabled(code.count < 6)
+      Button("Use a passkey instead", systemImage: "person.badge.key") {}
+        .buttonStyle(.shadowPlain)
     }
+    .padding(.horizontal, DemoLayout.margin)
+    .padding(.bottom, Spacing.space4)
+    .shadowFittedDetents()
+    .presentationDragIndicator(.visible)
     .shadowSheetHeader(Text("Confirm it’s you"), cancel: ShadowSheetCancel("Close") { dismiss() })
   }
 }

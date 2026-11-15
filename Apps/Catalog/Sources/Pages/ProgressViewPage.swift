@@ -14,7 +14,9 @@ struct ProgressViewPage: View {
           ProgressView(value: 1) {
             Text("Chapter 42 · read")
           }
-          ProgressView(value: 0.35)
+          UnlabelledSample {
+            ProgressView(value: 0.35).accessibilityLabel("Syncing library")
+          }
         }
         .progressViewStyle(.shadowLinear)
         .shadowCard()
@@ -22,7 +24,9 @@ struct ProgressViewPage: View {
       StateSection("Indeterminate", note: "A bar slides along the track when the total is unknown. With Reduce Motion on it holds still and fades instead.") {
         VStack(alignment: .leading, spacing: Spacing.space4) {
           ProgressView { Text("Checking what relies on it") }
-          ProgressView()
+          UnlabelledSample {
+            ProgressView().accessibilityLabel("Loading chapters")
+          }
         }
         .progressViewStyle(.shadowLinear)
         .shadowCard()
@@ -44,6 +48,7 @@ struct ProgressViewPage: View {
             ProgressView(value: 0).controlSize(.regular)
           }
           ProgressView { Text("Checking what relies on it") }
+            .controlSize(ShadowDensity.current == .compact ? .small : .regular)
           ProgressView(value: 0.62) {
             Text("Uploading cover")
           } currentValueLabel: {
@@ -54,7 +59,10 @@ struct ProgressViewPage: View {
         .progressViewStyle(.shadowRing)
         .shadowCard()
       }
-      StateSection("Capacity gauge", note: "The native circular capacity gauge, tinted with accent, for progress toward a limit such as a budget.") {
+      StateSection(
+        "Capacity gauge",
+        note: "Progress toward a limit such as a budget: the ring shows the value and a title, turns warning from 90% and danger at the limit."
+      ) {
         HStack(spacing: Spacing.space4) {
           ShadowCapacityGauge("Synapse budget", value: 41.2, in: 0...60)
           ShadowCapacityGauge("Storage", value: 0.08)
@@ -87,7 +95,10 @@ struct ProgressViewPage: View {
         .disabled(true)
         .shadowCard()
       }
-      StateSection("Native default", note: "For comparison: the system linear style draws no track on Mac, which is why Shadow replaces it.") {
+      StateSection(
+        "Native default",
+        note: "For comparison: the system styles draw a thinner bar in their own track colour and have no success state, which is why Shadow replaces them."
+      ) {
         VStack(alignment: .leading, spacing: Spacing.space4) {
           ProgressView(value: 0.62) { Text("Uploading cover") }
           ProgressView(value: 0.62).progressViewStyle(.circular)
@@ -109,10 +120,25 @@ struct ProgressViewPage: View {
               ProgressView(value: 0.62).progressViewStyle(.shadowRing).controlSize(.large)
               ProgressView(value: 0.3).progressViewStyle(.shadowRing)
               ProgressView().progressViewStyle(.shadowRing)
+                .controlSize(ShadowDensity.current == .compact ? .small : .regular)
             }
           }
         }
       }
+    }
+  }
+}
+
+private struct UnlabelledSample<Content: View>: View {
+  @ViewBuilder let content: Content
+
+  var body: some View {
+    VStack(alignment: .leading, spacing: Spacing.space1) {
+      Text("Without a visible label")
+        .shadowFont(.caption)
+        .foregroundStyle(ShadowColor.textTertiary)
+        .accessibilityHidden(true)
+      content
     }
   }
 }

@@ -52,22 +52,32 @@ struct TogglePage: View {
       }
       #if os(macOS)
         StateSection("Checkbox", note: "Options in forms and lists use checkboxes, including the mixed state when a group is partly on.") {
-          VStack(alignment: .leading, spacing: Spacing.space3) {
-            Toggle("Grants the role to every member of the organization", isOn: $grantsRole)
-            Toggle("Require step-up for admin actions", isOn: $requireStepUp)
-            Toggle("Disabled option", isOn: .constant(true)).disabled(true)
-            Toggle(sources: $events, isOn: \.isOn) { Text("All event types (3 of 4)") }
-            VStack(alignment: .leading, spacing: Spacing.space2) {
-              ForEach($events) { $event in
-                Toggle(event.name, isOn: $event.isOn)
-              }
+          FormBlock {
+            FormSection {
+              checkboxes
             }
-            .padding(.leading, Spacing.space5)
           }
-          .toggleStyle(.checkbox)
-          .shadowCard()
         }
       #endif
     }
   }
+
+  #if os(macOS)
+    private var checkboxes: some View {
+      VStack(alignment: .leading, spacing: Spacing.space3) {
+        Toggle("Grants the role to every member of the organization", isOn: $grantsRole)
+        Toggle("Require step-up for admin actions", isOn: $requireStepUp)
+        Toggle("Disabled option", isOn: .constant(true)).disabled(true)
+        Toggle(sources: $events, isOn: \.isOn) { Text("All event types (3 of 4)") }
+        VStack(alignment: .leading, spacing: Spacing.space2) {
+          ForEach($events) { $event in
+            Toggle(event.name, isOn: $event.isOn)
+          }
+        }
+        .padding(.leading, Spacing.space5)
+      }
+      .toggleStyle(.checkbox)
+      .frame(maxWidth: .infinity, alignment: .leading)
+    }
+  #endif
 }

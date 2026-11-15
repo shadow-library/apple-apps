@@ -2,6 +2,9 @@ import ShadowDesignSystem
 import SwiftUI
 
 struct SchemePair<Content: View>: View {
+  enum Surface { case card, app }
+
+  var surface = Surface.card
   @ViewBuilder let content: Content
 
   var body: some View {
@@ -26,7 +29,12 @@ struct SchemePair<Content: View>: View {
     }
     .padding(Spacing.space3)
     .frame(maxWidth: .infinity, alignment: .leading)
-    .background(ShadowColor.surfaceCard, in: .rect(cornerRadius: ShadowCardMetrics().cornerRadius, style: .continuous))
+    .background(surface == .app ? ShadowColor.surfaceApp : ShadowColor.surfaceCard, in: .rect(cornerRadius: ShadowCardMetrics().cornerRadius, style: .continuous))
+    .overlay {
+      if surface == .app {
+        RoundedRectangle(cornerRadius: ShadowCardMetrics().cornerRadius, style: .continuous).strokeBorder(ShadowColor.borderSubtle)
+      }
+    }
     .environment(\.colorScheme, scheme)
   }
 }

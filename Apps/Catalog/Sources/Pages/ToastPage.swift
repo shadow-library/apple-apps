@@ -10,7 +10,7 @@ struct ToastPage: View {
         "Over content",
         note: "iPhone and iPad: a glass capsule under the status bar for about four seconds. Mac: a smaller capsule at the bottom centre of the window."
       ) {
-        PresentationBackdrop(height: 280, alignment: ShadowDensity.current == .touch ? .top : .bottom) {
+        PresentationBackdrop(alignment: ShadowDensity.current == .touch ? .top : .bottom) {
           ShadowToastView(DemoToast.saved)
         }
       }

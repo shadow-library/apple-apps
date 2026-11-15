@@ -14,7 +14,7 @@ struct StatisticPage: View {
           ShadowStatistic("Queued", value: Text("1,204"), delta: ShadowDeltaBadge(ShadowDelta(change: 0)))
         }
       }
-      StateSection("Capacity gauge", note: "Progress toward a limit uses the native capacity gauge in accent.") {
+      StateSection("Capacity gauge", note: "Progress toward a limit: the ring shows the value and turns warning from 90% and danger at the limit.") {
         ShadowCapacityStatistic("Synapse budget", value: 41.2, in: 0...60, valueText: Text("$41.20 of $60"), caption: Text("Resets 1 December"))
       }
       StateSection("Sparkline and caption", note: "An optional sparkline sits under the value; a caption explains the period.") {
@@ -47,7 +47,7 @@ struct StatisticPage: View {
         }
       }
       StateSection("Light and dark") {
-        SchemePair {
+        SchemePair(surface: .app) {
           VStack(spacing: Spacing.space3) {
             ShadowStatistic("Delivered", value: Text("98.4%"), delta: ShadowDeltaBadge(ShadowDelta(change: 0.6, fractionDigits: 1), unit: .suffix("pt")))
             ShadowStatistic("Failed today", value: Text("61"), delta: ShadowDeltaBadge(ShadowDelta(change: 18, higherIsBetter: false)))

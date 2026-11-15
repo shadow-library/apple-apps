@@ -42,13 +42,14 @@ struct SwipeActionsPage: View {
       }
       StateListSection(
         "Revealed",
-        note: "A static rendering of the system swipe: leading reversible action in accent, trailing Flag in warning-solid and Delete in danger-solid, each labelled with a word."
+        note:
+          "A static rendering of the system swipe: the row slides aside to reveal the leading reversible action in accent, trailing Flag in warning-solid-strong and Delete in danger-solid, each labelled with a word."
       ) {
         RevealedRow(update: Update(id: 10, title: "Your streak is 12 days", detail: "Memoir · 1 h", isUnread: true), edge: .leading)
         RevealedRow(update: Update(id: 11, title: "Chapter 43 is out", detail: "The Ninth Archive · 2 min", isUnread: false), edge: .trailing)
       }
-      StateListSection("Disabled", note: "Disabled rows offer no swipe, but keep their context menu empty too.") {
-        ShadowListRow(title: Text(verbatim: "Archived: Weekly digest"), subtitle: Text(verbatim: "Pulse · Last month"))
+      StateListSection("Disabled", note: "Disabled rows offer no swipe and no context menu.") {
+        row(Update(id: 30, title: "Archived: Weekly digest", detail: "Pulse · Last month", isUnread: false))
           .disabled(true)
       }
       StateListSection("Long text", note: "Two lines of title and subtitle; the action labels stay one word.") {
@@ -72,8 +73,11 @@ struct SwipeActionsPage: View {
         }
       #else
         StateListSection("Context menu", note: "On Mac and iPad with a keyboard the actions carry shortcuts, because mice and trackpads cannot always swipe.") {
-          ShadowListRow(title: Text(verbatim: "Touch and hold any row above"), subtitle: Text(verbatim: "The same actions open as a menu, Delete last."))
-            .id("Context menu end")
+          ShadowListRow(
+            title: Text(verbatim: "Touch and hold any row above"), subtitle: Text(verbatim: "The same actions open as a menu, Delete last."),
+            leading: { UnreadDot(isUnread: false) }
+          )
+          .id("Context menu end")
         }
       #endif
     }
@@ -86,11 +90,7 @@ struct SwipeActionsPage: View {
       title: Text(verbatim: update.title),
       subtitle: Text(verbatim: update.detail),
       isEmphasized: update.isUnread,
-      leading: {
-        Circle()
-          .fill(update.isUnread ? ShadowColor.accent : Color.clear)
-          .frame(width: 8, height: 8)
-      },
+      leading: { UnreadDot(isUnread: update.isUnread) },
       trailing: {
         if update.isFlagged { Image(systemName: "flag.fill").foregroundStyle(ShadowColor.warningSolid) }
       }
@@ -112,32 +112,59 @@ struct SwipeActionsPage: View {
   }
 }
 
+private struct UnreadDot: View {
+  let isUnread: Bool
+
+  var body: some View {
+    Circle()
+      .fill(isUnread ? ShadowColor.accent : Color.clear)
+      .frame(width: 8, height: 8)
+  }
+}
+
 private struct RevealedRow: View {
   enum Edge { case leading, trailing }
 
   let update: Update
   let edge: Edge
 
+  private let tileWidth: CGFloat = 72
+  private let insets = ShadowListMetrics().rowInsets
+  private var revealedWidth: CGFloat { edge == .leading ? tileWidth : tileWidth * 2 }
+  private var sectionRadius: CGFloat { ShadowDensity.current == .touch ? Radius.panel : 0 }
+
+  private var shape: UnevenRoundedRectangle {
+    edge == .leading
+      ? UnevenRoundedRectangle(topLeadingRadius: sectionRadius, topTrailingRadius: sectionRadius, style: .continuous)
+      : UnevenRoundedRectangle(bottomLeadingRadius: sectionRadius, bottomTrailingRadius: sectionRadius, style: .continuous)
+  }
+
   var body: some View {
+    ShadowListRow(
+      title: Text(verbatim: update.title),
+      subtitle: Text(verbatim: update.detail),
+      isEmphasized: update.isUnread,
+      leading: { UnreadDot(isUnread: update.isUnread) }
+    )
+    .offset(x: edge == .leading ? revealedWidth : -revealedWidth)
+    .background { background.padding(cellOutset) }
+    .mask { shape.padding(cellOutset) }
+    .accessibilityElement(children: .combine)
+  }
+
+  private var cellOutset: EdgeInsets {
+    EdgeInsets(top: -insets.top, leading: -insets.leading, bottom: -insets.bottom, trailing: -insets.trailing)
+  }
+
+  private var background: some View {
     HStack(spacing: 0) {
       if edge == .leading { tile("Read", "checkmark", ShadowColor.accent) }
-      ShadowListRow(
-        title: Text(verbatim: update.title),
-        subtitle: Text(verbatim: update.detail),
-        isEmphasized: update.isUnread,
-        leading: { Circle().fill(update.isUnread ? ShadowColor.accent : Color.clear).frame(width: 8, height: 8) }
-      )
-      .padding(ShadowListMetrics().rowInsets)
-      .frame(maxWidth: .infinity)
+      ShadowColor.surfaceCard
       if edge == .trailing {
         tile("Flag", "flag", ShadowRowActionKind.warning.token.color)
         tile("Delete", "trash", ShadowColor.dangerSolid)
       }
     }
-    .listRowInsets(EdgeInsets())
-    .listRowBackground(ShadowColor.surfaceCard)
-    .clipped()
-    .accessibilityElement(children: .combine)
   }
 
   private func tile(_ title: LocalizedStringKey, _ systemImage: String, _ fill: Color) -> some View {
@@ -146,7 +173,7 @@ private struct RevealedRow: View {
       Text(title).shadowFont(.footnote)
     }
     .foregroundStyle(ShadowColor.onAccent)
-    .frame(width: 72)
+    .frame(width: tileWidth)
     .frame(maxHeight: .infinity)
     .background(fill)
   }

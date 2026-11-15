@@ -29,17 +29,21 @@ struct DatePickerPage: View {
           }
         }
         #if os(macOS)
-          .datePickerStyle(.field)
+          .datePickerStyle(.stepperField)
         #else
           .datePickerStyle(.compact)
         #endif
       }
-      StateSection("Graphical", note: "When the date itself is the task. The selected day is an accent disc and today is accent text.") {
+      StateSection("Graphical", note: "When the date itself is the task. The system marks the selected day in accent and today in accent text.") {
         DatePicker("Starts", selection: $starts, displayedComponents: .date)
           .datePickerStyle(.graphical)
           .labelsHidden()
           .shadowCard()
-          .frame(maxWidth: 420, alignment: .leading)
+          #if os(macOS)
+            .fixedSize()
+          #else
+            .frame(maxWidth: 420, alignment: .leading)
+          #endif
       }
       StateSection("Range", note: "The end can never precede the start; the end picker is bounded by the start.") {
         FormBlock {
@@ -55,7 +59,7 @@ struct DatePickerPage: View {
         }
       }
       #if !os(macOS)
-        StateSection("Several days", note: "MultiDatePicker marks every chosen day with the accent disc.") {
+        StateSection("Several days", note: "MultiDatePicker marks every chosen day the same way as the selected day.") {
           MultiDatePicker("Reading days", selection: $days, in: bounds)
             .shadowCard()
             .frame(maxWidth: 420, alignment: .leading)

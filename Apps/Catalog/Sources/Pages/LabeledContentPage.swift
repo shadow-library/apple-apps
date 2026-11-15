@@ -33,13 +33,15 @@ struct LabeledContentPage: View {
           ShadowLabeledContent("Words", value: "3,214")
         }
       }
-      StateSection("Large text", note: "Accessibility Dynamic Type grows rows instead of truncating.") {
-        ShadowDetailsForm {
-          ShadowLabeledContent("Status") { ShadowBadge("Canon", intent: .success, systemImage: "checkmark") }
-          ShadowLabeledContent("Drafted by", value: "AI · reviewed")
+      #if !os(macOS)
+        StateSection("Large text", note: "Accessibility Dynamic Type grows rows instead of truncating.") {
+          ShadowDetailsForm {
+            ShadowLabeledContent("Status") { ShadowBadge("Canon", intent: .success, systemImage: "checkmark") }
+            ShadowLabeledContent("Drafted by", value: "AI · reviewed")
+          }
+          .dynamicTypeSize(.accessibility2)
         }
-        .dynamicTypeSize(.accessibility2)
-      }
+      #endif
       StateSection("Cards and rows together", note: "One scroll view can mix a card and grouped rows; `ShadowGroupedSection` replaces the nested non-scrolling Form.") {
         ShadowCard {
           Text("Chapter 43").shadowFont(.headline)

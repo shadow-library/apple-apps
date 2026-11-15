@@ -82,7 +82,7 @@ struct AvatarPage: View {
         }
         .shadowCard()
       }
-      StateSection("Disabled") {
+      StateSection("Disabled", note: "Avatars dim with the row they describe; presence dims too.") {
         HStack(spacing: Spacing.space3) {
           ShadowAvatar(name: "Mira Vale", presence: .online, presenceLabel: Text("Online"))
           ShadowAvatar(name: "Shadow Library", kind: .organization)

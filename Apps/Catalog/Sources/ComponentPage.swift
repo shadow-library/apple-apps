@@ -41,18 +41,22 @@ extension View {
 private struct CatalogListAnchor: ViewModifier {
   let anchors: [String]
   @Environment(\.catalogScrollFraction) private var fraction
+  @State private var position = ScrollPosition()
 
   func body(content: Content) -> some View {
     ScrollViewReader { proxy in
-      content.task {
-        guard let last = anchors.indices.last else { return }
-        guard let fraction, fraction > 0 else { return }
-        let index = min(last, Int((fraction * Double(last)).rounded()))
-        for delay in [0.4, 1.2] {
-          try? await Task.sleep(for: .seconds(delay))
-          proxy.scrollTo(anchors[index], anchor: fraction >= 1 ? .bottom : .top)
+      content
+        .scrollPosition($position)
+        .task {
+          guard let last = anchors.indices.last else { return }
+          guard let fraction, fraction > 0 else { return }
+          let index = min(last, Int((fraction * Double(last)).rounded()))
+          for delay in [0.4, 1.2] {
+            try? await Task.sleep(for: .seconds(delay))
+            proxy.scrollTo(anchors[index], anchor: fraction >= 1 ? .bottom : .top)
+            if fraction >= 1 { position.scrollTo(edge: .bottom) }
+          }
         }
-      }
     }
   }
 }
@@ -69,21 +73,35 @@ struct StateListSection<Content: View>: View {
   }
 
   var body: some View {
-    Section {
-      content
-    } header: {
-      ShadowSectionHeader(LocalizedStringKey(title))
-    } footer: {
-      if let note {
-        Text(note)
-          .shadowFont(.footnote)
-          .foregroundStyle(ShadowColor.textSecondary)
-      }
-    }
     #if os(macOS)
+      Section {
+        content
+      } header: {
+        VStack(alignment: .leading, spacing: Spacing.space05) {
+          ShadowSectionHeader(LocalizedStringKey(title))
+          if let note { noteText(note) }
+        }
+      }
       .listSectionSeparator(.hidden)
+      .id(title)
+    #else
+      Section {
+        content
+      } header: {
+        ShadowSectionHeader(LocalizedStringKey(title))
+      } footer: {
+        if let note { noteText(note) }
+      }
+      .id(title)
     #endif
-    .id(title)
+  }
+
+  private func noteText(_ note: LocalizedStringKey) -> some View {
+    Text(note)
+      .shadowFont(.footnote)
+      .foregroundStyle(ShadowColor.textSecondary)
+      .lineLimit(nil)
+      .fixedSize(horizontal: false, vertical: true)
   }
 }
 
@@ -91,13 +109,26 @@ struct ComponentPage<Content: View>: View {
   let component: CatalogComponent
   @ViewBuilder let content: Content
 
+  #if os(iOS)
+    @Environment(\.horizontalSizeClass) private var horizontalSizeClass
+  #endif
+
+  private var margin: CGFloat {
+    #if os(iOS)
+      horizontalSizeClass == .compact ? Spacing.space4 : Spacing.space5
+    #else
+      Spacing.space5
+    #endif
+  }
+
   var body: some View {
     ScrollView {
       VStack(alignment: .leading, spacing: Spacing.space8) {
         content
       }
       .frame(maxWidth: ShadowMetrics.readableWidth, alignment: .leading)
-      .padding(Spacing.space4)
+      .padding(.horizontal, margin)
+      .padding(.vertical, Spacing.space4)
       .frame(maxWidth: .infinity, alignment: .leading)
     }
     .catalogScrollAnchor()
@@ -133,5 +164,32 @@ struct StateSection<Content: View>: View {
       content
     }
     .frame(maxWidth: .infinity, alignment: .leading)
+  }
+}
+
+extension EnvironmentValues {
+  @Entry var catalogTakesSnapshot = false
+}
+
+extension View {
+  func catalogSnapshotFocus() -> some View { modifier(CatalogSnapshotFocus()) }
+}
+
+private struct CatalogSnapshotFocus: ViewModifier {
+  @Environment(\.catalogTakesSnapshot) private var takesSnapshot
+  @FocusState private var isFocused: Bool
+
+  func body(content: Content) -> some View {
+    #if os(macOS)
+      content
+        .focused($isFocused)
+        .task {
+          guard takesSnapshot else { return }
+          try? await Task.sleep(for: .milliseconds(300))
+          isFocused = true
+        }
+    #else
+      content
+    #endif
   }
 }

@@ -58,6 +58,7 @@ struct NotificationListPage: View {
       }
       ToolbarItem {
         Button("Updates", systemImage: "bell") { showsPopover = true }
+          .badge((items + longItems).shadowUnreadCount())
           .popover(isPresented: $showsPopover) {
             ShadowNotificationList(
               items, now: now, labels: labels, onOpen: { markRead($0, in: $items) }, onToggleRead: { toggle($0, in: $items) }, onDelete: { delete($0, in: $items) }
@@ -69,6 +70,7 @@ struct NotificationListPage: View {
       }
     }
     .catalogListPage(.notificationList, anchors: ["Default", "With icons and messages", "Loading", "Empty"])
+    .catalogAutoPresent($showsPopover)
   }
 
   @ViewBuilder

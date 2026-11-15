@@ -63,10 +63,18 @@ struct TagPage: View {
         .shadowCard()
       }
       StateSection("Hover and pressed", note: "Pointer hover adds bg-hover; touch-down uses bg-pressed or the active accent.") {
-        ShadowFlowLayout(spacing: Spacing.space2, lineSpacing: Spacing.space2) {
+        ShadowFlowLayout(spacing: Spacing.space5, lineSpacing: Spacing.space3) {
           ForEach(ShadowButtonInteraction.allCases, id: \.self) { interaction in
-            ShadowTag("Fantasy", isSelected: .constant(false)).shadowPreviewInteraction(interaction)
-            ShadowTag("All", isSelected: .constant(true)).shadowPreviewInteraction(interaction)
+            VStack(alignment: .leading, spacing: Spacing.space1) {
+              Text(interaction.caption)
+                .shadowFont(.caption)
+                .foregroundStyle(ShadowColor.textSecondary)
+              HStack(spacing: Spacing.space2) {
+                ShadowTag("Fantasy", isSelected: .constant(false))
+                ShadowTag("All", isSelected: .constant(true))
+              }
+              .shadowPreviewInteraction(interaction)
+            }
           }
         }
         .shadowCard()
@@ -120,5 +128,15 @@ private struct FilterRow<Content: View>: View {
       .contentMargins(.horizontal, Spacing.space4, for: .scrollContent)
       .padding(.horizontal, -Spacing.space4)
     #endif
+  }
+}
+
+extension ShadowButtonInteraction {
+  var caption: LocalizedStringKey {
+    switch self {
+    case .idle: "Idle"
+    case .hovered: "Hover"
+    case .pressed: "Pressed"
+    }
   }
 }

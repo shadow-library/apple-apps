@@ -69,38 +69,67 @@ struct StaticIllustration<Content: View>: View {
   @ViewBuilder let content: Content
 
   var body: some View {
-    content
-      .overlay(alignment: .bottomLeading) {
-        ShadowBadge("Static illustration", intent: .neutral, systemImage: "photo")
-          .padding(Spacing.space3)
-      }
+    VStack(alignment: .leading, spacing: Spacing.space2) {
+      content
+      ShadowBadge("Static illustration", intent: .neutral, systemImage: "photo")
+    }
   }
 }
 
 struct PresentationBackdrop<Content: View>: View {
-  var height: CGFloat = 320
+  var minHeight: CGFloat = 0
   var alignment: Alignment = .topTrailing
+  var coverRows = 1
   @ViewBuilder let content: Content
 
+  private var bandHeight: CGFloat { ShadowMetrics.control(.medium) + Spacing.space3 * 2 }
+  private var bandEdge: Edge.Set { alignment.vertical == .bottom ? .bottom : .top }
+
   var body: some View {
-    content
-      .padding(Spacing.space3)
-      .frame(maxWidth: .infinity, minHeight: height, alignment: alignment)
-      .background(alignment: .top) {
-        VStack(spacing: Spacing.space3) {
-          ShadowGroupedSection { DemoBookRows() }
-          DemoCoverGrid()
+    VStack(spacing: Spacing.space3) {
+      ShadowGroupedSection { DemoBookRows() }
+      if coverRows > 0 {
+        DemoCoverRows(rows: coverRows)
+      }
+    }
+    .padding(Spacing.space3)
+    .padding(bandEdge, bandHeight - Spacing.space3)
+    .frame(maxWidth: .infinity, minHeight: minHeight, alignment: .top)
+    .accessibilityHidden(true)
+    .overlay(alignment: alignment) {
+      content.padding(Spacing.space3)
+    }
+    .background(ShadowColor.surfaceApp)
+    .clipShape(.rect(cornerRadius: ShadowCardMetrics().cornerRadius, style: .continuous))
+    .overlay {
+      RoundedRectangle(cornerRadius: ShadowCardMetrics().cornerRadius, style: .continuous)
+        .strokeBorder(ShadowColor.borderSubtle)
+    }
+  }
+}
+
+struct DemoCoverRows: View {
+  var rows = 1
+  var minimumWidth: CGFloat = 100
+  @State private var columns = 3
+
+  var body: some View {
+    Grid(horizontalSpacing: Spacing.space2, verticalSpacing: Spacing.space2) {
+      ForEach(0..<rows, id: \.self) { row in
+        GridRow {
+          ForEach(CatalogBook.shelf.dropFirst(row * columns).prefix(columns)) { book in
+            CoverArt(book: book)
+              .aspectRatio(0.75, contentMode: .fit)
+          }
         }
-        .padding(Spacing.space3)
-        .fixedSize(horizontal: false, vertical: true)
-        .accessibilityHidden(true)
       }
-      .background(ShadowColor.surfaceApp)
-      .clipShape(.rect(cornerRadius: ShadowCardMetrics().cornerRadius, style: .continuous))
-      .overlay {
-        RoundedRectangle(cornerRadius: ShadowCardMetrics().cornerRadius, style: .continuous)
-          .strokeBorder(ShadowColor.borderSubtle)
-      }
+    }
+    .frame(maxWidth: .infinity)
+    .onGeometryChange(for: CGFloat.self) {
+      $0.size.width
+    } action: { width in
+      columns = min(CatalogBook.shelf.count / max(rows, 1), max(1, Int((width + Spacing.space2) / (minimumWidth + Spacing.space2))))
+    }
   }
 }
 

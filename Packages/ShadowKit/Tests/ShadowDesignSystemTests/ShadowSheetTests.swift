@@ -65,4 +65,9 @@ struct ShadowFittedDetentsTests {
   func measured() {
     #expect(ShadowFittedDetents.detents(contentHeight: 211.2) == [.height(212)])
   }
+
+  @Test("should add the navigation bar height above the content")
+  func withBar() {
+    #expect(ShadowFittedDetents.detents(contentHeight: 300, barHeight: 55.5) == [.height(356)])
+  }
 }

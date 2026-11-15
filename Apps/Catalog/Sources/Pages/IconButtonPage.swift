@@ -46,7 +46,7 @@ struct IconButtonPage: View {
           SizeRow(variant: .filled)
           SizeRow(variant: .tinted)
           SizeRow(variant: .bordered)
-          GlassStage(height: 84, alignment: .leading) {
+          GlassStage(height: 120, alignment: .leading, coverRows: 1) {
             SizeRow(variant: .glass)
           }
         }

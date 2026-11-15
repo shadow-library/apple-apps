@@ -55,15 +55,14 @@ struct PickerPage: View {
             #if os(macOS)
               Picker("Expires after", selection: $expiry) { ForEach(Expiry.allCases) { Text($0.rawValue).tag($0) } }
                 .pickerStyle(.radioGroup)
+                .labelsHidden()
             #else
               Picker("Expires after", selection: $expiry) { ForEach(Expiry.allCases) { Text($0.rawValue).tag($0) } }
                 .pickerStyle(.inline)
                 .labelsHidden()
             #endif
           } header: {
-            #if !os(macOS)
-              Text("Expires after")
-            #endif
+            Text("Expires after")
           } footer: {
             Text("Shared links stop working after this.")
           }
@@ -87,7 +86,7 @@ struct PickerPage: View {
           }
         }
       }
-      StateSection("Long label", note: "The title wraps; the value keeps its place.") {
+      StateSection("Long label", note: "The title wraps. When the value no longer fits beside it, the system moves the menu below the title.") {
         FormBlock {
           FormSection {
             Picker("Where should we send a summary of everything new in your library", selection: $channel) {

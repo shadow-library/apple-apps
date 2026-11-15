@@ -32,7 +32,10 @@ struct CoverArt: View {
       .fill(LinearGradient(colors: [book.color, book.color.mix(with: .black, by: 0.35)], startPoint: .topLeading, endPoint: .bottomTrailing))
       .overlay(alignment: .topTrailing) {
         Image(systemName: book.symbol)
-          .font(.system(.largeTitle, weight: .light))
+          .resizable()
+          .fontWeight(.light)
+          .scaledToFit()
+          .frame(maxWidth: 34, maxHeight: 34)
           .foregroundStyle(ShadowColor.onAccent.opacity(0.55))
           .padding(Spacing.space2)
       }
@@ -71,6 +74,7 @@ struct CoverWall: View {
 struct GlassStage<Chrome: View>: View {
   var height: CGFloat = 180
   var alignment: Alignment = .top
+  var coverRows = 2
   @ViewBuilder let chrome: Chrome
 
   var body: some View {
@@ -78,7 +82,7 @@ struct GlassStage<Chrome: View>: View {
       .padding(Spacing.space2)
       .frame(maxWidth: .infinity, minHeight: height, alignment: alignment)
       .background {
-        CoverWall()
+        CoverWall(books: Array(CatalogBook.shelf.prefix(4 * coverRows)))
           .padding(Spacing.space2)
           .background(ShadowColor.surfaceCard)
       }

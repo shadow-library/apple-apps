@@ -49,6 +49,7 @@ struct OneTimeCodeFieldPage: View {
           .sheet(isPresented: $isShowingSheet) { VerificationSheet() }
       }
     }
+    .catalogAutoPresent($isShowingSheet)
   }
 }
 

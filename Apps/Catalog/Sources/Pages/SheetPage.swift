@@ -14,7 +14,7 @@ struct SheetPage: View {
         note:
           "Medium and large detents with a grabber. At medium height the sheet floats on Liquid Glass; pulled to full height it turns opaque. Mac shows it as an attached sheet."
       ) {
-        PresentationBackdrop(height: 360, alignment: .bottomLeading) {
+        PresentationBackdrop(alignment: .bottomLeading) {
           Button("Reading settings…", systemImage: "textformat.size") { showsReadingSettings = true }
             .buttonStyle(.shadowGlass)
         }
@@ -170,8 +170,16 @@ private struct ChapterDetailsSheet: View {
     #if os(macOS)
       Form {
         TextField("Title", text: $title)
-        TextField("Target", value: $target, format: .number)
-          .shadowField { Text("words") }
+          .textFieldStyle(.roundedBorder)
+        LabeledContent("Target") {
+          HStack(spacing: Spacing.space2) {
+            TextField("Target", value: $target, format: .number)
+              .textFieldStyle(.roundedBorder)
+              .monospacedDigit()
+              .labelsHidden()
+            Text("words").foregroundStyle(ShadowColor.textSecondary)
+          }
+        }
       }
       .formStyle(.columns)
       .frame(width: 320)

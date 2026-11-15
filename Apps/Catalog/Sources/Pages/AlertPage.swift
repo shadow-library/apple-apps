@@ -13,7 +13,7 @@ struct AlertPage: View {
         note:
           "The title asks the question and the buttons answer it: “Revoke”, never “OK”. Cancel comes first. On Mac, Cancel is the default so Return and Escape both cancel; Revoke needs ⌘⌫."
       ) {
-        PresentationBackdrop(height: 260, alignment: .bottomLeading) {
+        PresentationBackdrop(alignment: .bottomLeading) {
           Button("Revoke session…", role: .destructive) { showsRevoke = true }
             .buttonStyle(.shadowFilled)
         }

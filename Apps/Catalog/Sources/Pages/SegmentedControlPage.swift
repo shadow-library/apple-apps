@@ -51,6 +51,7 @@ struct SegmentedControlPage: View {
         }
         .pickerStyle(.segmented)
         .labelsHidden()
+        .catalogSegmentedWidth()
         .shadowCard()
       }
       StateSection("Symbols only", note: "Icon-only segments still carry an accessibility label.") {
@@ -61,6 +62,7 @@ struct SegmentedControlPage: View {
         }
         .pickerStyle(.segmented)
         .labelsHidden()
+        .catalogSegmentedWidth()
         .shadowCard()
       }
       #if os(macOS)
@@ -96,8 +98,15 @@ struct SegmentedControlPage: View {
         .pickerStyle(.segmented)
         .labelsHidden()
         .disabled(true)
+        .catalogSegmentedWidth()
         .shadowCard()
       }
     }
+  }
+}
+
+extension View {
+  fileprivate func catalogSegmentedWidth() -> some View {
+    frame(maxWidth: 400, alignment: .leading).frame(maxWidth: .infinity, alignment: .leading)
   }
 }

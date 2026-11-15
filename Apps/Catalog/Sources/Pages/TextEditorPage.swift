@@ -9,7 +9,7 @@ struct TextEditorPage: View {
 
   private func counter(_ count: ShadowCharacterCount) -> Text {
     if count.isOverLimit { return Text("\(-(count.remaining ?? 0)) characters over the limit of \(count.limit ?? 0).") }
-    return Text("Markdown. \(count.count) of \(count.limit ?? 0) characters.")
+    return Text("\(count.count) of \(count.limit ?? 0) characters.")
   }
 
   var body: some View {

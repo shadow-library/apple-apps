@@ -26,19 +26,20 @@ private let longTree: [Node] = [
 
 struct OutlineGroupPage: View {
   @State private var selection: String? = "secret"
+  @State private var expanded: Set<String> = ["characters", "archivist"]
 
   var body: some View {
     List(selection: $selection) {
       StateListSection(
         "Story bible",
         note:
-          "Native `OutlineGroup` rows with the system disclosure chevron. Folders show their descendant count and locked pages a lock. Selection uses the list’s selected style, and Mac supports ← and → to collapse and expand. On iPhone prefer drilling down with navigation, and keep disclosure to one extra level."
+          "Nested disclosure groups with the system chevron and a 22pt indent, expanded by state so Characters and The Archivist start open. Folders show a count, locked pages a lock. On iPhone prefer drilling down."
       ) {
-        OutlineGroup(storyBible, children: \.children) { node in
-          OutlineRow(node: node, isSelected: selection == node.id).tag(node.id)
+        ForEach(storyBible) { node in
+          OutlineTreeRow(node: node, expanded: $expanded, selection: selection)
         }
       }
-      StateListSection("Long text", note: "Titles wrap to two lines; the count stays trailing.") {
+      StateListSection("Long text", note: "A collapsed `OutlineGroup`. Titles wrap to two lines; the count stays trailing.") {
         OutlineGroup(longTree, children: \.children) { node in
           OutlineRow(node: node, isSelected: selection == node.id).tag(node.id)
         }
@@ -46,6 +47,37 @@ struct OutlineGroupPage: View {
     }
     .shadowListStyle()
     .catalogListPage(.outlineGroup, anchors: ["Story bible", "Long text"])
+  }
+}
+
+private struct OutlineTreeRow: View {
+  let node: Node
+  @Binding var expanded: Set<String>
+  let selection: String?
+
+  var body: some View {
+    if let children = node.children, !children.isEmpty {
+      DisclosureGroup(isExpanded: isExpanded) {
+        ForEach(children) { child in
+          OutlineTreeRow(node: child, expanded: $expanded, selection: selection)
+        }
+      } label: {
+        OutlineRow(node: node, isSelected: selection == node.id).tag(node.id)
+      }
+      #if !os(macOS)
+        .shadowListRowChrome()
+      #endif
+    } else {
+      OutlineRow(node: node, isSelected: selection == node.id).tag(node.id)
+    }
+  }
+
+  private var isExpanded: Binding<Bool> {
+    Binding(
+      get: { expanded.contains(node.id) },
+      set: { isOpen in
+        if isOpen { expanded.insert(node.id) } else { expanded.remove(node.id) }
+      })
   }
 }
 
@@ -68,7 +100,9 @@ private struct OutlineRow: View {
   @ViewBuilder
   private var leadingSymbol: some View {
     if node.isLeaf {
-      Image(systemName: node.systemImage).foregroundStyle(ShadowColor.accentText)
+      Image(systemName: node.systemImage)
+        .foregroundStyle(ShadowColor.accentText)
+        .frame(width: ShadowListMetrics().tileSize, height: ShadowListMetrics().tileSize)
     } else {
       ShadowSymbolTile(systemImage: node.systemImage, tint: .neutral)
     }

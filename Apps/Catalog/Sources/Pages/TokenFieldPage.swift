@@ -10,6 +10,7 @@ struct TokenFieldPage: View {
   @State private var manyTags = ["fantasy", "found family", "slow burn", "magic academy", "political intrigue", "morally grey", "archives", "glass magic"]
   @State private var selectedTags = ["fantasy", "found family", "slow burn"]
   @State private var limitedGenres: [Genre] = [.fantasy, .mystery, .romance]
+  @State private var rejectedGenre = Self.rejectedGenreTitle
   @State private var genres: [Genre] = [.fantasy]
   @State private var invalidGenres: [Genre] = []
   @State private var longTags = ["the-ninth-archive.chapter-42.the-glass-stair.annotations", "mira"]
@@ -79,10 +80,10 @@ struct TokenFieldPage: View {
             .shadowValidation(Text("Add at least one genre so readers can find this novel."))
           }
           TokenRow(title: "Genres") {
-            ShadowTokenField("Genres", tokens: $limitedGenres, suggestions: Genre.allCases, rules: Genre.rules) { genre in
+            ShadowTokenField("Genres", tokens: $limitedGenres, text: $rejectedGenre, suggestions: Genre.allCases, rules: Genre.rules) { genre in
               Text("Remove \(genre.title)")
             }
-            .shadowValidation(Text("Choose up to three genres."))
+            .shadowValidation(Text("You can choose up to three genres. Remove one to add \(Self.rejectedGenreTitle)."))
           }
         }
       }
@@ -107,7 +108,10 @@ struct TokenFieldPage: View {
           .sheet(isPresented: $isShowingSearch) { SearchSampleSheet() }
       }
     }
+    .catalogAutoPresent($isShowingSearch)
   }
+
+  private static let rejectedGenreTitle = "Horror"
 
   private func removeLabel(_ token: String) -> Text {
     Text("Remove \(token)")
@@ -129,7 +133,9 @@ private struct TokenRow<Field: View>: View {
           }
         }
       } label: {
-        Text(title).foregroundStyle(ShadowColor.textSecondary)
+        Text(title)
+          .foregroundStyle(ShadowColor.textSecondary)
+          .frame(minWidth: FieldMetrics.macLabelWidth, alignment: .trailing)
       }
     #else
       FieldRow(title: title, help: help) { field }

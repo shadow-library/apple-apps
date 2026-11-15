@@ -12,7 +12,7 @@ struct ConfirmationDialogPage: View {
         note:
           "Names the object and says what survives. iPhone: a glass panel anchored to the button, with no separate Cancel row. iPad: a popover anchored to the button; tapping outside cancels. Mac: an alert where Cancel is the default and Delete chapter needs ⌘⌫."
       ) {
-        PresentationBackdrop(height: 300, alignment: .topTrailing) {
+        PresentationBackdrop(alignment: .topTrailing) {
           Button("Delete", systemImage: "trash", role: .destructive) { showsDelete = true }
             .buttonStyle(.shadowTinted)
             .confirmationDialog("Delete “The Glass Stair”?", isPresented: $showsDelete, titleVisibility: .visible) {

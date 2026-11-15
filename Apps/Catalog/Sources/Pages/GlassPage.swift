@@ -44,7 +44,7 @@ struct GlassPage: View {
       StateSection("Clear", note: "Only over photos, covers and full-bleed media, with a dimming layer and white glyphs.") {
         ClearDemo()
       }
-      StateSection("Dense panels", note: "Menus, popovers and the palette carry reading text, so they use denser glass. Regular glass on the left for comparison.") {
+      StateSection("Dense panels", note: "Menus, popovers and the palette carry reading text, so they use denser glass. The first panel is regular glass, for comparison.") {
         GlassStage(height: 196, alignment: .center) {
           ViewThatFits(in: .horizontal) {
             HStack(alignment: .top, spacing: Spacing.space3) {
@@ -151,7 +151,7 @@ private struct ChapterMenu: View {
     VStack(alignment: .leading, spacing: 0) {
       MenuRow(title: "New chapter", shortcut: "⌘N")
       MenuRow(title: "Duplicate", shortcut: "⌘D", isHighlighted: true)
-      MenuRow(title: "Move to Archive", shortcut: "⌘⌫")
+      MenuRow(title: "Move to archive", shortcut: "⌘⌫")
     }
     .padding(Spacing.space1)
     .frame(minWidth: 220, maxWidth: 260)
@@ -165,18 +165,23 @@ private struct MenuRow: View {
   let shortcut: String
   var isHighlighted = false
 
+  private var isPointer: Bool { ShadowDensity.current == .compact }
+  private var showsHighlight: Bool { isHighlighted && isPointer }
+
   var body: some View {
     HStack {
       Text(title)
       Spacer(minLength: Spacing.space3)
-      Text(verbatim: shortcut).foregroundStyle(isHighlighted ? ShadowColor.onAccent : ShadowColor.textSecondary)
+      if isPointer {
+        Text(verbatim: shortcut).foregroundStyle(showsHighlight ? ShadowColor.onAccent : ShadowColor.textSecondary)
+      }
     }
     .shadowFont(.body)
-    .foregroundStyle(isHighlighted ? ShadowColor.onAccent : ShadowColor.textPrimary)
+    .foregroundStyle(showsHighlight ? ShadowColor.onAccent : ShadowColor.textPrimary)
     .padding(.horizontal, Spacing.space3)
     .frame(minHeight: ShadowMetrics.rowHeight)
     .background {
-      if isHighlighted {
+      if showsHighlight {
         RoundedRectangle(cornerRadius: ShadowDensity.current == .touch ? Radius.panel - Spacing.space1 : Radius.md, style: .continuous)
           .fill(ShadowColor.accent)
       }

@@ -41,6 +41,7 @@ struct SidebarPage: View {
   @State private var selection: SidebarDemoItem? = DemoPlatform.opensDetail ? .chapters : nil
   @State private var compactColumn = NavigationSplitViewColumn.sidebar
   @State private var showsCollections = false
+  @State private var novel = SidebarDemoNovel.all[0].id
 
   var body: some View {
     NavigationSplitView(preferredCompactColumn: $compactColumn) {
@@ -62,6 +63,12 @@ struct SidebarPage: View {
         }
       }
       .shadowListStyle(.sidebar)
+      .catalogSnapshotFocus()
+      .safeAreaInset(edge: .top) {
+        ShadowOrganizationSwitcher("Switch novel", organizations: SidebarDemoNovel.all, selection: $novel)
+          .padding(.horizontal, DemoLayout.margin)
+          .padding(.vertical, Spacing.space2)
+      }
       .safeAreaInset(edge: .bottom) {
         DemoAccountMenu(labelStyle: .avatarAndName)
           .padding(.horizontal, DemoLayout.margin)
@@ -76,6 +83,13 @@ struct SidebarPage: View {
       }
     }
   }
+}
+
+private enum SidebarDemoNovel {
+  static let all = [
+    ShadowOrganization(id: "ninth-archive", name: "The Ninth Archive", detail: "Novel Forge"),
+    ShadowOrganization(id: "glass-and-ash", name: "Glass and Ash", detail: "Novel Forge"),
+  ]
 }
 
 private struct SidebarDemoRow: View {

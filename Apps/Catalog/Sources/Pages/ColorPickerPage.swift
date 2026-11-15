@@ -31,17 +31,13 @@ struct ColorPickerPage: View {
         }
       }
       StateSection("Curated swatches", note: "The chart palette comes first so choices stay distinct for colour-blind readers. The current swatch wears a ring, not only a fill.") {
-        VStack(alignment: .leading, spacing: Spacing.space2) {
-          Text("Highlight colour").shadowFont(.headline).foregroundStyle(ShadowColor.textPrimary)
-          ShadowSwatchPicker(selection: $swatch, swatches: Self.swatches)
-          Divider()
-          HStack {
-            Text("More colours…").foregroundStyle(ShadowColor.accentText)
-            Spacer()
-            ColorPicker("More colours…", selection: $custom, supportsOpacity: false).labelsHidden()
+        #if os(macOS)
+          FormBlock {
+            FormSection { swatches }
           }
-        }
-        .shadowCard()
+        #else
+          swatches.shadowCard()
+        #endif
       }
       StateSection("Disabled") {
         FormBlock {
@@ -50,6 +46,19 @@ struct ColorPickerPage: View {
               .disabled(true)
           }
         }
+      }
+    }
+  }
+
+  private var swatches: some View {
+    VStack(alignment: .leading, spacing: Spacing.space2) {
+      Text("Highlight colour").shadowFont(.headline).foregroundStyle(ShadowColor.textPrimary)
+      ShadowSwatchPicker(selection: $swatch, swatches: Self.swatches)
+      Divider()
+      ColorPicker(selection: $custom, supportsOpacity: false) {
+        Text("More colours…")
+          .foregroundStyle(ShadowColor.accentText)
+          .frame(maxWidth: .infinity, alignment: .leading)
       }
     }
   }

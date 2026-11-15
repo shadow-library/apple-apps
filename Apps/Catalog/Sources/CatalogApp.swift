@@ -26,6 +26,7 @@ struct CatalogApp: App {
         .environment(\.catalogScrollFraction, model.launch.scrollFraction)
         .environment(\.catalogPresentsSample, model.launch.presentsSample)
         .environment(\.catalogScreen, model.launch.screen)
+        .environment(\.catalogTakesSnapshot, model.launch.snapshotURL != nil)
         .shadowPreviewHoverEffects(model.launch.snapshotURL == nil)
         .preferredColorScheme(model.appearance.colorScheme)
         .transaction { transaction in
@@ -35,7 +36,7 @@ struct CatalogApp: App {
         }
         #if os(macOS)
           .frame(minWidth: 900, minHeight: 600)
-          .catalogSnapshot(to: model.launch.snapshotURL, includesPresentations: model.launch.presentsSample)
+          .catalogSnapshot(to: model.launch.snapshotURL, includesPresentations: model.launch.presentsSample || model.launch.screen != nil)
         #endif
     }
     .defaultSize(width: 1280, height: 820)

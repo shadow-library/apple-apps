@@ -16,15 +16,19 @@ struct RatingPage: View {
           ShadowRating("Rate this chapter", value: $chapter, valueDescription: stars)
         }
       }
-      StateSection("Unrated", note: "Empty stars in border-strong invite a first rating. Dragging past the first star clears it again.") {
+      StateSection("Unrated", note: "Empty stars in text-tertiary invite a first rating. Dragging past the first star clears it again.") {
         RatingRow("Rate this chapter") {
           ShadowRating("Rate this chapter", value: $unrated, valueDescription: stars)
         }
       }
-      StateSection("Hover preview", note: "With a pointer on Mac and iPad, the stars preview the value under it before the click.") {
-        RatingRow("Rate this chapter") {
-          ShadowRating("Rate this chapter", value: $hovered, valueDescription: stars)
-            .shadowPreviewRatingHover(4)
+      if DemoPlatform.hasPointer {
+        StateSection(
+          "Hover preview", note: "With a pointer on Mac and iPad, the stars up to the pointer preview the new value at half strength before the click."
+        ) {
+          RatingRow("Rate this chapter") {
+            ShadowRating("Rate this chapter", value: $hovered, valueDescription: stars)
+              .shadowPreviewRatingHover(4)
+          }
         }
       }
       StateSection("Book ratings", note: "Read-only ratings show half stars, the average and a grouped count of ratings.") {
@@ -37,14 +41,16 @@ struct RatingPage: View {
         .shadowCard()
       }
       StateSection("Sizes", note: "Small for list rows, medium beside body text, large on a review screen. Stars follow Dynamic Type.") {
-        VStack(alignment: .leading, spacing: Spacing.space3) {
-          RatingRow("Small") {
+        RatingGroup {
+          RatingLine("Small") {
             ShadowRating("Small", value: $small, valueDescription: stars).controlSize(.small)
           }
-          RatingRow("Medium") {
+          Divider()
+          RatingLine("Medium") {
             ShadowRating("Medium", value: $medium, valueDescription: stars)
           }
-          RatingRow("Large") {
+          Divider()
+          RatingLine("Large") {
             ShadowRating("Large", value: $large, valueDescription: stars).controlSize(.large)
           }
         }
@@ -78,21 +84,44 @@ private struct RatingRow<Content: View>: View {
   }
 
   var body: some View {
+    RatingGroup {
+      RatingLine(title) { content }
+    }
+  }
+}
+
+private struct RatingLine<Content: View>: View {
+  let title: LocalizedStringKey
+  @ViewBuilder let content: Content
+
+  init(_ title: LocalizedStringKey, @ViewBuilder content: () -> Content) {
+    self.title = title
+    self.content = content()
+  }
+
+  var body: some View {
     HStack(spacing: Spacing.space3) {
       Text(title)
         .foregroundStyle(ShadowColor.textPrimary)
         .frame(maxWidth: .infinity, alignment: .leading)
       content
     }
-    #if os(macOS)
-      .frame(minHeight: ShadowMetrics.rowHeight)
-      .shadowCard()
-    #else
-      .padding(.horizontal, Spacing.space4)
-      .padding(.vertical, Spacing.space1)
-      .frame(minHeight: ShadowMetrics.rowHeight)
-      .background(ShadowColor.surfaceCard, in: .rect(cornerRadius: Radius.section, style: .continuous))
-    #endif
+    .frame(minHeight: ShadowMetrics.rowHeight)
+  }
+}
+
+private struct RatingGroup<Content: View>: View {
+  @ViewBuilder let content: Content
+
+  var body: some View {
+    VStack(spacing: 0) { content }
+      #if os(macOS)
+        .shadowCard()
+      #else
+        .padding(.horizontal, Spacing.space4)
+        .padding(.vertical, Spacing.space1)
+        .background(ShadowColor.surfaceCard, in: .rect(cornerRadius: Radius.section, style: .continuous))
+      #endif
   }
 }
 

@@ -22,9 +22,14 @@ struct CardPage: View {
         DailyQuestsCard()
       }
       StateSection("Tappable", note: "The whole card is one button. It dims on touch-down, lifts under the iPad pointer and gains a stronger edge on Mac.") {
-        VStack(spacing: Spacing.space3) {
+        VStack(alignment: .leading, spacing: Spacing.space3) {
           ContinueReadingCard(book: CatalogBook.shelf[0], interaction: nil)
-          ContinueReadingCard(book: CatalogBook.shelf[1], interaction: .pressed)
+          VStack(alignment: .leading, spacing: Spacing.space1) {
+            Text("Pressed")
+              .shadowFont(.caption)
+              .foregroundStyle(ShadowColor.textSecondary)
+            ContinueReadingCard(book: CatalogBook.shelf[1], interaction: .pressed)
+          }
         }
       }
       StateSection("Long content", note: "Titles wrap and prose keeps its line length; nothing truncates.") {

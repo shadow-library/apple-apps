@@ -20,7 +20,7 @@ struct FormBlock<Content: View>: View {
       .modifier(MeasuredHeight(height: height))
       .padding(.horizontal, -Self.inset)
       #if os(macOS)
-        .padding(.top, -Spacing.space5)
+        .padding(.vertical, -Spacing.space5)
       #endif
   }
 
@@ -93,19 +93,24 @@ extension FormSection where Header == EmptyView, Footer == EmptyView {
 struct FieldRow<Field: View>: View {
   let title: LocalizedStringKey
   var help: LocalizedStringKey?
+  var isWide = false
   @ViewBuilder let field: Field
 
   var body: some View {
     #if os(macOS)
       LabeledContent {
         VStack(alignment: .leading, spacing: Spacing.space1) {
-          field.labelsHidden()
+          field
+            .labelsHidden()
+            .frame(maxWidth: isWide ? .infinity : FieldMetrics.macFieldWidth, alignment: .leading)
           if let help {
             Text(help).shadowFont(.footnote).foregroundStyle(ShadowColor.textSecondary)
           }
         }
       } label: {
-        Text(title).foregroundStyle(ShadowColor.textSecondary)
+        Text(title)
+          .foregroundStyle(ShadowColor.textSecondary)
+          .frame(minWidth: FieldMetrics.macLabelWidth, alignment: .trailing)
       }
     #else
       VStack(alignment: .leading, spacing: Spacing.space2) {
@@ -132,4 +137,9 @@ struct FieldStack<Content: View>: View {
         .shadowCard()
     #endif
   }
+}
+
+enum FieldMetrics {
+  static let macFieldWidth: CGFloat = 360
+  static let macLabelWidth: CGFloat = 140
 }

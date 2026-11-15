@@ -62,6 +62,7 @@ struct FileImporterPage: View {
             dropZone(targeted: nil)
             dropZone(targeted: true)
           }
+          .shadowCard()
         }
       }
       StateSection(
@@ -83,12 +84,16 @@ struct FileImporterPage: View {
               for url in urls { begin(url.lastPathComponent) }
               return !urls.isEmpty
             } content: { isTargeted in
-              Button {
-                begin("new-cover.png")
-              } label: {
-                zoneLabel(isTargeted: isTargeted)
-              }
-              .buttonStyle(.plain)
+              #if os(macOS)
+                zoneLabel(isTargeted: isTargeted) { begin("new-cover.png") }
+              #else
+                Button {
+                  begin("new-cover.png")
+                } label: {
+                  zoneLabel(isTargeted: isTargeted)
+                }
+                .buttonStyle(.plain)
+              #endif
             }
             ForEach($liveUploads) { $upload in
               ShadowFileRow(title: Text(verbatim: upload.name), detail: detail(for: upload), systemImage: upload.symbol, state: upload.state) {
@@ -105,26 +110,38 @@ struct FileImporterPage: View {
         }
       }
     }
+    #if os(iOS)
+      .catalogAutoPresent($isImporting)
+    #endif
   }
 
   private func dropZone(targeted: Bool?) -> some View {
     ShadowFileDropZone { _ in
       false
     } content: { isTargeted in
-      zoneLabel(isTargeted: isTargeted)
+      zoneLabel(isTargeted: isTargeted) { isImporting = true }
     }
     .shadowPreviewDropTarget(targeted)
   }
 
-  private func zoneLabel(isTargeted: Bool) -> some View {
+  private func zoneLabel(isTargeted: Bool, choose: @escaping () -> Void = {}) -> some View {
     VStack(spacing: Spacing.space2) {
-      Image(systemName: "square.and.arrow.up")
+      Image(systemName: "square.and.arrow.down")
         .font(.title2)
         .foregroundStyle(ShadowColor.accentText)
-      Text(isTargeted ? "Drop to add the cover" : "Drop a cover image here or choose a file")
-        .shadowFont(.callout)
-        .foregroundStyle(isTargeted ? ShadowColor.accentText : ShadowColor.textPrimary)
-        .multilineTextAlignment(.center)
+      #if os(macOS)
+        Text(isTargeted ? "Drop to add the cover" : "Drop a cover image here")
+          .shadowFont(.callout)
+          .foregroundStyle(isTargeted ? ShadowColor.accentText : ShadowColor.textPrimary)
+          .multilineTextAlignment(.center)
+        Button("Choose file…", action: choose)
+          .buttonStyle(.shadowBordered)
+      #else
+        Text(isTargeted ? "Drop to add the cover" : "Drop a cover image here or choose a file")
+          .shadowFont(.callout)
+          .foregroundStyle(isTargeted ? ShadowColor.accentText : ShadowColor.textPrimary)
+          .multilineTextAlignment(.center)
+      #endif
       Text("PNG or JPEG, up to 10 MB")
         .shadowFont(.footnote)
         .foregroundStyle(ShadowColor.textSecondary)

@@ -208,8 +208,7 @@ private struct ForgeChapters: View {
     }
     .navigationTitle("Chapters")
     .demoSubtitle("The Ninth Archive")
-    .shadowScreen(.pushed)
-    .demoEditorRoleWhenRegular()
+    .shadowScreen(.root)
     .toolbar {
       if presentsAsSheet {
         ToolbarItem(placement: .primaryAction) {
@@ -272,7 +271,7 @@ private struct ForgeChapters: View {
         title: Text(verbatim: "\(chapter.id) · \(chapter.title)"), subtitle: Text(verbatim: "\(chapter.wordCount) words"), isSelected: selection.contains(chapter.id),
         trailing: chapter.status.badge)
     }
-    .demoTableFrame(.fitsContent(estimatedRows: ForgeChapter.all.count))
+    .demoTableFrame(.fitsContent(estimatedRows: rows.count))
   }
 }
 

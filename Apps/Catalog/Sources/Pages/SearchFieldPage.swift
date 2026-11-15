@@ -29,6 +29,7 @@ struct SearchFieldPage: View {
           .buttonStyle(.shadowTinted)
           .sheet(isPresented: $isShowingSearch) { SearchSampleSheet() }
       }
+      .catalogAutoPresent($isShowingSearch)
       StateSection("Suggestions", note: "Typing shows matching titles first and a catch-all “search everything” row last. Selecting a row completes the query.") {
         #if os(macOS)
           MacSuggestions(query: $eventQuery)
@@ -59,7 +60,6 @@ private struct SuggestionRow: View {
     var body: some View {
       VStack(alignment: .leading, spacing: Spacing.space3) {
         ShadowSearchField("Search the library", text: $query, clearLabel: "Clear search")
-        Text("Suggestions").shadowFont(.headline).foregroundStyle(ShadowColor.textSecondary).padding(.leading, Spacing.space2)
         VStack(spacing: 0) {
           row("The Glass Stair", subtitle: "Chapter 42 · The Ninth Archive", systemImage: "book", completion: "The Glass Stair")
           Divider().padding(.leading, Spacing.space10 + Spacing.space4)
@@ -94,24 +94,21 @@ private struct SuggestionRow: View {
 #if os(macOS)
   private struct MacSuggestions: View {
     @Binding var query: String
-    @State private var selection = "session.revoked"
 
     var body: some View {
       VStack(alignment: .leading, spacing: Spacing.space2) {
         ShadowSearchField("Search events", text: $query, clearLabel: "Clear search")
           .frame(maxWidth: 280)
-        List(selection: $selection) {
-          Section("Event types") {
-            Label("session.revoked", systemImage: "key").tag("session.revoked")
-            Label("session.refreshed", systemImage: "key").tag("session.refreshed")
-          }
-          Section("Recent") {
-            Label("template:welcome-email", systemImage: "clock").tag("template")
-          }
-        }
-        .frame(width: 280, height: 190)
-        .clipShape(.rect(cornerRadius: Radius.lg, style: .continuous))
-        .shadowElevation(.e2)
+        StaticMenuPanel(
+          items: [
+            .sectionTitle("Event types"),
+            .action("session.revoked", systemImage: "key", isHighlighted: true),
+            .action("session.refreshed", systemImage: "key"),
+            .sectionTitle("Recent"),
+            .action("template:welcome-email", systemImage: "clock"),
+          ],
+          width: 280
+        )
       }
     }
   }

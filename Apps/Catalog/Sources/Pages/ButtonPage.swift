@@ -25,15 +25,33 @@ struct ButtonPage: View {
       StateSection("Hover and pressed", note: "The pointer on iPad and Mac adds accent-hover or bg-hover; touch-down uses accent-active or bg-pressed.") {
         VStack(alignment: .leading, spacing: Spacing.space3) {
           ForEach(InteractionRow.all) { row in
-            ShadowFlowLayout(spacing: Spacing.space3) {
-              Button(row.title) {}.buttonStyle(.shadowFilled).shadowPreviewInteraction(row.interaction)
-              Button(row.title) {}.buttonStyle(.shadowTinted).shadowPreviewInteraction(row.interaction)
-              Button(row.title) {}.buttonStyle(.shadowBordered).shadowPreviewInteraction(row.interaction)
-              Button(row.title) {}.buttonStyle(.shadowPlain).shadowPreviewInteraction(row.interaction)
+            ShadowFlowLayout(spacing: Spacing.space3, lineSpacing: Spacing.space3) {
+              HStack(spacing: Spacing.space3) {
+                Button(row.title) {}.buttonStyle(.shadowFilled)
+                Button(row.title) {}.buttonStyle(.shadowTinted)
+              }
+              HStack(spacing: Spacing.space3) {
+                Button(row.title) {}.buttonStyle(.shadowBordered)
+                Button(row.title) {}.buttonStyle(.shadowPlain)
+              }
             }
+            .shadowPreviewInteraction(row.interaction)
           }
         }
       }
+      #if os(macOS)
+        StateSection(
+          "Focused",
+          note: "With keyboard navigation on, the system draws a 2pt focus-ring outline that follows the button’s rounded rectangle; Space presses it."
+        ) {
+          StaticIllustration {
+            HStack(spacing: Spacing.space3) {
+              Button("Share") {}.buttonStyle(.shadowBordered).catalogFocusRing()
+              Button("Continue reading") {}.buttonStyle(.shadowFilled).catalogFocusRing()
+            }
+          }
+        }
+      #endif
       StateSection("Disabled", note: "Disabled buttons fade to disabled-opacity and ignore input.") {
         ShadowFlowLayout(spacing: Spacing.space3) {
           Button("Continue reading") {}.buttonStyle(.shadowFilled)
@@ -96,7 +114,7 @@ struct ButtonPage: View {
           HStack(spacing: Spacing.space3) {
             Button("Save", systemImage: "bookmark") {}.buttonStyle(.shadowGlass)
             Button("Publish") {}.buttonStyle(.shadowGlassProminent)
-            Button("Archive") {}.buttonStyle(.shadowGlass).disabled(true)
+            Button("Archive (disabled)") {}.buttonStyle(.shadowGlass).disabled(true)
           }
         }
       }
@@ -130,3 +148,16 @@ private struct InteractionRow: Identifiable {
 
   static let all = [InteractionRow(title: "Hover", interaction: .hovered), InteractionRow(title: "Pressed", interaction: .pressed)]
 }
+
+#if os(macOS)
+  extension View {
+    fileprivate func catalogFocusRing() -> some View {
+      overlay {
+        RoundedRectangle(cornerRadius: Radius.md + 3, style: .continuous)
+          .strokeBorder(ShadowColor.focusRing, lineWidth: 2)
+          .padding(-3)
+          .allowsHitTesting(false)
+      }
+    }
+  }
+#endif

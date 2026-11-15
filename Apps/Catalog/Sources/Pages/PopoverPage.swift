@@ -9,7 +9,7 @@ struct PopoverPage: View {
       StateSection(
         "Text settings",
         note:
-          "Quick settings for one control. iPad and Mac: a glass panel anchored to the button, changes apply live, no Save. iPhone adapts it to a sheet at the medium detent."
+          "Quick settings for one control. iPad and Mac: a glass panel anchored to the button, changes apply live, no Save. iPhone adapts it to a sheet sized to its content."
       ) {
         ReaderPreview {
           Button {
@@ -21,7 +21,7 @@ struct PopoverPage: View {
           }
           .buttonStyle(.plain)
           .help("Text settings for this book")
-          .popover(isPresented: $showsTextSettings, arrowEdge: .top) {
+          .popover(isPresented: $showsTextSettings, arrowEdge: Self.arrowEdge) {
             TextSettingsPanel()
               .presentationCompactAdaptation(.sheet)
               .shadowFittedDetents()
@@ -31,12 +31,17 @@ struct PopoverPage: View {
       }
       StateSection("Panel content", note: "The same controls as the popover, shown inline so the panel is visible in a still image.") {
         StaticIllustration {
-          PresentationBackdrop(height: 240, alignment: .top) {
-            TextSettingsPanel()
-              .frame(width: 300)
-              .fixedSize(horizontal: false, vertical: true)
-              .shadowGlass(.dense, in: RoundedRectangle(cornerRadius: ShadowDensity.current == .touch ? Radius.panel : Radius.lg, style: .continuous))
-              .shadowElevation(.e3)
+          PresentationBackdrop(alignment: .top) {
+            VStack(spacing: Spacing.space2) {
+              GlassCircleLabel {
+                Label("Text settings", systemImage: "textformat").labelStyle(.iconOnly)
+              }
+              TextSettingsPanel()
+                .frame(width: 300)
+                .fixedSize(horizontal: false, vertical: true)
+                .shadowGlass(.dense, in: RoundedRectangle(cornerRadius: ShadowDensity.current == .touch ? Radius.panel : Radius.lg, style: .continuous))
+                .shadowElevation(.e3)
+            }
           }
         }
       }
@@ -58,6 +63,14 @@ struct PopoverPage: View {
       }
     }
     .catalogAutoPresent($showsTextSettings)
+  }
+
+  private static var arrowEdge: Edge {
+    #if os(macOS)
+      .bottom
+    #else
+      .top
+    #endif
   }
 }
 
@@ -102,6 +115,7 @@ struct TextSettingsPanel: View {
       }
       .pickerStyle(.segmented)
       .labelsHidden()
+      .frame(maxWidth: .infinity)
       HStack(spacing: Spacing.space3) {
         Image(systemName: "textformat.size.smaller")
           .accessibilityHidden(true)

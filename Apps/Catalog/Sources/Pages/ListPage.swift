@@ -22,11 +22,23 @@ struct ListPage: View {
         ShadowListRow("Language", value: "English", accessory: .chevron) { ShadowSymbolTile(systemImage: "globe", tint: .neutral) }
         ShadowListRow("Sign out", role: .destructive)
       }
-      StateListSection("Selected", note: "Touch uses accent-soft with accent-text. Mac uses selection-row with on-accent text while the window is active.") {
+      StateListSection(
+        "Selected",
+        note:
+          "Touch uses accent-soft with accent-text. Mac keeps the native selection band: accent while the list is focused, grey otherwise."
+      ) {
         ForEach(books) { book in
           ShadowListRow(title: Text(verbatim: book.title), subtitle: Text(verbatim: book.progress), isSelected: selection == book.id) { ListCover(book: book) }
             .tag(book.id)
         }
+      }
+      StateListSection(
+        "Symbol tiles", note: "Soft tiles for settings rows; a filled tile marks the one row that leads somewhere important. Large tiles head a sheet or an empty state."
+      ) {
+        ShadowListRow("Account and security", value: "Soft", accessory: .chevron) { ShadowSymbolTile(systemImage: "shield") }
+        ShadowListRow("Two-step verification", value: "Filled", accessory: .chevron) { ShadowSymbolTile(systemImage: "lock.shield", style: .filled) }
+        ShadowListRow("Confirm it’s you", subtitle: "Large, filled", leading: { ShadowSymbolTile(systemImage: "shield", style: .filled, size: .large) })
+        ShadowListRow("Recovery codes", subtitle: "Large, soft", leading: { ShadowSymbolTile(systemImage: "key", size: .large) })
       }
       StateListSection("Badges and values", note: "Trailing badges and values sit before the chevron; the value never pushes the title below two lines.") {
         ShadowListRow("Updates", value: "3 new", accessory: .chevron) { ShadowSymbolTile(systemImage: "bell.badge") }
@@ -64,6 +76,6 @@ struct ListPage: View {
       }
     }
     .shadowListStyle()
-    .catalogListPage(.list, anchors: ["Library", "Settings", "Selected", "Badges and values", "Disabled", "Long text", "Loading", "Empty"])
+    .catalogListPage(.list, anchors: ["Library", "Settings", "Selected", "Symbol tiles", "Badges and values", "Disabled", "Long text", "Loading", "Empty"])
   }
 }

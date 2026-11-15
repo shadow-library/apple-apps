@@ -10,7 +10,7 @@ struct AccountMenuPage: View {
           "The native menu opens in its own window, which screenshots can’t capture; this panel mirrors it. Name and email confirm the account; Sign out comes last in its own section."
       ) {
         StaticIllustration {
-          PresentationBackdrop(height: ShadowDensity.current == .touch ? 400 : 260, alignment: .topTrailing) {
+          PresentationBackdrop(alignment: .topTrailing) {
             VStack(alignment: .trailing, spacing: Spacing.space2) {
               DemoAccountMenu(labelStyle: .avatar, inGlassCircle: true)
               StaticMenuPanel(items: Self.items(isTouch: ShadowDensity.current == .touch), width: ShadowDensity.current == .touch ? 320 : 300) {
@@ -21,7 +21,7 @@ struct AccountMenuPage: View {
         }
       }
       StateSection("Toolbar avatar", note: "iPhone and iPad: an avatar in a glass circle at the trailing end of the root toolbar. Mac: a small avatar in the toolbar.") {
-        PresentationBackdrop(height: 120, alignment: .topTrailing) {
+        PresentationBackdrop(alignment: .topTrailing, coverRows: 0) {
           DemoAccountMenu(labelStyle: .avatar, inGlassCircle: true)
         }
       }

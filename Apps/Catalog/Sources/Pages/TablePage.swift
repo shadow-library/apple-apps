@@ -55,14 +55,19 @@ private struct DeliveryTable: View {
   let rows: [Delivery]
   var isLoading = false
   var sizing: DemoTableSizing
+  var takesSnapshotFocus = false
   @State var sortOrder: [KeyPathComparator<Delivery>] = [KeyPathComparator(\.time, order: .reverse)]
   @State var selection: Set<Delivery.ID> = []
 
   @Environment(\.horizontalSizeClass) private var horizontalSizeClass
   @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
-  init(rows: [Delivery], isLoading: Bool = false, sizing: DemoTableSizing? = nil, sortedBy: [KeyPathComparator<Delivery>]? = nil, selected: Set<Delivery.ID> = []) {
+  init(
+    rows: [Delivery], isLoading: Bool = false, sizing: DemoTableSizing? = nil, sortedBy: [KeyPathComparator<Delivery>]? = nil, selected: Set<Delivery.ID> = [],
+    takesSnapshotFocus: Bool = false
+  ) {
     self.rows = rows
+    self.takesSnapshotFocus = takesSnapshotFocus
     self.isLoading = isLoading
     self.sizing = sizing ?? .fitsContent(estimatedRows: rows.count)
     _sortOrder = State(initialValue: sortedBy ?? [KeyPathComparator(\.time, order: .reverse)])
@@ -85,7 +90,7 @@ private struct DeliveryTable: View {
   var body: some View {
     ShadowTable(rows.sorted(using: sortOrder), selection: $selection, sortOrder: $sortOrder, isLoading: isLoading, loadingLabel: "Loading deliveries", compactSort: compactSort) {
       TableColumn(Text("Template").shadowTableHeader(), value: \.template) { ShadowTableIdentifier($0.template) }
-        .width(min: 120, ideal: 220)
+        .width(min: 180, ideal: 240)
       TableColumn(Text("Status").shadowTableHeader(), value: \.status) { $0.status.badge }
         .width(min: 96, ideal: 120)
       TableColumn(Text("Sent").shadowTableHeader(), value: \.sent) { ShadowTableNumber(Text($0.sent, format: .number)) }
@@ -96,7 +101,7 @@ private struct DeliveryTable: View {
         .alignment(.trailing)
     } compact: { delivery in
       ShadowListRow(
-        title: Text(verbatim: delivery.template), subtitle: Text("\(delivery.sent, format: .number) sent · \(delivery.time, format: .dateTime.hour().minute())"),
+        title: Text(verbatim: delivery.template).monospaced(), subtitle: Text("\(delivery.sent, format: .number) sent · \(delivery.time, format: .dateTime.hour().minute())"),
         isSelected: selection.contains(delivery.id), trailing: delivery.status.badge)
     } empty: {
       ShadowContentUnavailable("No deliveries yet", message: "Sent emails and push notifications show up here.")
@@ -111,6 +116,7 @@ private struct DeliveryTable: View {
     #if os(iOS)
       .environment(\.editMode, .constant(isList && !selection.isEmpty ? .active : .inactive))
     #endif
+    .modifier(SnapshotFocusIf(isEnabled: takesSnapshotFocus))
     .demoTableFrame(sizing)
   }
 }
@@ -121,12 +127,12 @@ struct TablePage: View {
       StateSection(
         "Deliveries",
         note:
-          "Mac and iPad use the native Table with sortable headers; Mac selection uses the system accent, and selection-row applies to custom lists. Identifiers use the mono face and numbers and times are tabular and right-aligned. iPhone collapses to a list with the rest as subtitle and a trailing badge, and a Sort menu replaces the headers."
+          "Mac and iPad use the native Table with sortable headers; selection is the native band, accent while the table is focused and grey otherwise. Identifiers use the mono face and numbers and times are tabular and right-aligned. iPhone collapses to a list with the rest as subtitle and a trailing badge, and a Sort menu replaces the headers."
       ) {
         DeliveryTable(rows: Delivery.sample)
       }
       StateSection("Selected", note: "Selection fills the row; a row can be picked with the pointer or the keyboard, and the context menu acts on the selection.") {
-        DeliveryTable(rows: Delivery.sample, selected: ["step-up-code"])
+        DeliveryTable(rows: Delivery.sample, selected: ["step-up-code"], takesSnapshotFocus: true)
       }
       StateSection("Multiple selection", note: "Shift and Command extend the selection on Mac; iPhone enters selection mode.") {
         DeliveryTable(rows: Delivery.sample, selected: ["chapter-released", "step-up-code"])
@@ -137,7 +143,10 @@ struct TablePage: View {
       ) {
         DeliveryTable(rows: Delivery.sample, sortedBy: [KeyPathComparator(\.template)])
       }
-      StateSection("Long identifiers", note: "Identifiers stay on one line and truncate in the middle so the ends, which differ, stay readable.") {
+      StateSection(
+        "Long identifiers",
+        note: "In table cells identifiers stay on one line and truncate in the middle so the ends, which differ, stay readable. The iPhone list wraps them to two lines."
+      ) {
         DeliveryTable(rows: Delivery.long)
       }
       StateSection("Scrolling", note: "The table owns its scrolling. Rows load as people reach the end; there is no pagination.") {
@@ -147,8 +156,20 @@ struct TablePage: View {
         DeliveryTable(rows: [], isLoading: true, sizing: .rows(5))
       }
       StateSection("Empty", note: "The headers stay and the body says what is missing.") {
-        DeliveryTable(rows: [], sizing: .rows(5))
+        DeliveryTable(rows: [], sizing: .rows(ShadowDensity.current == .compact ? 8 : 5))
       }
+    }
+  }
+}
+
+private struct SnapshotFocusIf: ViewModifier {
+  let isEnabled: Bool
+
+  func body(content: Content) -> some View {
+    if isEnabled {
+      content.catalogSnapshotFocus()
+    } else {
+      content
     }
   }
 }
