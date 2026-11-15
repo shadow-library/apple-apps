@@ -41,7 +41,7 @@ struct FormBlock<Content: View>: View {
   }
 }
 
-private struct MeasuredHeight: ViewModifier {
+struct MeasuredHeight: ViewModifier {
   let height: CGFloat?
 
   func body(content: Content) -> some View {

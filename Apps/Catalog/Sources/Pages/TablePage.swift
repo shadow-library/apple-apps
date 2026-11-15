@@ -133,36 +133,44 @@ struct TablePage: View {
       ) {
         DeliveryTable(rows: Delivery.sample)
       }
+      .shadowColumnSpan(.full)
       StateSection("Selected", note: "Selection fills the row; a row can be picked with the pointer or the keyboard, and the context menu acts on the selection.") {
         DeliveryTable(rows: Delivery.sample, selected: ["step-up-code"], takesSnapshotFocus: true)
       }
+      .shadowColumnSpan(.full)
       StateSection("Multiple selection", note: "Shift and Command extend the selection on Mac; iPhone enters selection mode.") {
         DeliveryTable(rows: Delivery.sample, selected: ["chapter-released", "step-up-code"])
       }
+      .shadowColumnSpan(.full)
       StateSection(
         "Sorted by template",
         note: "Clicking a header sorts by it and a second click reverses the order. The caller sorts the rows with the same sort order; on iPhone the Sort menu changes it."
       ) {
         DeliveryTable(rows: Delivery.sample, sortedBy: [KeyPathComparator(\.template)])
       }
+      .shadowColumnSpan(.full)
       StateSection(
         "Long identifiers",
         note: "In table cells identifiers stay on one line and truncate in the middle so the ends, which differ, stay readable; the iPhone list rows do the same."
       ) {
         DeliveryTable(rows: Delivery.long)
       }
+      .shadowColumnSpan(.full)
       StateSection("Scrolling", note: "The table owns its scrolling. Rows load as people reach the end; there is no pagination.") {
         DeliveryTable(rows: Delivery.many, sizing: .scrolling(visibleRows: 6))
       }
+      .shadowColumnSpan(.full)
       StateSection(
         "Loading",
         note: "Placeholder rows are drawn redacted in the table’s own columns, so the skeleton follows the headers and keeps the table’s size until the first response."
       ) {
         DeliveryTable(rows: Delivery.sample, isLoading: true)
       }
+      .shadowColumnSpan(.full)
       StateSection("Empty", note: "The headers stay and the body says what is missing.") {
         DeliveryTable(rows: [], sizing: .rows(ShadowDensity.current == .compact ? 8 : 5))
       }
+      .shadowColumnSpan(.full)
     }
   }
 }

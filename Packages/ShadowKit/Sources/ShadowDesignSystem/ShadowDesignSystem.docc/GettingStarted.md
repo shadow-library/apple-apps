@@ -75,6 +75,28 @@ struct LibraryView: View {
 
 `shadowShowToast` asserts in debug builds when no `shadowToastPresenter` is above it in the hierarchy.
 
+## Fill wide windows
+
+On iPad and Mac a single column leaves most of a wide window empty. Lay a page's sections out with ``ShadowAdaptiveColumns``: it flows them
+into two columns where they fit (three with `maxColumns: 3`). A column is added only when every column can be at least
+``ShadowMetrics/columnMinWidth`` wide, and no column grows past ``ShadowMetrics/readableWidth``. On iPhone and at accessibility text sizes
+it is a single column.
+
+```swift
+ScrollView {
+  ShadowAdaptiveColumns(spacing: Spacing.space8) {
+    ProfileSection()
+    NotificationsSection()
+    ActivityTable()
+      .shadowColumnSpan(.full)
+  }
+  .padding(Spacing.space5)
+}
+```
+
+Give a full span to anything that needs the width, such as a table. The layout measures every section, so keep it to bounded content; a
+long or growing collection belongs in a `LazyVGrid` or a `List`.
+
 ## Strings
 
 The library ships no localised strings. Titles, labels, accessibility labels and messages are parameters of the components, so the app owns its string catalog.

@@ -119,6 +119,7 @@ struct StepsPage: View {
           }
         }
       }
+      .shadowColumnSpan(.full)
     }
   }
 }

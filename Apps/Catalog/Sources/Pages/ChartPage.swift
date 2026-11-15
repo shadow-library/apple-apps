@@ -352,6 +352,7 @@ struct ChartPage: View {
           }
         }
       }
+      .shadowColumnSpan(.full)
     }
   }
 }

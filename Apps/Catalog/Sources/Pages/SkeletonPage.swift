@@ -72,6 +72,7 @@ struct SkeletonPage: View {
           .shadowSkeleton(true)
         }
       }
+      .shadowColumnSpan(.full)
     }
   }
 }

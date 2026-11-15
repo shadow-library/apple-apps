@@ -14,6 +14,14 @@ struct CatalogLaunchConfigurationTests {
     #expect(launch.isAutomated)
   }
 
+  @Test("should settle the scroll within half the capture poll interval")
+  func capturePoll() {
+    #expect(CatalogLaunchConfiguration(arguments: ["-capture-poll", "0.3"]).scrollSettleDelay == .milliseconds(150))
+    #expect(CatalogLaunchConfiguration(arguments: ["Catalog"]).capturePoll == CatalogLaunchConfiguration.defaultCapturePoll)
+    #expect(CatalogLaunchConfiguration(arguments: ["-capture-poll", "0"]).capturePoll == CatalogLaunchConfiguration.defaultCapturePoll)
+    #expect(CatalogLaunchConfiguration(arguments: ["-capture-poll", "soon"]).capturePoll == CatalogLaunchConfiguration.defaultCapturePoll)
+  }
+
   @Test("should parse the tokens page")
   func parsesTokens() {
     #expect(CatalogLaunchConfiguration(arguments: ["-component", "Tokens"]).page == .tokens)

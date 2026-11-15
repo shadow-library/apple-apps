@@ -18,7 +18,10 @@ nonisolated final class TableLoadingAccessibilityTests: XCTestCase {
 
     let leaks = section.filter { element in placeholderStrings.contains { element.label.contains($0) || "\(element.value ?? "")".contains($0) } }
     XCTAssertTrue(leaks.isEmpty, "Placeholder text is exposed: \(leaks.map(\.label))")
-    XCTAssertEqual(elements.filter { $0.label == loadingLabel }.count, 1)
+    let loading = elements.filter { $0.label == loadingLabel }
+    XCTAssertEqual(loading.count, 1)
+    let loadingFrame = try XCTUnwrap(loading.first).frame
+    XCTAssertTrue(loadingFrame.minY >= sectionTop && loadingFrame.maxY <= sectionBottom, "The loading label \(loadingFrame) lies outside the Loading section")
     let rowEdges = Set(section.filter { $0.elementType == .cell }.map(\.frame.minY))
     XCTAssertLessThanOrEqual(rowEdges.count, 1, "Only the native header row may expose cells")
   }

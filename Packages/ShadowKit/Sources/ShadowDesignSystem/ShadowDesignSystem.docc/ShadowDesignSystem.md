@@ -82,6 +82,11 @@ The library contains no user-facing strings. Every title, label and message is p
 - ``ShadowFileDropZone``
 - ``ShadowFileRow``
 - ``ShadowTransferState``
+
+### Layout
+
+- ``ShadowAdaptiveColumns``
+- ``ShadowColumnSpan``
 - ``ShadowFlowLayout``
 
 ### Status

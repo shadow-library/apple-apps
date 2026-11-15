@@ -69,7 +69,7 @@ enum CatalogComponent: String, CaseIterable, Identifiable, Hashable, Sendable {
   var layout: CatalogPageLayout {
     switch self {
     case .navigationBar, .tabBar, .toolbar, .sidebar, .splitView, .inspector, .iPhoneScreens, .iPadScreen, .macScreen: .fullBleed
-    case .list, .swipeActions, .refreshControl, .notificationList, .outlineGroup: .list
+    case .swipeActions, .refreshControl, .notificationList, .outlineGroup: .list
     default: .scroll
     }
   }

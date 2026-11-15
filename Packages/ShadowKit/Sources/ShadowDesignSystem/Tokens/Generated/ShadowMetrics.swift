@@ -42,6 +42,9 @@ nonisolated public enum ShadowMetrics {
   /// Maximum text column on iPad and Mac (readableContentGuide).
   public static let readableWidth: CGFloat = 672
 
+  /// Narrowest column of an adaptive column layout: the widest iPhone screen, so sections designed for iPhone fit a column without new wraps.
+  public static let columnMinWidth: CGFloat = 440
+
   public static let tokens: [ShadowScalarToken] = [
     ShadowScalarToken(name: "tap-target", value: tapTarget),
     ShadowScalarToken(name: "control-touch-sm", value: controlTouchSm),
@@ -56,5 +59,6 @@ nonisolated public enum ShadowMetrics {
     ShadowScalarToken(name: "sidebar-mac", value: sidebarMac),
     ShadowScalarToken(name: "inspector", value: inspector),
     ShadowScalarToken(name: "readable-width", value: readableWidth),
+    ShadowScalarToken(name: "column-min-width", value: columnMinWidth),
   ]
 }

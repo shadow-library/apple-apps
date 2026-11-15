@@ -127,6 +127,7 @@ struct TimelinePage: View {
           }
         }
       }
+      .shadowColumnSpan(.full)
     }
   }
 }

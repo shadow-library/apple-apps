@@ -55,6 +55,7 @@ struct CalloutPage: View {
           }
         }
       }
+      .shadowColumnSpan(.full)
     }
   }
 

@@ -55,6 +55,7 @@ struct StatisticPage: View {
           }
         }
       }
+      .shadowColumnSpan(.full)
     }
   }
 }

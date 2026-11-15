@@ -125,6 +125,7 @@ struct ProgressViewPage: View {
           }
         }
       }
+      .shadowColumnSpan(.full)
     }
   }
 }

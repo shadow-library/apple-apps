@@ -2,47 +2,44 @@ import ShadowDesignSystem
 import SwiftUI
 
 struct TokensPage: View {
+  private static let swatchRowWidth: CGFloat = 280
+
   var body: some View {
-    ScrollView {
-      VStack(alignment: .leading, spacing: Spacing.space8) {
-        StateSection("Colour", note: "Every semantic token, rendered in light (left) and dark (right).") {
-          LazyVStack(alignment: .leading, spacing: Spacing.space2) {
-            ForEach(ShadowColorToken.allCases, id: \.self) { token in
-              ColorSwatchRow(token: token)
-            }
+    ComponentPage(id: "tokens") {
+      StateSection("Colour", note: "Every semantic token, rendered in light (left) and dark (right).") {
+        LazyVGrid(columns: [GridItem(.adaptive(minimum: Self.swatchRowWidth), spacing: Spacing.space5)], alignment: .leading, spacing: Spacing.space2) {
+          ForEach(ShadowColorToken.allCases, id: \.self) { token in
+            ColorSwatchRow(token: token)
           }
         }
-        StateSection("Spacing") {
-          VStack(alignment: .leading, spacing: Spacing.space2) {
-            ForEach(Spacing.tokens) { token in
-              TokenBarRow(token: token)
-            }
+      }
+      .shadowColumnSpan(.full)
+      StateSection("Spacing") {
+        VStack(alignment: .leading, spacing: Spacing.space2) {
+          ForEach(Spacing.tokens) { token in
+            TokenBarRow(token: token)
           }
         }
-        StateSection("Radius") {
-          LazyVGrid(columns: [GridItem(.adaptive(minimum: 96), spacing: Spacing.space3)], alignment: .leading, spacing: Spacing.space3) {
-            ForEach(Radius.tokens) { token in
-              RadiusSwatch(token: token)
-            }
+      }
+      StateSection("Radius") {
+        LazyVGrid(columns: [GridItem(.adaptive(minimum: 96), spacing: Spacing.space3)], alignment: .leading, spacing: Spacing.space3) {
+          ForEach(Radius.tokens) { token in
+            RadiusSwatch(token: token)
           }
         }
-        StateSection("Type styles") {
-          VStack(alignment: .leading, spacing: Spacing.space3) {
-            ForEach(ShadowTextStyle.allCases, id: \.self) { style in
-              VStack(alignment: .leading, spacing: Spacing.space05) {
-                Text("The Ninth Archive").shadowFont(style).foregroundStyle(ShadowColor.textPrimary)
-                Text(style.rawValue).shadowFont(.monoBody).foregroundStyle(ShadowColor.textSecondary)
-              }
+      }
+      StateSection("Type styles") {
+        LazyVGrid(columns: [GridItem(.adaptive(minimum: Self.swatchRowWidth), spacing: Spacing.space5)], alignment: .leading, spacing: Spacing.space3) {
+          ForEach(ShadowTextStyle.allCases, id: \.self) { style in
+            VStack(alignment: .leading, spacing: Spacing.space05) {
+              Text("The Ninth Archive").shadowFont(style).foregroundStyle(ShadowColor.textPrimary)
+              Text(style.rawValue).shadowFont(.monoBody).foregroundStyle(ShadowColor.textSecondary)
             }
           }
         }
       }
-      .frame(maxWidth: ShadowMetrics.readableWidth, alignment: .leading)
-      .padding(Spacing.space4)
-      .frame(maxWidth: .infinity, alignment: .leading)
+      .shadowColumnSpan(.full)
     }
-    .catalogScrollAnchor()
-    .background(ShadowColor.surfaceApp)
   }
 }
 

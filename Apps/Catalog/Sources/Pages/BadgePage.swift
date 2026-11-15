@@ -18,14 +18,6 @@ struct BadgePage: View {
         }
         .shadowCard()
       }
-      StateSection("Intents in light and dark", note: "Each intent uses bg-subtle, border and text-on-subtle, so copy keeps 4.5:1 in both themes.") {
-        SchemePair {
-          ShadowFlowLayout(spacing: Spacing.space2, lineSpacing: Spacing.space2) {
-            StatusBadges()
-            ShadowBadge("New", intent: .accent)
-          }
-        }
-      }
       StateSection("Counts", note: "Counts use danger-solid and tabular figures, cap at 99+ and hide at zero.") {
         VStack(alignment: .leading, spacing: Spacing.space4) {
           ShadowFlowLayout(spacing: Spacing.space3, lineSpacing: Spacing.space3) {
@@ -81,6 +73,15 @@ struct BadgePage: View {
         }
         .shadowCard()
       }
+      StateSection("Intents in light and dark", note: "Each intent uses bg-subtle, border and text-on-subtle, so copy keeps 4.5:1 in both themes.") {
+        SchemePair {
+          ShadowFlowLayout(spacing: Spacing.space2, lineSpacing: Spacing.space2) {
+            StatusBadges()
+            ShadowBadge("New", intent: .accent)
+          }
+        }
+      }
+      .shadowColumnSpan(.full)
     }
   }
 }

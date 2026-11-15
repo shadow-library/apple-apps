@@ -24,7 +24,7 @@
     private static let windowSize = CGSize(width: 1280, height: 820)
     private static let settleDelay = Duration.milliseconds(400)
     private static let presentationSettleDelay = Duration.milliseconds(1_800)
-    private static let pollInterval = Duration.milliseconds(250)
+    private static let pollInterval = CatalogLaunchConfiguration.defaultCapturePoll
     private static let maximumPolls = 12
 
     // CGWindowListCreateImage is obsoleted in the SDK, but unlike ScreenCaptureKit it still captures one of the process's own windows

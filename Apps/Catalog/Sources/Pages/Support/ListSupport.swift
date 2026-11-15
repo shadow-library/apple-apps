@@ -41,3 +41,30 @@ extension Date {
     addingTimeInterval(-Double(minutes * 60 + hours * 3600 + days * 86_400))
   }
 }
+
+struct SelectableListBlock<Content: View>: View {
+  @Binding var selection: String?
+  @ViewBuilder let content: Content
+  @State private var height: CGFloat?
+
+  var body: some View {
+    let metrics = ShadowCardMetrics()
+    let shape = RoundedRectangle(cornerRadius: metrics.cornerRadius, style: .continuous)
+    List(selection: $selection) {
+      content.listSectionSeparator(.hidden)
+    }
+    .shadowListStyle(.plain)
+    .scrollDisabled(true)
+    .contentMargins(.vertical, 0, for: .scrollContent)
+    .onScrollGeometryChange(for: CGFloat.self) {
+      $0.contentSize.height
+    } action: { _, newValue in
+      if newValue > 0 { height = newValue.rounded(.up) }
+    }
+    .modifier(MeasuredHeight(height: height))
+    .clipShape(shape)
+    .overlay {
+      if metrics.borderWidth > 0 { shape.strokeBorder(ShadowColor.borderDefault, lineWidth: metrics.borderWidth) }
+    }
+  }
+}

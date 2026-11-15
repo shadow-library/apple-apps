@@ -280,7 +280,7 @@ capture_simulator() {
   [[ "$present" == true ]] && settle="$SIM_PRESENT_SETTLE"
   rm -f "$file" "$previous" "$current"
   # shellcheck disable=SC2046
-  xcrun simctl launch --terminate-running-process "$udid" "$BUNDLE_ID" -component "$id" -appearance "$appearance" -scroll "$scroll" \
+  xcrun simctl launch --terminate-running-process "$udid" "$BUNDLE_ID" -component "$id" -appearance "$appearance" -scroll "$scroll" -capture-poll "$SIM_POLL" \
     $(screen_arguments) $(present_arguments) >/dev/null || return 1
   sleep "$settle"
   if ! xcrun simctl io "$udid" screenshot "$previous" >/dev/null 2>&1; then

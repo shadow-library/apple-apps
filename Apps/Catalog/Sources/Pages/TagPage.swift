@@ -109,6 +109,7 @@ struct TagPage: View {
           }
         }
       }
+      .shadowColumnSpan(.full)
     }
   }
 }

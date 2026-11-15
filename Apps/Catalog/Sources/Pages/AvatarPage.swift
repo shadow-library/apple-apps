@@ -100,6 +100,7 @@ struct AvatarPage: View {
           }
         }
       }
+      .shadowColumnSpan(.full)
     }
   }
 }

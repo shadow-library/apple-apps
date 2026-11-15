@@ -3,6 +3,7 @@ import SwiftUI
 
 extension EnvironmentValues {
   @Entry var catalogScrollFraction: Double?
+  @Entry var catalogScrollSettleDelay = CatalogLaunchConfiguration.defaultCapturePoll / 2
 }
 
 extension View {
@@ -11,22 +12,53 @@ extension View {
 
 private struct CatalogScrollAnchor: ViewModifier {
   @Environment(\.catalogScrollFraction) private var fraction
+  @Environment(\.catalogScrollSettleDelay) private var settleDelay
   @State private var position = ScrollPosition()
+  @State private var collapsesTitle = false
+  @State private var pendingScroll: Task<Void, Never>?
 
   func body(content: Content) -> some View {
     if let fraction {
       content
         .scrollPosition($position)
-        .onScrollGeometryChange(for: ClosedRange<CGFloat>.self) { geometry in
+        .onScrollGeometryChange(for: ScrollExtent.self) { geometry in
           let insets = geometry.contentInsets
-          let lowerBound = -insets.top
-          return lowerBound...max(lowerBound, geometry.contentSize.height + insets.bottom - geometry.containerSize.height)
-        } action: { _, offsets in
-          position.scrollTo(y: offsets.lowerBound + (offsets.upperBound - offsets.lowerBound) * fraction)
+          return ScrollExtent(topInset: insets.top, overflow: geometry.contentSize.height + insets.top + insets.bottom - geometry.containerSize.height)
+        } action: { _, extent in
+          scroll(to: fraction, of: extent)
         }
+        .catalogCollapsedTitle(collapsesTitle)
     } else {
       content
     }
+  }
+
+  private func scroll(to fraction: Double, of extent: ScrollExtent) {
+    pendingScroll?.cancel()
+    pendingScroll = Task {
+      try? await Task.sleep(for: settleDelay)
+      guard !Task.isCancelled else { return }
+      if fraction > 0 && extent.overflow > 0 { collapsesTitle = true }
+      position.scrollTo(y: -extent.topInset + max(extent.overflow, 0) * fraction)
+    }
+  }
+}
+
+private struct ScrollExtent: Equatable {
+  let topInset: CGFloat
+  let overflow: CGFloat
+}
+
+extension View {
+  // UIKit keeps the large title expanded when a page that barely scrolls is moved programmatically, while a hand scroll collapses it.
+  // Neither an offset nor this mode re-expands a collapsed title, so the capture scrolls only once the page's sizes have settled.
+  @ViewBuilder
+  fileprivate func catalogCollapsedTitle(_ isCollapsed: Bool) -> some View {
+    #if os(iOS)
+      navigationBarTitleDisplayMode(isCollapsed ? .inline : .automatic)
+    #else
+      self
+    #endif
   }
 }
 
@@ -124,8 +156,17 @@ struct StateListSection<Content: View>: View {
 }
 
 struct ComponentPage<Content: View>: View {
-  let component: CatalogComponent
+  let id: String
   @ViewBuilder let content: Content
+
+  init(component: CatalogComponent, @ViewBuilder content: () -> Content) {
+    self.init(id: component.id, content: content)
+  }
+
+  init(id: String, @ViewBuilder content: () -> Content) {
+    self.id = id
+    self.content = content()
+  }
 
   #if os(iOS)
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
@@ -139,19 +180,34 @@ struct ComponentPage<Content: View>: View {
     #endif
   }
 
+  private var maxColumns: Int {
+    #if os(iOS)
+      horizontalSizeClass == .compact ? 1 : 3
+    #else
+      3
+    #endif
+  }
+
+  private var alignment: Alignment {
+    #if os(macOS)
+      .top
+    #else
+      .topLeading
+    #endif
+  }
+
   var body: some View {
     ScrollView {
-      VStack(alignment: .leading, spacing: Spacing.space8) {
+      ShadowAdaptiveColumns(maxColumns: maxColumns, spacing: Spacing.space8) {
         content
       }
-      .frame(maxWidth: ShadowMetrics.readableWidth, alignment: .leading)
       .padding(.horizontal, margin)
       .padding(.vertical, Spacing.space4)
-      .frame(maxWidth: .infinity, alignment: .leading)
+      .frame(maxWidth: .infinity, alignment: alignment)
     }
     .catalogScrollAnchor()
     .background(ShadowColor.surfaceApp)
-    .accessibilityIdentifier("component-\(component.id)")
+    .accessibilityIdentifier("component-\(id)")
   }
 }
 
@@ -179,6 +235,7 @@ struct StateSection<Content: View>: View {
             .foregroundStyle(ShadowColor.textSecondary)
         }
       }
+      .frame(maxWidth: ShadowMetrics.readableWidth, alignment: .leading)
       content
     }
     .frame(maxWidth: .infinity, alignment: .leading)

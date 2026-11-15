@@ -22,7 +22,8 @@ private struct ShadowChartAxesModifier: ViewModifier {
         }
       }
       .chartXAxis {
-        AxisMarks(values: .automatic(desiredCount: 4)) { _ in
+        // The default preset centres labels on their ticks and truncates the last one at the plot's trailing edge, even with room to spare.
+        AxisMarks(preset: .aligned, values: .automatic(desiredCount: 4)) { _ in
           AxisValueLabel().font(Font.shadow(.caption)).foregroundStyle(ShadowColor.textSecondary)
         }
       }

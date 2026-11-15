@@ -20,11 +20,12 @@ nonisolated final class CatalogShotTests: XCTestCase {
     }
 
     var launchArguments: [String] {
-      let base = ["-component", component, "-appearance", appearance, "-scroll", scroll]
+      let base = ["-component", component, "-appearance", appearance, "-scroll", scroll, "-capture-poll", String(CatalogShotTests.pollInterval)]
       return screen.isEmpty ? base : base + ["-screen", screen]
     }
   }
 
+  fileprivate static let pollInterval: TimeInterval = 0.3
   private let settlePolls = 10
 
   @MainActor
@@ -50,7 +51,7 @@ nonisolated final class CatalogShotTests: XCTestCase {
     Thread.sleep(forTimeInterval: 1.5)
     var previous = XCUIScreen.main.screenshot().pngRepresentation
     for _ in 0..<settlePolls {
-      Thread.sleep(forTimeInterval: 0.3)
+      Thread.sleep(forTimeInterval: Self.pollInterval)
       let current = XCUIScreen.main.screenshot().pngRepresentation
       if current == previous { return current }
       previous = current

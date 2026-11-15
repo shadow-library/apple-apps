@@ -52,6 +52,7 @@ struct ToastPage: View {
           }
         }
       }
+      .shadowColumnSpan(.full)
     }
     .shadowToastPresenter(center)
     .catalogAutoPresent {

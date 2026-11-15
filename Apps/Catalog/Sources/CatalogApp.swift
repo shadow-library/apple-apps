@@ -24,6 +24,7 @@ struct CatalogApp: App {
       CatalogView(model: model)
         .shadowTheme()
         .environment(\.catalogScrollFraction, model.launch.scrollFraction)
+        .environment(\.catalogScrollSettleDelay, model.launch.scrollSettleDelay)
         .environment(\.catalogPresentsSample, model.launch.presentsSample)
         .environment(\.catalogScreen, model.launch.screen)
         .environment(\.catalogTakesSnapshot, model.launch.snapshotURL != nil)

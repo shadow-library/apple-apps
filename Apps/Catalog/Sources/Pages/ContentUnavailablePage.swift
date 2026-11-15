@@ -64,6 +64,7 @@ struct ContentUnavailablePage: View {
           }
         }
       }
+      .shadowColumnSpan(.full)
     }
   }
 }
