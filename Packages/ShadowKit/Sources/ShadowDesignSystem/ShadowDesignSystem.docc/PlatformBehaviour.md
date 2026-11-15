@@ -11,6 +11,8 @@ Use the system control and tint it. The library decides tint, surfaces, text col
 - Tables and `List(selection:)` keep the native selection: the system accent when focused, grey when unfocused. This deviates from the design spec's selection colour because Shadow cannot replicate it on a native `Table`, and the native band follows the user's accent and focus.
 - Exactly one selection layer is drawn per platform. On a Mac `List(selection:)` and on the iPad sidebar, ``ShadowListRow`` does not draw its own pill.
 - Labels on the focused accent band switch to on-accent, and labels on the unfocused grey band keep their tokens. AppKit does not rerun a row's body when focus changes, so the library resolves the colour at render time. This applies to ``ShadowListRow``, ``ShadowSidebarLabel`` icons and table cells.
+- A label ``ShadowBadge`` on the focused accent band of a Mac list or table row becomes an on-accent outline: no fill, on-accent border, symbol and word, so the status still reads without its colour. Touch list selection is accent-soft, so badges there keep their intent colours.
+- iPad table rows get the same on-accent labels and badges only where iPadOS reports the selection as prominent to the row's content: a row the person selects by touch. A selection set in code after the table appears, and every row of a multiple selection after the first, keep the standard colours on the accent band. iPadOS does not update the cell content's prominence for those rows.
 - Touch lists keep the accent-soft selection with accent text; grouped sections keep their own selection.
 
 ## Mac segmented control
@@ -33,14 +35,18 @@ Toasts anchor to the top safe area of the window on iPhone and iPad, wherever ``
 - Toolbar toggles render natively; toolbars ignore custom `ToggleStyle`.
 - The Mac Picker pop-up chevron and Mac Slider tick marks stay native.
 - The iOS 26 graphical `DatePicker` draws the selected day as an accent-soft disc, not a solid accent disc.
-- Mac grouped lists stay the native grey grouped style. Per-section bordered cards are not achievable with native `List` or `Form`.
-- The Mac account menu label is sized by AppKit and does not fill its container.
-- Mac list section header rules are drawn by AppKit and cannot be hidden.
+- Mac grouped lists and forms stay the native grey grouped style; the design spec's bordered card per section is not drawn. Native `List` and `Form` cannot produce it.
+- Mac list section headers keep the hairline AppKit draws under them; `listRowSeparator(_:)` and `listSectionSeparator(_:)` do not remove it.
+- Mac outline disclosure chevrons stay where AppKit places them, in the gutter before the row's indent rather than on the text column.
+- The Mac account menu label is drawn by AppKit at its ideal size, so it does not fill its container and its chevron follows the name.
+
+On Mac these native renderings are the spec; the component guides say so.
 
 ## Lists and tables
 
 - A ``ShadowListRow`` pads itself only inside ``ShadowGroupedSection``. In a `List` it publishes its insets through `.listRowInsets`. Outside a `List`, wrap it in a grouped section or pad it with `ShadowListMetrics().rowInsets`.
 - ``ShadowTable`` is a native `Table` on Mac and regular width, and a row list with a Sort menu on compact width. The caller sorts the rows. Compact rows wrap long identifiers to two lines unless `.shadowListRowSingleLineTitle(truncationMode:)` is applied.
+- While loading, ``ShadowTable`` keeps the native header and draws the rows passed in redacted, in the table's own columns, so the skeleton follows the headers. Pass placeholder rows; with none it draws generic bars shaped by `skeletonColumns`, which cannot follow native column widths.
 - Table headers are `subheadline` medium in `textSecondary`. Cells are `textPrimary`, because native iPad tables draw later columns secondary.
 
 ## Other decisions

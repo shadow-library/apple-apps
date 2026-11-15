@@ -56,6 +56,8 @@ nonisolated public struct ShadowTableCompactSort<Value> {
 }
 
 /// Rows are displayed in the order given, so sort them with `sorted(using: sortOrder)` before passing them in.
+/// While `isLoading`, the rows passed in are drawn redacted as placeholders in the table's own columns, so the skeleton follows the
+/// headers; pass placeholder rows for that, or none for generic skeleton bars shaped by `skeletonColumns`.
 /// Mac selection uses the system accent; selection-row applies to custom lists.
 /// iPhone lists select only in edit mode, so give the screen an `EditButton`.
 /// Apply `.contextMenu(forSelectionType:menu:primaryAction:)` to the table for the context menu and the double-click, Return or tap action.
@@ -120,18 +122,32 @@ where Columns.TableRowValue == Value, Columns.TableColumnSortComparator == KeyPa
         .scrollContentBackground(.hidden)
         .overlay {
           Group {
-            if isLoading {
+            if isLoading && rows.isEmpty {
               ShadowTableSkeleton(columns: skeletonColumns, label: loadingLabel)
+            } else if isLoading {
+              Table(rows, selection: .constant([]), sortOrder: .constant(sortOrder.wrappedValue)) { columns }
+                .tableStyle(.inset)
+                .tableColumnHeaders(.hidden)
+                .modifier(ShadowTableBackdrop(isEmpty: false))
+                .scrollContentBackground(.hidden)
+                .scrollDisabled(true)
+                .modifier(ShadowTablePlaceholder(label: loadingLabel))
             } else if rows.isEmpty {
               empty
             }
           }
           .padding(.top, ShadowTableMetrics.headerHeight())
         }
+        .environment(\.shadowSelectionIsAccentBand, true)
     case .list:
       Group {
-        if isLoading {
+        if isLoading && rows.isEmpty {
           ShadowTableSkeleton(columns: skeletonColumns, isList: true, label: loadingLabel)
+        } else if isLoading {
+          List(rows) { row in compact(row) }
+            .shadowListStyle(.plain)
+            .scrollDisabled(true)
+            .modifier(ShadowTablePlaceholder(label: loadingLabel))
         } else {
           List(rows, selection: selection) { row in compact(row) }
             .shadowListStyle(.plain)
@@ -246,10 +262,7 @@ public struct ShadowTableSkeleton: View {
         }
       }
     }
-    .allowsHitTesting(false)
-    .accessibilityElement(children: .ignore)
-    .accessibilityLabel(label.map { Text($0) } ?? Text(verbatim: ""))
-    .accessibilityHidden(label == nil)
+    .modifier(ShadowTableLoadingAccessibility(label: label))
   }
 
   private var gridRow: some View {
@@ -278,6 +291,30 @@ private struct ShadowTableSkeletonListRow: View {
         .overlay { Capsule().fill(ShadowColor.fillTrack) }
     )
     .redacted(reason: .placeholder)
+  }
+}
+
+private struct ShadowTableLoadingAccessibility: ViewModifier {
+  let label: LocalizedStringKey?
+
+  func body(content: Content) -> some View {
+    content
+      .allowsHitTesting(false)
+      .focusable(false)
+      .accessibilityHidden(true)
+      .overlay {
+        if let label { Color.clear.accessibilityElement().accessibilityLabel(Text(label)) }
+      }
+  }
+}
+
+private struct ShadowTablePlaceholder: ViewModifier {
+  let label: LocalizedStringKey?
+
+  func body(content: Content) -> some View {
+    content
+      .redacted(reason: .placeholder)
+      .modifier(ShadowTableLoadingAccessibility(label: label))
   }
 }
 

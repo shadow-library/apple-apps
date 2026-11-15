@@ -154,8 +154,11 @@ struct TablePage: View {
       StateSection("Scrolling", note: "The table owns its scrolling. Rows load as people reach the end; there is no pagination.") {
         DeliveryTable(rows: Delivery.many, sizing: .scrolling(visibleRows: 6))
       }
-      StateSection("Loading", note: "Skeleton rows keep the table’s size until the first response.") {
-        DeliveryTable(rows: [], isLoading: true, sizing: .rows(5))
+      StateSection(
+        "Loading",
+        note: "Placeholder rows are drawn redacted in the table’s own columns, so the skeleton follows the headers and keeps the table’s size until the first response."
+      ) {
+        DeliveryTable(rows: Delivery.sample, isLoading: true)
       }
       StateSection("Empty", note: "The headers stay and the body says what is missing.") {
         DeliveryTable(rows: [], sizing: .rows(ShadowDensity.current == .compact ? 8 : 5))

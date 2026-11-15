@@ -46,7 +46,7 @@ struct SwipeActionsPage: View {
           "A static rendering of the system swipe: the row slides aside to reveal the leading reversible action in accent, trailing Flag in warning-solid-strong and Delete in danger-solid, each labelled with a word."
       ) {
         RevealedRow(update: Update(id: 10, title: "Your streak is 12 days", detail: "Memoir · 1 h", isUnread: true), edge: .leading)
-        RevealedRow(update: Update(id: 11, title: "Chapter 43 is out", detail: "The Ninth Archive · 2 min", isUnread: false), edge: .trailing)
+        RevealedRow(update: Update(id: 11, title: "Chapter 43 of The Ninth Archive is out", detail: "Written by Mira Vale · 2 min", isUnread: false), edge: .trailing)
       }
       StateListSection("Disabled", note: "Disabled rows offer no swipe and no context menu.") {
         row(Update(id: 30, title: "Archived: Weekly digest", detail: "Pulse · Last month", isUnread: false))

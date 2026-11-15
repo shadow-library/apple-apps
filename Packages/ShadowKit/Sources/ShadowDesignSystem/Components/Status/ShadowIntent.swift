@@ -27,33 +27,37 @@ nonisolated public enum ShadowIntent: Hashable, Sendable, CaseIterable {
     }
   }
 
-  public var background: Color {
+  public var background: Color { backgroundToken.color }
+  public var border: Color { borderToken.color }
+  public var foreground: Color { foregroundToken.color }
+
+  var backgroundToken: ShadowColorToken {
     switch self {
-    case .neutral: ShadowColor.neutralBgSubtle
-    case .info: ShadowColor.infoBgSubtle
-    case .success: ShadowColor.successBgSubtle
-    case .warning: ShadowColor.warningBgSubtle
-    case .danger: ShadowColor.dangerBgSubtle
+    case .neutral: .neutralBgSubtle
+    case .info: .infoBgSubtle
+    case .success: .successBgSubtle
+    case .warning: .warningBgSubtle
+    case .danger: .dangerBgSubtle
     }
   }
 
-  public var border: Color {
+  var borderToken: ShadowColorToken {
     switch self {
-    case .neutral: ShadowColor.neutralBorder
-    case .info: ShadowColor.infoBorder
-    case .success: ShadowColor.successBorder
-    case .warning: ShadowColor.warningBorder
-    case .danger: ShadowColor.dangerBorder
+    case .neutral: .neutralBorder
+    case .info: .infoBorder
+    case .success: .successBorder
+    case .warning: .warningBorder
+    case .danger: .dangerBorder
     }
   }
 
-  public var foreground: Color {
+  var foregroundToken: ShadowColorToken {
     switch self {
-    case .neutral: ShadowColor.neutralTextOnSubtle
-    case .info: ShadowColor.infoTextOnSubtle
-    case .success: ShadowColor.successTextOnSubtle
-    case .warning: ShadowColor.warningTextOnSubtle
-    case .danger: ShadowColor.dangerTextOnSubtle
+    case .neutral: .neutralTextOnSubtle
+    case .info: .infoTextOnSubtle
+    case .success: .successTextOnSubtle
+    case .warning: .warningTextOnSubtle
+    case .danger: .dangerTextOnSubtle
     }
   }
 

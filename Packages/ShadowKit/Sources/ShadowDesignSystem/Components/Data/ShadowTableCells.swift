@@ -13,6 +13,7 @@ public struct ShadowTableIdentifier: View {
       .shadowTableCell()
       .lineLimit(1)
       .truncationMode(.middle)
+      .shadowSkeletonText()
       .help(identifier)
   }
 }
@@ -30,6 +31,7 @@ public struct ShadowTableNumber: View {
       .monospacedDigit()
       .shadowTableCell()
       .lineLimit(1)
+      .shadowSkeletonText()
       .frame(maxWidth: .infinity, alignment: .trailing)
   }
 }

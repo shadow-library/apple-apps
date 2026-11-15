@@ -9,7 +9,9 @@ struct ListPage: View {
 
   var body: some View {
     List(selection: $selection) {
-      StateListSection("Library", note: "Inset grouped on surface-card. Rows grow to two lines before truncating, and separators start at the text.") {
+      StateListSection(
+        "Library", note: "Inset grouped on surface-card; Mac keeps the native grouped style. Rows grow to two lines before truncating, and separators start at the text."
+      ) {
         ShadowListRow(title: Text(verbatim: "Continue reading"), subtitle: Text(verbatim: "The Ninth Archive · Chapter 42"), accessory: .chevron, isEmphasized: true) {
           ListCover(book: books[0])
         }

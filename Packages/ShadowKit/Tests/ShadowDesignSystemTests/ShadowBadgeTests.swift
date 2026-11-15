@@ -1,4 +1,5 @@
 import Foundation
+import SwiftUI
 import Testing
 
 @testable import ShadowDesignSystem
@@ -76,5 +77,51 @@ struct ShadowBadgePlacementTests {
     let anchor = placement.anchor(in: content)
     #expect(abs(origin.x + dot.width / 2 - anchor.x) < 0.001)
     #expect(abs(origin.y + dot.height / 2 - anchor.y) < 0.001)
+  }
+}
+
+@Suite("Badge on a selection band")
+struct ShadowBadgeStyleTests {
+  @Test("should keep the intent tokens off the selection band", arguments: ShadowBadgeIntent.allCases)
+  func standard(intent: ShadowBadgeIntent) {
+    #expect(ShadowBadgeStyle(intent: intent, role: .fill).token(isOnSelectionBand: false) == intent.fill)
+    #expect(ShadowBadgeStyle(intent: intent, role: .border).token(isOnSelectionBand: false) == intent.border)
+    #expect(ShadowBadgeStyle(intent: intent, role: .foreground).token(isOnSelectionBand: false) == intent.foreground)
+  }
+
+  @Test("should become an on-accent outline with no fill on the selection band", arguments: ShadowBadgeIntent.allCases)
+  func onBand(intent: ShadowBadgeIntent) {
+    #expect(ShadowBadgeStyle(intent: intent, role: .fill).token(isOnSelectionBand: true) == nil)
+    #expect(ShadowBadgeStyle(intent: intent, role: .border).token(isOnSelectionBand: true) == .onAccent)
+    #expect(ShadowBadgeStyle(intent: intent, role: .foreground).token(isOnSelectionBand: true) == .onAccent)
+  }
+
+  @Test("should treat only a prominent accent band as the selection band")
+  func selectionBand() {
+    #expect(ShadowBadgeStyle.isOnSelectionBand(prominence: .increased, selectionIsAccentBand: true))
+    #expect(!ShadowBadgeStyle.isOnSelectionBand(prominence: .standard, selectionIsAccentBand: true))
+    #expect(!ShadowBadgeStyle.isOnSelectionBand(prominence: .increased, selectionIsAccentBand: false))
+  }
+
+  @Test("should use the accent band by default only on macOS")
+  func platformDefault() {
+    #if os(macOS)
+      #expect(EnvironmentValues().shadowSelectionIsAccentBand)
+    #else
+      #expect(!EnvironmentValues().shadowSelectionIsAccentBand)
+    #endif
+  }
+
+  @Test("should resolve against the environment it is drawn in") @MainActor
+  func resolvesAtRenderTime() {
+    var environment = EnvironmentValues()
+    environment.colorScheme = .dark
+    environment.shadowSelectionIsAccentBand = true
+    let style = ShadowBadgeStyle(intent: .danger, role: .foreground)
+    environment.backgroundProminence = .increased
+    #expect(style.resolve(in: environment).resolve(in: environment) == ShadowColorToken.onAccent.color.resolve(in: environment))
+    #expect(ShadowBadgeStyle(intent: .danger, role: .fill).resolve(in: environment).resolve(in: environment) == Color.clear.resolve(in: environment))
+    environment.backgroundProminence = .standard
+    #expect(style.resolve(in: environment).resolve(in: environment) == ShadowColorToken.dangerTextOnSubtle.color.resolve(in: environment))
   }
 }

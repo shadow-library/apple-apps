@@ -36,9 +36,50 @@ nonisolated public enum ShadowBadgeIntent: Hashable, Sendable, CaseIterable {
     }
   }
 
-  var background: Color { intent?.background ?? ShadowColor.accent }
-  var border: Color { intent?.border ?? ShadowColor.accent }
-  var foreground: Color { intent?.foreground ?? ShadowColor.onAccent }
+  var fill: ShadowColorToken { intent?.backgroundToken ?? .accent }
+  var border: ShadowColorToken { intent?.borderToken ?? .accent }
+  var foreground: ShadowColorToken { intent?.foregroundToken ?? .onAccent }
+}
+
+// On a prominent selection band the subtle intent fills sink into the accent, so the badge becomes an on-accent outline that keeps
+// its symbol and word. Resolved at render time for the same reason as `ShadowProminenceStyle`.
+nonisolated struct ShadowBadgeStyle: ShapeStyle {
+  enum Role: Hashable, Sendable {
+    case fill
+    case border
+    case foreground
+  }
+
+  let intent: ShadowBadgeIntent
+  let role: Role
+
+  static func isOnSelectionBand(prominence: BackgroundProminence, selectionIsAccentBand: Bool) -> Bool {
+    prominence == .increased && selectionIsAccentBand
+  }
+
+  func token(isOnSelectionBand: Bool) -> ShadowColorToken? {
+    switch (role, isOnSelectionBand) {
+    case (.fill, true): nil
+    case (_, true): .onAccent
+    case (.fill, false): intent.fill
+    case (.border, false): intent.border
+    case (.foreground, false): intent.foreground
+    }
+  }
+
+  func resolve(in environment: EnvironmentValues) -> Color {
+    let isOnBand = Self.isOnSelectionBand(prominence: environment.backgroundProminence, selectionIsAccentBand: environment.shadowSelectionIsAccentBand)
+    return token(isOnSelectionBand: isOnBand)?.color ?? .clear
+  }
+}
+
+nonisolated extension EnvironmentValues {
+  // Touch lists select with an accent-soft fill (or no fill) yet still report `.increased`; only Mac lists and tables, and touch tables, use the accent band.
+  #if os(macOS)
+    @Entry var shadowSelectionIsAccentBand = true
+  #else
+    @Entry var shadowSelectionIsAccentBand = false
+  #endif
 }
 
 public struct ShadowBadge: View {
@@ -96,11 +137,12 @@ private struct ShadowBadgeLabel: View {
       title.lineLimit(1).truncationMode(.tail)
     }
     .font(Font.shadow(.caption).weight(.semibold))
-    .foregroundStyle(intent.foreground)
+    .foregroundStyle(ShadowBadgeStyle(intent: intent, role: .foreground))
     .padding(.horizontal, isTouch ? Spacing.space2 + Spacing.space05 : Spacing.space2)
     .frame(minHeight: height)
-    .background(intent.background, in: .capsule)
-    .overlay { Capsule().strokeBorder(intent.border, lineWidth: intent == .accent ? 0 : 1) }
+    .background(ShadowBadgeStyle(intent: intent, role: .fill), in: .capsule)
+    .overlay { Capsule().strokeBorder(ShadowBadgeStyle(intent: intent, role: .border), lineWidth: 1) }
+    .shadowSkeletonShape(Capsule())
     .fixedSize(horizontal: false, vertical: true)
     .layoutPriority(1)
     .opacity(isEnabled ? 1 : ShadowOpacity.disabled)
