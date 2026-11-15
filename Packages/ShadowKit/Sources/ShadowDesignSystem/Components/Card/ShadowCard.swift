@@ -44,6 +44,8 @@ public struct ShadowCardHeader<Accessory: View>: View {
   private let subtitle: Text?
   private let accessory: Accessory
 
+  @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+
   public init(_ titleKey: LocalizedStringKey, subtitle: LocalizedStringKey? = nil, @ViewBuilder accessory: () -> Accessory) {
     title = Text(titleKey)
     self.subtitle = subtitle.map { Text($0) }
@@ -52,7 +54,10 @@ public struct ShadowCardHeader<Accessory: View>: View {
 
   public var body: some View {
     VStack(alignment: .leading, spacing: Spacing.space1) {
-      HStack(alignment: .firstTextBaseline, spacing: Spacing.space2) {
+      let layout =
+        dynamicTypeSize.isAccessibilitySize
+        ? AnyLayout(VStackLayout(alignment: .leading, spacing: Spacing.space2)) : AnyLayout(HStackLayout(alignment: .firstTextBaseline, spacing: Spacing.space2))
+      layout {
         title
           .shadowFont(.headline)
           .foregroundStyle(ShadowColor.textPrimary)

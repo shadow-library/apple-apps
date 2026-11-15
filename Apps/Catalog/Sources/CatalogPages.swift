@@ -64,6 +64,9 @@ extension CatalogComponent {
     case .sidebar: SidebarPage()
     case .splitView: SplitViewPage()
     case .inspector: InspectorPage()
+    case .iPhoneScreens: IPhoneScreensPage()
+    case .iPadScreen: IPadScreenPage()
+    case .macScreen: MacScreenPage()
     default: PendingDemo(component: self)
     }
   }

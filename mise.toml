@@ -23,7 +23,7 @@ run = "swift test --package-path Packages/ShadowKit"
 
 [tasks."test:apps"]
 description = "Run the app test targets"
-run = "tuist test"
+run = "tuist test --skip-ui-tests"
 
 [tasks.test]
 description = "Run every test"

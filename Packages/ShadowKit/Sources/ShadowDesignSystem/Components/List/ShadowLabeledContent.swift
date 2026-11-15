@@ -63,6 +63,8 @@ public struct ShadowIdentifierText: View {
   public var body: some View {
     Text(verbatim: identifier)
       .shadowFont(.monoBody)
+      .lineLimit(1)
+      .truncationMode(.middle)
       .textSelection(.enabled)
   }
 }

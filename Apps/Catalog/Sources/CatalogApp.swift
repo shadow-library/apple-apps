@@ -25,6 +25,7 @@ struct CatalogApp: App {
         .shadowTheme()
         .environment(\.catalogScrollFraction, model.launch.scrollFraction)
         .environment(\.catalogPresentsSample, model.launch.presentsSample)
+        .environment(\.catalogScreen, model.launch.screen)
         .shadowPreviewHoverEffects(model.launch.snapshotURL == nil)
         .preferredColorScheme(model.appearance.colorScheme)
         .transaction { transaction in

@@ -127,11 +127,11 @@ public struct ShadowCapacityStatistic: View {
 }
 
 public struct ShadowStatisticGrid<Content: View>: View {
-  private let minimumWidth: CGFloat
+  @ScaledMetric private var minimumWidth: CGFloat
   private let content: Content
 
   public init(minimumWidth: CGFloat = 140, @ViewBuilder content: () -> Content) {
-    self.minimumWidth = minimumWidth
+    _minimumWidth = ScaledMetric(wrappedValue: minimumWidth, relativeTo: .body)
     self.content = content()
   }
 
@@ -146,7 +146,9 @@ struct ShadowStatisticGridLayout: Layout {
 
   func columns(for width: CGFloat, count: Int) -> Int {
     guard width.isFinite, count > 0 else { return max(count, 1) }
-    return min(max(Int((width + spacing) / (minimumWidth + spacing)), 1), count)
+    var columns = min(max(Int((width + spacing) / (minimumWidth + spacing)), 1), count)
+    while columns > 1 && count % columns == 1 { columns -= 1 }
+    return columns
   }
 
   func sizeThatFits(proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) -> CGSize {

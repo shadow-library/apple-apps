@@ -4,5 +4,6 @@ import ProjectDescriptionHelpers
 let project = Project.app(
   name: "Catalog",
   platform: .multiplatform,
-  dependencies: [.shared(.designSystem)]
+  dependencies: [.shared(.designSystem)],
+  includesUITests: true
 )

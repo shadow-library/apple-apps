@@ -54,29 +54,22 @@ extension DeliveryStatus {
 private struct DeliveryTable: View {
   let rows: [Delivery]
   var isLoading = false
-  var rowCount: Int?
+  var sizing: DemoTableSizing
   @State var sortOrder: [KeyPathComparator<Delivery>] = [KeyPathComparator(\.time, order: .reverse)]
   @State var selection: Set<Delivery.ID> = []
 
   @Environment(\.horizontalSizeClass) private var horizontalSizeClass
   @Environment(\.dynamicTypeSize) private var dynamicTypeSize
-  @ScaledMetric(relativeTo: .body) private var scale = 1
 
-  init(rows: [Delivery], isLoading: Bool = false, rowCount: Int? = nil, sortedBy: [KeyPathComparator<Delivery>]? = nil, selected: Set<Delivery.ID> = []) {
+  init(rows: [Delivery], isLoading: Bool = false, sizing: DemoTableSizing? = nil, sortedBy: [KeyPathComparator<Delivery>]? = nil, selected: Set<Delivery.ID> = []) {
     self.rows = rows
     self.isLoading = isLoading
-    self.rowCount = rowCount
+    self.sizing = sizing ?? .fitsContent(estimatedRows: rows.count)
     _sortOrder = State(initialValue: sortedBy ?? [KeyPathComparator(\.time, order: .reverse)])
     _selection = State(initialValue: selected)
   }
 
   private var isList: Bool { ShadowTableLayout(horizontalSizeClass: horizontalSizeClass, isAccessibilitySize: dynamicTypeSize.isAccessibilitySize) == .list }
-
-  private var height: CGFloat {
-    let count = CGFloat(rowCount ?? max(rows.count, 4))
-    if isList { return count * 61 * scale + 56 }
-    return (ShadowDensity.current == .touch ? 53 : 28) * scale * (count + 1) + 6
-  }
 
   private var compactSort: ShadowTableCompactSort<Delivery> {
     ShadowTableCompactSort(
@@ -118,9 +111,7 @@ private struct DeliveryTable: View {
     #if os(iOS)
       .environment(\.editMode, .constant(isList && !selection.isEmpty ? .active : .inactive))
     #endif
-    .frame(height: height)
-    .clipShape(.rect(cornerRadius: ShadowCardMetrics().cornerRadius, style: .continuous))
-    .overlay { RoundedRectangle(cornerRadius: ShadowCardMetrics().cornerRadius, style: .continuous).strokeBorder(ShadowColor.borderDefault, lineWidth: 1) }
+    .demoTableFrame(sizing)
   }
 }
 
@@ -150,13 +141,13 @@ struct TablePage: View {
         DeliveryTable(rows: Delivery.long)
       }
       StateSection("Scrolling", note: "The table owns its scrolling. Rows load as people reach the end; there is no pagination.") {
-        DeliveryTable(rows: Delivery.many, rowCount: 6)
+        DeliveryTable(rows: Delivery.many, sizing: .scrolling(visibleRows: 6))
       }
       StateSection("Loading", note: "Skeleton rows keep the table’s size until the first response.") {
-        DeliveryTable(rows: [], isLoading: true, rowCount: 5)
+        DeliveryTable(rows: [], isLoading: true, sizing: .rows(5))
       }
       StateSection("Empty", note: "The headers stay and the body says what is missing.") {
-        DeliveryTable(rows: [], rowCount: 5)
+        DeliveryTable(rows: [], sizing: .rows(5))
       }
     }
   }

@@ -89,24 +89,7 @@ public struct ShadowAccountMenu<Content: View>: View {
     case .avatar:
       ShadowAvatar(name: name, size: ShadowDensity.current == .touch ? .small : .extraSmall, source: avatar.source)
     case .avatarAndName:
-      HStack(spacing: Spacing.space3) {
-        ShadowAvatar(name: name, size: ShadowDensity.current == .touch ? .medium : .small, source: avatar.source)
-        VStack(alignment: .leading, spacing: 0) {
-          Text(verbatim: name)
-            .shadowFont(.headline)
-            .foregroundStyle(ShadowColor.textPrimary)
-          Text(verbatim: email)
-            .shadowFont(.footnote)
-            .foregroundStyle(ShadowColor.textSecondary)
-        }
-        .lineLimit(1)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        Image(systemName: "chevron.up.chevron.down")
-          .shadowFont(.footnote)
-          .foregroundStyle(ShadowColor.textSecondary)
-          .accessibilityHidden(true)
-      }
-      .contentShape(.rect)
+      ShadowIdentityLabel(name: name, detail: email, avatarName: name, avatar: avatar.source)
     }
   }
 
@@ -122,5 +105,34 @@ public struct ShadowAccountMenu<Content: View>: View {
       if let image = renderer.uiImage { return Image(uiImage: image.withRenderingMode(.alwaysOriginal)) }
     #endif
     return Image(systemName: "person.crop.circle")
+  }
+}
+
+struct ShadowIdentityLabel: View {
+  let name: String
+  let detail: String
+  let avatarName: String
+  var avatarKind: ShadowAvatarKind = .person
+  var avatar: ShadowAvatarSource = .initials
+
+  var body: some View {
+    HStack(spacing: Spacing.space3) {
+      ShadowAvatar(name: avatarName, kind: avatarKind, size: ShadowDensity.current == .touch ? .medium : .small, source: avatar)
+      VStack(alignment: .leading, spacing: 0) {
+        Text(verbatim: name)
+          .shadowFont(.headline)
+          .foregroundStyle(ShadowColor.textPrimary)
+        Text(verbatim: detail)
+          .shadowFont(.footnote)
+          .foregroundStyle(ShadowColor.textSecondary)
+      }
+      .lineLimit(1)
+      .frame(maxWidth: .infinity, alignment: .leading)
+      Image(systemName: "chevron.up.chevron.down")
+        .shadowFont(.footnote)
+        .foregroundStyle(ShadowColor.textSecondary)
+        .accessibilityHidden(true)
+    }
+    .contentShape(.rect)
   }
 }

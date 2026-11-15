@@ -9,26 +9,49 @@ extension EnvironmentValues {
   @Entry var shadowDrawsRowBackground = false
 }
 
+nonisolated public enum ShadowSymbolTileStyle: Hashable, Sendable, CaseIterable {
+  case soft
+  case filled
+}
+
+nonisolated public enum ShadowSymbolTileSize: Hashable, Sendable, CaseIterable {
+  case regular
+  case large
+}
+
 public struct ShadowSymbolTile: View {
   private let systemImage: String
   private let tint: ShadowAvatarTint
+  private let style: ShadowSymbolTileStyle
+  private let size: ShadowSymbolTileSize
   @ScaledMetric private var side: CGFloat
 
-  public init(systemImage: String, tint: ShadowAvatarTint = .accent) {
+  public init(systemImage: String, tint: ShadowAvatarTint = .accent, style: ShadowSymbolTileStyle = .soft, size: ShadowSymbolTileSize = .regular) {
     self.systemImage = systemImage
     self.tint = tint
-    _side = ScaledMetric(wrappedValue: ShadowListMetrics().tileSize, relativeTo: .body)
+    self.style = style
+    self.size = size
+    _side = ScaledMetric(wrappedValue: size == .large ? ShadowSymbolTileMetrics.largeSide : ShadowListMetrics().tileSize, relativeTo: size == .large ? .title : .body)
   }
 
   public var body: some View {
     let metrics = ShadowListMetrics()
     Image(systemName: systemImage)
-      .font(ShadowDensity.current == .touch ? .body : .footnote)
-      .foregroundStyle(tint.foreground)
+      .font(glyphFont)
+      .foregroundStyle(style == .filled ? tint.filledForeground : tint.foreground)
       .frame(width: side, height: side)
-      .background(tint.background, in: .rect(cornerRadius: metrics.tileCornerRadius, style: .continuous))
+      .background(style == .filled ? tint.filledBackground : tint.background, in: .rect(cornerRadius: size == .large ? Radius.xl : metrics.tileCornerRadius, style: .continuous))
       .accessibilityHidden(true)
   }
+
+  private var glyphFont: Font {
+    if size == .large { return .title }
+    return ShadowDensity.current == .touch ? .body : .footnote
+  }
+}
+
+nonisolated enum ShadowSymbolTileMetrics {
+  static let largeSide: CGFloat = 52
 }
 
 public struct ShadowListRow<Leading: View, Trailing: View>: View {
@@ -149,24 +172,28 @@ public struct ShadowListRow<Leading: View, Trailing: View>: View {
   @ViewBuilder
   private func content(palette: ShadowListRowPalette, metrics: ShadowListMetrics) -> some View {
     let stacksValue = dynamicTypeSize.isAccessibilitySize && value != nil
-    HStack(alignment: .firstTextBaseline, spacing: Spacing.space2) {
+    let lineLimit = dynamicTypeSize.isAccessibilitySize ? nil : metrics.textLineLimit
+    let layout =
+      dynamicTypeSize.isAccessibilitySize
+      ? AnyLayout(VStackLayout(alignment: .leading, spacing: Spacing.space2)) : AnyLayout(HStackLayout(alignment: .firstTextBaseline, spacing: Spacing.space2))
+    layout {
       VStack(alignment: .leading, spacing: Spacing.space05) {
         title
           .shadowFont(.body)
           .fontWeight(isEmphasized ? .semibold : nil)
           .foregroundStyle(palette.title.color)
-          .lineLimit(metrics.textLineLimit)
+          .lineLimit(lineLimit)
         if let subtitle {
           subtitle
             .shadowFont(.subheadline)
             .foregroundStyle(palette.secondary.color)
-            .lineLimit(metrics.textLineLimit)
+            .lineLimit(lineLimit)
         }
         if let caption {
           caption
             .shadowFont(.footnote)
             .foregroundStyle(palette.secondary.color)
-            .lineLimit(metrics.textLineLimit)
+            .lineLimit(lineLimit)
         }
         if stacksValue, let value {
           value
@@ -181,7 +208,7 @@ public struct ShadowListRow<Leading: View, Trailing: View>: View {
         value
           .shadowFont(.body)
           .foregroundStyle(palette.secondary.color)
-          .lineLimit(metrics.textLineLimit)
+          .lineLimit(lineLimit)
           .multilineTextAlignment(.trailing)
       }
       trailing

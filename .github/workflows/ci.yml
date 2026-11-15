@@ -53,7 +53,13 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        platform: [iOS, macOS, visionOS]
+        include:
+          - platform: iOS
+            testFlags: ""
+          - platform: macOS
+            testFlags: --skip-ui-tests
+          - platform: visionOS
+            testFlags: --skip-ui-tests
     steps:
       - uses: actions/checkout@v7
       - uses: maxim-lobanov/setup-xcode@v1
@@ -62,4 +68,4 @@ jobs:
       - uses: jdx/mise-action@v5
       - run: tuist install
       - run: mise run lint:graph
-      - run: tuist test --platform ${{ matrix.platform }}
+      - run: tuist test --platform ${{ matrix.platform }} ${{ matrix.testFlags }}

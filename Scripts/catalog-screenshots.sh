@@ -15,6 +15,7 @@ readonly IPHONE_NAME="${CATALOG_IPHONE:-iPhone 17 Pro}"
 readonly IPAD_NAME="${CATALOG_IPAD:-iPad Pro 13-inch (M5)}"
 readonly MAC_TIMEOUT=30
 readonly SIM_SETTLE=0.6
+readonly UI_TEST_TARGET="CatalogUITests/CatalogShotTests"
 readonly SIM_PRESENT_SETTLE=2.5
 readonly SIM_POLL=0.3
 readonly SIM_MAX_POLLS=10
@@ -23,6 +24,9 @@ platforms="all"
 components="all"
 appearances="both"
 scrolls="0"
+screens=""
+orientation="portrait"
+content_size="large"
 out_dir="$REPO_ROOT/scratch-pad/shots/latest"
 skip_build=false
 keep_booted=false
@@ -47,6 +51,12 @@ Options:
   --appearance light|dark|both         Appearances to capture (default: both)
   --scroll <f>[,<f>...]                Scroll positions from 0 (top) to 1 (bottom) for scrolling pages (default: 0).
                                        Full-bleed pages ignore it. Example: --scroll 0,0.5,1
+  --screen <name>[,<name>...]          Sub-screens of pages that have several (iPhoneScreens: library, today, stepup).
+                                       Passed as -screen; pages without sub-screens are shot once. Default: each page's first screen
+  --orientation portrait|landscape     iPad orientation (default: portrait). Landscape runs the shots through an iOS UI test that sets
+                                       XCUIDevice.orientation and screenshots with XCUIScreen; files get a -landscape suffix
+  --content-size <name>                Simulator Dynamic Type size for iPhone and iPad (default: large), for example
+                                       accessibility-extra-extra-extra-large. Reset to large by the next default run
   --out <dir>                          Output directory (default: scratch-pad/shots/latest)
   --present                            Launch with -present so presentation pages open their primary sample (sheet, alert,
                                        popover, toast, palette) before the shot; files get a -presented suffix
@@ -54,12 +64,13 @@ Options:
   --keep-booted                        Leave the simulators booted (faster reruns); otherwise those booted here are shut down
   -h, --help                           Show this help
 
-Output: <out>/<platform>/<id>-<appearance>.png, plus <id>-<appearance>-s<percent>.png for each non-zero --scroll position
-        and <id>-<appearance>-presented.png with --present
+Output: <out>/<platform>/<id>-<appearance>[-s<percent>][-<screen>][-presented][-landscape].png
+        (-s<percent> for each non-zero --scroll position, -<screen> with --screen, -presented with --present, -landscape on iPad)
 
 How each platform is captured:
   iphone  $IPHONE_NAME ($SIM_RUNTIME), portrait, via simctl io screenshot.
-  ipad    $IPAD_NAME ($SIM_RUNTIME), portrait: iPadOS 26 ignores app orientation requests and simctl cannot rotate.
+  ipad    $IPAD_NAME ($SIM_RUNTIME), portrait by default. iPadOS 26 windowing refuses programmatic rotation, so --orientation landscape rotates the
+          device from an iOS UI test (no Accessibility or Screen Recording permission involved).
           The grey arc at the bottom-right is the iPadOS window-resize grabber (system UI, also shown over Settings).
   macos   The app captures its own 1280x820 window (-snapshot <png>) with CGWindowListCreateImage, which needs no Screen
           Recording permission. The window is placed on the highest-resolution display, away from the pointer, and
@@ -90,6 +101,9 @@ parse_arguments() {
       --component) components="${2:?--component needs a value}"; shift 2 ;;
       --appearance) appearances="${2:?--appearance needs a value}"; shift 2 ;;
       --scroll) scrolls="${2:?--scroll needs a value}"; shift 2 ;;
+      --screen) screens="${2:?--screen needs a value}"; shift 2 ;;
+      --orientation) orientation="${2:?--orientation needs a value}"; shift 2 ;;
+      --content-size) content_size="${2:?--content-size needs a value}"; shift 2 ;;
       --out) out_dir="${2:?--out needs a value}"; shift 2 ;;
       --skip-build) skip_build=true; shift ;;
       --keep-booted) keep_booted=true; shift ;;
@@ -109,6 +123,8 @@ parse_arguments() {
     case "$platform" in iphone | ipad | macos) ;; *) fail "unknown platform '$platform'" ;; esac
   done
   platforms="${selected[*]}"
+
+  case "$orientation" in portrait | landscape) ;; *) fail "unknown orientation '$orientation'" ;; esac
 
   case "$appearances" in
     both) appearances="light dark" ;;
@@ -176,7 +192,7 @@ prepare_device() {
   xcrun simctl bootstatus "$udid" -b >/dev/null
   xcrun simctl status_bar "$udid" override --time 9:41 --batteryState discharging --batteryLevel 100 \
     --wifiMode active --wifiBars 3 --cellularMode active --cellularBars 4 --operatorName "" >/dev/null
-  xcrun simctl ui "$udid" content_size large
+  xcrun simctl ui "$udid" content_size "$content_size"
   xcrun simctl ui "$udid" increase_contrast disabled
   xcrun simctl install "$udid" "$SIM_APP"
 }
@@ -207,12 +223,43 @@ resolve_page_ids() {
   page_ids="${resolved[*]}"
 }
 
+known_screens() {
+  case "$(lowercase "$1")" in
+    iphonescreens) printf 'library today stepup' ;;
+    *) ;;
+  esac
+}
+
+page_screens() {
+  local requested="${screens//,/ }" name
+  [[ -n "$(known_screens "$1")" ]] || return 0
+  for name in $requested; do
+    [[ " $(known_screens "$1") " == *" $name "* ]] && printf '%s ' "$name"
+  done
+  return 0
+}
+
+validate_screens() {
+  local name id found
+  for name in ${screens//,/ }; do
+    found=false
+    for id in $page_ids; do
+      [[ " $(known_screens "$id") " == *" $name "* ]] && found=true
+    done
+    [[ "$found" == true ]] || fail "unknown screen '$name' for the selected pages (iPhoneScreens: $(known_screens iPhoneScreens))"
+  done
+}
+
 shot_count() {
-  local ids modes positions
+  local ids modes positions id names total=0
   read -ra ids <<<"$page_ids"
   read -ra modes <<<"$appearances"
   read -ra positions <<<"$scrolls"
-  printf '%s' $((${#ids[@]} * ${#modes[@]} * ${#positions[@]}))
+  for id in "${ids[@]}"; do
+    read -ra names <<<"$(page_screens "$id")"
+    total=$((total + (${#names[@]} > 0 ? ${#names[@]} : 1) * ${#modes[@]} * ${#positions[@]}))
+  done
+  printf '%s' "$total"
 }
 
 scroll_suffix() {
@@ -220,6 +267,10 @@ scroll_suffix() {
   percent="$(perl -e 'printf "%d", $ARGV[0] * 100 + 0.5' "$1")"
   ((percent == 0)) || printf -- '-s%d' "$percent"
 }
+
+screen_arguments() { if [[ -n "$screen" ]]; then printf '%s %s' "-screen" "$screen"; fi; }
+
+is_rotated() { [[ "$1" == "$ipad_udid" && "$orientation" == landscape ]]; }
 
 present_arguments() { if [[ "$present" == true ]]; then printf '%s' "-present"; fi; }
 
@@ -230,7 +281,7 @@ capture_simulator() {
   rm -f "$file" "$previous" "$current"
   # shellcheck disable=SC2046
   xcrun simctl launch --terminate-running-process "$udid" "$BUNDLE_ID" -component "$id" -appearance "$appearance" -scroll "$scroll" \
-    $(present_arguments) >/dev/null || return 1
+    $(screen_arguments) $(present_arguments) >/dev/null || return 1
   sleep "$settle"
   if ! xcrun simctl io "$udid" screenshot "$previous" >/dev/null 2>&1; then
     rm -f "$previous"
@@ -258,7 +309,7 @@ capture_mac() {
   rm -f "$file" "$errors"
   # shellcheck disable=SC2046
   open -n -W --stderr "$errors" -a "$MAC_APP" --args \
-    -component "$id" -appearance "$appearance" -scroll "$scroll" -snapshot "$file" -ApplePersistenceIgnoreState YES $(present_arguments) &
+    -component "$id" -appearance "$appearance" -scroll "$scroll" -snapshot "$file" -ApplePersistenceIgnoreState YES $(screen_arguments) $(present_arguments) &
   pid=$!
   while kill -0 "$pid" 2>/dev/null; do
     if ((waited >= MAC_TIMEOUT * 5)); then
@@ -278,33 +329,58 @@ capture_mac() {
   [[ -s "$file" ]]
 }
 
+capture_rotated_plan() {
+  local udid="$1" plan="$2" action="test" line file
+  [[ "$skip_build" == true ]] && action="test-without-building"
+  mkdir -p "$LOG_DIR"
+  TEST_RUNNER_CATALOG_SHOT_PLAN="$plan" xcodebuild "$action" -workspace "$WORKSPACE" -scheme "${SCHEME}UITests" -destination "id=$udid" \
+    -derivedDataPath "$DERIVED_DATA" -only-testing:"$UI_TEST_TARGET" >"$LOG_DIR/landscape.log" 2>&1 || true
+  while IFS=$'\t' read -r _ _ _ _ file; do
+    if [[ -s "$file" ]]; then log "[ipad] $(basename "$file" .png) captured"; else
+      log "[ipad] $(basename "$file" .png) FAILED, see $LOG_DIR/landscape.log"
+      printf '%s\n' "ipad/$(basename "$file" .png)" >>"$run_dir/failures"
+    fi
+  done <"$plan"
+}
+
 capture() {
   if [[ -n "$1" ]]; then capture_simulator "$@"; else capture_mac "${@:2}"; fi
 }
 
 run_platform() {
-  local platform="$1" udid="${2:-}" platform_dir="$out_dir/$1" total index=0 appearance id file started shot_started seconds
+  local platform="$1" udid="${2:-}" platform_dir="$out_dir/$1" total index=0 appearance id file started shot_started seconds screen screen_names plan
   total="$(shot_count)"
   mkdir -p "$platform_dir"
+  plan="$run_dir/plan-$platform.tsv"
+  : >"$plan"
   started="$(now)"
   for appearance in $appearances; do
     if [[ -n "$udid" ]]; then xcrun simctl ui "$udid" appearance "$appearance"; fi
     for id in $page_ids; do
-      for scroll in $scrolls; do
-        index=$((index + 1))
-        name="$id-$appearance$(scroll_suffix "$scroll")"
-        [[ "$present" == true ]] && name="$name-presented"
-        file="$platform_dir/$name.png"
-        shot_started="$(now)"
-        if capture "$udid" "$id" "$appearance" "$file" "$scroll"; then
-          log "[$platform $index/$total] $name $(elapsed "$shot_started")s"
-        else
-          log "[$platform $index/$total] $name FAILED"
-          printf '%s\n' "$platform/$name" >>"$run_dir/failures"
-        fi
+      read -ra screen_names <<<"$(page_screens "$id")"
+      ((${#screen_names[@]} > 0)) || screen_names=("")
+      for screen in "${screen_names[@]}"; do
+        for scroll in $scrolls; do
+          index=$((index + 1))
+          name="$id-$appearance$(scroll_suffix "$scroll")"
+          [[ -n "$screen" ]] && name="$name-$screen"
+          [[ "$present" == true ]] && name="$name-presented"
+          is_rotated "$udid" && name="$name-landscape"
+          file="$platform_dir/$name.png"
+          shot_started="$(now)"
+          if is_rotated "$udid"; then
+            printf '%s\t%s\t%s\t%s\t%s\n' "$id" "$appearance" "$scroll" "${screen:--}" "$file" >>"$plan"
+          elif capture "$udid" "$id" "$appearance" "$file" "$scroll"; then
+            log "[$platform $index/$total] $name $(elapsed "$shot_started")s"
+          else
+            log "[$platform $index/$total] $name FAILED"
+            printf '%s\n' "$platform/$name" >>"$run_dir/failures"
+          fi
+        done
       done
     done
   done
+  if [[ -s "$plan" ]]; then capture_rotated_plan "$udid" "$plan"; fi
   seconds="$(elapsed "$started")"
   printf '%s: %d shots in %ss (%ss per shot)\n' "$platform" "$total" "$seconds" "$(perl -e 'printf "%.1f", $ARGV[0] / $ARGV[1]' "$seconds" "$total")" \
     >>"$run_dir/summary"
@@ -394,6 +470,7 @@ main() {
   if wants macos; then available="$(mac_page_ids)"; else available="$(simulator_page_ids "$(udid_for "${simulators[0]}")")"; fi
   [[ -n "$available" ]] || fail "the app listed no pages"
   resolve_page_ids "$available"
+  validate_screens
   log "Capturing $(shot_count) shots per platform ($platforms) into $out_dir"
 
   local capture_failed=0

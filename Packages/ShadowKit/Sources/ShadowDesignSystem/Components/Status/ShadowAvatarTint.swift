@@ -50,4 +50,21 @@ nonisolated public enum ShadowAvatarTint: Hashable, Sendable {
     case .chart: ShadowColor.onAccent
     }
   }
+
+  var filledBackground: Color {
+    switch self {
+    case .accent: ShadowColor.accent
+    case .warm: ShadowColor.warningSolid
+    case .neutral, .solid: ShadowColor.neutralSolid
+    case .chart: background
+    }
+  }
+
+  var filledForeground: Color {
+    switch self {
+    case .accent, .chart: ShadowColor.onAccent
+    case .warm: ShadowColor.warningOnSolid
+    case .neutral, .solid: ShadowColor.neutralOnSolid
+    }
+  }
 }

@@ -110,7 +110,7 @@ extension ChartCard where Footer == EmptyView {
   }
 }
 
-private struct OutcomeBars: View {
+struct OutcomeBars: View {
   var selected: Binding<String?>?
 
   var body: some View {

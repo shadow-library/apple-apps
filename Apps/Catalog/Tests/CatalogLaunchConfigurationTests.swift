@@ -101,6 +101,13 @@ struct CatalogLaunchConfigurationTests {
     #expect(!CatalogLaunchConfiguration(arguments: ["-component", "Sheet"]).presentsSample)
   }
 
+  @Test("should parse the screen name case-insensitively")
+  func parsesScreen() {
+    #expect(CatalogLaunchConfiguration(arguments: ["-component", "iPhoneScreens", "-screen", "StepUp"]).screen == "stepup")
+    #expect(CatalogLaunchConfiguration(arguments: ["-component", "iPhoneScreens"]).screen == nil)
+    #expect(CatalogLaunchConfiguration(arguments: ["-screen", "-appearance", "dark"]).screen == nil)
+  }
+
   @Test("should start the model detail-only when a component is requested")
   @MainActor
   func modelColumns() {

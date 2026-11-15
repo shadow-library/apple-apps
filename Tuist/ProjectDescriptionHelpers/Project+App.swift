@@ -8,6 +8,7 @@ extension Project {
     bundleIdSuffix: String? = nil,
     dependencies: [TargetDependency] = [],
     testDependencies: [TargetDependency] = [],
+    includesUITests: Bool = false,
     infoPlist: [String: Plist.Value] = [:],
     entitlements: Entitlements? = nil
   ) -> Project {
@@ -44,12 +45,43 @@ extension Project {
       settings: .shadow(.shadowApp)
     )
 
+    let uiTestDestinations = platform.destinations.intersection([.iPhone, .iPad])
+    let hasUITests = includesUITests && !uiTestDestinations.isEmpty
+
+    let uiTests: [Target] =
+      hasUITests
+      ? [
+        .target(
+          name: "\(name)UITests",
+          destinations: uiTestDestinations,
+          product: .uiTests,
+          bundleId: "\(bundleId).uitests",
+          deploymentTargets: .iOS(Organization.minimumOSVersion),
+          infoPlist: .default,
+          buildableFolders: ["UITests"],
+          dependencies: [.target(name: name)],
+          settings: .shadow(.shadowApp)
+        )
+      ]
+      : []
+
+    let uiTestSchemes: [Scheme] =
+      hasUITests
+      ? [
+        .scheme(
+          name: "\(name)UITests",
+          buildAction: .buildAction(targets: [.target(name)]),
+          testAction: .targets([.testableTarget(target: .target("\(name)UITests"))], configuration: .debug)
+        )
+      ]
+      : []
+
     return Project(
       name: name,
       organizationName: Organization.name,
       options: .options(automaticSchemesOptions: .disabled),
       settings: .shadow(.shadowBase),
-      targets: [app, tests],
+      targets: [app, tests] + uiTests,
       schemes: [
         .scheme(
           name: name,
@@ -60,7 +92,7 @@ extension Project {
           profileAction: .profileAction(configuration: .release, executable: .target(name)),
           analyzeAction: .analyzeAction(configuration: .debug)
         )
-      ]
+      ] + uiTestSchemes
     )
   }
 }

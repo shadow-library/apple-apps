@@ -9,6 +9,7 @@ struct CatalogCloseDemoAction {
 
 extension EnvironmentValues {
   @Entry var catalogCloseDemo: CatalogCloseDemoAction?
+  @Entry var catalogScreen: String?
 }
 
 struct CatalogDemoHost: View {
@@ -27,7 +28,7 @@ struct CatalogDemoCloseItem: ToolbarContent {
 
   var body: some ToolbarContent {
     if let close {
-      ToolbarItem(placement: placement) {
+      ToolbarItem(placement: Self.placement) {
         Button("Close demo", systemImage: "xmark") { close() }
           .labelStyle(.iconOnly)
           .help("Back to the catalog")
@@ -37,7 +38,7 @@ struct CatalogDemoCloseItem: ToolbarContent {
     }
   }
 
-  private var placement: ToolbarItemPlacement {
+  static var placement: ToolbarItemPlacement {
     #if os(macOS)
       .navigation
     #else

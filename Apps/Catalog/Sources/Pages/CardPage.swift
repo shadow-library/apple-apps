@@ -80,8 +80,7 @@ private struct QuestRow: View {
     Label {
       Text(title).foregroundStyle(ShadowColor.textPrimary)
     } icon: {
-      Image(systemName: isDone ? "checkmark.circle.fill" : "circle")
-        .foregroundStyle(isDone ? ShadowColor.accent : ShadowColor.borderStrong)
+      QuestCheckGlyph(isDone: isDone)
     }
     .shadowFont(.body)
     .frame(minHeight: ShadowMetrics.rowHeight)

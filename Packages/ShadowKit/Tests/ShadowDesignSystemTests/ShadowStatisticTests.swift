@@ -70,9 +70,15 @@ struct ShadowStatisticGridTests {
 
   @Test(
     "should fit as many columns as the width allows without exceeding the item count",
-    arguments: [(361, 4, 2), (760, 4, 4), (760, 2, 2), (100, 3, 1), (292, 4, 2), (304, 4, 2), (444, 4, 3)])
+    arguments: [(361, 4, 2), (760, 4, 4), (760, 2, 2), (100, 3, 1), (292, 4, 2), (304, 4, 2), (444, 4, 2), (600, 4, 4), (600, 5, 3), (760, 7, 5), (600, 7, 4), (292, 3, 1)])
   func columns(width: Double, count: Int, expected: Int) {
     #expect(layout.columns(for: width, count: count) == expected)
+  }
+
+  @Test("should never leave a single orphan tile in the last row", arguments: 1...12, [140.0, 292, 361, 444, 600, 760, 1_040])
+  func noOrphan(count: Int, width: Double) {
+    let columns = layout.columns(for: width, count: count)
+    #expect(columns == 1 || count % columns != 1)
   }
 }
 

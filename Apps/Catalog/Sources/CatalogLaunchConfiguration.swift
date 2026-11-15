@@ -7,6 +7,7 @@ struct CatalogLaunchConfiguration: Equatable, Sendable {
   static let listComponentsFlag = "-list-components"
   static let scrollFlag = "-scroll"
   static let presentFlag = "-present"
+  static let screenFlag = "-screen"
 
   let page: CatalogPage?
   let appearance: CatalogAppearance?
@@ -14,12 +15,13 @@ struct CatalogLaunchConfiguration: Equatable, Sendable {
   let listsComponents: Bool
   let scrollFraction: Double?
   let presentsSample: Bool
+  let screen: String?
 
   var isAutomated: Bool { page != nil || appearance != nil || snapshotURL != nil }
 
   init(
     page: CatalogPage? = nil, appearance: CatalogAppearance? = nil, snapshotURL: URL? = nil, listsComponents: Bool = false, scrollFraction: Double? = nil,
-    presentsSample: Bool = false
+    presentsSample: Bool = false, screen: String? = nil
   ) {
     self.page = page
     self.appearance = appearance
@@ -27,6 +29,7 @@ struct CatalogLaunchConfiguration: Equatable, Sendable {
     self.listsComponents = listsComponents
     self.scrollFraction = scrollFraction
     self.presentsSample = presentsSample
+    self.screen = screen
   }
 
   init(arguments: [String]) {
@@ -36,6 +39,7 @@ struct CatalogLaunchConfiguration: Equatable, Sendable {
     listsComponents = arguments.contains(Self.listComponentsFlag)
     scrollFraction = Self.value(of: Self.scrollFlag, in: arguments).flatMap { Double($0) }.flatMap { $0.isFinite ? min($0, 1) : nil }
     presentsSample = arguments.contains(Self.presentFlag)
+    screen = Self.value(of: Self.screenFlag, in: arguments)?.lowercased()
   }
 
   private static func value(of flag: String, in arguments: [String]) -> String? {
