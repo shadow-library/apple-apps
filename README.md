@@ -110,7 +110,7 @@ The archive is written to `.build/docbuild/Build/Products/Debug/ShadowDesignSyst
 
 `Apps/Catalog` is a gallery of every component and token page in light and dark, with the presentation and device-screen demos. It is also the pipeline's smoke test and the subject of the screenshot harness. Run the `Catalog` scheme from the workspace, or `Catalog -list-components` to print the page ids.
 
-Launch arguments: `-component <id>`, `-appearance light|dark`, `-scroll <0..1>`, `-screen <name>`, `-present`.
+Launch arguments: `-component <id>`, `-appearance light|dark`, `-scroll <0..1>`, `-screen <name>`, `-present`, `-animated` (keeps animations on for a deep link, which otherwise disables them).
 
 ### Screenshot harness
 

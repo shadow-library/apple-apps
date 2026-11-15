@@ -27,6 +27,15 @@ The native segmented control keeps the system accent for the selected segment. I
 - Dialogs are native `.alert` and `.confirmationDialog`. Pair `.shadowDialogCancelAction()` with `.shadowDestructiveDialogAction()`. On Mac, Return cancels and the destructive action is ⌘⌫.
 - The macOS 26 alert hides the app icon for window-attached alerts. This is system behaviour.
 
+## Tab bars
+
+Tab bars are a native `TabView` of `Tab`s; the library only tints them. The system animates the switch: the Liquid Glass lens travels to the new tab, labels and badges retint under it, the Search tab morphs into its field, and the content cross-fades for a few frames. Under Reduce Motion the selection and content change without travel. Leave all of it to the system:
+
+- Bind the selection to plain state and change it without `withAnimation`.
+- Put no `.animation`, `.transition`, `.transaction` or `.id` on tab content, and do not recreate the `TabView` when the selection changes.
+- Give each tab its own `NavigationStack` inside the `Tab`, so switching keeps every tab's path and scroll position.
+- Minimising and the bottom accessory follow `.tabBarMinimizeBehavior(_:)` and `.tabViewBottomAccessory(content:)`.
+
 ## Toasts
 
 Toasts anchor to the top safe area of the window on iPhone and iPad, wherever ``ShadowToastCenter`` is attached, so they never sit under navigation bars or large titles. Mac placement is unchanged. Toasts use dense glass because they carry reading text.

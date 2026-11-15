@@ -10,6 +10,7 @@ struct CatalogLaunchConfiguration: Equatable, Sendable {
   static let screenFlag = "-screen"
   static let capturePollFlag = "-capture-poll"
   static let defaultCapturePoll = Duration.milliseconds(250)
+  static let animatedFlag = "-animated"
 
   let page: CatalogPage?
   let appearance: CatalogAppearance?
@@ -19,15 +20,17 @@ struct CatalogLaunchConfiguration: Equatable, Sendable {
   let presentsSample: Bool
   let screen: String?
   let capturePoll: Duration
+  let keepsAnimations: Bool
 
   // A capture accepts two identical frames one poll apart, so the page must finish scrolling within half a poll of its layout settling.
   var scrollSettleDelay: Duration { capturePoll / 2 }
 
   var isAutomated: Bool { page != nil || appearance != nil || snapshotURL != nil }
+  var disablesAnimations: Bool { isAutomated && !keepsAnimations }
 
   init(
     page: CatalogPage? = nil, appearance: CatalogAppearance? = nil, snapshotURL: URL? = nil, listsComponents: Bool = false, scrollFraction: Double? = nil,
-    presentsSample: Bool = false, screen: String? = nil, capturePoll: Duration = defaultCapturePoll
+    presentsSample: Bool = false, screen: String? = nil, capturePoll: Duration = defaultCapturePoll, keepsAnimations: Bool = false
   ) {
     self.page = page
     self.appearance = appearance
@@ -37,6 +40,7 @@ struct CatalogLaunchConfiguration: Equatable, Sendable {
     self.presentsSample = presentsSample
     self.screen = screen
     self.capturePoll = capturePoll
+    self.keepsAnimations = keepsAnimations
   }
 
   init(arguments: [String]) {
@@ -50,6 +54,7 @@ struct CatalogLaunchConfiguration: Equatable, Sendable {
     capturePoll =
       Self.value(of: Self.capturePollFlag, in: arguments).flatMap(Double.init).flatMap { $0.isFinite && $0 > 0 ? Duration.seconds($0) : nil }
       ?? Self.defaultCapturePoll
+    keepsAnimations = arguments.contains(Self.animatedFlag)
   }
 
   private static func value(of flag: String, in arguments: [String]) -> String? {

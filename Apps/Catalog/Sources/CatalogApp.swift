@@ -14,7 +14,7 @@ struct CatalogApp: App {
     let launch = CatalogLaunchConfiguration(arguments: ProcessInfo.processInfo.arguments)
     if launch.listsComponents { Self.listPagesAndExit() }
     #if canImport(UIKit)
-      if launch.isAutomated { UIView.setAnimationsEnabled(false) }
+      if launch.disablesAnimations { UIView.setAnimationsEnabled(false) }
     #endif
     _model = State(initialValue: CatalogModel(launch: launch))
   }
@@ -32,7 +32,7 @@ struct CatalogApp: App {
         .shadowPreviewHoverEffects(model.launch.snapshotURL == nil)
         .preferredColorScheme(model.appearance.colorScheme)
         .transaction { transaction in
-          guard model.launch.isAutomated else { return }
+          guard model.launch.disablesAnimations else { return }
           transaction.animation = nil
           transaction.disablesAnimations = true
         }

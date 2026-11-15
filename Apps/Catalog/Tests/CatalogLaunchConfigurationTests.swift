@@ -116,6 +116,15 @@ struct CatalogLaunchConfigurationTests {
     #expect(CatalogLaunchConfiguration(arguments: ["-screen", "-appearance", "dark"]).screen == nil)
   }
 
+  @Test("should keep animations on for a deep link only when the animated flag is passed")
+  func parsesAnimated() {
+    let animated = CatalogLaunchConfiguration(arguments: ["-component", "TabBar", "-animated"])
+    #expect(animated.isAutomated)
+    #expect(!animated.disablesAnimations)
+    #expect(CatalogLaunchConfiguration(arguments: ["-component", "TabBar"]).disablesAnimations)
+    #expect(!CatalogLaunchConfiguration(arguments: ["Catalog"]).disablesAnimations)
+  }
+
   @Test("should start the model detail-only when a component is requested")
   @MainActor
   func modelColumns() {
