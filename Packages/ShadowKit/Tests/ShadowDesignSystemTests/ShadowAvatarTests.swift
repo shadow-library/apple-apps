@@ -48,9 +48,9 @@ struct ShadowInitialsTests {
 struct ShadowAvatarTintTests {
   @Test("should be deterministic across calls and insensitive to case and padding")
   func deterministic() {
-    #expect(ShadowAvatarTint.automatic(for: "Mira Vale") == .chart(5))
-    #expect(ShadowAvatarTint.automatic(for: "  mira vale ") == .chart(5))
-    #expect(ShadowAvatarTint.automatic(for: "Shadow Library") == .chart(7))
+    #expect(ShadowAvatarTint.automatic(for: "Mira Vale") == .chart(6))
+    #expect(ShadowAvatarTint.automatic(for: "  mira vale ") == .chart(6))
+    #expect(ShadowAvatarTint.automatic(for: "Shadow Library") == .chart(5))
   }
 
   @Test("should stay within the eight chart slots and use all of them")
@@ -58,6 +58,17 @@ struct ShadowAvatarTintTests {
     let slots = Set(
       (0..<400).compactMap { index -> Int? in
         guard case .chart(let slot) = ShadowAvatarTint.automatic(for: "member-\(index)") else { return nil }
+        return slot
+      })
+    #expect(slots == Set(1...ShadowAvatarTint.chartCount))
+  }
+
+  @Test("should spread a handful of short names over every slot")
+  func spreadsShortSeeds() {
+    let names = ["Ada Lovelace", "Hana Kim", "Jon Reyes", "Arjun Rao", "Grace Hopper", "Mira Vale", "Priya Nair", "Wen Zhao"]
+    let slots = Set(
+      names.compactMap { name -> Int? in
+        guard case .chart(let slot) = ShadowAvatarTint.automatic(for: name) else { return nil }
         return slot
       })
     #expect(slots == Set(1...ShadowAvatarTint.chartCount))

@@ -43,7 +43,11 @@ struct OutlineGroupPage: View {
         OutlineGroup(longTree, children: \.children) { node in
           OutlineRow(node: node, isSelected: selection == node.id).tag(node.id)
         }
+        #if !os(macOS)
+          .shadowListRowChrome()
+        #endif
       }
+      CatalogListEnd()
     }
     .shadowListStyle()
     .catalogListPage(.outlineGroup, anchors: ["Story bible", "Long text"])

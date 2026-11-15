@@ -147,11 +147,9 @@ public struct ShadowTimelineItem<Content: View>: View {
             .shadowFont(.body)
             .fontWeight(.semibold)
             .foregroundStyle(titleColor)
-          if let meta {
-            meta
-              .shadowFont(.footnote)
-              .foregroundStyle(ShadowColor.textSecondary)
-          }
+          meta
+            .shadowFont(.footnote)
+            .foregroundStyle(ShadowColor.textSecondary)
         }
         .accessibilityElement(children: .combine)
         .accessibilityValue(statusLabel ?? Text(verbatim: ""))
@@ -170,12 +168,21 @@ public struct ShadowTimelineItem<Content: View>: View {
     }
   }
 
-  private var meta: Text? {
+  @ViewBuilder
+  private var meta: some View {
     switch (detail, time) {
-    case (let detail?, let time?): Text("\(detail) · \(time)")
+    case (let detail?, let time?):
+      ViewThatFits(in: .horizontal) {
+        Text("\(detail)\u{00A0}·\u{00A0}\(time)").lineLimit(1)
+        VStack(alignment: .leading, spacing: 0) {
+          detail
+          time
+        }
+        .fixedSize(horizontal: false, vertical: true)
+      }
     case (let detail?, nil): detail
     case (nil, let time?): time
-    case (nil, nil): nil
+    case (nil, nil): EmptyView()
     }
   }
 }

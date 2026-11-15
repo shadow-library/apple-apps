@@ -7,6 +7,13 @@ nonisolated public enum ShadowListAccessory: Hashable, Sendable {
 
 extension EnvironmentValues {
   @Entry var shadowDrawsRowBackground = false
+  @Entry var shadowListRowTitleTruncation: Text.TruncationMode?
+}
+
+extension View {
+  public func shadowListRowSingleLineTitle(truncationMode: Text.TruncationMode = .tail) -> some View {
+    environment(\.shadowListRowTitleTruncation, truncationMode)
+  }
 }
 
 nonisolated public enum ShadowSymbolTileStyle: Hashable, Sendable, CaseIterable {
@@ -74,6 +81,7 @@ public struct ShadowListRow<Leading: View, Trailing: View>: View {
   @Environment(\.appearsActive) private var appearsActive
   @Environment(\.dynamicTypeSize) private var dynamicTypeSize
   @Environment(\.backgroundProminence) private var backgroundProminence
+  @Environment(\.shadowListRowTitleTruncation) private var titleTruncation
   @ScaledMetric(relativeTo: .body) private var minimumHeight = ShadowListMetrics().minimumRowHeight
   @State private var leadingWidth = ShadowListMetrics().tileSize
   @State private var isHovered = false
@@ -114,8 +122,16 @@ public struct ShadowListRow<Leading: View, Trailing: View>: View {
 
   private var phase: ShadowListRowPhase {
     ShadowListRowPhase(
-      isSelected: isSelected, isHovered: isHovered && isEnabled && hoverEffectsEnabled, appearsActive: appearsActive, isProminent: backgroundProminence == .increased,
+      isSelected: isSelected, isHovered: isHovered && isEnabled && hoverEffectsEnabled, appearsActive: appearsActive, isProminent: isOnProminentBackground,
       isInList: !drawsBackground, density: .current)
+  }
+
+  private var isOnProminentBackground: Bool {
+    #if os(macOS)
+      false  // Stale on macOS lists; ShadowProminenceStyle adapts the labels at render time instead.
+    #else
+      backgroundProminence == .increased
+    #endif
   }
 
   public var body: some View {
@@ -133,7 +149,7 @@ public struct ShadowListRow<Leading: View, Trailing: View>: View {
       if accessory == .chevron && metrics.showsChevron {
         Image(systemName: "chevron.forward")
           .font(.footnote.weight(.semibold))
-          .foregroundStyle(palette.accessory.color)
+          .foregroundStyle(ShadowProminenceStyle(palette.accessory))
           .accessibilityHidden(true)
       }
     }
@@ -181,27 +197,28 @@ public struct ShadowListRow<Leading: View, Trailing: View>: View {
         title
           .shadowFont(.body)
           .fontWeight(isEmphasized ? .semibold : nil)
-          .foregroundStyle(palette.title.color)
-          .lineLimit(lineLimit)
+          .foregroundStyle(ShadowProminenceStyle(palette.title))
+          .lineLimit(metrics.titleLineLimit(isAccessibilitySize: dynamicTypeSize.isAccessibilitySize, isSingleLine: titleTruncation != nil))
+          .truncationMode(titleTruncation ?? .tail)
           .shadowSkeletonText()
         if let subtitle {
           subtitle
             .shadowFont(.subheadline)
-            .foregroundStyle(palette.secondary.color)
+            .foregroundStyle(ShadowProminenceStyle(palette.secondary))
             .lineLimit(lineLimit)
             .shadowSkeletonText()
         }
         if let caption {
           caption
             .shadowFont(.footnote)
-            .foregroundStyle(palette.secondary.color)
+            .foregroundStyle(ShadowProminenceStyle(palette.secondary))
             .lineLimit(lineLimit)
             .shadowSkeletonText()
         }
         if stacksValue, let value {
           value
             .shadowFont(.body)
-            .foregroundStyle(palette.secondary.color)
+            .foregroundStyle(ShadowProminenceStyle(palette.secondary))
             .shadowSkeletonText()
         }
       }
@@ -212,7 +229,7 @@ public struct ShadowListRow<Leading: View, Trailing: View>: View {
       if !stacksValue, let value {
         value
           .shadowFont(.body)
-          .foregroundStyle(palette.secondary.color)
+          .foregroundStyle(ShadowProminenceStyle(palette.secondary))
           .lineLimit(lineLimit)
           .multilineTextAlignment(.trailing)
           .shadowSkeletonText()

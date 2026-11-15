@@ -1,8 +1,11 @@
-import ShadowDesignSystem
+@_spi(Preview) import ShadowDesignSystem
 import SwiftUI
 
 struct CommandPalettePage: View {
+  private static let presentedCursor = "secrets"
+
   @State private var isPresented = false
+  @State private var presentedSelection: String?
   @State private var toasts = ShadowToastCenter()
   @State private var query = "glass"
   @State private var emptyQuery = ""
@@ -26,8 +29,16 @@ struct CommandPalettePage: View {
       isPresented: $isPresented, sections: sections, prompt: "Search chapters and commands", emptyTitle: "No matches", shortcutTitle: "Open command palette",
       focusesSearchOnPresent: !presentsSample
     )
+    .shadowPreviewCommandSelection(presentedSelection)
     .shadowToastPresenter(toasts)
-    .catalogAutoPresent { if DemoPlatform.opensDetail { isPresented = true } }
+    .catalogAutoPresent {
+      guard DemoPlatform.opensDetail else { return }
+      isPresented = true
+      Task {
+        try? await Task.sleep(for: .milliseconds(500))
+        presentedSelection = Self.presentedCursor
+      }
+    }
   }
 
   private var livePalettePage: some View {
@@ -77,16 +88,12 @@ struct CommandPalettePage: View {
         if ShadowCommandFilter.sections(sections, matching: searchText).isEmpty {
           ShadowContentUnavailable("No matches", kind: .noResults, message: "Try a chapter title or a command name.")
         } else {
-          ShadowGroupedSection {
-            ShadowCommandSearchResults(sections: sections, query: searchText)
-          }
+          SearchResultCards(sections: sections, query: searchText)
         }
       }
     }
     StateSection("Before typing", note: "Recent items first, then commands and pages.") {
-      ShadowGroupedSection {
-        ShadowCommandSearchResults(sections: Array(sections.prefix(2)), query: "")
-      }
+      SearchResultCards(sections: Array(sections.prefix(2)), query: "")
     }
     StateSection("No matches") {
       ShadowContentUnavailable("No matches", kind: .noResults, message: "Try a chapter title or a command name.")
@@ -128,5 +135,22 @@ enum CommandPaletteDemo {
           command("settings", String(localized: "Settings"), systemImage: "gearshape", keywords: [String(localized: "preferences")]),
         ]),
     ]
+  }
+}
+
+private struct SearchResultCards: View {
+  let sections: [ShadowCommandSection]
+  let query: String
+
+  var body: some View {
+    VStack(alignment: .leading, spacing: Spacing.space5) {
+      ForEach(sections: ShadowCommandSearchResults(sections: sections, query: query)) { section in
+        ShadowGroupedSection {
+          section.content
+        } header: {
+          section.header
+        }
+      }
+    }
   }
 }

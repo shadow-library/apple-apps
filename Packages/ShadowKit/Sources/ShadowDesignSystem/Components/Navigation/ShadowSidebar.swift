@@ -19,7 +19,6 @@ public struct ShadowSidebarLabel: View {
   private let title: Text
   private let systemImage: String
   private let badge: ShadowSidebarBadge?
-  @Environment(\.backgroundProminence) private var backgroundProminence
 
   public init(_ title: Text, systemImage: String, badge: ShadowSidebarBadge? = nil) {
     self.title = title
@@ -39,7 +38,7 @@ public struct ShadowSidebarLabel: View {
       }
     } icon: {
       Image(systemName: systemImage)
-        .foregroundStyle(backgroundProminence == .increased ? ShadowColor.onAccent : ShadowColor.accentText)
+        .foregroundStyle(ShadowProminenceStyle(.accentText))
     }
     .badge(badge?.count ?? 0)
   }

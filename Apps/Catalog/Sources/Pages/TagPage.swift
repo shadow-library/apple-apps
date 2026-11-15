@@ -31,7 +31,7 @@ struct TagPage: View {
         }
         .shadowCard()
       }
-      StateSection("Static", note: "Plain category labels with an optional symbol; they are not interactive and carry no touch target.") {
+      StateSection("Static", note: "Plain category labels with an optional symbol on a borderless surface-well fill, so they never read as tappable filters.") {
         ShadowFlowLayout(spacing: Spacing.space2, lineSpacing: Spacing.space2) {
           ShadowTag("Fantasy")
           ShadowTag("Slow burn", systemImage: "flame")

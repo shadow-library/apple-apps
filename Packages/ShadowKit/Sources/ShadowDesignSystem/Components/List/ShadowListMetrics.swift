@@ -35,6 +35,11 @@ nonisolated public struct ShadowListMetrics: Hashable, Sendable {
     EdgeInsets(top: verticalPadding, leading: horizontalPadding, bottom: verticalPadding, trailing: horizontalPadding)
   }
 
+  public func titleLineLimit(isAccessibilitySize: Bool, isSingleLine: Bool) -> Int? {
+    if isSingleLine { return 1 }
+    return isAccessibilitySize ? nil : textLineLimit
+  }
+
   public func separatorInset(leadingWidth: CGFloat?) -> CGFloat {
     guard let leadingWidth else { return horizontalPadding }
     return horizontalPadding + leadingWidth + leadingGap

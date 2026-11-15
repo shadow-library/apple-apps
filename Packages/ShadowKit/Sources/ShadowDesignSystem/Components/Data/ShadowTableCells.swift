@@ -34,18 +34,10 @@ public struct ShadowTableNumber: View {
   }
 }
 
-private struct ShadowTableCellModifier: ViewModifier {
-  @Environment(\.backgroundProminence) private var prominence
-
-  func body(content: Content) -> some View {
-    content.foregroundStyle(prominence == .increased ? ShadowColor.onAccent : ShadowColor.textPrimary)
-  }
-}
-
 extension View {
   // Native iPad tables draw every column after the first in secondary, and even `.primary` resolves to it there.
   public func shadowTableCell() -> some View {
-    modifier(ShadowTableCellModifier())
+    foregroundStyle(ShadowProminenceStyle(.textPrimary))
   }
 }
 

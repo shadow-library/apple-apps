@@ -284,3 +284,14 @@ struct ShadowCommandHighlightTests {
     #expect(attributed.runs.count == 1)
   }
 }
+
+@Suite("Command palette metrics")
+struct ShadowCommandPaletteMetricsTests {
+  @Test("should fade and reserve half a row only while the results overflow", arguments: ShadowDensity.allCases)
+  func fade(density: ShadowDensity) {
+    let metrics = ShadowCommandPaletteMetrics(density: density)
+    #expect(metrics.fadeHeight(resultsHeight: nil) == 0)
+    #expect(metrics.fadeHeight(resultsHeight: metrics.maximumResultsHeight) == 0)
+    #expect(metrics.fadeHeight(resultsHeight: metrics.maximumResultsHeight + 1) == metrics.rowHeight / 2)
+  }
+}

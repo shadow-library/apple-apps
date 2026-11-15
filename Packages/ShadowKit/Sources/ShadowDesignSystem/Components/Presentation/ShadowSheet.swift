@@ -65,6 +65,7 @@ public struct ShadowSheetConfirm {
 
 extension View {
   /// Supplies its own scroll view, so pass content that does not scroll by itself; a List or ScrollView inside would collapse.
+  /// On iPad it also sizes `.form` sheets to their content, and that sizing takes precedence over an outer `.shadowSheetStyle(.form)`.
   public func shadowFittedDetents() -> some View {
     modifier(ShadowFittedDetentsModifier())
   }
@@ -104,6 +105,12 @@ nonisolated enum ShadowFittedDetents {
   static func detents(contentHeight: CGFloat?, barHeight: CGFloat = 0) -> Set<PresentationDetent> {
     [contentHeight.map { .height(($0 + barHeight).rounded(.up)) } ?? .medium]
   }
+
+  static func formHeight(content: CGFloat?, form: CGFloat?) -> CGFloat? {
+    guard let content else { return form }
+    guard let form else { return content.rounded(.up) }
+    return min(content.rounded(.up), form)
+  }
 }
 
 private struct ShadowFittedDetentsModifier: ViewModifier {
@@ -117,8 +124,22 @@ private struct ShadowFittedDetentsModifier: ViewModifier {
     .scrollBounceBehavior(.basedOnSize)
     .onGeometryChange(for: CGFloat.self, of: { $0.safeAreaInsets.top }, action: { barHeight = $0 })
     .presentationDetents(ShadowFittedDetents.detents(contentHeight: contentHeight, barHeight: barHeight))
+    #if os(iOS)
+      .presentationSizing(ShadowFittedFormSizing(height: contentHeight.map { $0 + barHeight }))
+    #endif
   }
 }
+
+#if os(iOS)
+  struct ShadowFittedFormSizing: PresentationSizing {
+    let height: CGFloat?
+
+    func proposedSize(for root: PresentationSizingRoot, context: PresentationSizingContext) -> ProposedViewSize {
+      let form = FormPresentationSizing.form.proposedSize(for: root, context: context)
+      return ProposedViewSize(width: form.width, height: ShadowFittedDetents.formHeight(content: height, form: form.height))
+    }
+  }
+#endif
 
 private struct ShadowSheetStyleModifier: ViewModifier {
   let style: ShadowSheetStyle

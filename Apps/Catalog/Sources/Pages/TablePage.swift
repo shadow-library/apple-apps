@@ -102,7 +102,9 @@ private struct DeliveryTable: View {
     } compact: { delivery in
       ShadowListRow(
         title: Text(verbatim: delivery.template).monospaced(), subtitle: Text("\(delivery.sent, format: .number) sent · \(delivery.time, format: .dateTime.hour().minute())"),
-        isSelected: selection.contains(delivery.id), trailing: delivery.status.badge)
+        isSelected: selection.contains(delivery.id), trailing: delivery.status.badge
+      )
+      .shadowListRowSingleLineTitle(truncationMode: .middle)
     } empty: {
       ShadowContentUnavailable("No deliveries yet", message: "Sent emails and push notifications show up here.")
     }
@@ -145,7 +147,7 @@ struct TablePage: View {
       }
       StateSection(
         "Long identifiers",
-        note: "In table cells identifiers stay on one line and truncate in the middle so the ends, which differ, stay readable. The iPhone list wraps them to two lines."
+        note: "In table cells identifiers stay on one line and truncate in the middle so the ends, which differ, stay readable; the iPhone list rows do the same."
       ) {
         DeliveryTable(rows: Delivery.long)
       }

@@ -48,6 +48,21 @@ nonisolated public struct ShadowCommandPaletteMetrics: Hashable, Sendable {
       detailStyle = .macFootnote
     }
   }
+
+  public func fadeHeight(resultsHeight: CGFloat?) -> CGFloat {
+    guard let resultsHeight, resultsHeight > maximumResultsHeight else { return 0 }
+    return rowHeight / 2
+  }
+}
+
+extension EnvironmentValues {
+  @Entry var shadowPreviewCommandSelection: String?
+}
+
+extension View {
+  @_spi(Preview) public func shadowPreviewCommandSelection(_ id: String?) -> some View {
+    environment(\.shadowPreviewCommandSelection, id)
+  }
 }
 
 public struct ShadowCommandPalette: View {
@@ -62,9 +77,11 @@ public struct ShadowCommandPalette: View {
   @State private var results: [ShadowCommandResultSection]?
   @State private var cursor = ShadowCommandCursor()
   @State private var resultsHeight: CGFloat?
+  @State private var hasMoreBelow = false
   @FocusState private var isSearchFocused: Bool
   @Environment(\.accessibilityVoiceOverEnabled) private var isVoiceOverRunning
   @Environment(\.shadowHoverEffectsEnabled) private var hoverEffectsEnabled
+  @Environment(\.shadowPreviewCommandSelection) private var previewSelection
 
   public init(
     sections: [ShadowCommandSection],
@@ -107,6 +124,7 @@ public struct ShadowCommandPalette: View {
     }
     .onChange(of: query) { refresh(resetsSelection: true) }
     .onChange(of: cursor.selection) { _, selection in announce(selection) }
+    .onChange(of: previewSelection) { _, selection in if let selection { cursor.select(selection) } }
   }
 
   private func searchField(_ metrics: ShadowCommandPaletteMetrics) -> some View {
@@ -156,12 +174,22 @@ public struct ShadowCommandPalette: View {
   }
 
   private func resultList(_ results: [ShadowCommandResultSection], metrics: ShadowCommandPaletteMetrics) -> some View {
-    ScrollViewReader { proxy in
+    let fade = metrics.fadeHeight(resultsHeight: resultsHeight)
+    return ScrollViewReader { proxy in
       ScrollView {
         rows(results, metrics: metrics)
           .onGeometryChange(for: CGFloat.self, of: \.size.height) { resultsHeight = $0 }
       }
+      .contentMargins(.bottom, fade, for: .scrollContent)
       .scrollBounceBehavior(.basedOnSize)
+      .onScrollGeometryChange(for: Bool.self, of: { $0.visibleRect.maxY < $0.contentSize.height - 1 }, action: { _, hasMore in hasMoreBelow = hasMore })
+      .mask {
+        VStack(spacing: 0) {
+          Rectangle()
+          LinearGradient(colors: [.black, hasMoreBelow ? .clear : .black], startPoint: .top, endPoint: .bottom)
+            .frame(height: fade)
+        }
+      }
       .frame(height: min(resultsHeight ?? metrics.maximumResultsHeight, metrics.maximumResultsHeight))
       .onChange(of: cursor.selection) { _, selection in
         guard let selection else { return }
@@ -335,12 +363,6 @@ nonisolated enum ShadowCommandHighlight {
 }
 
 public struct ShadowCommandSearchResults: View {
-  private struct Row: Identifiable {
-    let result: ShadowCommandResult
-    let sectionTitle: String
-    var id: String { result.id }
-  }
-
   private let sections: [ShadowCommandSection]
   private let query: String
 
@@ -350,22 +372,27 @@ public struct ShadowCommandSearchResults: View {
   }
 
   public var body: some View {
-    let rows = ShadowCommandFilter.sections(sections, matching: query).flatMap { section in section.results.map { Row(result: $0, sectionTitle: section.title) } }
-    ForEach(rows) { row in
-      let command = row.result.command
-      Button {
-        command.perform()
-      } label: {
-        ShadowListRow(
-          title: Text(ShadowCommandHighlight.attributed(command.title, offsets: row.result.match.matchedOffsets, highlight: ShadowColor.accentText)),
-          subtitle: Text(verbatim: command.subtitle ?? row.sectionTitle)
-        ) {
-          ShadowSymbolTile(systemImage: command.systemImage, tint: .neutral)
-        } trailing: {
-          EmptyView()
+    ForEach(ShadowCommandFilter.sections(sections, matching: query)) { section in
+      Section {
+        ForEach(section.results) { result in
+          let command = result.command
+          Button {
+            command.perform()
+          } label: {
+            ShadowListRow(
+              title: Text(ShadowCommandHighlight.attributed(command.title, offsets: result.match.matchedOffsets, highlight: ShadowColor.accentText)),
+              subtitle: command.subtitle.map { Text(verbatim: $0) }
+            ) {
+              ShadowSymbolTile(systemImage: command.systemImage, tint: .neutral)
+            } trailing: {
+              EmptyView()
+            }
+          }
+          .buttonStyle(.shadowRow)
         }
+      } header: {
+        ShadowSectionHeader(Text(verbatim: section.title))
       }
-      .buttonStyle(.shadowRow)
     }
   }
 }

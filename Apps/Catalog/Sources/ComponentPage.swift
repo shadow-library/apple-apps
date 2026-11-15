@@ -53,11 +53,29 @@ private struct CatalogListAnchor: ViewModifier {
           let index = min(last, Int((fraction * Double(last)).rounded()))
           for delay in [0.4, 1.2] {
             try? await Task.sleep(for: .seconds(delay))
-            proxy.scrollTo(anchors[index], anchor: fraction >= 1 ? .bottom : .top)
-            if fraction >= 1 { position.scrollTo(edge: .bottom) }
+            if fraction >= 1 {
+              proxy.scrollTo(CatalogListEnd.id, anchor: .bottom)
+              position.scrollTo(edge: .bottom)
+            } else {
+              proxy.scrollTo(anchors[index], anchor: .top)
+            }
           }
         }
     }
+  }
+}
+
+struct CatalogListEnd: View {
+  static let id = "catalog-list-end"
+
+  var body: some View {
+    Color.clear
+      .frame(height: 1)
+      .listRowInsets(EdgeInsets())
+      .listRowSeparator(.hidden)
+      .listRowBackground(Color.clear)
+      .accessibilityHidden(true)
+      .id(Self.id)
   }
 }
 
@@ -129,7 +147,7 @@ struct ComponentPage<Content: View>: View {
       .frame(maxWidth: ShadowMetrics.readableWidth, alignment: .leading)
       .padding(.horizontal, margin)
       .padding(.vertical, Spacing.space4)
-      .frame(maxWidth: .infinity, alignment: .leading)
+      .frame(maxWidth: .infinity)
     }
     .catalogScrollAnchor()
     .background(ShadowColor.surfaceApp)
@@ -169,6 +187,25 @@ struct StateSection<Content: View>: View {
 
 extension EnvironmentValues {
   @Entry var catalogTakesSnapshot = false
+  @Entry var catalogIsAutomated = false
+}
+
+extension View {
+  func catalogDemoLocale() -> some View { modifier(CatalogDemoLocale()) }
+}
+
+private struct CatalogDemoLocale: ViewModifier {
+  static let locale = Locale(identifier: "en_GB")
+
+  @Environment(\.catalogIsAutomated) private var isAutomated
+
+  func body(content: Content) -> some View {
+    if isAutomated {
+      content.environment(\.locale, Self.locale)
+    } else {
+      content
+    }
+  }
 }
 
 extension View {

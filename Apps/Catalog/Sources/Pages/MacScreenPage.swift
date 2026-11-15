@@ -277,8 +277,11 @@ private struct PulseOverview: View {
         .alignment(.trailing)
     } compact: { delivery in
       ShadowListRow(
-        title: Text(verbatim: delivery.template), subtitle: Text("\(delivery.sent, format: .number) sent · \(delivery.time, format: .dateTime.hour().minute())"),
-        isSelected: selection.contains(delivery.id), trailing: delivery.status.badge)
+        title: Text(verbatim: delivery.template).monospaced(),
+        subtitle: Text("\(delivery.sent, format: .number) sent · \(delivery.time, format: .dateTime.hour().minute())"),
+        isSelected: selection.contains(delivery.id), trailing: delivery.status.badge
+      )
+      .shadowListRowSingleLineTitle(truncationMode: .middle)
     }
     .catalogSnapshotFocus()
     .demoTableFrame(.fitsContent(estimatedRows: PulseDelivery.all.count))

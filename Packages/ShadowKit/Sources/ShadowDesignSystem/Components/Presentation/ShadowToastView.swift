@@ -150,7 +150,6 @@ public struct ShadowToastView: View {
     .frame(minHeight: metrics.minimumHeight)
     .fixedSize(horizontal: false, vertical: true)
     .shadowGlass(.dense, in: ShadowToastShape(maximumCornerRadius: metrics.maximumCornerRadius))
-    .shadowElevation(.glass)
     .modifier(ShadowMaximumWidth(maximumWidth: metrics.maximumWidth))
     .onChange(of: focusedControl) { _, control in onFocusChange(control != nil) }
     .accessibilityElement(children: .contain)

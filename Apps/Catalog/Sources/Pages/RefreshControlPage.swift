@@ -59,6 +59,7 @@ struct RefreshControlPage: View {
           .listRowSeparator(.hidden)
           .listRowBackground(ShadowColor.surfaceCard)
       }
+      CatalogListEnd()
     }
     .shadowListStyle()
     .shadowRefreshable("Refresh") {

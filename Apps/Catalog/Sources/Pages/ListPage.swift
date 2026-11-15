@@ -25,7 +25,7 @@ struct ListPage: View {
       StateListSection(
         "Selected",
         note:
-          "Touch uses accent-soft with accent-text. Mac keeps the native selection band: accent while the list is focused, grey otherwise."
+          "Touch uses accent-soft with accent-text. Mac keeps the native band: accent with on-accent labels while the list is focused, grey otherwise."
       ) {
         ForEach(books) { book in
           ShadowListRow(title: Text(verbatim: book.title), subtitle: Text(verbatim: book.progress), isSelected: selection == book.id) { ListCover(book: book) }
@@ -74,8 +74,10 @@ struct ListPage: View {
           .listRowSeparator(.hidden)
           .listRowBackground(ShadowColor.surfaceCard)
       }
+      CatalogListEnd()
     }
     .shadowListStyle()
+    .catalogSnapshotFocus()
     .catalogListPage(.list, anchors: ["Library", "Settings", "Selected", "Symbol tiles", "Badges and values", "Disabled", "Long text", "Loading", "Empty"])
   }
 }

@@ -56,6 +56,14 @@ struct ShadowDismissGuardTests {
 
 @Suite("Fitted detents")
 struct ShadowFittedDetentsTests {
+  @Test("should shrink an iPad form sheet to its content but never grow it past the form size")
+  func formHeight() {
+    #expect(ShadowFittedDetents.formHeight(content: 240.2, form: 600) == 241)
+    #expect(ShadowFittedDetents.formHeight(content: 900, form: 600) == 600)
+    #expect(ShadowFittedDetents.formHeight(content: nil, form: 600) == 600)
+    #expect(ShadowFittedDetents.formHeight(content: 240, form: nil) == 240)
+  }
+
   @Test("should start at medium until the content is measured")
   func unmeasured() {
     #expect(ShadowFittedDetents.detents(contentHeight: nil) == [.medium])

@@ -41,7 +41,7 @@ private struct ShadowDisclosureBody: View {
       Button {
         withAnimation(.shadow(.normal, reduceMotion: reduceMotion)) { configuration.isExpanded.toggle() }
       } label: {
-        HStack(spacing: Spacing.space2) {
+        HStack(alignment: .firstTextBaseline, spacing: Spacing.space2) {
           configuration.label
             .shadowFont(.body)
             .fontWeight(.semibold)

@@ -69,7 +69,7 @@ struct SwipeActionsPage: View {
           note:
             "A static illustration of the context menu. Right-click any row above for the real one: mice cannot swipe, so each action is mirrored with its shortcut and Delete sits last in destructive-label."
         ) {
-          ContextMenuPreview().id("Context menu end")
+          ContextMenuPreview()
         }
       #else
         StateListSection("Context menu", note: "On Mac and iPad with a keyboard the actions carry shortcuts, because mice and trackpads cannot always swipe.") {
@@ -77,12 +77,12 @@ struct SwipeActionsPage: View {
             title: Text(verbatim: "Touch and hold any row above"), subtitle: Text(verbatim: "The same actions open as a menu, Delete last."),
             leading: { UnreadDot(isUnread: false) }
           )
-          .id("Context menu end")
         }
       #endif
+      CatalogListEnd()
     }
     .shadowListStyle()
-    .catalogListPage(.swipeActions, anchors: ["Default", "Revealed", "Disabled", "Long text", "Context menu end"])
+    .catalogListPage(.swipeActions, anchors: ["Default", "Revealed", "Disabled", "Long text", "Context menu"])
   }
 
   private func row(_ update: Update) -> some View {
@@ -140,6 +140,7 @@ private struct RevealedRow: View {
   }
 
   var body: some View {
+    let separatorShift = edge == .leading ? revealedWidth : 0
     ShadowListRow(
       title: Text(verbatim: update.title),
       subtitle: Text(verbatim: update.detail),
@@ -150,6 +151,7 @@ private struct RevealedRow: View {
     .background { background.padding(cellOutset) }
     .mask { shape.padding(cellOutset) }
     .accessibilityElement(children: .combine)
+    .alignmentGuide(.listRowSeparatorLeading) { $0[.listRowSeparatorLeading] + separatorShift }
   }
 
   private var cellOutset: EdgeInsets {

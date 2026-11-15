@@ -20,9 +20,19 @@ public struct ShadowSkeletonLine: View {
     FractionalWidth(fraction: widthFraction) {
       RoundedRectangle(cornerRadius: Radius.sm, style: .continuous)
         .fill(ShadowColor.fillTrack)
-        .frame(height: (role == .title ? Spacing.space4 : Spacing.space3) * scale)
+        .frame(height: ShadowSkeletonMetrics.lineHeight(role) * scale)
     }
     .accessibilityHidden(true)
+  }
+}
+
+nonisolated enum ShadowSkeletonMetrics {
+  static func lineHeight(_ role: ShadowSkeletonLine.Role, density: ShadowDensity = .current) -> CGFloat {
+    switch (density, role) {
+    case (.touch, .title): Spacing.space4
+    case (.touch, .body), (.compact, .title): Spacing.space3
+    case (.compact, .body): Spacing.space2 + Spacing.space05
+    }
   }
 }
 

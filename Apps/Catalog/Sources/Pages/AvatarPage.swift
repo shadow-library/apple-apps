@@ -3,7 +3,7 @@ import SwiftUI
 
 struct AvatarPage: View {
   private static let unreachable = URL(filePath: "/nonexistent/avatar.png")
-  private static let people = ["Ada Lovelace", "Grace Hopper", "Mira Vale", "Jon Reyes", "Sam Lee", "Priya Nair", "Tomás Ortega", "Wen Zhao"]
+  private static let people = ["Ada Lovelace", "Grace Hopper", "Mira Vale", "Jon Reyes", "Priya Nair", "Wen Zhao", "Hana Kim", "Arjun Rao"]
   private static let members = ["Ada Lovelace", "Mira Vale", "Jon Reyes", "Sam Lee", "Priya Nair", "Tomás Ortega", "Wen Zhao"].map { ShadowAvatarMember(id: $0, name: $0) }
 
   var body: some View {

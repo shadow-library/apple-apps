@@ -47,6 +47,7 @@ struct NotificationListPage: View {
           .listRowSeparator(.hidden)
           .listRowBackground(ShadowColor.surfaceCard)
       }
+      CatalogListEnd()
     }
     .shadowListStyle()
     .toolbar {

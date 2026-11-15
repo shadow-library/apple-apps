@@ -12,7 +12,16 @@ nonisolated public enum ShadowAvatarTint: Hashable, Sendable {
   public static func automatic(for seed: String) -> Self {
     let normalized = seed.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
     let hash = normalized.utf8.reduce(14_695_981_039_346_656_037 as UInt64) { ($0 ^ UInt64($1)) &* 1_099_511_628_211 }
-    return .chart(Int(hash % UInt64(chartCount)) + 1)
+    return .chart(Int(avalanche(hash) % UInt64(chartCount)) + 1)
+  }
+
+  // FNV-1a leaves any small bit range dependent on only a few input bits, so short names collide; MurmurHash3's fmix64 spreads every bit.
+  static func avalanche(_ hash: UInt64) -> UInt64 {
+    var mixed = hash ^ (hash >> 33)
+    mixed &*= 0xff51_afd7_ed55_8ccd
+    mixed ^= mixed >> 33
+    mixed &*= 0xc4ce_b9fe_1a85_ec53
+    return mixed ^ (mixed >> 33)
   }
 
   static let chartBackgrounds: [(light: ShadowRGBA, dark: ShadowRGBA)] = [

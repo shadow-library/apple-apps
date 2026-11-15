@@ -39,7 +39,7 @@ struct ContrastCase: Sendable, CustomTestStringConvertible {
     + pairs([.dangerOnSolid], on: [.dangerSolid, .dangerSolidHover, .dangerSolidActive])
     + pairs([.warningOnSolid], on: [.warningSolidStrong])
     + pairs([.neutralOnSolid], on: [.neutralSolid])
-    + pairs([.textPrimary], on: [.bgHover, .bgPressed])
+    + pairs([.textPrimary], on: [.bgHover, .bgPressed, .surfaceWell])
     + pairs([.accentText], on: [.surfaceCard])
 }
 

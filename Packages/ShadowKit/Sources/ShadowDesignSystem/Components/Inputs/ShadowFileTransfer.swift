@@ -53,6 +53,8 @@ public struct ShadowFileRow<Trailing: View>: View {
           title
             .shadowFont(.body)
             .foregroundStyle(ShadowColor.textPrimary)
+            .lineLimit(1)
+            .truncationMode(.middle)
           detailLabel
         }
         .frame(maxWidth: .infinity, alignment: .leading)

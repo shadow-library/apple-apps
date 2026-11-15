@@ -21,7 +21,8 @@ struct SheetPage: View {
       }
       StateSection(
         "Form sheet",
-        note: "A focused task with Cancel and Save. iPad centres it over the scrim, Mac attaches it to the window with Save as the default button, iPhone shows it full height."
+        note:
+          "A focused task with Cancel and Save. With shadowFittedDetents a short form fits its fields on iPad and iPhone; Mac attaches it to the window with Save as the default button."
       ) {
         Button("Edit chapter details…") { showsChapterDetails = true }
           .buttonStyle(.shadowBordered)
@@ -184,19 +185,18 @@ private struct ChapterDetailsSheet: View {
       .formStyle(.columns)
       .frame(width: 320)
     #else
-      ScrollView {
-        VStack(alignment: .leading, spacing: Spacing.space5) {
-          FieldRow(title: "Title") {
-            TextField("Title", text: $title).shadowField()
-          }
-          FieldRow(title: "Chapter word-count target") {
-            TextField("Chapter word-count target", value: $target, format: .number)
-              .keyboardType(.numberPad)
-              .shadowField()
-          }
+      VStack(alignment: .leading, spacing: Spacing.space5) {
+        FieldRow(title: "Title") {
+          TextField("Title", text: $title).shadowField()
         }
-        .padding(Spacing.space4)
+        FieldRow(title: "Chapter word-count target") {
+          TextField("Chapter word-count target", value: $target, format: .number)
+            .keyboardType(.numberPad)
+            .shadowField()
+        }
       }
+      .padding(Spacing.space4)
+      .shadowFittedDetents()
     #endif
   }
 }

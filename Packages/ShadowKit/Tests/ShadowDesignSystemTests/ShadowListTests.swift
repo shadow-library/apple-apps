@@ -14,6 +14,15 @@ struct ShadowListMetricsTests {
     #expect(metrics.tileSize == 30)
   }
 
+  @Test("should keep a single-line title on one line even at accessibility sizes", arguments: ShadowDensity.allCases)
+  func singleLineTitle(density: ShadowDensity) {
+    let metrics = ShadowListMetrics(density: density)
+    #expect(metrics.titleLineLimit(isAccessibilitySize: false, isSingleLine: true) == 1)
+    #expect(metrics.titleLineLimit(isAccessibilitySize: true, isSingleLine: true) == 1)
+    #expect(metrics.titleLineLimit(isAccessibilitySize: false, isSingleLine: false) == metrics.textLineLimit)
+    #expect(metrics.titleLineLimit(isAccessibilitySize: true, isSingleLine: false) == nil)
+  }
+
   @Test("should use 28pt rows and no chevron on Mac")
   func compact() {
     let metrics = ShadowListMetrics(density: .compact)

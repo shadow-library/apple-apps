@@ -42,7 +42,7 @@ public struct ShadowTag: View {
   public var body: some View {
     switch mode {
     case .plain:
-      ShadowTagChrome(appearance: .outlined, interaction: nil) { label }
+      ShadowTagChrome(appearance: .quiet, interaction: nil) { label }
     case .filter(let isSelected):
       Toggle(isOn: isSelected) { label }
         .toggleStyle(ShadowTagToggleStyle())
@@ -72,6 +72,7 @@ enum ShadowTagAppearance: Hashable {
   case outlined
   case selected
   case soft
+  case quiet
 }
 
 struct ShadowTagChrome<Content: View>: View {
@@ -105,7 +106,7 @@ struct ShadowTagChrome<Content: View>: View {
 
   private var foreground: Color {
     switch appearance {
-    case .outlined: ShadowColor.textPrimary
+    case .outlined, .quiet: ShadowColor.textPrimary
     case .selected: ShadowColor.onAccent
     case .soft: ShadowColor.accentText
     }
@@ -121,6 +122,7 @@ struct ShadowTagChrome<Content: View>: View {
     case (.selected, .pressed): ShadowColor.accentActive
     case (.soft, .pressed): ShadowColor.accentSoft.opacity(0.6)
     case (.soft, _): ShadowColor.accentSoft
+    case (.quiet, _): ShadowColor.surfaceWell
     }
   }
 
@@ -129,6 +131,7 @@ struct ShadowTagChrome<Content: View>: View {
     case .outlined: contrast == .increased ? ShadowColor.borderStrong : ShadowColor.borderDefault
     case .selected: ShadowColor.accent
     case .soft: contrast == .increased ? ShadowColor.accentText : .clear
+    case .quiet: contrast == .increased ? ShadowColor.borderStrong : .clear
     }
   }
 }

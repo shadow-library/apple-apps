@@ -27,6 +27,7 @@ struct CatalogApp: App {
         .environment(\.catalogPresentsSample, model.launch.presentsSample)
         .environment(\.catalogScreen, model.launch.screen)
         .environment(\.catalogTakesSnapshot, model.launch.snapshotURL != nil)
+        .environment(\.catalogIsAutomated, model.launch.isAutomated)
         .shadowPreviewHoverEffects(model.launch.snapshotURL == nil)
         .preferredColorScheme(model.appearance.colorScheme)
         .transaction { transaction in

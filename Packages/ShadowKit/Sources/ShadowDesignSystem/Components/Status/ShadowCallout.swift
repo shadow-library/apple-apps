@@ -100,14 +100,15 @@ private struct ShadowCalloutActionStyle: ButtonStyle {
 
   func makeBody(configuration: Configuration) -> some View {
     let height = ShadowMetrics.control(.small)
+    let shape = RoundedRectangle(cornerRadius: ShadowDensity.current == .touch ? Radius.full : Radius.md, style: .continuous)
     configuration.label
       .font(Font.shadow(.subheadline).weight(.semibold))
       .foregroundStyle(intent.foreground)
       .padding(.horizontal, ShadowDensity.current == .touch ? Spacing.space4 : Spacing.space3)
       .frame(minHeight: height)
-      .overlay { Capsule().strokeBorder(intent.border, lineWidth: 1) }
-      .background(intent.foreground.opacity(configuration.isPressed ? 0.12 : 0), in: .capsule)
-      .contentShape(.capsule)
+      .overlay { shape.strokeBorder(intent.border, lineWidth: 1) }
+      .background(intent.foreground.opacity(configuration.isPressed ? 0.12 : 0), in: shape)
+      .contentShape(shape)
       .opacity(isEnabled ? 1 : ShadowOpacity.disabled)
   }
 }

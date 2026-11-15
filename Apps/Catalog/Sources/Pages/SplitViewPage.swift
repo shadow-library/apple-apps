@@ -69,6 +69,7 @@ struct SplitViewPage: View {
         isSelected: chapter.id == self.chapter)
     }
     .shadowListStyle(.plain)
+    .catalogSnapshotFocus()
     .navigationTitle("Chapters")
     .demoSubtitle(verbatim: CatalogBook.shelf.first { $0.id == book }?.title ?? "")
     .shadowScreen(.root)

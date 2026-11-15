@@ -157,6 +157,7 @@ private struct BookRatingRow: View {
     }
     .padding(.vertical, Spacing.space2)
     .accessibilityElement(children: .combine)
+    .catalogDemoLocale()
   }
 }
 
