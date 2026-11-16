@@ -39,14 +39,14 @@ Tuist.swift  Workspace.swift  mise.toml  .swift-format
 
 | Module               | Purpose                                                                     | Depends on                       |
 | -------------------- | --------------------------------------------------------------------------- | -------------------------------- |
-| `ShadowCore`         | `ShadowError` protocol for typed domain errors, `Logger(category:)`         | —                                |
-| `ShadowNetworking`   | `APIClient` (async, typed throws), `Endpoint`, middleware, JSON coding      | `ShadowCore`                     |
+| `ShadowCore`         | `ShadowError`, `Logger(category:)`, `HybridLogicalClock`, `TrustedClock`, `UUIDv7Generator`, `ReplicaID`, `JSONValue`, canonical JSON, HTTP dates | — |
+| `ShadowNetworking`   | `APIClient` (async, typed throws), `Endpoint`, middleware, JSON coding, streaming transport and server-sent events | `ShadowCore` |
 | `ShadowKeychain`     | `SecureStore` protocol and `KeychainStore` (data-protection keychain)       | `ShadowCore`                     |
-| `ShadowStore`        | SQLite store through GRDB: entity tables, change log, field clocks          | `ShadowCore`, GRDB               |
-| `ShadowSync`         | Vault sync: replicas, segments, merge, encryption                           | `ShadowCore`, `ShadowStore`, `ShadowKeychain`, GRDB |
-| `ShadowAI`           | Model providers: task and pace to a model, request shaping, streaming, cost | `ShadowCore`, `ShadowNetworking`, `ShadowStore` |
+| `ShadowStore`        | SQLite store through GRDB: `VaultStore`, `EntitySchema` and `SchemaRegistry`, `ChangeRecord`, per-field clocks and merge, snapshots, retention, upgrade | `ShadowCore`, GRDB |
+| `ShadowSync`         | Vault sync through a `StorageProvider` (`LocalFolderProvider`): `SyncEngine`, replica lifecycle, segment codec, encrypted vault files, key ring, recovery | `ShadowCore`, `ShadowStore`, `ShadowKeychain`, GRDB |
+| `ShadowAI`           | `ModelProvider` with `AnthropicProvider` and `OpenRouterProvider`, `ModelCatalog` (task and pace to a model), `RetryingProvider`, structured calls, `Ledger` of model calls and spend | `ShadowCore`, `ShadowNetworking`, `ShadowStore` |
 | `ShadowDesignSystem` | Tokens, Liquid Glass helpers and native-first SwiftUI components (see below) | —                                |
-| `ShadowTestSupport`  | `StubHTTPTransport`, `InMemorySecureStore` — test targets only              | `ShadowCore`, `ShadowNetworking`, `ShadowKeychain`, `ShadowStore`, `ShadowSync`, `ShadowAI` |
+| `ShadowTestSupport`  | Test targets only: `StubHTTPTransport` and streaming stubs, `InMemorySecureStore`, `InMemoryKeychain`, `InMemoryStorageProvider`, `FaultInjectingStorageProvider`, `StorageProviderConformance`, `ScriptedModelProvider`, `CausalReplicas`, `forAll`/`replay` with `SeededGenerator` | `ShadowCore`, `ShadowNetworking`, `ShadowKeychain`, `ShadowStore`, `ShadowSync`, `ShadowAI` |
 
 Apps depend on modules through the typed helper, so a typo fails at manifest compile time:
 
@@ -64,6 +64,33 @@ let project = Project.app(
 1. Add a target and a `.library` product to `Packages/ShadowKit/Package.swift`, with sources in `Sources/<Module>` and tests in `Tests/<Module>Tests`.
 2. Add a case to `SharedModule` in `Tuist/ProjectDescriptionHelpers/SharedModule.swift`.
 3. `mise run bootstrap`.
+
+## Novel Forge core
+
+`Packages/NovelForgeKit` holds `NovelForgeCore`: the product's records, rules and derived state on top of `ShadowStore`. It imports no UI framework and depends on `ShadowCore`, `ShadowStore` and GRDB; `ShadowTestSupport` is linked by its tests only.
+
+| Folder                   | Contents                                                                                               |
+| ------------------------ | ------------------------------------------------------------------------------------------------------ |
+| `Text`                   | JavaScript string, number and JSON semantics (UTF-16 indexing, `OrderedJSON` stringify) that policies port exactly |
+| `Text/Regex`             | `JSRegex`: a backtracking engine for JavaScript patterns, with case folding and a follow analysis        |
+| `Schema`                 | `NovelForgeSchema` (`version`), `NovelForgeKind`, `NovelForgeField`, `NovelForgeKey`                    |
+| `Records`                | One typed record per kind (`NovelRecord`, `DraftRecord`, `FinalChapterRecord`, ...) with create, edit, revision and append writes and reads |
+| `Rules`                  | Pure rules: content hash, progress, next chapter, batch selection, bible manifest, promises, volume stats |
+| `Policies/*`             | Ported pure policies: `Checks`, `HardLine`, `Ideas`, `Metrics`, `Prose`, `ReplyScanner`, `Reveal`, `WritePolicy` |
+| `ChangeSet`              | The change-set vocabulary (`OpType`, `OpSpecs`), parsing, reference resolution and validation          |
+| `Projection`             | `Derivation`, `NovelForgeReconciler` and the record index: derived tables kept equal to a rebuild        |
+| `Reconcile/*`            | Derivations per area: `Chapters`, `Notebook`, `Story`                                                    |
+| `Domain/*`               | Operations on the records: `Story`, `Notebook`                                                           |
+
+### Reference fixtures
+
+Expected outputs come from the TypeScript reference product and are committed under `Packages/NovelForgeKit/Fixtures/<area>/` (`change-set`, `checks`, `hard-line`, `ideas`, `metrics`, `prose`, `regex`, `reply-scanner`, `reveal`, `rules`, `schema`, `text`, `write-policy`). Regenerate an area with a read-only checkout of the reference:
+
+```sh
+PLATFORM_REPO=<path to the reference checkout> bun Packages/NovelForgeKit/Fixtures/<area>/generate.ts
+```
+
+`text/` uses `collect-regexes.ts` instead of `generate.ts`, and `regex/generate.ts` needs the checkout's installed dependencies. See `Packages/NovelForgeKit/Fixtures/README.md`.
 
 ## ShadowDesignSystem
 
@@ -154,6 +181,7 @@ mise run test:apps                          # tuist test --skip-ui-tests
 tuist test Catalog --platform macOS --no-selective-testing
 ```
 
+- `mise run test:packages` covers `ShadowKit` and `NovelForgeKit`. Property tests print their seed on failure; rerun it with `replay(seed:)` from `ShadowTestSupport`.
 - Pass `--no-selective-testing` when verifying a change: Tuist otherwise skips targets it considers unchanged.
 - CI runs `swift test` for the packages, then `tuist test` per platform: iOS with UI tests, macOS and visionOS with `--skip-ui-tests`.
 - Swift Testing tests that resolve `Color` or `Font` must be `@MainActor`.
