@@ -586,7 +586,8 @@ for (const shared of SHARED_PATTERN_INPUTS) {
 write('policy.json', { policyCases });
 
 // Every order the reference could scrub equal-weight withholdings in: the facts as the database collates them, the volumes and pages as it returns them, and each tie
-// run in any order. `hidden` is what at least one order withholds; the port must withhold all of it.
+// run in any order. `hidden` is what at least one order withholds; the port must withhold exactly that. The last field counts the distinct sets of code units the
+// orders withhold: with one, the port keeps its own order's text even where outputs differ in marker text.
 const permutations = <T>(items: readonly T[]): T[][] =>
   items.length <= 1 ? [[...items]] : items.flatMap((item, index) => permutations([...items.slice(0, index), ...items.slice(index + 1)]).map(rest => [item, ...rest]));
 
@@ -630,6 +631,7 @@ interface OrderInput {
 
 function orderCase(input: OrderInput, text: string, field: string): unknown {
   const outputs = new Set<string>();
+  const hiddenSets = new Set<string>();
   const hidden = Array.from({ length: text.length }, () => false);
   let orders = 0;
   for (const lockedFacts of permutations(input.lockedFacts)) {
@@ -645,6 +647,7 @@ function orderCase(input: OrderInput, text: string, field: string): unknown {
           if (emulated.text !== scrubbed) throw new Error(`emulation drifted on ${JSON.stringify(text)}`);
           outputs.add(scrubbed);
           emulated.kept.forEach((kept, index) => (hidden[index] ||= !kept));
+          hiddenSets.add(emulated.kept.map(kept => (kept ? '1' : '0')).join(''));
           orders++;
         }
       }
@@ -657,7 +660,7 @@ function orderCase(input: OrderInput, text: string, field: string): unknown {
     if (last && last[1] === index) last[1] = index + 1;
     else spans.push([index, index + 1]);
   });
-  return [[4, input.lockedFacts.map(factRow), input.plannerOnly, input.plannerPages, [], null], text, field, orders, [...outputs], spans];
+  return [[4, input.lockedFacts.map(factRow), input.plannerOnly, input.plannerPages, [], null], text, field, orders, [...outputs], spans, hiddenSets.size];
 }
 
 const termFact = (factKey: string, ...terms: string[]): Fact => ({ factKey, text: '', terms });
@@ -702,6 +705,107 @@ for (let index = 0; index < 70; index++) {
   const facts = terms.map((term, i) => termFact(rng.pick(['a_x', 'B_y', 'c_z', 'É_w']) + i, term));
   const text = `${rng.pick(BOUNDARIES)}${phrase}${rng.pick(['', ' ', ' and ' + phrase, '-' + phrase])}${rng.pick(BOUNDARIES)}`;
   orderCases.push(orderCase({ lockedFacts: facts, plannerOnly: [], plannerPages: [] }, text, rng.pick(FIELDS)));
+}
+
+// A withholding whose text holds `[withheld]` (or ends at a marker's opening, or starts at its close) matches a marker another withholding leaves; with the two tied,
+// whether it does depends on the order.
+const markerRng = createRng(0x0d15b);
+const padTo = (text: string, length: number): string => {
+  let padded = '';
+  for (const char of text) if (padded.length + char.length <= length) padded += char;
+  while (padded.length < length) padded += padded.length % 2 ? 'x' : 'q';
+  return padded;
+};
+const HARBOUR_NOTE = 'The [withheld] was empty and the harbour keeper knew it.';
+const HARBOUR_PRODUCER = padTo('lamp oil from the drowned court that Mara never burned', HARBOUR_NOTE.length - 1);
+const harbourNote: Fact = { factKey: 'harbour_note', text: '', constraintNote: HARBOUR_NOTE };
+const SAW_EDGE = 'the keeper saw [withheld';
+const SAW_PRODUCER = padTo('drowned court of salt', SAW_EDGE.length);
+const EMPTY_EDGE = 'withheld] was empty';
+const EMPTY_PRODUCER = padTo('salt court lamp', EMPTY_EDGE.length);
+orderCases.push(
+  orderCase({ lockedFacts: [harbourNote], plannerOnly: [HARBOUR_PRODUCER], plannerPages: [] }, `Mara said: The ${HARBOUR_PRODUCER} was empty and the harbour keeper knew it. Then she left.`, 'prose'),
+  orderCase(
+    { lockedFacts: [harbourNote, termFact('a_x', 'red fox'), termFact('B_y', 'fox den')], plannerOnly: [], plannerPages: [] },
+    'The [withheld] was empty and the harbour keeper knew it. Later the red fox den was quiet, and the [withheld] stayed.',
+    'summary',
+  ),
+  orderCase({ lockedFacts: [termFact('saw', SAW_PRODUCER)], plannerOnly: [SAW_EDGE], plannerPages: [] }, `Then the keeper saw ${SAW_PRODUCER} and left.`, 'plan'),
+  orderCase({ lockedFacts: [termFact('empty', EMPTY_PRODUCER)], plannerOnly: [EMPTY_EDGE], plannerPages: [] }, `The ${EMPTY_PRODUCER} was empty.`, 'prose'),
+  // The second note's pieces are joined only through the first note's match, which needs the term's marker.
+  orderCase(
+    { lockedFacts: [termFact('dark', 'Go [withheld] dark'), termFact('lay', 'The [withheld] lay'), termFact('salt', 'drowned salt court')], plannerOnly: [], plannerPages: [] },
+    'Go The drowned salt court lay dark.',
+    'prose',
+  ),
+  // `withheld` inside a marker leaves `[[withheld]]`, whose second bracket `] x` then takes.
+  orderCase({ lockedFacts: [termFact('edge', '] x'), termFact('word', 'withheld'), termFact('lamp', 'lamp oil')], plannerOnly: [], plannerPages: [] }, 'The lamp oil x.', 'note'),
+  // Orders that leave `[[withheld]]` or `[withheld]` withhold the same code units.
+  orderCase({ lockedFacts: [termFact('court', 'zw1court'), termFact('word', 'withheld')], plannerOnly: [], plannerPages: [] }, 'The zw1court bell.', 'prose'),
+  // Orders that leave the same text from different code units.
+  orderCase({ lockedFacts: [termFact('close', 'withheld]'), termFact('open', '[withheld')], plannerOnly: [], plannerPages: [] }, '[ẃwith [withheld] den', 'prose'),
+  // A bracket and marker letters in the text itself, taken together with a marker beside them.
+  orderCase({ lockedFacts: [termFact('a_x0', 'd]’ab'), termFact('B_y1', '[wi—d')], plannerOnly: ['wi—d]’ab "'], plannerPages: [] }, '`[wi—d]’ab "fox é', 'knowledge'),
+  orderCase({ lockedFacts: [termFact('B_y0', 'fox1𝒜𝒜é[ld'), termFact('a_x1', 'ld]'), termFact('B_y2', 'cd*fox1𝒜𝒜é')], plannerOnly: [], plannerPages: [] }, 'cd*fox1𝒜𝒜é[ld] \t', 'plan'),
+  // A fact whose whole text is a marker matches wherever one is left.
+  orderCase(
+    { lockedFacts: [{ factKey: 'text_x', text: '[withheld]' }, termFact('make_y', 'cd lamp he'), termFact('tie_a', 'red fox'), termFact('tie_b', 'fox den')], plannerOnly: [], plannerPages: [] },
+    '*cd lamp he. the red fox den-',
+    'style',
+  ),
+);
+const MARKER_WORDS = ['red', 'fox', 'den', 'the', 'keeper', 'lamp', 'Tide', 'court', 'ab', 'cd', 'with', 'held', 'withheld', 'é', '𝒜sh', '[ref]'];
+const markerPhrase = (count: number): string => Array.from({ length: count }, () => markerRng.pick(MARKER_WORDS)).join(' ');
+for (let index = 0; index < 30; index++) {
+  const before = markerPhrase(markerRng.int(0, 3));
+  const after = markerPhrase(markerRng.int(0, 3));
+  const shape = markerRng.pick(['whole', 'whole', 'whole', 'opens', 'closes', 'bare']);
+  const literal = (
+    shape === 'opens' ? `${before || 'the'} [withheld` : shape === 'closes' ? `withheld] ${after || 'den'}` : shape === 'bare' ? '[withheld]' : `${before} [withheld] ${after}`
+  ).trim();
+  const producer = padTo(markerPhrase(markerRng.int(1, 4)), markerRng.chance(0.8) ? literal.length : markerRng.int(3, 20));
+  const site =
+    shape === 'opens' ? `${before || 'the'} ${producer}` : shape === 'closes' ? `${producer} ${after || 'den'}` : `${before} ${producer} ${after}`.trim();
+  const facts: Fact[] = [];
+  const plannerOnly: string[] = [];
+  const literalAt = markerRng.pick(['note', 'text', 'planner', 'term']);
+  if (literalAt === 'note') facts.push({ factKey: 'note_x', text: '', constraintNote: literal });
+  else if (literalAt === 'text') facts.push({ factKey: 'text_x', text: literal });
+  else if (literalAt === 'planner') plannerOnly.push(literal);
+  else facts.push(termFact('term_x', literal));
+  if (markerRng.chance(0.5)) facts.push(termFact('make_y', producer));
+  else plannerOnly.push(producer);
+  if (markerRng.chance(0.3)) facts.push(termFact('rewrite_z', markerRng.pick(['withheld', 'with', 'held', 'Withheld'])));
+  if (markerRng.chance(0.4)) facts.push(termFact('tie_a', 'red fox'), termFact('tie_b', 'fox den'));
+  const parts = [site, markerRng.chance(0.3) ? literal : '', markerRng.chance(0.4) ? 'the red fox den' : '', markerRng.chance(0.3) ? site : ''].filter(Boolean);
+  const text = `${markerRng.pick(BOUNDARIES)}${parts.join(markerRng.pick([' ', '. ', ' and ', '\n']))}${markerRng.pick(BOUNDARIES)}`;
+  orderCases.push(orderCase({ lockedFacts: facts.slice(0, 4), plannerOnly, plannerPages: [] }, text, markerRng.pick(FIELDS)));
+}
+
+// Short tied terms over words and joins that spell parts of a marker, so text before scrubbing and the markers withholdings leave run into each other.
+const bracketRng = createRng(0x0d15c);
+const BRACKET_WORDS = ['red', 'fox', 'withheld', 'held', 'with', '[w', 'd]', 'ld]', '[wi', '𝒜', 'é', 'ab', 'cd', 'Tide'];
+const BRACKET_JOINS = [' ', ' ', '-', ']', '[', ' [', '] ', '*', '__', '_', '1', ' 𝒜 '];
+for (let index = 0; index < 60; index++) {
+  let phrase = bracketRng.pick(BRACKET_WORDS);
+  for (let i = bracketRng.int(3, 5); i > 0; i--) phrase += bracketRng.pick(BRACKET_JOINS) + bracketRng.pick(BRACKET_WORDS);
+  const isWord = (char: string | undefined): boolean => char !== undefined && /[\p{L}\p{N}_]/u.test(char);
+  const units = [...phrase];
+  const windows: string[] = [];
+  for (let start = 0; start < units.length; start++) {
+    for (let end = start + 1; end <= units.length; end++) {
+      const term = units.slice(start, end).join('');
+      if (term.trim() !== term || term.length < 3 || (isWord(units[start - 1]) && isWord(units[start])) || (isWord(units[end]) && isWord(units[end - 1]))) continue;
+      windows.push(term);
+    }
+  }
+  const length = bracketRng.pick(windows).length;
+  const sameLength = windows.filter(term => term.length === length);
+  const terms = [...new Set(Array.from({ length: bracketRng.int(2, 3) }, () => bracketRng.pick(bracketRng.chance(0.75) ? sameLength : windows)))];
+  const facts = terms.map((term, i) => termFact(bracketRng.pick(['a_x', 'B_y', 'c_z']) + i, term));
+  const plannerOnly = bracketRng.chance(0.3) ? [bracketRng.pick(windows.filter(w => w.length >= 8).concat([phrase]))] : [];
+  const text = `${bracketRng.pick(BOUNDARIES)}${phrase}${bracketRng.pick(['', ' ', ' and ' + phrase, '-' + phrase])}${bracketRng.pick(BOUNDARIES)}`;
+  orderCases.push(orderCase({ lockedFacts: facts, plannerOnly, plannerPages: [] }, text, bracketRng.pick(FIELDS)));
 }
 
 write('orders.json', { orderCases });

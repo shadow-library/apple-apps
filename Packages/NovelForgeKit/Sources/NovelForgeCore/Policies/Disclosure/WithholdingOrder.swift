@@ -1,8 +1,8 @@
 let withheldMarker = "[withheld]"
 
 private let markerUnits = Array(withheldMarker.utf16)
-// Two spans this close can change each other's lookarounds (one code point, two units when astral); farther apart they cannot.
-private let interactionGap = 2
+// A lookaround reads one code point, two units when astral.
+private let lookaroundUnits = 2
 let orderSearchBudget = 2_048
 
 /// A text being scrubbed, each code unit with its offset in the text before scrubbing; a marker's units have none (-1).
@@ -39,14 +39,25 @@ struct ScrubUnits: Hashable, Sendable {
   var text: String { JSText.string(fromCodeUnits: units) }
 }
 
+/// The work an order search did, counted rather than timed.
+struct OrderSearchCost: Equatable, Sendable {
+  var states = 0
+  /// Code units the patterns tried at each state ran over.
+  var scannedUnits = 0
+  var largestWindow = 0
+}
+
 struct WithholdingOutcome: Equatable, Sendable {
   let text: String
   /// The matches the reference's own order replaced, which is what it counts.
   let count: Int
   /// Per code unit of the input: withheld under at least one order of the ties.
   let hidden: [Bool]
-  /// Components whose orders were too many to search, withheld whole.
+  /// Components whose orders were too many to search, withheld over every stretch they could reach.
   let exhaustedComponents: Int
+  /// One of them was the whole text, a withholding of unknown reach having joined every other.
+  let exhaustedWholeText: Bool
+  let searchCost: OrderSearchCost
 }
 
 /// Withholdings that could change places with one another in the reference: equal weights, whose order follows the database's unordered or collated reads, and a
@@ -73,8 +84,11 @@ private struct SearchNode: Hashable {
 
 /// Every text one run can leave, over every order of its members. A path applies patterns that match; it may end once each unapplied member has matched nothing at
 /// some point along it, since an order can place that member there.
-private func runOutcomes(_ run: [Int], _ withholdings: [Withholding], from start: ScrubUnits, budget: inout Int) -> Set<ScrubUnits>? {
-  if run.count == 1, let index = run.first { return [start.replacing(withholdings[index].pattern)?.scrubbed ?? start] }
+private func runOutcomes(_ run: [Int], _ withholdings: [Withholding], from start: ScrubUnits, budget: inout Int, cost: inout OrderSearchCost) -> Set<ScrubUnits>? {
+  if run.count == 1, let index = run.first {
+    cost.scannedUnits += start.units.count
+    return [start.replacing(withholdings[index].pattern)?.scrubbed ?? start]
+  }
   var outcomes = Set<ScrubUnits>()
   var seen = Set<SearchNode>()
   var stack = [SearchNode(state: start, remaining: run, idle: [])]
@@ -82,6 +96,8 @@ private func runOutcomes(_ run: [Int], _ withholdings: [Withholding], from start
     guard seen.insert(node).inserted else { continue }
     budget -= 1
     guard budget >= 0 else { return nil }
+    cost.states += 1
+    cost.scannedUnits += node.remaining.count * node.state.units.count
     var idle = Set(node.idle)
     var applied: [(index: Int, state: ScrubUnits)] = []
     for index in node.remaining {
@@ -96,61 +112,66 @@ private func runOutcomes(_ run: [Int], _ withholdings: [Withholding], from start
   return outcomes
 }
 
-/// Withholdings that can affect one another, with the stretch of text their matches can reach (nil: anywhere).
+/// Withholdings whose matches can affect one another's, with the stretches of text those matches can reach (nil: anywhere).
 private struct Component {
   var members: [Int]
   var spans: [Range<Int>]?
 }
 
-/// A pattern matches only where its lookaround-free body matches the input, and only a body with a bracket next to marker text can reach across a marker, so two
-/// withholdings whose bodies never come within `interactionGap` of each other neither enable, disable nor shift each other's matches in any order.
+/// A withholding matches only within its reach (see `WithholdingReach`) and reads one code point on either side through its lookarounds; a code point between two
+/// reaches is in none, so nothing rewrites it, and withholdings whose reaches neither overlap nor touch never enable, disable or shift each other's matches. A body
+/// that takes marker text reaches through what others can hide, its own sites included, so its sites grow to a fixpoint. A withholding that rewrites marker letters
+/// only matters beside one that takes marker text. Components are stretches of text, not sets of withholdings: a withholding that reaches two apart has independent
+/// matches in each, and what any order withholds is the union of what it withholds in each.
 private func components(_ withholdings: [Withholding], in units: [UInt16]) -> [Component] {
-  var parent = Array(withholdings.indices)
-  func root(_ index: Int) -> Int {
-    var index = index
-    while parent[index] != index { (parent[index], index) = (parent[parent[index]], parent[index]) }
-    return index
-  }
-  func join(_ left: Int, _ right: Int) { parent[root(left)] = root(right) }
-
   var spans: [(range: Range<Int>, member: Int)] = []
-  var unbounded: [Int] = []
+  var takingMarkers: [(member: Int, pieceMatches: [[Range<Int>]])] = []
+  var rewriters: [Int] = []
   for (index, withholding) in withholdings.enumerated() {
-    guard let reach = withholding.reach else {
-      unbounded.append(index)
-      continue
-    }
-    spans += bodyMatches(reach, in: units).map { ($0, index) }
-  }
-  spans.sort { $0.range.lowerBound < $1.range.lowerBound }
-  var cluster: (member: Int, end: Int)? = nil
-  for span in spans {
-    if let current = cluster, span.range.lowerBound < current.end + interactionGap {
-      join(span.member, current.member)
-      cluster = (current.member, max(current.end, span.range.upperBound))
-    } else {
-      cluster = (span.member, span.range.upperBound)
+    switch withholding.reach {
+    case nil:
+      return [Component(members: Array(withholdings.indices), spans: nil)]
+    case .body(let body, let rewritesMarkers):
+      spans += bodyMatches(body, in: units).map { ($0, index) }
+      if rewritesMarkers { rewriters.append(index) }
+    case .markers(let pieces):
+      takingMarkers.append((index, pieces.map { bodyMatches($0, in: units) }))
     }
   }
-  let reaching = Set(spans.map(\.member))
-  if let anchor = unbounded.first {
-    for member in unbounded.dropFirst() { join(member, anchor) }
-    for member in reaching { join(member, anchor) }
+  if !takingMarkers.isEmpty {
+    var hideable = Array(repeating: false, count: units.count)
+    for span in spans {
+      for offset in span.range where offset < units.count { hideable[offset] = true }
+    }
+    var sites: [[Range<Int>]]
+    while true {
+      sites = takingMarkers.map { markerSites($0.pieceMatches, in: units, hideable: hideable) }
+      var grown = hideable
+      for site in sites.joined() {
+        for offset in site { grown[offset] = true }
+      }
+      if grown == hideable { break }
+      hideable = grown
+    }
+    for (taking, memberSites) in zip(takingMarkers, sites) { spans += memberSites.map { ($0, taking.member) } }
   }
 
-  var byRoot: [Int: Component] = [:]
-  var order: [Int] = []
-  for index in withholdings.indices where reaching.contains(index) || unbounded.contains(index) {
-    let key = root(index)
-    if byRoot[key] == nil {
-      order.append(key)
-      byRoot[key] = Component(members: [], spans: [])
+  spans.sort { $0.range.lowerBound < $1.range.lowerBound }
+  var stretches: [(members: Set<Int>, spans: [Range<Int>], end: Int)] = []
+  for span in spans {
+    if let last = stretches.indices.last, span.range.lowerBound <= stretches[last].end {
+      stretches[last].members.insert(span.member)
+      stretches[last].spans.append(span.range)
+      stretches[last].end = max(stretches[last].end, span.range.upperBound)
+    } else {
+      stretches.append(([span.member], [span.range], span.range.upperBound))
     }
-    byRoot[key]?.members.append(index)
   }
-  for span in spans { byRoot[root(span.member)]?.spans?.append(span.range) }
-  if let anchor = unbounded.first { byRoot[root(anchor)]?.spans = nil }
-  return order.compactMap { byRoot[$0] }
+  let marking = Set(takingMarkers.map(\.member))
+  return stretches.map { stretch in
+    let members = stretch.members.isDisjoint(with: marking) ? stretch.members : stretch.members.union(rewriters)
+    return Component(members: members.sorted(), spans: stretch.spans)
+  }
 }
 
 /// Where the body matches starting at each offset, overlapping ones included.
@@ -166,44 +187,52 @@ private func bodyMatches(_ body: JSRegex, in units: [UInt16]) -> [Range<Int>] {
 
 /// The input stretch a component's search runs over: its spans with room for their lookarounds, on code point boundaries.
 private func window(_ spans: [Range<Int>], in units: [UInt16]) -> Range<Int> {
-  var lower = max(0, (spans.map(\.lowerBound).min() ?? 0) - interactionGap)
-  var upper = min(units.count, (spans.map(\.upperBound).max() ?? units.count) + interactionGap)
+  var lower = max(0, (spans.map(\.lowerBound).min() ?? 0) - lookaroundUnits)
+  var upper = min(units.count, (spans.map(\.upperBound).max() ?? units.count) + lookaroundUnits)
   if lower > 0, UTF16.isTrailSurrogate(units[lower]) { lower -= 1 }
   if upper < units.count, UTF16.isTrailSurrogate(units[upper]) { upper += 1 }
   return lower..<upper
 }
 
-/// What one component withholds under any order of its tied members, or nil when every order leaves the same text.
-private func componentHidden(_ component: Component, _ withholdings: [Withholding], in units: [UInt16], budget: Int) -> (hidden: [Int], exhausted: Bool)? {
+private enum ComponentResult {
+  case agrees
+  case widened([Int])
+  case exhausted([Int])
+}
+
+/// What one component withholds under any order of its tied members; orders that withhold the same code units agree, whatever marker text they leave.
+private func componentHidden(_ component: Component, _ withholdings: [Withholding], in units: [UInt16], budget: Int, cost: inout OrderSearchCost) -> ComponentResult {
   let members = component.members.map { withholdings[$0] }
   let runs = tieRuns(members)
-  guard runs.contains(where: { $0.count > 1 }) else { return nil }
+  guard runs.contains(where: { $0.count > 1 }) else { return .agrees }
   let range = component.spans.map { window($0, in: units) } ?? units.indices
+  cost.largestWindow = max(cost.largestWindow, range.count)
   let start = ScrubUnits(units: Array(units[range]), origins: range.map { Int32($0) })
   var remaining = budget
   var frontier: Set<ScrubUnits> = [start]
   for run in runs {
     var next = Set<ScrubUnits>()
     for state in frontier {
-      guard let outcomes = runOutcomes(run, members, from: state, budget: &remaining) else {
-        return (component.spans.map { $0.flatMap { Array($0) } } ?? Array(units.indices), true)
+      guard let outcomes = runOutcomes(run, members, from: state, budget: &remaining, cost: &cost) else {
+        return .exhausted(component.spans.map { $0.flatMap { Array($0) } } ?? Array(units.indices))
       }
       next.formUnion(outcomes)
     }
     frontier = next
   }
-  guard frontier.count > 1 else { return nil }
-  var hidden = Set<Int>()
-  for outcome in frontier {
-    let kept = Set(outcome.origins.lazy.filter { $0 >= 0 }.map { Int($0) })
-    for offset in range where !kept.contains(offset) { hidden.insert(offset) }
-  }
-  return (Array(hidden), false)
+  let hiddenSets = Set(
+    frontier.map { outcome in
+      let kept = Set(outcome.origins.lazy.filter { $0 >= 0 }.map { Int($0) })
+      return Set(range.filter { !kept.contains($0) })
+    })
+  guard hiddenSets.count > 1 else { return .agrees }
+  return .widened(Array(hiddenSets.reduce(into: Set<Int>()) { $0.formUnion($1) }))
 }
 
-/// The withholdings applied to `text` in the reference's order, unless another order of tied withholdings would withhold a code unit this one shows: then every code
-/// unit any order withholds is withheld, each stretch under one marker. Orders are searched only within components of withholdings that can affect one another; a
-/// component with more orders than `budget` allows is withheld over every stretch its matches could reach.
+/// The withholdings applied to `text` in the reference's order, unless orders of tied withholdings withhold different code units: then every code unit any order
+/// withholds is withheld, each withheld stretch of the whole text under one marker. Orders that differ only in the marker text they leave keep the reference order's
+/// text, one of their outputs. Orders are searched only within components of withholdings that can affect one another; a component with more orders than `budget`
+/// allows is withheld over every stretch its matches could reach.
 func applyWithholdings(_ withholdings: [Withholding], to text: String, budget: Int = orderSearchBudget) -> WithholdingOutcome {
   let start = ScrubUnits(text)
   var canonical = start
@@ -216,41 +245,42 @@ func applyWithholdings(_ withholdings: [Withholding], to text: String, budget: I
   var hidden = Array(repeating: true, count: start.units.count)
   for origin in canonical.origins where origin >= 0 { hidden[Int(origin)] = false }
   guard tieRuns(withholdings).contains(where: { $0.count > 1 }) else {
-    return WithholdingOutcome(text: canonical.text, count: count, hidden: hidden, exhaustedComponents: 0)
+    return WithholdingOutcome(text: canonical.text, count: count, hidden: hidden, exhaustedComponents: 0, exhaustedWholeText: false, searchCost: OrderSearchCost())
   }
 
   var widened = Array(repeating: false, count: start.units.count)
   var exhausted = 0
+  var exhaustedWholeText = false
+  var cost = OrderSearchCost()
   for component in components(withholdings, in: start.units) {
-    guard let found = componentHidden(component, withholdings, in: start.units, budget: budget) else { continue }
-    for offset in found.hidden { widened[offset] = true }
-    if found.exhausted { exhausted += 1 }
+    switch componentHidden(component, withholdings, in: start.units, budget: budget, cost: &cost) {
+    case .agrees:
+      continue
+    case .widened(let offsets):
+      for offset in offsets { widened[offset] = true }
+    case .exhausted(let offsets):
+      for offset in offsets { widened[offset] = true }
+      exhausted += 1
+      if component.spans == nil { exhaustedWholeText = true }
+    }
   }
-  guard widened.contains(true) else { return WithholdingOutcome(text: canonical.text, count: count, hidden: hidden, exhaustedComponents: exhausted) }
+  guard widened.contains(true) else {
+    return WithholdingOutcome(text: canonical.text, count: count, hidden: hidden, exhaustedComponents: exhausted, exhaustedWholeText: exhaustedWholeText, searchCost: cost)
+  }
   for (offset, isWidened) in widened.enumerated() where isWidened { hidden[offset] = true }
-  return WithholdingOutcome(text: marked(canonical, widened: widened), count: count, hidden: hidden, exhaustedComponents: exhausted)
+  let text = marked(start.units, hidden: hidden)
+  return WithholdingOutcome(text: text, count: count, hidden: hidden, exhaustedComponents: exhausted, exhaustedWholeText: exhaustedWholeText, searchCost: cost)
 }
 
-/// The reference-order text with each stretch a widened component withholds under one marker; a reference marker over widened units joins that stretch.
-private func marked(_ canonical: ScrubUnits, widened: [Bool]) -> String {
+/// The text with each withheld stretch under one marker.
+private func marked(_ units: [UInt16], hidden: [Bool]) -> String {
   var result: [UInt16] = []
-  var inWidened = false
-  var index = 0
-  while index < canonical.units.count {
-    guard canonical.origins[index] < 0 else {
-      let isWidened = widened[Int(canonical.origins[index])]
-      if !isWidened { result.append(canonical.units[index]) } else if !inWidened { result += markerUnits }
-      inWidened = isWidened
-      index += 1
-      continue
+  for (offset, unit) in units.enumerated() {
+    if !hidden[offset] {
+      result.append(unit)
+    } else if offset == 0 || !hidden[offset - 1] {
+      result += markerUnits
     }
-    let previous = canonical.origins[..<index].last { $0 >= 0 }.map { Int($0) + 1 } ?? 0
-    let markerEnd = canonical.origins[index...].firstIndex { $0 >= 0 } ?? canonical.units.count
-    let next = markerEnd < canonical.units.count ? Int(canonical.origins[markerEnd]) : widened.count
-    let isWidened = (previous..<next).contains { widened[$0] }
-    if !isWidened { result += canonical.units[index..<markerEnd] } else if !inWidened { result += markerUnits }
-    inWidened = isWidened
-    index = markerEnd
   }
   return JSText.string(fromCodeUnits: result)
 }

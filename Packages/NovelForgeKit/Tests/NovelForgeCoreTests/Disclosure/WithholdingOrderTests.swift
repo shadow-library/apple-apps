@@ -10,24 +10,29 @@ private func policyInput(_ row: OrderedJSON) -> WriterDisclosureInput {
 
 @Suite("Withholdings in every order the reference could take")
 struct WithholdingOrderTests {
-  @Test("should withhold every code unit some order of tied withholdings withholds, and keep the reference's text when every order agrees")
+  @Test("should withhold exactly the code units some order of tied withholdings withholds, and keep its own order's text when every order withholds the same ones")
   func shouldCoverEveryOrder() throws {
     let cases = try DisclosureFixture.cases("orders.json", "orderCases")
     #expect(cases.count > 50)
     var disagreeing = 0
+    var markerTextOnly = 0
     for row in cases {
       let text = row.at(1).stringValue ?? ""
       let field = try #require(WriterField(rawValue: row.at(2).stringValue ?? ""))
       var policy = try WriterDisclosurePolicy(policyInput(row.at(0)))
       let outcome = policy.withholding(text, field)
+      var withheld = Array(repeating: false, count: text.utf16.count)
       for span in row.at(5).items {
         for offset in (span.at(0).intValue ?? 0)..<(span.at(1).intValue ?? 0) {
+          withheld[offset] = true
           #expect(outcome.hidden.indices.contains(offset) && outcome.hidden[offset], "unit \(offset) of \(text.debugDescription) is shown, some order withholds it")
         }
       }
+      #expect(outcome.hidden == withheld, "\(text.debugDescription) withholds what no order does")
       let outputs = row.at(4).strings ?? []
-      if outputs.count == 1 {
-        #expect(outcome.text.jsEquals(outputs[0]), "\(text.debugDescription)")
+      if row.at(6).intValue == 1 {
+        if outputs.count > 1 { markerTextOnly += 1 }
+        #expect(outputs.contains { outcome.text.jsEquals($0) }, "\(text.debugDescription)")
       } else {
         disagreeing += 1
         #expect(outcome.text.jsEquals(markedText(text, hidden: outcome.hidden)), "\(text.debugDescription)")
@@ -35,6 +40,7 @@ struct WithholdingOrderTests {
       #expect(try policy.scrub(text, field).jsEquals(outcome.text))
     }
     #expect(disagreeing > 10)
+    #expect(markerTextOnly > 0)
   }
 
   @Test("should withhold both nouns where the reference's two orders each show one")
@@ -76,6 +82,32 @@ struct WithholdingOrderTests {
     let outcome = applyWithholdings(policy.withholdings, to: "The red fox den was empty; lamp oil burned.", budget: 1)
     #expect(outcome.exhaustedComponents == 1)
     #expect(outcome.text == "The [withheld] was empty; [withheld] burned.")
+  }
+
+  @Test("should report each component that failed closed through the policy's diagnostics, per field")
+  func shouldReportFailedClosedComponents() throws {
+    let words = (0...16).map { String(repeating: String(UnicodeScalar(UInt8(97 + $0))), count: 2) }
+    let chain = (0..<16).map { DisclosureFact(factKey: "chain_\($0)", text: "", terms: ["\(words[$0]) \(words[$0 + 1])"]) }
+    let facts = chain + [DisclosureFact(factKey: "B_y", text: "", terms: ["fox den"]), DisclosureFact(factKey: "a_x", text: "", terms: ["red fox"])]
+    var policy = try WriterDisclosurePolicy(
+      WriterDisclosureInput(chapter: 3, lockedFacts: facts, plannerOnly: [], plannerPages: [], volumeOrdinals: [:], currentVolumeOrdinal: nil))
+    let chained = "Then \(words.joined(separator: " ")) went quiet; the red fox den was empty."
+    #expect(try policy.scrub("The red fox den was empty.", .prose) == "The [withheld] was empty.")
+    #expect(policy.failedClosed.isEmpty)
+    #expect(try policy.scrub(chained, .prose) == "Then [withheld] went quiet; the [withheld] was empty.")
+    _ = try policy.scrub(chained, .prose)
+    _ = try policy.scrub(chained, .summary)
+    #expect(policy.failedClosed == [FailedClosedCount(field: .prose, components: 2, wholeTexts: 0), FailedClosedCount(field: .summary, components: 1, wholeTexts: 0)])
+  }
+
+  @Test("should say when a withholding of unknown reach made the component that failed closed the whole text")
+  func shouldReportWholeTextFallback() throws {
+    let tied = try [withholding(#"red fox"#, weight: 7), withholding(#"fox den"#, weight: 7)]
+    let outcome = applyWithholdings(tied, to: "The red fox den was empty.", budget: 1)
+    #expect(outcome.exhaustedComponents == 1)
+    #expect(outcome.exhaustedWholeText)
+    #expect(outcome.text == "[withheld]")
+    #expect(!applyWithholdings(tied, to: "The red fox den was empty.").exhaustedWholeText)
   }
 
   @Test("should search no order on long pages that copy the canon of many locked facts, nor on a long chapter")

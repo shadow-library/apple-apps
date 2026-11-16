@@ -32,46 +32,30 @@ struct Withholding: Sendable {
   let copyFieldsOnly: Bool
   /// The weights the reference could have kept for this pattern; see `uniqueByPattern`.
   var possibleWeights: ClosedRange<Int>
-  /// `pattern` without its lookarounds: where the pattern can ever match. Nil when that is unknown (no source text given, or a body that could run across a withheld
-  /// marker).
-  let reach: JSRegex?
+  /// Nil when unknown: no body given, or one the pattern does not wrap.
+  let reach: WithholdingReach?
 
-  init(pattern: JSRegex, weight: Int, copyFieldsOnly: Bool, literal: String? = nil) {
+  init(pattern: JSRegex, weight: Int, copyFieldsOnly: Bool, body: [BodyAtom]? = nil) {
     self.pattern = pattern
     self.weight = weight
     self.copyFieldsOnly = copyFieldsOnly
     possibleWeights = weight...weight
-    reach = literal.flatMap { reachPattern(pattern, literal: $0) }
+    reach = body.flatMap { WithholdingReach(pattern: pattern, body: $0) }
   }
-}
-
-private let lookarounds = [(#"(?<![\p{L}\p{N}_])"#, #"(?![\p{L}\p{N}_])"#), (#"(?<![\p{L}\p{N}])"#, #"(?![\p{L}\p{N}])"#)].map { (Array($0.0.utf16), Array($0.1.utf16)) }
-private let markerHead = Array("[withheld".utf16)
-private let markerTail = Array("withheld]".utf16)
-
-/// Whether a body built from `literal` could match text that runs into or out of a `[withheld]` marker: only through a bracket that lines up with the marker's.
-private func crossesMarkers(_ literal: String) -> Bool {
-  let units = literal.jsToLowerCase().jsCodeUnits
-  if JSText.indexOf(Array(withheldMarker.utf16), in: units, from: 0) != -1 { return true }
-  for (index, unit) in units.enumerated() {
-    if unit == UInt16(UInt8(ascii: "[")), markerTail.starts(with: units[(index + 1)...]) { return true }
-    if unit == UInt16(UInt8(ascii: "]")), markerHead.reversed().starts(with: units[..<index].reversed()) { return true }
-  }
-  return false
-}
-
-private func reachPattern(_ pattern: JSRegex, literal: String) -> JSRegex? {
-  guard !crossesMarkers(literal) else { return nil }
-  let source = Array(pattern.source.utf16)
-  guard let (before, after) = lookarounds.first(where: { source.starts(with: $0.0) && source.reversed().starts(with: $0.1.reversed()) }), source.count >= before.count + after.count
-  else { return nil }
-  let body = JSText.string(fromCodeUnits: source[before.count..<(source.count - after.count)])
-  return try? JSRegex(body, flags: pattern.flags)
 }
 
 struct WithheldCount: Equatable, Sendable {
   let field: WriterField
   var count: Int
+}
+
+/// Scrubs of one field where the order search gave up and withheld more than any order of the reference would.
+struct FailedClosedCount: Equatable, Sendable {
+  let field: WriterField
+  /// Components withheld over every stretch their matches could reach.
+  var components: Int
+  /// Scrubs that withheld their whole text, a withholding of unknown reach having joined every other.
+  var wholeTexts: Int
 }
 
 private enum PassageFloor {
@@ -127,9 +111,14 @@ private func longEnough(_ text: String, _ floor: PassageFloor) -> Bool {
   return words >= minPassageWords || text.jsLength >= minPairLength
 }
 
-private func compile(_ source: String, literal: String, copyFieldsOnly: Bool = false) throws(DisclosureError) -> Withholding {
+private func escapedAtoms(_ text: String) -> [BodyAtom] {
+  text.unicodeScalars.map { .character($0, source: JSRegex.escape(String($0))) }
+}
+
+private func compile(_ body: [BodyAtom], between before: String, and after: String, weight: Int, copyFieldsOnly: Bool = false) throws(DisclosureError) -> Withholding {
   do {
-    return Withholding(pattern: try JSRegex(source, flags: "giu"), weight: literal.jsLength, copyFieldsOnly: copyFieldsOnly, literal: literal)
+    let pattern = try JSRegex(before + body.map(\.source).joined() + after, flags: "giu")
+    return Withholding(pattern: pattern, weight: weight, copyFieldsOnly: copyFieldsOnly, body: body)
   } catch {
     throw .pattern(error)
   }
@@ -139,8 +128,10 @@ private func compile(_ source: String, literal: String, copyFieldsOnly: Bool = f
 private func passagePattern(_ text: String, _ floor: PassageFloor, copyFieldsOnly: Bool) throws(DisclosureError) -> Withholding? {
   let trimmed = text.jsReplace(listMarker, "").jsReplace(emphasis, "").jsReplace(trailingPunctuation, "").jsTrim()
   guard longEnough(trimmed, floor) else { return nil }
-  let body = trimmed.jsSplit(ProseRegex.whitespaceRun).map { word in word.unicodeScalars.map { charPattern(String($0)) }.joined() }.joined(separator: wordGap)
-  return try compile(notWordBefore + emphasisMark + body + emphasisMark + notWordAfter, literal: trimmed, copyFieldsOnly: copyFieldsOnly)
+  let words = trimmed.jsSplit(ProseRegex.whitespaceRun).map { word in word.unicodeScalars.map { BodyAtom.character($0, source: charPattern(String($0))) } }
+  let edge = BodyAtom.filler(source: emphasisMark, optional: true)
+  let body = [edge] + words.joined(separator: [.filler(source: wordGap, optional: false)]) + [edge]
+  return try compile(body, between: notWordBefore, and: notWordAfter, weight: trimmed.jsLength, copyFieldsOnly: copyFieldsOnly)
 }
 
 // apps/novel-forge-server/src/modules/bible/fact/writer-disclosure-policy.ts:93
@@ -153,7 +144,7 @@ private func passageWithholdings(_ text: String?, _ floor: PassageFloor, copyFie
 
 // apps/novel-forge-server/src/modules/bible/fact/writer-disclosure-policy.ts:99
 private func keyWithholding(_ key: String) throws(DisclosureError) -> Withholding {
-  try compile(#"(?<![\p{L}\p{N}_])"# + JSRegex.escape(key) + #"(?![\p{L}\p{N}_])"#, literal: key)
+  try compile(escapedAtoms(key), between: #"(?<![\p{L}\p{N}_])"#, and: #"(?![\p{L}\p{N}_])"#, weight: key.jsLength)
 }
 
 // apps/novel-forge-server/src/modules/bible/fact/writer-disclosure-policy.ts:104
@@ -163,7 +154,7 @@ private func factWithholdings(_ fact: DisclosureFact) throws(DisclosureError) ->
   if fact.factKey.jsIncludes("_") { withholdings.append(try keyWithholding(fact.factKey)) }
   for term in fact.terms ?? [] {
     if let pattern = try revealTermPattern(term, global: true) {
-      withholdings.append(Withholding(pattern: pattern, weight: term.jsTrim().jsLength, copyFieldsOnly: false, literal: term.jsTrim()))
+      withholdings.append(Withholding(pattern: pattern, weight: term.jsTrim().jsLength, copyFieldsOnly: false, body: escapedAtoms(term.jsTrim())))
     }
   }
   return withholdings
@@ -208,6 +199,7 @@ struct WriterDisclosurePolicy: Sendable {
   private let volumeOrdinals: [JSString: Int]
   private let currentVolumeOrdinal: Int?
   private(set) var withheld: [WithheldCount] = []
+  private(set) var failedClosed: [FailedClosedCount] = []
 
   init(_ input: WriterDisclosureInput) throws(DisclosureError) {
     chapter = input.chapter
@@ -247,6 +239,15 @@ struct WriterDisclosurePolicy: Sendable {
         withheld[index].count += outcome.count
       } else {
         withheld.append(WithheldCount(field: field, count: outcome.count))
+      }
+    }
+    if outcome.exhaustedComponents > 0 {
+      let wholeTexts = outcome.exhaustedWholeText ? 1 : 0
+      if let index = failedClosed.firstIndex(where: { $0.field == field }) {
+        failedClosed[index].components += outcome.exhaustedComponents
+        failedClosed[index].wholeTexts += wholeTexts
+      } else {
+        failedClosed.append(FailedClosedCount(field: field, components: outcome.exhaustedComponents, wholeTexts: wholeTexts))
       }
     }
     return safeLines.isEmpty ? outcome.text : ([outcome.text.jsTrim()] + safeLines).filter { !$0.isEmpty }.joined(separator: "\n")
