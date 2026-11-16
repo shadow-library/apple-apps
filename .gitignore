@@ -27,3 +27,4 @@ DerivedData/
 
 # Agent scratch space
 scratch-pad/
+.worktrees/

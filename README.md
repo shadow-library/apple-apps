@@ -41,8 +41,10 @@ Tuist.swift  Workspace.swift  mise.toml  .swift-format
 | `ShadowCore`         | `ShadowError` protocol for typed domain errors, `Logger(category:)`         | —                                |
 | `ShadowNetworking`   | `APIClient` (async, typed throws), `Endpoint`, middleware, JSON coding      | `ShadowCore`                     |
 | `ShadowKeychain`     | `SecureStore` protocol and `KeychainStore` (data-protection keychain)       | `ShadowCore`                     |
+| `ShadowStore`        | SQLite store through GRDB: entity tables, change log, field clocks          | `ShadowCore`, GRDB               |
+| `ShadowSync`         | Vault sync: replicas, segments, merge, encryption                           | `ShadowCore`, `ShadowStore`, `ShadowKeychain` |
 | `ShadowDesignSystem` | Tokens, Liquid Glass helpers and native-first SwiftUI components (see below) | —                                |
-| `ShadowTestSupport`  | `StubHTTPTransport`, `InMemorySecureStore` — test targets only              | `ShadowNetworking`, `ShadowKeychain` |
+| `ShadowTestSupport`  | `StubHTTPTransport`, `InMemorySecureStore` — test targets only              | `ShadowCore`, `ShadowNetworking`, `ShadowKeychain`, `ShadowStore`, `ShadowSync` |
 
 Apps depend on modules through the typed helper, so a typo fails at manifest compile time:
 
