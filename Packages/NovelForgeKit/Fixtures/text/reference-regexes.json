@@ -1,0 +1,1334 @@
+{
+  "files": [
+    "apps/novel-forge-server/src/modules/bible/fact/writer-disclosure-policy.ts",
+    "apps/novel-forge-server/src/modules/bible/fact/knowledge-view.ts",
+    "apps/novel-forge-server/src/common/reveal-rule.ts",
+    "apps/novel-forge-server/src/common/unlock-condition.ts",
+    "apps/novel-forge-server/src/common/reveal-term.ts",
+    "apps/novel-forge-server/src/common/term-text.ts",
+    "apps/novel-forge-server/src/modules/ai/hard-line.ts",
+    "apps/novel-forge-server/src/modules/ai/graphs/mechanical-check.ts",
+    "apps/novel-forge-server/src/modules/ai/graphs/readability-check.ts",
+    "apps/novel-forge-server/src/modules/eval/deterministic-metrics.ts",
+    "apps/novel-forge-server/src/modules/eval/chapter-prose.ts",
+    "apps/novel-forge-server/src/modules/refinement/write-policy.ts",
+    "apps/novel-forge-server/src/modules/refinement/negation-echo.ts",
+    "apps/novel-forge-server/src/modules/refinement/idea-id.ts",
+    "apps/novel-forge-server/src/modules/refinement/idea-filter.ts",
+    "apps/novel-forge-server/src/modules/refinement/idea-rejections.ts",
+    "packages/sdk/src/prose-paragraphs.ts",
+    "apps/novel-forge-server/src/modules/generation/passage-anchor.ts",
+    "apps/novel-forge-server/src/modules/refinement/passage-context.ts",
+    "apps/novel-forge-server/src/common/content-hash.ts",
+    "apps/novel-forge-server/src/common/draft-staleness.ts",
+    "apps/novel-forge-server/src/common/plan-state.ts",
+    "apps/novel-forge-server/src/common/provisional-knowledge.ts",
+    "apps/novel-forge-server/src/common/batch-selection.ts",
+    "apps/novel-forge-server/src/common/teaching-gate.ts",
+    "apps/novel-forge-server/src/common/volume-stats.ts",
+    "apps/novel-forge-server/src/common/promise.ts",
+    "apps/novel-forge-server/src/common/progress.ts"
+  ],
+  "count": 127,
+  "regexes": [
+    {
+      "location": "apps/novel-forge-server/src/modules/bible/fact/writer-disclosure-policy.ts:51",
+      "kind": "literal",
+      "source": "[\\p{Script=Han}\\p{Script=Hiragana}\\p{Script=Katakana}\\p{Script=Thai}]",
+      "flags": "u",
+      "features": [
+        "unicode-property",
+        "flag-u"
+      ]
+    },
+    {
+      "location": "apps/novel-forge-server/src/modules/bible/fact/writer-disclosure-policy.ts:53",
+      "kind": "literal",
+      "source": "^\"(.+?)\" exposes \\[([^\\]]+)\\]",
+      "flags": "",
+      "features": [
+        "lazy-quantifier",
+        "anchor"
+      ]
+    },
+    {
+      "location": "apps/novel-forge-server/src/modules/bible/fact/writer-disclosure-policy.ts:54",
+      "kind": "literal",
+      "source": "(?<=[.!?。！？])\\s+|\\n+",
+      "flags": "u",
+      "features": [
+        "lookbehind",
+        "non-ascii-literal",
+        "flag-u"
+      ]
+    },
+    {
+      "location": "apps/novel-forge-server/src/modules/bible/fact/writer-disclosure-policy.ts:55",
+      "kind": "literal",
+      "source": "^\\s*(?:[-*+>]|\\d+[.)]|#{1,6})\\s+",
+      "flags": "",
+      "features": [
+        "anchor"
+      ]
+    },
+    {
+      "location": "apps/novel-forge-server/src/modules/bible/fact/writer-disclosure-policy.ts:56",
+      "kind": "literal",
+      "source": "[\\s.!?;:,…。！？]+$",
+      "flags": "u",
+      "features": [
+        "anchor",
+        "non-ascii-literal",
+        "flag-u"
+      ]
+    },
+    {
+      "location": "apps/novel-forge-server/src/modules/bible/fact/writer-disclosure-policy.ts:57",
+      "kind": "literal",
+      "source": "\\*+|_{2,}|`",
+      "flags": "g",
+      "features": [
+        "flag-g"
+      ]
+    },
+    {
+      "location": "apps/novel-forge-server/src/modules/bible/fact/writer-disclosure-policy.ts:63",
+      "kind": "literal",
+      "source": "[\"“”„«»]",
+      "flags": "u",
+      "features": [
+        "non-ascii-literal",
+        "flag-u"
+      ]
+    },
+    {
+      "location": "apps/novel-forge-server/src/modules/bible/fact/writer-disclosure-policy.ts:64",
+      "kind": "literal",
+      "source": "['’‘`]",
+      "flags": "u",
+      "features": [
+        "non-ascii-literal",
+        "flag-u"
+      ]
+    },
+    {
+      "location": "apps/novel-forge-server/src/modules/bible/fact/writer-disclosure-policy.ts:65",
+      "kind": "literal",
+      "source": "[-‐‑–—]",
+      "flags": "u",
+      "features": [
+        "non-ascii-literal",
+        "flag-u"
+      ]
+    },
+    {
+      "location": "apps/novel-forge-server/src/modules/bible/fact/writer-disclosure-policy.ts:75",
+      "kind": "literal",
+      "source": "\\s+",
+      "flags": "",
+      "features": []
+    },
+    {
+      "location": "apps/novel-forge-server/src/modules/bible/fact/writer-disclosure-policy.ts:86",
+      "kind": "literal",
+      "source": "\\s+",
+      "flags": "",
+      "features": []
+    },
+    {
+      "location": "apps/novel-forge-server/src/modules/bible/fact/writer-disclosure-policy.ts:89",
+      "kind": "constructor",
+      "source": null,
+      "flags": "giu",
+      "features": [
+        "lookbehind",
+        "lookahead",
+        "unicode-property",
+        "anchor",
+        "flag-g",
+        "flag-i",
+        "flag-u"
+      ],
+      "expression": "`${NOT_WORD_BEFORE}${EMPHASIS_MARK}${body}${EMPHASIS_MARK}${NOT_WORD_AFTER}`, 'giu'",
+      "resolved": "(?<![\\p{L}\\p{N}])[*_]{0,2}${body}[*_]{0,2}(?![\\p{L}\\p{N}])",
+      "note": "built at run time: `resolved` inlines the file-level string constants and keeps every other part as ${expression}"
+    },
+    {
+      "location": "apps/novel-forge-server/src/modules/bible/fact/writer-disclosure-policy.ts:100",
+      "kind": "constructor",
+      "source": null,
+      "flags": "giu",
+      "features": [
+        "lookbehind",
+        "lookahead",
+        "unicode-property",
+        "anchor",
+        "flag-g",
+        "flag-i",
+        "flag-u"
+      ],
+      "expression": "`(?<![\\\\p{L}\\\\p{N}_])${escapeRegExp(key)}(?![\\\\p{L}\\\\p{N}_])`, 'giu'",
+      "resolved": "(?<![\\p{L}\\p{N}_])${escapeRegExp(key)}(?![\\p{L}\\p{N}_])",
+      "note": "built at run time: `resolved` inlines the file-level string constants and keeps every other part as ${expression}"
+    },
+    {
+      "location": "apps/novel-forge-server/src/common/reveal-term.ts:14",
+      "kind": "literal",
+      "source": "\\p{Lu}",
+      "flags": "u",
+      "features": [
+        "unicode-property",
+        "flag-u"
+      ]
+    },
+    {
+      "location": "apps/novel-forge-server/src/common/reveal-term.ts:15",
+      "kind": "constructor",
+      "source": null,
+      "flags": null,
+      "features": [
+        "lookbehind",
+        "lookahead",
+        "unicode-property",
+        "anchor"
+      ],
+      "expression": "`(?<![\\\\p{L}\\\\p{N}_])${escapeRegExp(trimmed)}(?![\\\\p{L}\\\\p{N}_])`, flags",
+      "resolved": "(?<![\\p{L}\\p{N}_])${escapeRegExp(trimmed)}(?![\\p{L}\\p{N}_])",
+      "note": "built at run time: `resolved` inlines the file-level string constants and keeps every other part as ${expression}"
+    },
+    {
+      "location": "apps/novel-forge-server/src/common/term-text.ts:2",
+      "kind": "literal",
+      "source": "[.*+?^${}()|[\\]\\\\]",
+      "flags": "g",
+      "features": [
+        "lazy-quantifier",
+        "anchor",
+        "flag-g"
+      ]
+    },
+    {
+      "location": "apps/novel-forge-server/src/modules/ai/hard-line.ts:45",
+      "kind": "constructor",
+      "source": null,
+      "flags": "i",
+      "features": [
+        "word-boundary",
+        "anchor",
+        "flag-i"
+      ],
+      "expression": "`\\\\b(?:${term})\\\\b`, 'i'",
+      "resolved": "\\b(?:${term})\\b",
+      "note": "built at run time: `resolved` inlines the file-level string constants and keeps every other part as ${expression}"
+    },
+    {
+      "location": "apps/novel-forge-server/src/modules/ai/hard-line.ts:55",
+      "kind": "constructor",
+      "source": null,
+      "flags": "i",
+      "features": [
+        "word-boundary",
+        "flag-i"
+      ],
+      "expression": "`\\\\b${UNDER_EIGHTEEN}[- ]?(?:years?|yrs?)[- ]?old\\\\b`, 'i'",
+      "resolved": "\\b(?:[1-9]|1[0-7]|one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|thirteen|fourteen|fifteen|sixteen|seventeen)[- ]?(?:years?|yrs?)[- ]?old\\b",
+      "note": "built at run time: `resolved` inlines the file-level string constants and keeps every other part as ${expression}"
+    },
+    {
+      "location": "apps/novel-forge-server/src/modules/ai/hard-line.ts:56",
+      "kind": "constructor",
+      "source": null,
+      "flags": "i",
+      "features": [
+        "word-boundary",
+        "flag-i"
+      ],
+      "expression": "`\\\\b(?:aged?|age of) ${UNDER_EIGHTEEN}\\\\b`, 'i'",
+      "resolved": "\\b(?:aged?|age of) (?:[1-9]|1[0-7]|one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|thirteen|fourteen|fifteen|sixteen|seventeen)\\b",
+      "note": "built at run time: `resolved` inlines the file-level string constants and keeps every other part as ${expression}"
+    },
+    {
+      "location": "apps/novel-forge-server/src/modules/ai/hard-line.ts:57",
+      "kind": "literal",
+      "source": "\\b(?:[1-9]|1[0-7])\\s?yo\\b",
+      "flags": "i",
+      "features": [
+        "word-boundary",
+        "flag-i"
+      ]
+    },
+    {
+      "location": "apps/novel-forge-server/src/modules/ai/hard-line.ts:83",
+      "kind": "literal",
+      "source": "[.!?;\\n]+|\"\\s*,\\s*\"",
+      "flags": "",
+      "features": []
+    },
+    {
+      "location": "apps/novel-forge-server/src/modules/ai/hard-line.ts:134",
+      "kind": "literal",
+      "source": "_",
+      "flags": "g",
+      "features": [
+        "flag-g"
+      ]
+    },
+    {
+      "location": "apps/novel-forge-server/src/modules/ai/graphs/mechanical-check.ts:63",
+      "kind": "literal",
+      "source": "(?<!\\b(?:i|you|we|they|would|do|does|did|to|might|may|could|should|will|\\w+n['’]t)\\s)(?<!['’]d\\s)\\blike an?\\b",
+      "flags": "gi",
+      "features": [
+        "lookbehind",
+        "word-boundary",
+        "non-ascii-literal",
+        "flag-g",
+        "flag-i"
+      ]
+    },
+    {
+      "location": "apps/novel-forge-server/src/modules/ai/graphs/mechanical-check.ts:64",
+      "kind": "literal",
+      "source": "\\blike (?:he|she|they|it)(?:['’]d)? (?:was|were|had|could|would|might)\\b",
+      "flags": "gi",
+      "features": [
+        "word-boundary",
+        "non-ascii-literal",
+        "flag-g",
+        "flag-i"
+      ]
+    },
+    {
+      "location": "apps/novel-forge-server/src/modules/ai/graphs/mechanical-check.ts:65",
+      "kind": "literal",
+      "source": "(?<!\\b(?:on|by)\\s)\\bthe way (?:a|an|one|someone|somebody|people|you)\\b",
+      "flags": "gi",
+      "features": [
+        "lookbehind",
+        "word-boundary",
+        "flag-g",
+        "flag-i"
+      ]
+    },
+    {
+      "location": "apps/novel-forge-server/src/modules/ai/graphs/mechanical-check.ts:66",
+      "kind": "literal",
+      "source": "\\bthe (?:kind|sort) of\\b",
+      "flags": "gi",
+      "features": [
+        "word-boundary",
+        "flag-g",
+        "flag-i"
+      ]
+    },
+    {
+      "location": "apps/novel-forge-server/src/modules/ai/graphs/mechanical-check.ts:70",
+      "kind": "literal",
+      "source": "“[^”]*”|\"[^\"]*\"|(?<=^|\\s)‘.*?’(?!\\p{L})",
+      "flags": "gu",
+      "features": [
+        "lookbehind",
+        "lookahead",
+        "unicode-property",
+        "lazy-quantifier",
+        "anchor",
+        "non-ascii-literal",
+        "flag-g",
+        "flag-u"
+      ]
+    },
+    {
+      "location": "apps/novel-forge-server/src/modules/ai/graphs/mechanical-check.ts:71",
+      "kind": "literal",
+      "source": "[“\"]|(?<=^|\\s)‘",
+      "flags": "u",
+      "features": [
+        "lookbehind",
+        "anchor",
+        "non-ascii-literal",
+        "flag-u"
+      ]
+    },
+    {
+      "location": "apps/novel-forge-server/src/modules/ai/graphs/mechanical-check.ts:90",
+      "kind": "literal",
+      "source": "\\n\\s*\\n",
+      "flags": "",
+      "features": []
+    },
+    {
+      "location": "apps/novel-forge-server/src/modules/ai/graphs/mechanical-check.ts:121",
+      "kind": "literal",
+      "source": "\\n\\s*\\n",
+      "flags": "",
+      "features": []
+    },
+    {
+      "location": "apps/novel-forge-server/src/modules/ai/graphs/mechanical-check.ts:122",
+      "kind": "literal",
+      "source": "\\s+",
+      "flags": "g",
+      "features": [
+        "flag-g"
+      ]
+    },
+    {
+      "location": "apps/novel-forge-server/src/modules/eval/deterministic-metrics.ts:74",
+      "kind": "literal",
+      "source": "\\b(?:eyes narrowed|narrowed (?:his|her|their) eyes)\\b",
+      "flags": "gi",
+      "features": [
+        "word-boundary",
+        "flag-g",
+        "flag-i"
+      ]
+    },
+    {
+      "location": "apps/novel-forge-server/src/modules/eval/deterministic-metrics.ts:75",
+      "kind": "literal",
+      "source": "\\b(?:jaw tightened|tightened (?:his|her|their) jaw)\\b",
+      "flags": "gi",
+      "features": [
+        "word-boundary",
+        "flag-g",
+        "flag-i"
+      ]
+    },
+    {
+      "location": "apps/novel-forge-server/src/modules/eval/deterministic-metrics.ts:76",
+      "kind": "literal",
+      "source": "\\bbreath hitched\\b",
+      "flags": "gi",
+      "features": [
+        "word-boundary",
+        "flag-g",
+        "flag-i"
+      ]
+    },
+    {
+      "location": "apps/novel-forge-server/src/modules/eval/deterministic-metrics.ts:77",
+      "kind": "literal",
+      "source": "\\ba mixture of \\w+ and \\w+\\b",
+      "flags": "gi",
+      "features": [
+        "word-boundary",
+        "flag-g",
+        "flag-i"
+      ]
+    },
+    {
+      "location": "apps/novel-forge-server/src/modules/eval/deterministic-metrics.ts:78",
+      "kind": "literal",
+      "source": "\\bheart (?:pounded|was pounding|pounding)\\b",
+      "flags": "gi",
+      "features": [
+        "word-boundary",
+        "flag-g",
+        "flag-i"
+      ]
+    },
+    {
+      "location": "apps/novel-forge-server/src/modules/eval/deterministic-metrics.ts:79",
+      "kind": "literal",
+      "source": "\\blet out (?:a|the) breath (?:he|she|they) (?:didn't|did not) (?:know|realize)",
+      "flags": "gi",
+      "features": [
+        "word-boundary",
+        "flag-g",
+        "flag-i"
+      ]
+    },
+    {
+      "location": "apps/novel-forge-server/src/modules/eval/deterministic-metrics.ts:80",
+      "kind": "literal",
+      "source": "\\beyes widened\\b",
+      "flags": "gi",
+      "features": [
+        "word-boundary",
+        "flag-g",
+        "flag-i"
+      ]
+    },
+    {
+      "location": "apps/novel-forge-server/src/modules/eval/deterministic-metrics.ts:81",
+      "kind": "literal",
+      "source": "\\bvoice(?:,)? barely (?:above|more than) a whisper\\b",
+      "flags": "gi",
+      "features": [
+        "word-boundary",
+        "flag-g",
+        "flag-i"
+      ]
+    },
+    {
+      "location": "apps/novel-forge-server/src/modules/eval/deterministic-metrics.ts:82",
+      "kind": "literal",
+      "source": "\\bshiver(?:s)? (?:ran |went )?down (?:his|her|their) spine\\b",
+      "flags": "gi",
+      "features": [
+        "word-boundary",
+        "flag-g",
+        "flag-i"
+      ]
+    },
+    {
+      "location": "apps/novel-forge-server/src/modules/eval/deterministic-metrics.ts:83",
+      "kind": "literal",
+      "source": "\\bclenched (?:his|her|their) fist",
+      "flags": "gi",
+      "features": [
+        "word-boundary",
+        "flag-g",
+        "flag-i"
+      ]
+    },
+    {
+      "location": "apps/novel-forge-server/src/modules/eval/deterministic-metrics.ts:84",
+      "kind": "literal",
+      "source": "\\bstomach dropped\\b",
+      "flags": "gi",
+      "features": [
+        "word-boundary",
+        "flag-g",
+        "flag-i"
+      ]
+    },
+    {
+      "location": "apps/novel-forge-server/src/modules/eval/deterministic-metrics.ts:85",
+      "kind": "literal",
+      "source": "\\bblood ran cold\\b",
+      "flags": "gi",
+      "features": [
+        "word-boundary",
+        "flag-g",
+        "flag-i"
+      ]
+    },
+    {
+      "location": "apps/novel-forge-server/src/modules/eval/deterministic-metrics.ts:86",
+      "kind": "literal",
+      "source": "\\btime seemed to (?:slow|stop|stand still)\\b",
+      "flags": "gi",
+      "features": [
+        "word-boundary",
+        "flag-g",
+        "flag-i"
+      ]
+    },
+    {
+      "location": "apps/novel-forge-server/src/modules/eval/deterministic-metrics.ts:87",
+      "kind": "literal",
+      "source": "\\b(?:world|everything) seemed to (?:stop|freeze)\\b",
+      "flags": "gi",
+      "features": [
+        "word-boundary",
+        "flag-g",
+        "flag-i"
+      ]
+    },
+    {
+      "location": "apps/novel-forge-server/src/modules/eval/deterministic-metrics.ts:88",
+      "kind": "literal",
+      "source": "\\bcouldn't help but\\b",
+      "flags": "gi",
+      "features": [
+        "word-boundary",
+        "flag-g",
+        "flag-i"
+      ]
+    },
+    {
+      "location": "apps/novel-forge-server/src/modules/eval/deterministic-metrics.ts:89",
+      "kind": "literal",
+      "source": "\\b(?:a ghost of a smile|ghost of a smile)\\b",
+      "flags": "gi",
+      "features": [
+        "word-boundary",
+        "flag-g",
+        "flag-i"
+      ]
+    },
+    {
+      "location": "apps/novel-forge-server/src/modules/eval/deterministic-metrics.ts:90",
+      "kind": "literal",
+      "source": "\\blet out a (?:heavy |long |quiet )?sigh\\b",
+      "flags": "gi",
+      "features": [
+        "word-boundary",
+        "flag-g",
+        "flag-i"
+      ]
+    },
+    {
+      "location": "apps/novel-forge-server/src/modules/eval/deterministic-metrics.ts:91",
+      "kind": "literal",
+      "source": "\\beyes flickered\\b",
+      "flags": "gi",
+      "features": [
+        "word-boundary",
+        "flag-g",
+        "flag-i"
+      ]
+    },
+    {
+      "location": "apps/novel-forge-server/src/modules/eval/deterministic-metrics.ts:92",
+      "kind": "literal",
+      "source": "\\bswallowed (?:hard|the lump in (?:his|her|their) throat)\\b",
+      "flags": "gi",
+      "features": [
+        "word-boundary",
+        "flag-g",
+        "flag-i"
+      ]
+    },
+    {
+      "location": "apps/novel-forge-server/src/modules/eval/deterministic-metrics.ts:93",
+      "kind": "literal",
+      "source": "\\braised an eyebrow\\b",
+      "flags": "gi",
+      "features": [
+        "word-boundary",
+        "flag-g",
+        "flag-i"
+      ]
+    },
+    {
+      "location": "apps/novel-forge-server/src/modules/eval/deterministic-metrics.ts:94",
+      "kind": "literal",
+      "source": "\\breleased (?:a|the) breath (?:she|he|they) (?:didn't|did not) (?:know|realize) (?:she|he|they) (?:was|were) holding\\b",
+      "flags": "gi",
+      "features": [
+        "word-boundary",
+        "flag-g",
+        "flag-i"
+      ]
+    },
+    {
+      "location": "apps/novel-forge-server/src/modules/eval/deterministic-metrics.ts:170",
+      "kind": "literal",
+      "source": "\\s+",
+      "flags": "",
+      "features": []
+    },
+    {
+      "location": "apps/novel-forge-server/src/modules/eval/deterministic-metrics.ts:219",
+      "kind": "literal",
+      "source": "\\s+",
+      "flags": "g",
+      "features": [
+        "flag-g"
+      ]
+    },
+    {
+      "location": "apps/novel-forge-server/src/modules/eval/deterministic-metrics.ts:221",
+      "kind": "literal",
+      "source": "[^.!?]+[.!?]+(?=\\s|$)|[^.!?]+$",
+      "flags": "g",
+      "features": [
+        "lookahead",
+        "anchor",
+        "flag-g"
+      ]
+    },
+    {
+      "location": "apps/novel-forge-server/src/modules/eval/deterministic-metrics.ts:274",
+      "kind": "literal",
+      "source": "\\bthe\\s+(?:architecture|choreography|cartography|topography)\\s+of\\s+(?:his|her|their|my|our|your)\\s+(?:grief|fear|anger|love|hope|guilt|shame|doubt|memory|memories|thoughts|mind|moods?|longing|regret|patience|temper|loneliness|desire|sorrow|joy|pride|silence)\\b",
+      "flags": "i",
+      "features": [
+        "word-boundary",
+        "flag-i"
+      ]
+    },
+    {
+      "location": "apps/novel-forge-server/src/modules/eval/deterministic-metrics.ts:276",
+      "kind": "literal",
+      "source": "\\bthe\\s+way\\s+one\\s+(?!of\\b)\\w+s\\b",
+      "flags": "i",
+      "features": [
+        "lookahead",
+        "word-boundary",
+        "flag-i"
+      ]
+    },
+    {
+      "location": "apps/novel-forge-server/src/modules/eval/deterministic-metrics.ts:277",
+      "kind": "literal",
+      "source": "\\b(?:the\\s+universe|fate)['’]s\\s+idea\\s+of\\s+a\\s+joke\\b",
+      "flags": "i",
+      "features": [
+        "word-boundary",
+        "non-ascii-literal",
+        "flag-i"
+      ]
+    },
+    {
+      "location": "apps/novel-forge-server/src/modules/eval/deterministic-metrics.ts:278",
+      "kind": "literal",
+      "source": "\\bvoice\\s+like\\s+(?:a|an)\\s+\\w+",
+      "flags": "i",
+      "features": [
+        "word-boundary",
+        "flag-i"
+      ]
+    },
+    {
+      "location": "apps/novel-forge-server/src/modules/eval/deterministic-metrics.ts:279",
+      "kind": "literal",
+      "source": "\\b(?:silence|stillness)\\s+(?:had|held|carried)\\s+(?:a|an)\\s+(?:weight|texture|shape|taste|colou?r|temperature)\\b",
+      "flags": "i",
+      "features": [
+        "word-boundary",
+        "flag-i"
+      ]
+    },
+    {
+      "location": "apps/novel-forge-server/src/modules/eval/deterministic-metrics.ts:280",
+      "kind": "literal",
+      "source": "\\bthe\\s+(?:room|office|hall|house|kitchen)\\s+held\\s+its\\s+breath\\b",
+      "flags": "i",
+      "features": [
+        "word-boundary",
+        "flag-i"
+      ]
+    },
+    {
+      "location": "apps/novel-forge-server/src/modules/eval/deterministic-metrics.ts:313",
+      "kind": "literal",
+      "source": "[.!?]+[\"'”’)\\]]*(?=\\s|$)",
+      "flags": "g",
+      "features": [
+        "lookahead",
+        "anchor",
+        "non-ascii-literal",
+        "flag-g"
+      ]
+    },
+    {
+      "location": "apps/novel-forge-server/src/modules/eval/deterministic-metrics.ts:316",
+      "kind": "literal",
+      "source": "\\s+",
+      "flags": "",
+      "features": []
+    },
+    {
+      "location": "apps/novel-forge-server/src/modules/eval/deterministic-metrics.ts:316",
+      "kind": "literal",
+      "source": "^[\"'“‘(]+",
+      "flags": "",
+      "features": [
+        "anchor",
+        "non-ascii-literal"
+      ]
+    },
+    {
+      "location": "apps/novel-forge-server/src/modules/eval/deterministic-metrics.ts:317",
+      "kind": "literal",
+      "source": "^[A-Z]$",
+      "flags": "",
+      "features": [
+        "anchor"
+      ]
+    },
+    {
+      "location": "apps/novel-forge-server/src/modules/eval/deterministic-metrics.ts:330",
+      "kind": "literal",
+      "source": "[A-Za-z0-9]",
+      "flags": "",
+      "features": []
+    },
+    {
+      "location": "apps/novel-forge-server/src/modules/eval/deterministic-metrics.ts:335",
+      "kind": "literal",
+      "source": "\\n+",
+      "flags": "",
+      "features": []
+    },
+    {
+      "location": "apps/novel-forge-server/src/modules/eval/deterministic-metrics.ts:336",
+      "kind": "literal",
+      "source": "\\s+",
+      "flags": "g",
+      "features": [
+        "flag-g"
+      ]
+    },
+    {
+      "location": "apps/novel-forge-server/src/modules/eval/deterministic-metrics.ts:343",
+      "kind": "literal",
+      "source": "[^a-z]",
+      "flags": "g",
+      "features": [
+        "anchor",
+        "flag-g"
+      ]
+    },
+    {
+      "location": "apps/novel-forge-server/src/modules/eval/deterministic-metrics.ts:346",
+      "kind": "literal",
+      "source": "(?:[^laeiouy]es|ed|[^laeiouy]e)$",
+      "flags": "",
+      "features": [
+        "anchor"
+      ]
+    },
+    {
+      "location": "apps/novel-forge-server/src/modules/eval/deterministic-metrics.ts:346",
+      "kind": "literal",
+      "source": "^y",
+      "flags": "",
+      "features": [
+        "anchor"
+      ]
+    },
+    {
+      "location": "apps/novel-forge-server/src/modules/eval/deterministic-metrics.ts:347",
+      "kind": "literal",
+      "source": "[aeiouy]{1,2}",
+      "flags": "g",
+      "features": [
+        "flag-g"
+      ]
+    },
+    {
+      "location": "apps/novel-forge-server/src/modules/eval/deterministic-metrics.ts:360",
+      "kind": "literal",
+      "source": "\\s+",
+      "flags": "",
+      "features": []
+    },
+    {
+      "location": "apps/novel-forge-server/src/modules/eval/deterministic-metrics.ts:360",
+      "kind": "literal",
+      "source": "[A-Za-z]",
+      "flags": "",
+      "features": []
+    },
+    {
+      "location": "apps/novel-forge-server/src/modules/eval/deterministic-metrics.ts:386",
+      "kind": "literal",
+      "source": "\\s+",
+      "flags": "",
+      "features": []
+    },
+    {
+      "location": "apps/novel-forge-server/src/modules/eval/deterministic-metrics.ts:389",
+      "kind": "literal",
+      "source": "[^a-z0-9']+",
+      "flags": "g",
+      "features": [
+        "anchor",
+        "flag-g"
+      ]
+    },
+    {
+      "location": "apps/novel-forge-server/src/modules/eval/deterministic-metrics.ts:477",
+      "kind": "constructor",
+      "source": null,
+      "flags": "gi",
+      "features": [
+        "word-boundary",
+        "anchor",
+        "non-ascii-literal",
+        "flag-g",
+        "flag-i"
+      ],
+      "expression": "`[\"”]\\\\s*,?\\\\s*(?:[A-Z][a-z]+(?:\\\\s[A-Z][a-z]+)?\\\\s)?(${DIALOGUE_TAG_VERBS.join('|')})\\\\b`, 'gi'",
+      "resolved": "[\"”]\\s*,?\\s*(?:[A-Z][a-z]+(?:\\s[A-Z][a-z]+)?\\s)?(${DIALOGUE_TAG_VERBS.join('|')})\\b",
+      "note": "built at run time: `resolved` inlines the file-level string constants and keeps every other part as ${expression}"
+    },
+    {
+      "location": "apps/novel-forge-server/src/modules/eval/deterministic-metrics.ts:507",
+      "kind": "literal",
+      "source": "[\"“]([^\"”]*)[\"”]",
+      "flags": "g",
+      "features": [
+        "anchor",
+        "non-ascii-literal",
+        "flag-g"
+      ]
+    },
+    {
+      "location": "apps/novel-forge-server/src/modules/eval/deterministic-metrics.ts:516",
+      "kind": "constructor",
+      "source": null,
+      "flags": "gi",
+      "features": [
+        "word-boundary",
+        "anchor",
+        "non-ascii-literal",
+        "flag-g",
+        "flag-i"
+      ],
+      "expression": "`\\\\b${contractedForm.replace(/'/g, \"['’]\")}\\\\b`, 'gi'",
+      "resolved": "\\b${contractedForm.replace(/'/g, \"['’]\")}\\b",
+      "note": "built at run time: `resolved` inlines the file-level string constants and keeps every other part as ${expression}"
+    },
+    {
+      "location": "apps/novel-forge-server/src/modules/eval/deterministic-metrics.ts:516",
+      "kind": "literal",
+      "source": "'",
+      "flags": "g",
+      "features": [
+        "flag-g"
+      ]
+    },
+    {
+      "location": "apps/novel-forge-server/src/modules/eval/deterministic-metrics.ts:517",
+      "kind": "constructor",
+      "source": null,
+      "flags": "gi",
+      "features": [
+        "word-boundary",
+        "anchor",
+        "flag-g",
+        "flag-i"
+      ],
+      "expression": "`\\\\b${expandedForm}\\\\b`, 'gi'",
+      "resolved": "\\b${expandedForm}\\b",
+      "note": "built at run time: `resolved` inlines the file-level string constants and keeps every other part as ${expression}"
+    },
+    {
+      "location": "apps/novel-forge-server/src/modules/eval/chapter-prose.ts:1",
+      "kind": "literal",
+      "source": "^ {0,3}(`{3,}(?=[^`]*$)|~{3,})(.*)$",
+      "flags": "",
+      "features": [
+        "lookahead",
+        "anchor"
+      ]
+    },
+    {
+      "location": "apps/novel-forge-server/src/modules/eval/chapter-prose.ts:2",
+      "kind": "literal",
+      "source": "^system(?:\\s|$)",
+      "flags": "i",
+      "features": [
+        "anchor",
+        "flag-i"
+      ]
+    },
+    {
+      "location": "apps/novel-forge-server/src/modules/eval/chapter-prose.ts:3",
+      "kind": "literal",
+      "source": "^ {0,3}(?:#{1,6}(?:[ \\t]|$)|>|`{3,}|~{3,})",
+      "flags": "",
+      "features": [
+        "anchor"
+      ]
+    },
+    {
+      "location": "apps/novel-forge-server/src/modules/eval/chapter-prose.ts:4",
+      "kind": "literal",
+      "source": "^ {0,3}(?:(?:\\*[ \\t]*){3,}|(?:-[ \\t]*){3,}|(?:_[ \\t]*){3,})$|^ {0,3}(?:[-+*]|1[.)])[ \\t]+\\S|^(?: {4,}|\\t)",
+      "flags": "",
+      "features": [
+        "anchor"
+      ]
+    },
+    {
+      "location": "apps/novel-forge-server/src/modules/eval/chapter-prose.ts:5",
+      "kind": "literal",
+      "source": "^\\s*:?-+:?\\s*$",
+      "flags": "",
+      "features": [
+        "anchor"
+      ]
+    },
+    {
+      "location": "apps/novel-forge-server/src/modules/eval/chapter-prose.ts:14",
+      "kind": "constructor",
+      "source": null,
+      "flags": "",
+      "features": [
+        "anchor"
+      ],
+      "expression": "`^ {0,3}${marker.charAt(0) === '`' ? '`' : '~'}{${marker.length},}[ \\\\t]*$`",
+      "resolved": "^ {0,3}${marker.charAt(0) === '`' ? '`' : '~'}{${marker.length},}[ \\t]*$",
+      "note": "built at run time: `resolved` inlines the file-level string constants and keeps every other part as ${expression}"
+    },
+    {
+      "location": "apps/novel-forge-server/src/modules/eval/chapter-prose.ts:23",
+      "kind": "literal",
+      "source": "(?<!\\\\)\\|",
+      "flags": "",
+      "features": [
+        "lookbehind"
+      ]
+    },
+    {
+      "location": "apps/novel-forge-server/src/modules/eval/chapter-prose.ts:41",
+      "kind": "literal",
+      "source": "\\r\\n|\\r|\\n",
+      "flags": "",
+      "features": []
+    },
+    {
+      "location": "apps/novel-forge-server/src/modules/refinement/write-policy.ts:166",
+      "kind": "literal",
+      "source": "\\b(if|maybe|perhaps|might|could|probably|possibly|wonder|whether|suppose|imagine|not sure|or should)\\b|也许|或许|可能|大概|如果|要是|もし|かもしれ|たぶん|多分|아마|만약",
+      "flags": "",
+      "features": [
+        "word-boundary",
+        "non-ascii-literal"
+      ]
+    },
+    {
+      "location": "apps/novel-forge-server/src/modules/refinement/write-policy.ts:167",
+      "kind": "literal",
+      "source": "\\b(not|no|never|without|nor|cannot)\\b|n't\\b|不是|没有|沒有|并非|ではない|じゃない|아니",
+      "flags": "",
+      "features": [
+        "word-boundary",
+        "non-ascii-literal"
+      ]
+    },
+    {
+      "location": "apps/novel-forge-server/src/modules/refinement/write-policy.ts:168",
+      "kind": "literal",
+      "source": "\\b(bad idea|terrible idea|no way|scrap|drop that|instead)\\b",
+      "flags": "",
+      "features": [
+        "word-boundary"
+      ]
+    },
+    {
+      "location": "apps/novel-forge-server/src/modules/refinement/write-policy.ts:169",
+      "kind": "literal",
+      "source": "[,;:()、]|\\s-\\s",
+      "flags": "",
+      "features": [
+        "non-ascii-literal"
+      ]
+    },
+    {
+      "location": "apps/novel-forge-server/src/modules/refinement/write-policy.ts:170",
+      "kind": "literal",
+      "source": "[\"'”’)\\]」』\\s]+$",
+      "flags": "",
+      "features": [
+        "anchor",
+        "non-ascii-literal"
+      ]
+    },
+    {
+      "location": "apps/novel-forge-server/src/modules/refinement/write-policy.ts:172",
+      "kind": "literal",
+      "source": "(?<=[.!?][\"'”’)\\]]*)\\s+|(?<=[。！？][」』\"'”’)]*)(?![」』\"'”’)])|\\n+",
+      "flags": "",
+      "features": [
+        "lookbehind",
+        "lookahead",
+        "non-ascii-literal"
+      ]
+    },
+    {
+      "location": "apps/novel-forge-server/src/modules/refinement/write-policy.ts:173",
+      "kind": "literal",
+      "source": "[\\p{Script=Han}\\p{Script=Hiragana}\\p{Script=Katakana}ー]+",
+      "flags": "gu",
+      "features": [
+        "unicode-property",
+        "non-ascii-literal",
+        "flag-g",
+        "flag-u"
+      ]
+    },
+    {
+      "location": "apps/novel-forge-server/src/modules/refinement/write-policy.ts:187",
+      "kind": "literal",
+      "source": "[‘’‛ʼ]",
+      "flags": "g",
+      "features": [
+        "non-ascii-literal",
+        "flag-g"
+      ]
+    },
+    {
+      "location": "apps/novel-forge-server/src/modules/refinement/write-policy.ts:188",
+      "kind": "literal",
+      "source": "[“”‟]",
+      "flags": "g",
+      "features": [
+        "non-ascii-literal",
+        "flag-g"
+      ]
+    },
+    {
+      "location": "apps/novel-forge-server/src/modules/refinement/write-policy.ts:189",
+      "kind": "literal",
+      "source": "[–—]",
+      "flags": "g",
+      "features": [
+        "non-ascii-literal",
+        "flag-g"
+      ]
+    },
+    {
+      "location": "apps/novel-forge-server/src/modules/refinement/write-policy.ts:190",
+      "kind": "literal",
+      "source": "\\s+",
+      "flags": "g",
+      "features": [
+        "flag-g"
+      ]
+    },
+    {
+      "location": "apps/novel-forge-server/src/modules/refinement/write-policy.ts:195",
+      "kind": "literal",
+      "source": "^[\"'\\s]+|[\"'\\s]+$",
+      "flags": "g",
+      "features": [
+        "anchor",
+        "flag-g"
+      ]
+    },
+    {
+      "location": "apps/novel-forge-server/src/modules/refinement/write-policy.ts:213",
+      "kind": "literal",
+      "source": "[\\p{L}\\p{N}]+(?:'[\\p{L}]+)?",
+      "flags": "gu",
+      "features": [
+        "unicode-property",
+        "flag-g",
+        "flag-u"
+      ]
+    },
+    {
+      "location": "apps/novel-forge-server/src/modules/refinement/write-policy.ts:215",
+      "kind": "literal",
+      "source": "'s$",
+      "flags": "",
+      "features": [
+        "anchor"
+      ]
+    },
+    {
+      "location": "apps/novel-forge-server/src/modules/refinement/negation-echo.ts:122",
+      "kind": "literal",
+      "source": "[.!?;:\\n]+",
+      "flags": "",
+      "features": []
+    },
+    {
+      "location": "apps/novel-forge-server/src/modules/refinement/negation-echo.ts:123",
+      "kind": "literal",
+      "source": "[\\p{L}\\p{N}]+(?:['’][\\p{L}]+)*",
+      "flags": "gu",
+      "features": [
+        "unicode-property",
+        "non-ascii-literal",
+        "flag-g",
+        "flag-u"
+      ]
+    },
+    {
+      "location": "apps/novel-forge-server/src/modules/refinement/negation-echo.ts:140",
+      "kind": "literal",
+      "source": "'s$",
+      "flags": "",
+      "features": [
+        "anchor"
+      ]
+    },
+    {
+      "location": "apps/novel-forge-server/src/modules/refinement/negation-echo.ts:162",
+      "kind": "literal",
+      "source": "’",
+      "flags": "g",
+      "features": [
+        "non-ascii-literal",
+        "flag-g"
+      ]
+    },
+    {
+      "location": "apps/novel-forge-server/src/modules/refinement/negation-echo.ts:163",
+      "kind": "literal",
+      "source": "^\\p{Lu}",
+      "flags": "u",
+      "features": [
+        "unicode-property",
+        "anchor",
+        "flag-u"
+      ]
+    },
+    {
+      "location": "apps/novel-forge-server/src/modules/refinement/negation-echo.ts:165",
+      "kind": "literal",
+      "source": "^[-*•]\\s*",
+      "flags": "",
+      "features": [
+        "anchor",
+        "non-ascii-literal"
+      ]
+    },
+    {
+      "location": "apps/novel-forge-server/src/modules/refinement/negation-echo.ts:191",
+      "kind": "literal",
+      "source": "\\b(?:say|says|saying|state|states|stating|rule|spell out|make (?:it )?clear|write that|note that|add a line)\\b",
+      "flags": "i",
+      "features": [
+        "word-boundary",
+        "flag-i"
+      ]
+    },
+    {
+      "location": "apps/novel-forge-server/src/modules/refinement/idea-id.ts:41",
+      "kind": "literal",
+      "source": "\\s+",
+      "flags": "g",
+      "features": [
+        "flag-g"
+      ]
+    },
+    {
+      "location": "packages/sdk/src/prose-paragraphs.ts:15",
+      "kind": "literal",
+      "source": "^[ \\t]*$",
+      "flags": "",
+      "features": [
+        "anchor"
+      ]
+    },
+    {
+      "location": "packages/sdk/src/prose-paragraphs.ts:16",
+      "kind": "literal",
+      "source": "^ {0,3}(?:(?:\\*[ \\t]*){3,}|(?:-[ \\t]*){3,}|(?:_[ \\t]*){3,})$",
+      "flags": "",
+      "features": [
+        "anchor"
+      ]
+    },
+    {
+      "location": "packages/sdk/src/prose-paragraphs.ts:17",
+      "kind": "literal",
+      "source": "^ {0,3}(?:=+|-+)[ \\t]*$",
+      "flags": "",
+      "features": [
+        "anchor"
+      ]
+    },
+    {
+      "location": "packages/sdk/src/prose-paragraphs.ts:18",
+      "kind": "literal",
+      "source": "^ {0,3}#{1,6}(?:[ \\t]|$)",
+      "flags": "",
+      "features": [
+        "anchor"
+      ]
+    },
+    {
+      "location": "packages/sdk/src/prose-paragraphs.ts:19",
+      "kind": "literal",
+      "source": "^ {0,3}(`{3,}(?=[^`]*$)|~{3,})",
+      "flags": "",
+      "features": [
+        "lookahead",
+        "anchor"
+      ]
+    },
+    {
+      "location": "packages/sdk/src/prose-paragraphs.ts:20",
+      "kind": "literal",
+      "source": "^ {0,3}>",
+      "flags": "",
+      "features": [
+        "anchor"
+      ]
+    },
+    {
+      "location": "packages/sdk/src/prose-paragraphs.ts:21",
+      "kind": "literal",
+      "source": "^ {0,3}(?:[-+*]|\\d{1,9}[.)])(?:[ \\t]|$)",
+      "flags": "",
+      "features": [
+        "anchor"
+      ]
+    },
+    {
+      "location": "packages/sdk/src/prose-paragraphs.ts:22",
+      "kind": "literal",
+      "source": "^ {0,3}(?:[-+*]|1[.)])[ \\t]+\\S",
+      "flags": "",
+      "features": [
+        "anchor"
+      ]
+    },
+    {
+      "location": "packages/sdk/src/prose-paragraphs.ts:23",
+      "kind": "literal",
+      "source": "^[ \\t]*:?-+:?[ \\t]*$",
+      "flags": "",
+      "features": [
+        "anchor"
+      ]
+    },
+    {
+      "location": "packages/sdk/src/prose-paragraphs.ts:27",
+      "kind": "literal",
+      "source": "\\r\\n|\\r|\\n",
+      "flags": "g",
+      "features": [
+        "flag-g"
+      ]
+    },
+    {
+      "location": "packages/sdk/src/prose-paragraphs.ts:59",
+      "kind": "literal",
+      "source": "(?<!\\\\)\\|",
+      "flags": "",
+      "features": [
+        "lookbehind"
+      ]
+    },
+    {
+      "location": "packages/sdk/src/prose-paragraphs.ts:81",
+      "kind": "constructor",
+      "source": null,
+      "flags": "",
+      "features": [
+        "anchor"
+      ],
+      "expression": "`^ {0,3}${marker.charAt(0) === '`' ? '`' : '~'}{${marker.length},}[ \\\\t]*$`",
+      "resolved": "^ {0,3}${marker.charAt(0) === '`' ? '`' : '~'}{${marker.length},}[ \\t]*$",
+      "note": "built at run time: `resolved` inlines the file-level string constants and keeps every other part as ${expression}"
+    },
+    {
+      "location": "apps/novel-forge-server/src/modules/generation/passage-anchor.ts:51",
+      "kind": "literal",
+      "source": "^\\s*",
+      "flags": "",
+      "features": [
+        "anchor"
+      ]
+    },
+    {
+      "location": "apps/novel-forge-server/src/modules/generation/passage-anchor.ts:52",
+      "kind": "literal",
+      "source": "\\s*$",
+      "flags": "",
+      "features": [
+        "anchor"
+      ]
+    },
+    {
+      "location": "apps/novel-forge-server/src/modules/refinement/passage-context.ts:36",
+      "kind": "literal",
+      "source": "[\\uD800-\\uDBFF](?![\\uDC00-\\uDFFF])|(?<![\\uD800-\\uDBFF])[\\uDC00-\\uDFFF]",
+      "flags": "",
+      "features": [
+        "lookbehind",
+        "lookahead"
+      ]
+    },
+    {
+      "location": "apps/novel-forge-server/src/modules/refinement/passage-context.ts:108",
+      "kind": "literal",
+      "source": "\\n",
+      "flags": "g",
+      "features": [
+        "flag-g"
+      ]
+    }
+  ]
+}
