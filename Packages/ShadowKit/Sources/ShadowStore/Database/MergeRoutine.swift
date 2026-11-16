@@ -6,7 +6,9 @@ import ShadowCore
 struct MergeRoutine {
   let registry: SchemaRegistry
 
-  func apply(_ record: ChangeRecord, scope: StateScope, in db: Database) throws(StoreError) {
+  /// Returns whether the record had a declared part, which makes its entity touched even when the join changed nothing.
+  @discardableResult
+  func apply(_ record: ChangeRecord, scope: StateScope, in db: Database) throws(StoreError) -> Bool {
     try StoreError.wrapping {
       let rows = EntityRows(db: db, scope: scope, ref: record.ref)
       let interpretation = registry.interpretation(of: record)
@@ -17,6 +19,7 @@ struct MergeRoutine {
       default: break
       }
       if let remainder = interpretation.foreign { try rows.keepForeign(remainder, purged: tombstone != nil) }
+      return interpretation.state != nil
     }
   }
 

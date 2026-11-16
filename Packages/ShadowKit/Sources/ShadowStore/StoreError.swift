@@ -15,6 +15,10 @@ public enum StoreError: ShadowError {
   case registryDowngrade(stored: Int, current: Int)
   case sequenceExhausted
   case aborted(any Error)
+  case clockAhead(HLCTimestamp)
+  case replicaCollision(ReplicaID)
+  case incompatibleRegistry(String)
+  case reconcilerFailed(any Error)
 
   public var code: String {
     switch self {
@@ -29,6 +33,10 @@ public enum StoreError: ShadowError {
     case .registryDowngrade: "store.registry_downgrade"
     case .sequenceExhausted: "store.sequence_exhausted"
     case .aborted: "store.aborted"
+    case .clockAhead: "store.clock_ahead"
+    case .replicaCollision: "store.replica_collision"
+    case .incompatibleRegistry: "store.incompatible_registry"
+    case .reconcilerFailed: "store.reconciler_failed"
     }
   }
 
@@ -45,6 +53,10 @@ public enum StoreError: ShadowError {
     case .registryDowngrade(let stored, let current): "The store was last opened with registry version \(stored), newer than version \(current)."
     case .sequenceExhausted: "The change log has used every sequence number."
     case .aborted(let error): "The transaction was aborted: \(error.localizedDescription)"
+    case .clockAhead(let clock): "A remote change is stamped \(clock), beyond the limit the reader accepts."
+    case .replicaCollision(let replica): "A remote change carries this store's replica id \(replica), so another writer is using it."
+    case .incompatibleRegistry(let reason): "The registry cannot carry the stored state additively: \(reason)."
+    case .reconcilerFailed(let error): "The reconciler failed: \(error.localizedDescription)"
     }
   }
 }

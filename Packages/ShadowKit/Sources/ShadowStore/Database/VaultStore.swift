@@ -9,15 +9,18 @@ public final class VaultStore: Sendable {
   public let registry: SchemaRegistry
   let storedRegistryVersion: Int
 
+  let settlement: Settlement
+
   private let writer: any DatabaseWriter
   private let wallClock: @Sendable () -> Date
   private let ids: UUIDv7Generator
   private let clock: Mutex<HybridLogicalClock?>
   private let currentReplica: Mutex<ReplicaID>
 
-  private init(writer: any DatabaseWriter, registry: SchemaRegistry, row: KernelRow, wallClock: @escaping @Sendable () -> Date) {
+  private init(writer: any DatabaseWriter, settlement: Settlement, row: KernelRow, wallClock: @escaping @Sendable () -> Date) {
     self.writer = writer
-    self.registry = registry
+    self.settlement = settlement
+    registry = settlement.registry
     storedRegistryVersion = row.registryVersion
     self.wallClock = wallClock
     ids = UUIDv7Generator(wallClock: wallClock)
@@ -30,9 +33,11 @@ public final class VaultStore: Sendable {
   }
 
   public static func open(
-    _ location: StoreLocation, registry: SchemaRegistry, migrations: [StoreMigration] = [], wallClock: @escaping @Sendable () -> Date = { Date() }
+    _ location: StoreLocation, registry: SchemaRegistry, migrations: [StoreMigration] = [], wallClock: @escaping @Sendable () -> Date = { Date() },
+    reconciler: (any StoreReconciler)? = nil
   ) throws(StoreError) -> VaultStore {
     let migrator = try KernelSchema.migrator(migrations)
+    let settlement = Settlement(registry: registry, reconciler: reconciler)
     return try StoreError.wrapping {
       var configuration = Configuration()
       configuration.label = "ShadowStore"
@@ -46,8 +51,20 @@ public final class VaultStore: Sendable {
         writer = try DatabaseQueue(configuration: configuration)
       }
       try migrator.migrate(writer)
-      let row = try writer.write { db in try KernelRow.prepare(db, registryVersion: registry.version) { ReplicaID(UUID.v7(at: wallClock())) } }
-      return VaultStore(writer: writer, registry: registry, row: row, wallClock: wallClock)
+      let row = try writer.write { db in
+        let row = try KernelRow.prepare(db, registry: registry) { ReplicaID(UUID.v7(at: wallClock())) }
+        let storedRegistry = try row.storedRegistry()
+        guard row.registryVersion < registry.version else {
+          guard row.registry == registry.canonicalDescription() else {
+            throw StoreError.incompatibleRegistry("the registry changed without a version bump: version \(registry.version) is stored with a different description")
+          }
+          return row
+        }
+        _ = try settlement.reconcile(try RegistryUpgrade(registry: registry).run(from: storedRegistry, in: db), origin: .upgrade, in: db)
+        try KernelRow.saveRegistry(registry, in: db)
+        return row
+      }
+      return VaultStore(writer: writer, settlement: settlement, row: row, wallClock: wallClock)
     }
   }
 
@@ -61,6 +78,7 @@ public final class VaultStore: Sendable {
       let row = try KernelRow.load(db)
       var transaction = WriteTransaction(database: db, registry: self.registry, clock: self.clock(for: row), ids: self.ids)
       let result = try body(&transaction)
+      _ = try self.settlement.settle(transaction.touched, origin: .local, in: db)
       if let latest = transaction.clock.latest, latest != row.clock { try KernelRow.saveClock(latest, in: db) }
       return result
     }
@@ -94,26 +112,46 @@ public final class VaultStore: Sendable {
       let pending = try db.storeFetchAll("SELECT line FROM change_log ORDER BY seq", []).map { row throws(StoreError) in try Stored.record(row.stored("line")) }
       let merge = MergeRoutine(registry: self.registry)
       let relogged: [ChangeRecord]
+      let scopes: [StateScope]
+      var touched = TouchedRefs()
       switch mode {
       case .keepState:
+        scopes = [.own]
         try KernelSchema.clear(.own, in: db)
-        for record in pending { try merge.apply(record, scope: .own, in: db) }
         relogged = pending
       case .rebuild:
-        for scope in StateScope.allCases { try KernelSchema.clear(scope, in: db) }
+        scopes = StateScope.allCases
+        for scope in scopes { try KernelSchema.clear(scope, in: db) }
         let clock = HybridLogicalClock(replica: newReplica, wallClock: self.wallClock, latest: row.rebuildFloor)
         relogged = pending.map { ChangeRecord(id: self.ids.next(), clock: clock.now(), schema: $0.schema, entity: $0.entity, key: $0.key, kind: $0.kind, fields: $0.fields) }
-        for record in relogged { for scope in StateScope.allCases { try merge.apply(record, scope: scope, in: db) } }
         row.clock = clock.latest
+      }
+      for record in relogged {
+        for scope in scopes {
+          if try merge.apply(record, scope: scope, in: db) { touched.insert(record.ref, scope: scope) }
+        }
       }
       try db.execute(sql: "DELETE FROM change_log")
       for (index, record) in relogged.enumerated() { try db.storeExecute("INSERT INTO change_log (seq, line) VALUES (?, ?)", [index + 1, record.canonicalBytes()]) }
       row.replica = newReplica
       row.nextSequence = Int64(relogged.count) + 1
       try row.saveIdentity(db)
+      try self.settlement.prune(touched, in: db)
+      if mode == .rebuild {
+        try self.settlement.reset(in: db)
+        _ = try self.settlement.reconcile(touched, origin: .local, in: db)
+      }
       try body(db)
     }
     currentReplica.withLock { $0 = newReplica }
+  }
+
+  public func publicClockFloor() async throws(StoreError) -> HLCTimestamp? {
+    try await reading { db in try KernelRow.load(db).rebuildFloor }
+  }
+
+  func observe(_ remote: HLCTimestamp) {
+    clock.withLock { $0 }?.observe(remote)
   }
 
   private func clock(for row: KernelRow) -> HybridLogicalClock {
@@ -127,7 +165,7 @@ public final class VaultStore: Sendable {
     return clock
   }
 
-  private func reading<T: Sendable>(_ body: @Sendable (Database) throws -> T) async throws(StoreError) -> T {
+  func reading<T: Sendable>(_ body: @Sendable (Database) throws -> T) async throws(StoreError) -> T {
     do {
       return try await writer.read(body)
     } catch {
@@ -135,7 +173,7 @@ public final class VaultStore: Sendable {
     }
   }
 
-  private func writing<T: Sendable>(_ body: @Sendable (Database) throws -> T) async throws(StoreError) -> T {
+  func writing<T: Sendable>(_ body: @Sendable (Database) throws -> T) async throws(StoreError) -> T {
     do {
       return try await writer.write(body)
     } catch {

@@ -91,7 +91,7 @@ struct StorePersistenceTests {
     #expect(first.storedRegistryVersion == Fixture.v1.version)
     let upgraded = try VaultStore.open(.file(directory.storeURL), registry: Fixture.v2)
     #expect(upgraded.storedRegistryVersion == Fixture.v1.version)
-    #expect(try await version(upgraded) == Fixture.v1.version)
+    #expect(try await version(upgraded) == Fixture.v2.version)
     _ = try await upgraded.write { transaction in try transaction.database.execute(sql: "UPDATE kernel_state SET registry_version = ?", arguments: [Fixture.v2.version]) }
     let error = #expect(throws: StoreError.self) { try VaultStore.open(.file(directory.storeURL), registry: Fixture.v1) }
     #expect(error?.code == "store.registry_downgrade")

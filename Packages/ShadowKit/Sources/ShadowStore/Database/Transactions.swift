@@ -10,12 +10,17 @@ public struct ReadTransaction {
   public func state(of ref: EntityRef, scope: StateScope = .vault) throws(StoreError) -> EntityState? {
     try StateLoader(registry: registry).entity(ref, scope: scope, in: database)
   }
+
+  public func states(ofKind kind: EntityKind, scope: StateScope = .vault) throws(StoreError) -> [(ref: EntityRef, state: EntityState)] {
+    try StateLoader(registry: registry).entities(ofKind: kind, scope: scope, in: database)
+  }
 }
 
 public struct WriteTransaction: ~Copyable {
   /// For the caller's own tables in the same transaction; the kernel's tables must never be written through it.
   public let database: Database
   public private(set) var changes: [ChangeRecord] = []
+  private(set) var touched = TouchedRefs()
 
   let registry: SchemaRegistry
   let clock: HybridLogicalClock
@@ -30,6 +35,10 @@ public struct WriteTransaction: ~Copyable {
 
   public func state(of ref: EntityRef, scope: StateScope = .vault) throws(StoreError) -> EntityState? {
     try StateLoader(registry: registry).entity(ref, scope: scope, in: database)
+  }
+
+  public func states(ofKind kind: EntityKind, scope: StateScope = .vault) throws(StoreError) -> [(ref: EntityRef, state: EntityState)] {
+    try StateLoader(registry: registry).entities(ofKind: kind, scope: scope, in: database)
   }
 
   public mutating func set(_ ref: EntityRef, _ fields: [String: JSONValue]) throws(StoreError) -> ChangeRecord {
@@ -79,12 +88,14 @@ public struct WriteTransaction: ~Copyable {
     return try commit(.revise(id: ids.next(), clock: clock.now(), schema: registry.version, entity: ref.kind, key: ref.key, item: item, head: head, marks: marks))
   }
 
-  func apply(_ record: ChangeRecord, scope: StateScope = .vault) throws(StoreError) {
+  mutating func apply(_ record: ChangeRecord, scope: StateScope = .vault) throws(StoreError) {
     let merge = MergeRoutine(registry: registry)
+    var declared = false
     try savepoint {
-      try merge.apply(record, scope: scope, in: database)
+      declared = try merge.apply(record, scope: scope, in: database)
       try KernelRow.observe(record.clock, ownReplica: clock.replica, in: database)
     }
+    if declared { touched.insert(record.ref, scope: scope) }
     clock.observe(record.clock)
   }
 
@@ -127,6 +138,7 @@ public struct WriteTransaction: ~Copyable {
       try database.storeExecute("INSERT INTO change_log (seq, line) VALUES (?, ?)", [try KernelRow.takeSequence(database), line])
     }
     changes.append(record)
+    for scope in StateScope.allCases { touched.insert(record.ref, scope: scope) }
     return record
   }
 

@@ -156,6 +156,8 @@ enum LocalOperation: Sendable {
       }
     } catch StoreError.entityPurged {
       return nil
+    } catch StoreError.unknownRevision {
+      return nil
     } catch StoreError.invalidChange(let reason) where reason.hasSuffix("already holds an item") {
       return nil
     }

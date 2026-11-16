@@ -16,12 +16,18 @@ struct StateLoader {
     }
   }
 
+  private enum Selection {
+    case scope
+    case kind(EntityKind)
+    case entity(EntityRef)
+  }
+
   let registry: SchemaRegistry
 
   func state(_ scope: StateScope, in db: Database) throws(StoreError) -> VaultState {
     try StoreError.wrapping {
       var state = VaultState()
-      for (ref, parts) in try parts(scope, nil, in: db) { state.entities[ref] = try entity(ref, parts) }
+      for (ref, parts) in try parts(scope, .scope, in: db) { state.entities[ref] = try entity(ref, parts) }
       for row in try db.storeFetchAll("SELECT bytes, kind, key, role FROM foreign_record WHERE scope = ?", [scope.rawValue]) {
         let bytes: Data = try row.stored("bytes")
         state.foreignRecords[bytes] = try foreign(row, bytes)
@@ -33,12 +39,24 @@ struct StateLoader {
   }
 
   func entity(_ ref: EntityRef, scope: StateScope, in db: Database) throws(StoreError) -> EntityState? {
-    try StoreError.wrapping { try parts(scope, ref, in: db)[ref].map { try entity(ref, $0) } }
+    try StoreError.wrapping { try parts(scope, .entity(ref), in: db)[ref].map { try entity(ref, $0) } }
   }
 
-  private func parts(_ scope: StateScope, _ ref: EntityRef?, in db: Database) throws -> [EntityRef: Parts] {
-    let filter = ref == nil ? "" : " AND kind = ? AND key = ?"
-    let arguments: StatementArguments = ref.map { [scope.rawValue, $0.kind.rawValue, $0.key.rawValue] } ?? [scope.rawValue]
+  func entities(ofKind kind: EntityKind, scope: StateScope, in db: Database) throws(StoreError) -> [(ref: EntityRef, state: EntityState)] {
+    guard registry[kind] != nil else { return [] }
+    return try StoreError.wrapping {
+      try parts(scope, .kind(kind), in: db).sorted { $0.key < $1.key }.map { ref, parts in (ref, try entity(ref, parts)) }
+    }
+  }
+
+  private func parts(_ scope: StateScope, _ selection: Selection, in db: Database) throws -> [EntityRef: Parts] {
+    let filter: String
+    let arguments: StatementArguments
+    switch selection {
+    case .scope: (filter, arguments) = ("", [scope.rawValue])
+    case .kind(let kind): (filter, arguments) = (" AND kind = ?", [scope.rawValue, kind.rawValue])
+    case .entity(let ref): (filter, arguments) = (" AND kind = ? AND key = ?", [scope.rawValue, ref.kind.rawValue, ref.key.rawValue])
+    }
     var parts = [EntityRef: Parts]()
     func rows(_ columns: String, _ table: String, _ body: (Row, inout Parts) throws -> Void) throws {
       for row in try db.storeFetchAll("SELECT kind, key, \(columns) FROM \(table) WHERE scope = ?\(filter)", arguments) {

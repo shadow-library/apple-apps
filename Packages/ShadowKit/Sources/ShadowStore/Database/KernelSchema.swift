@@ -29,7 +29,8 @@ enum KernelSchema {
           clock TEXT,
           observed TEXT,
           acknowledged TEXT,
-          registry_version INTEGER NOT NULL
+          registry_version INTEGER NOT NULL,
+          registry BLOB NOT NULL
         ) STRICT;
         CREATE TABLE field_state (
           scope INTEGER NOT NULL, kind TEXT NOT NULL, key TEXT NOT NULL, slot INTEGER NOT NULL, name BLOB NOT NULL, value BLOB NOT NULL, clock TEXT NOT NULL,
@@ -77,21 +78,34 @@ struct KernelRow {
   var observed: HLCTimestamp?
   var acknowledged: HLCTimestamp?
   var registryVersion: Int
+  var registry: Data
 
   var rebuildFloor: HLCTimestamp? {
     [observed, acknowledged].compactMap(\.self).max()
   }
 
-  static func prepare(_ db: Database, registryVersion: Int, mint: () -> ReplicaID) throws -> KernelRow {
+  static func prepare(_ db: Database, registry: SchemaRegistry, mint: () -> ReplicaID) throws -> KernelRow {
     if let row = try loadIfPresent(db) {
-      guard row.registryVersion <= registryVersion else { throw StoreError.registryDowngrade(stored: row.registryVersion, current: registryVersion) }
+      guard row.registryVersion <= registry.version else { throw StoreError.registryDowngrade(stored: row.registryVersion, current: registry.version) }
       return row
     }
-    let row = KernelRow(replica: mint(), nextSequence: 1, clock: nil, observed: nil, acknowledged: nil, registryVersion: registryVersion)
+    let row = KernelRow(
+      replica: mint(), nextSequence: 1, clock: nil, observed: nil, acknowledged: nil, registryVersion: registry.version, registry: registry.canonicalDescription())
     try db.execute(
-      sql: "INSERT INTO kernel_state (id, replica, next_sequence, clock, observed, acknowledged, registry_version) VALUES (1, ?, 1, NULL, NULL, NULL, ?)",
-      arguments: [row.replica.description, Int64(registryVersion)])
+      sql: "INSERT INTO kernel_state (id, replica, next_sequence, clock, observed, acknowledged, registry_version, registry) VALUES (1, ?, 1, NULL, NULL, NULL, ?, ?)",
+      arguments: [row.replica.description, Int64(registry.version), row.registry])
     return row
+  }
+
+  func storedRegistry() throws(StoreError) -> SchemaRegistry {
+    let decoded: SchemaRegistry
+    do {
+      decoded = try SchemaRegistry(canonicalDescription: registry)
+    } catch {
+      throw .corruptStore("the stored registry description is malformed")
+    }
+    guard decoded.version == registryVersion else { throw .corruptStore("the stored registry description does not match the stored version") }
+    return decoded
   }
 
   static func load(_ db: Database) throws -> KernelRow {
@@ -115,6 +129,10 @@ struct KernelRow {
     try db.storeExecute("UPDATE kernel_state SET observed = ? WHERE id = 1 AND (observed IS NULL OR observed < ?)", [clock.description, clock.description])
   }
 
+  static func saveRegistry(_ registry: SchemaRegistry, in db: Database) throws {
+    try db.storeExecute("UPDATE kernel_state SET registry_version = ?, registry = ? WHERE id = 1", [Int64(registry.version), registry.canonicalDescription()])
+  }
+
   static func acknowledge(_ clock: HLCTimestamp, in db: Database) throws {
     try db.storeExecute("UPDATE kernel_state SET acknowledged = ? WHERE id = 1 AND (acknowledged IS NULL OR acknowledged < ?)", [clock.description, clock.description])
   }
@@ -124,7 +142,7 @@ struct KernelRow {
   }
 
   private static func loadIfPresent(_ db: Database) throws -> KernelRow? {
-    guard let row = try db.storeFetchOne("SELECT replica, next_sequence, clock, observed, acknowledged, registry_version FROM kernel_state WHERE id = 1", []) else {
+    guard let row = try db.storeFetchOne("SELECT replica, next_sequence, clock, observed, acknowledged, registry_version, registry FROM kernel_state WHERE id = 1", []) else {
       return nil
     }
     guard let replica = ReplicaID(try row.stored("replica")) else { throw StoreError.corruptStore("the replica id is malformed") }
@@ -133,10 +151,11 @@ struct KernelRow {
     let observed: String? = try row.stored("observed")
     let acknowledged: String? = try row.stored("acknowledged")
     let registryVersion: Int64 = try row.stored("registry_version")
+    let registry: Data = try row.stored("registry")
     guard let version = Int(exactly: registryVersion) else { throw StoreError.corruptStore("the registry version is out of range") }
     return KernelRow(
       replica: replica, nextSequence: nextSequence, clock: try clock.map { text throws(StoreError) in try Stored.clock(text) },
       observed: try observed.map { text throws(StoreError) in try Stored.clock(text) }, acknowledged: try acknowledged.map { text throws(StoreError) in try Stored.clock(text) },
-      registryVersion: version)
+      registryVersion: version, registry: registry)
   }
 }

@@ -33,13 +33,14 @@ enum Fixture {
   static let vMid = registry(version: 2, noteFields: ["pinned": .register], status: statusOrder, marks: ["approved"], tag: false)
   static let v2 = registry(version: 3, noteFields: ["pinned": .register], status: extendedStatusOrder, marks: ["approved", "reviewed"], tag: true)
   static let vInsert = registry(version: 4, noteFields: ["pinned": .register], status: insertedStatusOrder, marks: ["approved", "reviewed"], tag: true)
+  static let vStrict = registry(version: 5, noteFields: ["pinned": .register], status: insertedStatusOrder, marks: ["approved", "reviewed"], tag: true, draftRetention: 2)
 
-  static func registry(version: Int, noteFields: [String: FieldRule], status: [String], marks: [String], tag: Bool) -> SchemaRegistry {
+  static func registry(version: Int, noteFields: [String: FieldRule], status: [String], marks: [String], tag: Bool, draftRetention: Int = 3) -> SchemaRegistry {
     let noteShape = EntityShape.record(fields: noteFields.merging(["title": .register, "status": .monotone(order: status), "origin": .firstWriterWins]) { $1 })
     var entities = [
       EntitySchema(kind: note, shape: noteShape, syncClass: .general),
       EntitySchema(kind: message, shape: .appended, syncClass: .general),
-      EntitySchema(kind: draft, shape: .revisioned(fields: ["title": .register], marks: marks, retention: .keepNewest(3)), syncClass: .general),
+      EntitySchema(kind: draft, shape: .revisioned(fields: ["title": .register], marks: marks, retention: .keepNewest(draftRetention)), syncClass: .general),
       EntitySchema(kind: outline, shape: .revisioned(fields: [:], marks: [], retention: .keepNewest(1)), syncClass: .general),
     ]
     if tag { entities.append(EntitySchema(kind: self.tag, shape: .record(fields: ["label": .register]), syncClass: .general)) }

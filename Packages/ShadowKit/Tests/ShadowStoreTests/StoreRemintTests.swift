@@ -80,7 +80,7 @@ struct StoreRemintTests {
       try await store.remint(to: replica, mode: .keepState)
       try #require(store.replica == replica)
       try #require(try await store.loadState(.vault).digest == before.vault)
-      try #require(try await store.loadState(.own).digest == Fixture.state(pending, Fixture.v2).digest)
+      try #require(try await store.loadState(.own).digest == Fixture.state(pending, Fixture.v2).retained(registry: Fixture.v2).digest)
       try #require(try await store.allPending == StoreFixture.logged(pending))
       let next = try await store.write { transaction in try transaction.set(fresh, ["title": "next"]) }
       try #require(next.clock.replica == replica)
@@ -115,7 +115,7 @@ struct StoreRemintTests {
         try #require(acknowledged.map { new.clock > $0 } ?? (new.clock < old.clock))
       }
       try #require(zip(rebuilt, rebuilt.dropFirst()).allSatisfy { $0.clock < $1.clock })
-      let expected = Fixture.state(rebuilt, Fixture.v2).digest
+      let expected = Fixture.state(rebuilt, Fixture.v2).retained(registry: Fixture.v2).digest
       try #require(try await store.loadState(.vault).digest == expected)
       try #require(try await store.loadState(.own).digest == expected)
       try #require(try await Snapshot(store).projected == 0)

@@ -31,7 +31,7 @@ private func opaqueLines(_ generator: inout SeededGenerator) -> [Data] {
 private func reference(_ changes: [ChangeRecord], _ lines: [Data], _ registry: SchemaRegistry) -> VaultState {
   var state = Fixture.state(changes, registry)
   for line in lines { state.keepOpaque(line) }
-  return state
+  return state.retained(registry: registry)
 }
 
 @Suite("VaultStore equivalence with the reference model")

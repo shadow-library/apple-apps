@@ -22,7 +22,7 @@ struct StoreLocalWriteTests {
         records += result.records
         known = result.known
       }
-      let expected = Fixture.state(records, Fixture.v2)
+      let expected = Fixture.state(records, Fixture.v2).retained(registry: Fixture.v2)
       try #require(try await store.loadState(.vault) == expected)
       try #require(try await store.loadState(.vault).digest == expected.digest)
       try #require(try await store.loadState(.own).digest == expected.digest)
@@ -61,7 +61,7 @@ struct StoreLocalWriteTests {
     guard case .revisioned(let state) = try await store.read({ try $0.state(of: draft) }) else { throw StoreTestFailure.unexpectedState }
     #expect(state.headRevision == orphanID)
     #expect(state[mark: "approved"]?.value == .string(secondID))
-    #expect(state.revisions.count == 4)
+    #expect(state.revisions.count == 3 && state.revisions[ExactString(firstID)] == nil)
   }
 
   @Test("should drop a prefix of the log without ever reusing a sequence number")
@@ -105,8 +105,8 @@ struct StoreLocalWriteTests {
           known = result.known
         }
       }
-      try #require(try await store.loadState(.vault).digest == Fixture.state(local + remote, Fixture.v2).digest)
-      try #require(try await store.loadState(.own).digest == Fixture.state(local, Fixture.v2).digest)
+      try #require(try await store.loadState(.vault).digest == Fixture.state(local + remote, Fixture.v2).retained(registry: Fixture.v2).digest)
+      try #require(try await store.loadState(.own).digest == Fixture.state(local, Fixture.v2).retained(registry: Fixture.v2).digest)
       try #require(try await store.allPending == StoreFixture.logged(local))
     }
   }
