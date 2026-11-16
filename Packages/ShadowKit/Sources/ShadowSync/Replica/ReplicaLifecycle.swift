@@ -124,10 +124,13 @@ public struct ReplicaLifecycle: Sendable {
     return ReplicaSelfCheck.evaluate(ReplicaSelfCheckInput(replica: replica, marker: status, isRetired: retired, listed: listing, history: history))
   }
 
-  public func remint(reason: RemintReason, mode: RemintMode = .keepState) async throws(ReplicaLifecycleError) -> ReplicaID {
+  /// `also` runs in the transaction that moves the store to the new id.
+  public func remint(
+    reason: RemintReason, mode: RemintMode = .keepState, also: @escaping @Sendable (Database) throws -> Void = { _ in }
+  ) async throws(ReplicaLifecycleError) -> ReplicaID {
     let phase = try await currentPhase()
     guard case .claimed = phase else { throw .bootstrapRequired }
-    return try await move(reason: reason, mode: mode, from: phase)
+    return try await move(reason: reason, mode: mode, from: phase, also: also)
   }
 
   public func retire(_ other: ReplicaID, successor: ReplicaID? = nil) async throws(ReplicaLifecycleError) {
@@ -183,7 +186,9 @@ public struct ReplicaLifecycle: Sendable {
     }
   }
 
-  private func move(reason: RemintReason, mode: RemintMode, from start: ReplicaLifecyclePhase) async throws(ReplicaLifecycleError) -> ReplicaID {
+  private func move(
+    reason: RemintReason, mode: RemintMode, from start: ReplicaLifecyclePhase, also: @escaping @Sendable (Database) throws -> Void = { _ in }
+  ) async throws(ReplicaLifecycleError) -> ReplicaID {
     let current = store.replica
     let retiring: ReplicaID
     switch start {
@@ -210,7 +215,7 @@ public struct ReplicaLifecycle: Sendable {
       token = replica
     }
     try checkpoint(.remintPrepared)
-    try await transfer(to: replica, mode: mode, expecting: phase, recording: .moving(replica: replica, retiring: retiring, token: token, reason: reason))
+    try await transfer(to: replica, mode: mode, expecting: phase, recording: .moving(replica: replica, retiring: retiring, token: token, reason: reason), also: also)
     try checkpoint(.remintMoved)
     try await finishMove(retiring: retiring)
     return replica
@@ -229,12 +234,17 @@ public struct ReplicaLifecycle: Sendable {
   }
 
   private func transfer(
-    to replica: ReplicaID, mode: RemintMode, expecting phase: ReplicaLifecyclePhase, recording next: ReplicaLifecyclePhase
+    to replica: ReplicaID,
+    mode: RemintMode,
+    expecting phase: ReplicaLifecyclePhase,
+    recording next: ReplicaLifecyclePhase,
+    also: @escaping @Sendable (Database) throws -> Void = { _ in }
   ) async throws(ReplicaLifecycleError) {
     do {
       try await store.remint(to: replica, mode: mode) { db in
         guard try ReplicaLifecyclePhase.load(db) == phase else { throw ReplicaLifecycleError.concurrentChange }
         try next.save(db)
+        try also(db)
       }
     } catch {
       throw ReplicaLifecycleError(converting: error)

@@ -34,6 +34,7 @@ public enum RemintReason: Sendable, Equatable {
   case unknownSegment(StreamPoint)
   case unknownBase(StreamPoint)
   case unknownObject(ObjectKey)
+  case clockCorrected
 }
 
 public enum ReplicaSelfCheckVerdict: Sendable, Equatable {

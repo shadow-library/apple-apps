@@ -12,7 +12,7 @@ public final class VaultStore: Sendable {
   let settlement: Settlement
 
   private let writer: any DatabaseWriter
-  private let wallClock: @Sendable () -> Date
+  public let wallClock: @Sendable () -> Date
   private let ids: UUIDv7Generator
   private let clock: Mutex<HybridLogicalClock?>
   private let currentReplica: Mutex<ReplicaID>

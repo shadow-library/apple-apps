@@ -91,6 +91,7 @@ extension RemintReason {
       case .unknownSegment(let point): ["kind": "unknown-segment", "last": .int(point.last), "tag": .string(point.tag.description)]
       case .unknownBase(let point): ["kind": "unknown-base", "last": .int(point.last), "tag": .string(point.tag.description)]
       case .unknownObject(let key): ["kind": "unknown-object", "key": .string(key.rawValue)]
+      case .clockCorrected: ["kind": "clock-corrected"]
       }
     return String(decoding: CanonicalJSON.encode(.object(members)), as: UTF8.self)
   }
@@ -101,6 +102,7 @@ extension RemintReason {
     switch kind {
     case "marker-missing": self = .markerMissing
     case "retired": self = .retired
+    case "clock-corrected": self = .clockCorrected
     case "marker-other":
       guard let replica = members["replica"]?.stringValue.flatMap(ReplicaID.init) else { return nil }
       self = .markerNamesOther(replica)
