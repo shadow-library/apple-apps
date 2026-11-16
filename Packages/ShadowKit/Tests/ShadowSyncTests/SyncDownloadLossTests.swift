@@ -212,15 +212,28 @@ struct SyncDownloadLaterTests {
     hiding.fail(broken, with: .underlying("checksum mismatch"))
     let gets = hiding.gets(of: broken)
 
-    for _ in 0..<(2 * SyncConfiguration().unreadableFileAttempts) {
+    var fetchedOn: [Int] = []
+    for call in 0..<11 {
+      let before = hiding.gets(of: broken)
       let outcome = try await b.engine.download()
       #expect(outcome.held == [fromA[0]: .unavailable])
+      #expect(outcome.applied == (call == 0 ? fromC : []))
+      if hiding.gets(of: broken) > before { fetchedOn.append(call) }
     }
-    #expect(hiding.gets(of: broken) == gets + 2 * SyncConfiguration().unreadableFileAttempts)
+    #expect(fetchedOn == [0, 1, 2, 10])
+    #expect(hiding.gets(of: broken) == gets + 4)
+    #expect(try await b.appliedFiles()[c.store.replica]?.segments == Set(fromC.map(\.point)))
 
     hiding.fail(broken, with: nil)
-    #expect(try await b.engine.download().applied == fromA)
-    #expect(try await b.appliedFiles()[c.store.replica]?.segments == Set(fromC.map(\.point)))
+    var calls = 0
+    var applied: [SyncFileID] = []
+    while applied.isEmpty, calls <= SyncDownloadSession.unavailableRetryInterval {
+      calls += 1
+      applied = try await b.engine.download().applied
+    }
+    #expect(applied == fromA)
+    #expect(calls == SyncDownloadSession.unavailableRetryInterval)
+    #expect(hiding.gets(of: broken) == gets + 5)
     try await peers.settle()
     let digests = try await [a.digest(), b.digest(), c.digest()]
     #expect(Set(digests).count == 1)

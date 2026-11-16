@@ -46,6 +46,13 @@ enum SyncListing {
     for replica in replicas.keys { replicas[replica]?.segments.sort { ($0.first, $0.point.tag) < ($1.first, $1.point.tag) } }
     return replicas
   }
+
+  static func ids(_ listing: [ReplicaID: SyncListedReplica]) -> Set<SyncFileID> {
+    Set(
+      listing.flatMap { replica, files in
+        files.segments.map { SyncFileID(replica: replica, kind: .segment, point: $0.point) } + files.bases.keys.map { SyncFileID(replica: replica, kind: .base, point: $0) }
+      })
+  }
 }
 
 struct SyncDownloadContext: Sendable {
@@ -71,6 +78,8 @@ enum SyncPassResult: Sendable, Equatable {
 /// One `download()` call; the caches outlive a re-mint within the call so no file is fetched twice to fail twice.
 struct SyncDownloadSession {
   static let unlistedCallsKept = 20
+  static let unavailableCallsRetried = 3
+  static let unavailableRetryInterval = 8
 
   private enum Step {
     case applied
@@ -131,13 +140,10 @@ struct SyncDownloadSession {
     reminted = true
   }
 
-  mutating func run(_ listing: [ReplicaID: SyncListedReplica]) async throws(SyncError) -> SyncPassResult {
-    own = context.store.replica
+  mutating func run(_ listing: [ReplicaID: SyncListedReplica], as replica: ReplicaID) async throws(SyncError) -> SyncPassResult {
+    own = replica
     held = [:]
-    listed = Set(
-      listing.flatMap { replica, files in
-        files.segments.map { SyncFileID(replica: replica, kind: .segment, point: $0.point) } + files.bases.keys.map { SyncFileID(replica: replica, kind: .base, point: $0) }
-      })
+    listed = SyncListing.ids(listing)
     let replica = own
     (files, head) = try await read { db in (try SyncAppliedTable.load(db), try ReplicaHistory.head(of: replica, in: db)) }
     let order = listing.keys.sorted()
@@ -152,17 +158,29 @@ struct SyncDownloadSession {
         }
       }
       if progressed { continue }
-      let overdue = held.values.filter { !forcing.contains($0.id) && waits($0) >= max(context.configuration.dependencyWaitCalls, 1) }
+      let overdue = held.values.filter { file in
+        guard case .waitingForDependency = file.reason else { return false }
+        return !forcing.contains(file.id) && waits(file) >= max(context.configuration.dependencyWaitCalls, 1)
+      }
       guard !overdue.isEmpty else { return .finished }
       forcing.formUnion(overdue.map(\.id))
     }
   }
 
-  /// Consecutive calls, this one included, that the file has waited for the same replica.
+  /// Consecutive calls, this one included, that the file has waited for the same replica or been unavailable at the same size.
   private func waits(_ file: SyncHeldFile) -> Int {
-    guard case .waitingForDependency(let replica) = file.reason else { return 0 }
-    guard let row = previous[file.id], row.reason == .waitingForDependency(replica) else { return 1 }
-    return row.waits + 1
+    switch file.reason {
+    case .waitingForDependency, .unavailable:
+      guard let row = previous[file.id], row.reason == file.reason, file.reason != .unavailable || row.size == file.size else { return 1 }
+      return row.waits + 1
+    default:
+      return 0
+    }
+  }
+
+  /// Every call for the first failures in a row, then every `unavailableRetryInterval`th call.
+  static func isRetryDue(afterUnavailableCalls calls: Int) -> Bool {
+    calls < unavailableCallsRetried || (calls - unavailableCallsRetried + 1) % unavailableRetryInterval == 0
   }
 
   private mutating func advance(_ replica: ReplicaID, _ listed: SyncListedReplica) async throws(SyncError) -> Step {
@@ -301,7 +319,9 @@ struct SyncDownloadSession {
   private mutating func apply(_ lines: [Data], id: SyncFileID, first: Int64?, size: Int) async throws(SyncError) -> Step {
     let millis = context.millis
     do {
+      let own = own
       _ = try await context.store.applyRemote(lines, notAfter: context.limit) { db in
+        try SyncReplicaGuard.require(own, in: db)
         try SyncAppliedTable.record(id.point, first: first, isBase: id.kind == .base, replica: id.replica, at: millis, in: db)
         try SyncHeldTable.remove(id, in: db)
       }
@@ -335,6 +355,7 @@ struct SyncDownloadSession {
     case .rejected: stillBlocked = true
     case .missingKey(let key): stillBlocked = context.ring.key(key) == nil
     case .clockAhead: stillBlocked = row.clock.map { $0 > context.limit } ?? false
+    case .unavailable: stillBlocked = !Self.isRetryDue(afterUnavailableCalls: row.waits)
     default: stillBlocked = false
     }
     guard stillBlocked else { return false }
@@ -391,7 +412,11 @@ struct SyncDownloadSession {
 
   private func write(_ body: @Sendable (Database) throws -> Void) async throws(SyncError) {
     do {
-      try await context.store.write { try body($0.database) }
+      let own = own
+      try await context.store.write { transaction in
+        try SyncReplicaGuard.require(own, in: transaction.database)
+        try body(transaction.database)
+      }
     } catch {
       throw SyncError(converting: error)
     }

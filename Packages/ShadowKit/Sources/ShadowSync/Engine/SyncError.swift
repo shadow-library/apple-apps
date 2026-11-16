@@ -12,9 +12,12 @@ public enum SyncError: ShadowError {
   case keyRing(KeyRingError)
   case syncClassRefused(kind: EntityKind, syncClass: SyncClass?)
   case changeTooLarge(sequence: Int64, limit: Int)
+  case baseTooLarge(limit: Int)
   case remintLimitReached(Int)
   case appUpdateRequired(minimumSchema: Int, current: Int)
   case storeClockUntrusted(skew: Duration)
+  /// The database moved to another replica id during a call; the engine changes nothing under the new id and reports the call as postponed.
+  case replicaChanged
   case corruptState(String)
 
   public var code: String {
@@ -28,9 +31,11 @@ public enum SyncError: ShadowError {
     case .keyRing(let error): error.code
     case .syncClassRefused: "sync.sync-class-refused"
     case .changeTooLarge: "sync.change-too-large"
+    case .baseTooLarge: "sync.base-too-large"
     case .remintLimitReached: "sync.remint-limit-reached"
     case .appUpdateRequired: "sync.app-update-required"
     case .storeClockUntrusted: "sync.store-clock-untrusted"
+    case .replicaChanged: "sync.replica-changed"
     case .corruptState: "sync.corrupt-state"
     }
   }
@@ -47,10 +52,12 @@ public enum SyncError: ShadowError {
     case .syncClassRefused(let kind, let syncClass):
       "Changes to \(kind) (\(syncClass?.rawValue ?? "undeclared") class) may not be stored with this provider."
     case .changeTooLarge(let sequence, let limit): "Change \(sequence) does not fit in a file of at most \(limit) bytes."
+    case .baseTooLarge(let limit): "A record of this device's base does not fit in a part of at most \(limit) bytes."
     case .remintLimitReached(let count): "The replica was re-minted \(count) times in one upload and still could not pass its checks."
     case .storeClockUntrusted(let skew): "The local store stamps changes with a clock \(skew) away from trusted time, so nothing is uploaded."
     case .appUpdateRequired(let minimum, let current):
       "The vault needs schema \(minimum) but this app writes schema \(current). Update the app to keep syncing; unsent changes are kept."
+    case .replicaChanged: "This device's sync identity changed during the call, so the call stopped without changes."
     case .corruptState(let reason): "The sync bookkeeping is corrupt: \(reason)."
     }
   }

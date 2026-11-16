@@ -72,7 +72,7 @@ public struct ReplicaLifecycle: Sendable {
   }
 
   public static var migrations: [StoreMigration] {
-    [ReplicaHistory.migration, ReplicaLifecyclePhase.migration]
+    [ReplicaHistory.migration, ReplicaLifecyclePhase.migration, ReplicaHistory.completionMigration]
   }
 
   public func bootstrap() async throws(ReplicaLifecycleError) -> ReplicaBootstrap {

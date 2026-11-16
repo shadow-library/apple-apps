@@ -12,6 +12,13 @@ public struct SyncConfiguration: Sendable, Equatable {
   public var unreadableFileAttempts: Int
   /// Calls a segment waits for a dependency before it is applied anyway: a dependency may name a replica whose files were removed after another replica adopted it, and the join makes applying it safe.
   public var dependencyWaitCalls: Int
+  /// Segments uploaded at least this long ago count towards compaction and may be deleted once a base covers them.
+  public var compactionAge: Duration
+  public var compactionBytes: Int
+  public var compactionFiles: Int
+  /// The least time between two bases of one replica: every other device downloads each base once.
+  public var compactionInterval: Duration
+  public var basePartBytes: Int
 
   public init(
     maximumSegmentBytes: Int = 512 * 1024,
@@ -20,7 +27,12 @@ public struct SyncConfiguration: Sendable, Equatable {
     futureLimit: Duration = .seconds(24 * 60 * 60),
     uploadPassBytes: Int? = nil,
     unreadableFileAttempts: Int = 5,
-    dependencyWaitCalls: Int = 3
+    dependencyWaitCalls: Int = 3,
+    compactionAge: Duration = .seconds(30 * 24 * 60 * 60),
+    compactionBytes: Int = 8 * 1024 * 1024,
+    compactionFiles: Int = 500,
+    compactionInterval: Duration = .seconds(30 * 24 * 60 * 60),
+    basePartBytes: Int = BaseCodec.defaultPartPayloadBytes
   ) {
     self.maximumSegmentBytes = maximumSegmentBytes
     self.maximumSegmentLines = maximumSegmentLines
@@ -29,6 +41,11 @@ public struct SyncConfiguration: Sendable, Equatable {
     self.uploadPassBytes = uploadPassBytes ?? 8 * maximumSegmentBytes
     self.unreadableFileAttempts = unreadableFileAttempts
     self.dependencyWaitCalls = dependencyWaitCalls
+    self.compactionAge = compactionAge
+    self.compactionBytes = compactionBytes
+    self.compactionFiles = compactionFiles
+    self.compactionInterval = compactionInterval
+    self.basePartBytes = basePartBytes
   }
 }
 
@@ -37,6 +54,14 @@ public enum SyncUploadOutcome: Sendable, Equatable {
   case uploaded([StreamPoint])
   case postponed
   case awaitingKey(floor: KeyID?)
+}
+
+public enum SyncCompactionOutcome: Sendable, Equatable {
+  case notNeeded
+  case compacted(base: StreamPoint, deletedSegments: Int, deletedBases: Int)
+  /// No new base this call, because none was needed or one cannot be made yet, but files the current base covers were deleted.
+  case cleaned(deletedSegments: Int, deletedBases: Int)
+  case postponed
 }
 
 public enum SyncDeviceClock: Sendable, Equatable {

@@ -16,6 +16,20 @@ struct SyncPendingChange: Sendable {
   let record: ChangeRecord
 }
 
+struct SyncSettledUploads: Sendable {
+  let replica: ReplicaID
+  let key: VaultKey
+  let listing: [StorageObject]
+  let uploaded: [StreamPoint]
+  let reminted: Bool
+}
+
+enum SyncSettleResult: Sendable {
+  case settled(SyncSettledUploads)
+  case postponed
+  case awaitingKey(floor: KeyID?)
+}
+
 public actor SyncEngine {
   static let maximumRemintsPerUpload = 3
   static let highestReplica = ReplicaID(UUID(uuid: (0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF)))
@@ -36,6 +50,7 @@ public actor SyncEngine {
   private let wallClock: @Sendable () -> Date
   private let checkpoint: @Sendable (SyncUploadStep) throws(SyncError) -> Void
   private let downloadCheckpoint: @Sendable (SyncDownloadStep) throws(SyncError) -> Void
+  private let compactionCheckpoint: @Sendable (SyncCompactionStep) async throws(SyncError) -> Void
   private let publicFloor: @Sendable () async throws(SyncError) -> HLCTimestamp?
   private var readiness = Readiness.notStarted
   private var unsupportedFiles: [SyncFileID: Int] = [:]
@@ -79,7 +94,8 @@ public actor SyncEngine {
     wallClock: @escaping @Sendable () -> Date,
     publicFloor: @escaping @Sendable () async throws(SyncError) -> HLCTimestamp?,
     checkpoint: @escaping @Sendable (SyncUploadStep) throws(SyncError) -> Void,
-    downloadCheckpoint: @escaping @Sendable (SyncDownloadStep) throws(SyncError) -> Void = { _ throws(SyncError) in }
+    downloadCheckpoint: @escaping @Sendable (SyncDownloadStep) throws(SyncError) -> Void = { _ throws(SyncError) in },
+    compactionCheckpoint: @escaping @Sendable (SyncCompactionStep) async throws(SyncError) -> Void = { _ async throws(SyncError) in }
   ) {
     self.store = store
     self.provider = provider
@@ -91,11 +107,12 @@ public actor SyncEngine {
     self.wallClock = wallClock
     self.checkpoint = checkpoint
     self.downloadCheckpoint = downloadCheckpoint
+    self.compactionCheckpoint = compactionCheckpoint
     self.publicFloor = publicFloor
   }
 
   public static var migrations: [StoreMigration] {
-    ReplicaLifecycle.migrations + [SyncEngineSchema.migration, SyncEngineSchema.heldMigration]
+    ReplicaLifecycle.migrations + [SyncEngineSchema.migration, SyncEngineSchema.heldMigration, SyncEngineSchema.compactionMigration]
   }
 
   public static func wallClock(preferring trustedClock: TrustedClock, device: @escaping @Sendable () -> Date = { Date() }) -> @Sendable () -> Date {
@@ -114,54 +131,103 @@ public actor SyncEngine {
   public func upload() async throws(SyncError) -> SyncUploadOutcome {
     await acquire()
     defer { release() }
-    return try await performUpload()
+    return try await postponing(.postponed) { () async throws(SyncError) in try await performUpload() }
   }
 
   public func download() async throws(SyncError) -> SyncDownloadOutcome {
     await acquire()
     defer { release() }
-    return try await performDownload()
+    return try await postponing(Self.postponedDownload) { () async throws(SyncError) in try await performDownload() }
   }
 
   public func sync() async throws(SyncError) -> (download: SyncDownloadOutcome, upload: SyncUploadOutcome) {
     await acquire()
     defer { release() }
-    let download = try await performDownload()
-    return (download, try await performUpload())
+    let download = try await postponing(Self.postponedDownload) { () async throws(SyncError) in try await performDownload() }
+    return (download, try await postponing(.postponed) { () async throws(SyncError) in try await performUpload() })
+  }
+
+  /// Compacts only a replica whose upload side is at rest, after the same self-check, clock check and passes `upload()` runs.
+  public func compact(force: Bool = false) async throws(SyncError) -> SyncCompactionOutcome {
+    await acquire()
+    defer { release() }
+    return try await postponing(.postponed) { () async throws(SyncError) in try await performCompaction(force: force) }
+  }
+
+  private static let postponedDownload = SyncDownloadOutcome(applied: [], held: [:], missingKeys: [:], reminted: false, postponed: true)
+
+  private func postponing<T>(_ postponed: T, _ body: () async throws(SyncError) -> T) async throws(SyncError) -> T {
+    do {
+      return try await body()
+    } catch {
+      guard case .replicaChanged = error else { throw error }
+      return postponed
+    }
+  }
+
+  private func performCompaction(force: Bool) async throws(SyncError) -> SyncCompactionOutcome {
+    guard case .settled(let settled) = try await settleUploads(), !settled.reminted else { return .postponed }
+    let context = SyncCompactionContext(
+      store: store, provider: provider, vault: vault, lifecycle: lifecycle, trustedClock: trustedClock, configuration: configuration, replica: settled.replica,
+      key: settled.key, now: preferredNow, checkpoint: compactionCheckpoint
+    ) { key, replica async throws(SyncError) in try await self.putManifest(sealedWith: key, as: replica) }
+    return try await SyncCompactor(context: context).run(force: force, listing: settled.listing)
   }
 
   private func performUpload() async throws(SyncError) -> SyncUploadOutcome {
+    switch try await settleUploads() {
+    case .postponed: return .postponed
+    case .awaitingKey(let floor): return .awaitingKey(floor: floor)
+    case .settled(let settled): return settled.uploaded.isEmpty ? .nothingToUpload : .uploaded(settled.uploaded)
+    }
+  }
+
+  /// The replica is read once and passed to every step; only this call's own re-mints move it.
+  private func settleUploads() async throws(SyncError) -> SyncSettleResult {
     guard try await resume() else { return .postponed }
-    try await refuseNewerSchema()
-    try await repairDroppedChanges()
-    var uploaded = try await finishInFlight().map { [$0] } ?? []
+    var replica = store.replica
+    try await requireClaimed(replica)
+    try await refuseNewerSchema(as: replica)
+    try await repairDroppedChanges(of: replica)
+    var uploaded = try await finishInFlight(as: replica).map { [$0] } ?? []
     var remints = 0
     var corrected = false
     while true {
-      let floor = try await raisedFloors().key
+      let floor = try await raisedFloors(as: replica).key
       guard let key = try await writingKey(floor: floor) else { return .awaitingKey(floor: floor) }
-      switch try await selfCheck() {
+      let (verdict, listing) = try await selfCheck(of: replica)
+      switch verdict {
       case .postpone:
         return .postponed
       case .remint(let reason):
-        guard try await remint(reason: reason, mode: .keepState, count: &remints) else { return .postponed }
+        guard let next = try await remint(replica, reason: reason, mode: .keepState, count: &remints) else { return .postponed }
+        replica = next
         continue
       case .pass:
         break
       }
-      if provider.capabilities.reportsServerTime { try await putManifest(sealedWith: key) }
+      if provider.capabilities.reportsServerTime { try await putManifest(sealedWith: key, as: replica) }
       if try await isClockCorrectionNeeded(), !corrected {
         corrected = true
-        guard try await remint(reason: .clockCorrected, mode: .rebuild, count: &remints) else { return .postponed }
+        guard let next = try await remint(replica, reason: .clockCorrected, mode: .rebuild, count: &remints) else { return .postponed }
+        replica = next
         continue
       }
-      uploaded += try await sendPending(sealedWith: key)
-      return uploaded.isEmpty ? .nothingToUpload : .uploaded(uploaded)
+      uploaded += try await sendPending(sealedWith: key, as: replica)
+      return .settled(SyncSettledUploads(replica: replica, key: key, listing: listing, uploaded: uploaded, reminted: remints > 0))
     }
   }
 
+  /// Saves the floors it reads only while the database is claimed; before that it only reads them.
   public func minimumSchema() async throws(SyncError) -> Int? {
-    try await raisedFloors().schema
+    do {
+      return try await raisedFloors(as: store.replica).schema
+    } catch {
+      guard case .replicaChanged = error else { throw error }
+      let directory = try await lifecycleCall { () async throws(ReplicaLifecycleError) in try await lifecycle.directory() }
+      let saved = try await read { try SyncFloorTable.load($0.database) }
+      return [saved.schema, directory.minimumSchema].compactMap(\.self).max()
+    }
   }
 
   public func appliedPoints() async throws(SyncError) -> [ReplicaID: StreamPoint] {
@@ -170,8 +236,10 @@ public actor SyncEngine {
   }
 
   private func performDownload() async throws(SyncError) -> SyncDownloadOutcome {
-    guard try await resume() else { return SyncDownloadOutcome(applied: [], held: [:], missingKeys: [:], reminted: false, postponed: true) }
-    try await refuseNewerSchema()
+    guard try await resume() else { return Self.postponedDownload }
+    var replica = store.replica
+    try await requireClaimed(replica)
+    try await refuseNewerSchema(as: replica)
     do {
       try ring.refresh()
     } catch {
@@ -179,22 +247,35 @@ public actor SyncEngine {
     }
     let previous = try await read { try SyncHeldTable.load($0.database) }
     let context = SyncDownloadContext(
-      store: store, provider: provider, vault: vault, ring: ring, configuration: configuration, limit: try readerLimit(), wallClock: wallClock, checkpoint: downloadCheckpoint)
+      store: store, provider: provider, vault: vault, ring: ring, configuration: configuration, limit: try readerLimit(), wallClock: preferredNow,
+      checkpoint: downloadCheckpoint)
     var session = SyncDownloadSession(context: context, previous: previous, unsupported: unsupportedFiles)
     defer { unsupportedFiles = session.unsupported }
     var remints = 0
     var postponed = false
-    while case .collision(let found) = try await session.run(try await listForeignFiles()) {
-      guard try await remint(reason: .replicaCollision(found: found), mode: .keepState, count: &remints) else {
+    var listing = try await listForeignFiles(excluding: replica)
+    while case .collision(let found) = try await session.run(listing, as: replica) {
+      guard let next = try await remint(replica, reason: .replicaCollision(found: found), mode: .keepState, count: &remints) else {
         postponed = true
         break
       }
+      replica = next
       session.noteRemint()
+      listing = try await listForeignFiles(excluding: replica)
     }
     let rows = session.retainedRows
-    try await write { try SyncHeldTable.replace(with: rows, in: $0.database) }
-    if !postponed { _ = try await raisedFloors() }
+    let listed = postponed ? nil : SyncListing.ids(listing)
+    let own = replica
+    try await write(as: own) { transaction in
+      try SyncHeldTable.replace(with: rows, in: transaction.database)
+      if let listed { try SyncAppliedTable.prune(keeping: listed, excluding: own, in: transaction.database) }
+    }
+    if !postponed { _ = try await raisedFloors(as: replica) }
     return session.outcome(postponed: postponed)
+  }
+
+  private func requireClaimed(_ replica: ReplicaID) async throws(SyncError) {
+    try await read { try SyncReplicaGuard.require(replica, in: $0.database) }
   }
 
   /// Returns false when an interrupted re-mint cannot resume because the device marker cannot be read.
@@ -215,14 +296,14 @@ public actor SyncEngine {
     }
   }
 
-  private func refuseNewerSchema() async throws(SyncError) {
-    guard let minimum = try await raisedFloors().schema, minimum > store.registry.version else { return }
+  private func refuseNewerSchema(as replica: ReplicaID) async throws(SyncError) {
+    guard let minimum = try await raisedFloors(as: replica).schema, minimum > store.registry.version else { return }
     throw .appUpdateRequired(minimumSchema: minimum, current: store.registry.version)
   }
 
-  private func listForeignFiles() async throws(SyncError) -> [ReplicaID: SyncListedReplica] {
+  private func listForeignFiles(excluding replica: ReplicaID) async throws(SyncError) -> [ReplicaID: SyncListedReplica] {
     do {
-      return SyncListing.group(try await provider.listAll(prefix: VaultPath.replicasPrefix), excluding: store.replica)
+      return SyncListing.group(try await provider.listAll(prefix: VaultPath.replicasPrefix), excluding: replica)
     } catch {
       throw .storage(error)
     }
@@ -252,18 +333,24 @@ public actor SyncEngine {
     return result
   }
 
-  private func repairDroppedChanges() async throws(SyncError) {
-    let replica = store.replica
+  private func repairDroppedChanges(of replica: ReplicaID) async throws(SyncError) {
     guard let head = try await read({ try ReplicaHistory.head(of: replica, in: $0.database) }) else { return }
     guard let first = try await storeCall({ () async throws(StoreError) in try await store.pendingChanges(limit: 1).first }), first.sequence <= head.last else { return }
-    try await storeCall { () async throws(StoreError) in try await store.dropChanges(through: head.last) }
+    try await dropChanges(through: head.last, of: replica)
+  }
+
+  /// The store offers no hook inside its drop transaction, so the replica is checked just before it; a re-mint in between can still lose the drop's target.
+  private func dropChanges(through sequence: Int64, of replica: ReplicaID) async throws(SyncError) {
+    try await requireClaimed(replica)
+    guard store.replica == replica else { throw .replicaChanged }
+    try await storeCall { () async throws(StoreError) in try await store.dropChanges(through: sequence) }
   }
 
   /// A saved upload of an earlier id was re-logged by the re-mint that retired that id, so it is dropped rather than put under a prefix this database left.
-  private func finishInFlight() async throws(SyncError) -> StreamPoint? {
+  private func finishInFlight(as replica: ReplicaID) async throws(SyncError) -> StreamPoint? {
     guard let entry = try await read({ try SyncOutbox.load($0.database) }) else { return nil }
-    guard entry.replica == store.replica else {
-      try await write { try SyncOutbox.clear($0.database) }
+    guard entry.replica == replica else {
+      try await write(as: replica) { try SyncOutbox.clear($0.database) }
       return nil
     }
     return try await finish(entry)
@@ -279,12 +366,12 @@ public actor SyncEngine {
     }
     try checkpoint(.putDone)
     let millis = millis
-    try await write { transaction in
+    try await write(as: entry.replica) { transaction in
       try ReplicaHistory.recordSegment(entry.point, first: entry.first, replica: entry.replica, at: millis, in: transaction.database)
       try SyncOutbox.clear(transaction.database)
     }
     try checkpoint(.recorded)
-    try await storeCall { () async throws(StoreError) in try await store.dropChanges(through: entry.last) }
+    try await dropChanges(through: entry.last, of: entry.replica)
     try checkpoint(.dropped)
     return entry.point
   }
@@ -299,15 +386,16 @@ public actor SyncEngine {
   }
 
   /// A rebuild clears the directory's floor records until the vault is joined again, so the engine keeps the highest it has read.
-  private func raisedFloors() async throws(SyncError) -> SyncFloors {
+  private func raisedFloors(as replica: ReplicaID) async throws(SyncError) -> SyncFloors {
     let directory = try await lifecycleCall { () async throws(ReplicaLifecycleError) in try await lifecycle.directory() }
     let read = SyncFloors(key: directory.keyFloor, schema: directory.minimumSchema)
-    return try await write { try SyncFloorTable.raise(to: read, in: $0.database) }
+    return try await write(as: replica) { try SyncFloorTable.raise(to: read, in: $0.database) }
   }
 
-  private func putManifest(sealedWith key: VaultKey) async throws(SyncError) {
-    let applied = try await appliedPoints()
+  private func putManifest(sealedWith key: VaultKey, as replica: ReplicaID) async throws(SyncError) {
+    let applied = try await read { try SyncAppliedTable.points(excluding: replica, in: $0.database) }
     let manifest = try await lifecycleCall { () async throws(ReplicaLifecycleError) in try await lifecycle.manifest(applied: applied) }
+    guard manifest.replica == replica else { throw .replicaChanged }
     let sealed: (key: ObjectKey, data: Data)
     do {
       sealed = try ReplicaManifestCodec.seal(manifest, vault: vault, with: key)
@@ -322,34 +410,36 @@ public actor SyncEngine {
     }
   }
 
-  private func selfCheck() async throws(SyncError) -> ReplicaSelfCheckVerdict {
+  private func selfCheck(of replica: ReplicaID) async throws(SyncError) -> (ReplicaSelfCheckVerdict, [StorageObject]) {
     let listing: [StorageObject]
     do {
-      listing = try await provider.listAll(prefix: VaultPath.replicaPrefix(store.replica))
+      listing = try await provider.listAll(prefix: VaultPath.replicaPrefix(replica))
     } catch {
       throw .storage(error)
     }
-    return try await lifecycleCall { () async throws(ReplicaLifecycleError) in try await lifecycle.selfCheck(listing: listing.map(\.key)) }
+    let verdict = try await lifecycleCall { () async throws(ReplicaLifecycleError) in try await lifecycle.selfCheck(listing: listing.map(\.key)) }
+    guard store.replica == replica else { throw .replicaChanged }
+    return (verdict, listing)
   }
 
-  /// Returns false when the device marker cannot be read; the lifecycle checks it before changing anything.
-  private func remint(reason: RemintReason, mode: RemintMode, count: inout Int) async throws(SyncError) -> Bool {
+  /// Returns nil when the device marker cannot be read; the lifecycle checks it before changing anything.
+  private func remint(_ replica: ReplicaID, reason: RemintReason, mode: RemintMode, count: inout Int) async throws(SyncError) -> ReplicaID? {
     guard count < Self.maximumRemintsPerUpload else { throw .remintLimitReached(count) }
     count += 1
-    let also: @Sendable (Database) throws -> Void
-    switch mode {
-    case .keepState: also = { _ in }
-    case .rebuild: also = { try SyncAppliedTable.clear($0) }
+    try await requireClaimed(replica)
+    let also: @Sendable (Database) throws -> Void = { db in
+      guard case .moving(_, let retiring, _, _) = try ReplicaLifecyclePhase.load(db), retiring == replica else { throw SyncError.replicaChanged }
+      try SyncCompactionTable.clear(db)
+      if mode == .rebuild { try SyncAppliedTable.clear(db) }
     }
     do {
-      _ = try await lifecycle.remint(reason: reason, mode: mode, also: also)
-      return true
+      return try await lifecycle.remint(reason: reason, mode: mode, also: also)
     } catch {
-      let replica = store.replica
+      let current = store.replica
       let phase = try? await read { try ReplicaLifecyclePhase.load($0.database) }
-      if phase != .claimed(replica) { readiness = .resumeRequired }
+      if phase != .claimed(current) { readiness = .resumeRequired }
       guard case .markerUnavailable = error else { throw SyncError(converting: error) }
-      return false
+      return nil
     }
   }
 
@@ -366,22 +456,22 @@ public actor SyncEngine {
     let storeSkew = store.wallClock().timeIntervalSince(trusted)
     guard abs(storeSkew) <= tolerance else { throw .storeClockUntrusted(skew: .seconds(storeSkew)) }
     let floor = try await publicFloor().map { $0.date.timeIntervalSince(trusted) }
-    let offsets = try await pendingChanges().map { $0.record.clock.date.timeIntervalSince(trusted) }
+    let offsets = try await storeCall { () async throws(StoreError) in try await store.pendingClocks() }.map { $0.date.timeIntervalSince(trusted) }
     return offsets.contains { offset in
       let isOff = offset > configuration.futureLimit.timeInterval || (isWrong && (skew > 0 ? offset > tolerance : offset < -tolerance))
       return isOff && floor.map { offset > $0 + tolerance } ?? true
     }
   }
 
-  private func sendPending(sealedWith key: VaultKey) async throws(SyncError) -> [StreamPoint] {
+  private func sendPending(sealedWith key: VaultKey, as replica: ReplicaID) async throws(SyncError) -> [StreamPoint] {
     var points: [StreamPoint] = []
     while true {
       let pending = try await nextPass()
       guard !pending.isEmpty else { return points }
       try refuseUnstorable(pending)
-      for entry in try await sealPass(pending, with: key) {
+      for entry in try await sealPass(pending, as: replica, with: key) {
         let millis = millis
-        try await write { try SyncOutbox.save(entry, at: millis, in: $0.database) }
+        try await write(as: replica) { try SyncOutbox.save(entry, at: millis, in: $0.database) }
         try checkpoint(.outboxSaved)
         points.append(try await finish(entry))
       }
@@ -397,8 +487,7 @@ public actor SyncEngine {
   }
 
   /// Seals every segment of the pass before the first put, so a change that cannot fit stops the pass with nothing put.
-  private func sealPass(_ pending: [SyncPendingChange], with key: VaultKey) async throws(SyncError) -> [SyncOutboxEntry] {
-    let replica = store.replica
+  private func sealPass(_ pending: [SyncPendingChange], as replica: ReplicaID, with key: VaultKey) async throws(SyncError) -> [SyncOutboxEntry] {
     let (head, dependencies) = try await read { transaction in
       (try ReplicaHistory.head(of: replica, in: transaction.database), try SyncAppliedTable.points(excluding: replica, in: transaction.database))
     }
@@ -458,27 +547,9 @@ public actor SyncEngine {
     }
   }
 
-  /// The store reads pending changes by count only, so the count grows until the byte budget is reached; a strict byte bound needs a store query by size.
   private func nextPass() async throws(SyncError) -> [SyncPendingChange] {
     let budget = max(configuration.uploadPassBytes, 1)
-    var limit = 16
-    while true {
-      let logged = try await storeCall { () async throws(StoreError) in try await store.pendingChanges(limit: limit) }
-      var bytes = 0
-      var count = 0
-      for change in logged {
-        let size = change.line.count + 1
-        guard count == 0 || bytes + size <= budget else { break }
-        bytes += size
-        count += 1
-      }
-      if count < logged.count || logged.count < limit { return try decode(logged.prefix(count)) }
-      limit = count * 2
-    }
-  }
-
-  private func pendingChanges() async throws(SyncError) -> [SyncPendingChange] {
-    try decode(try await storeCall { () async throws(StoreError) in try await store.pendingChanges(limit: Int.max) })
+    return try decode(try await storeCall { () async throws(StoreError) in try await store.pendingChanges(limit: Int.max, maximumBytes: budget) })
   }
 
   private func decode(_ logged: some Collection<LoggedChange>) throws(SyncError) -> [SyncPendingChange] {
@@ -494,7 +565,12 @@ public actor SyncEngine {
   }
 
   private var millis: Int64 {
-    max(0, Int64((wallClock().timeIntervalSince1970 * 1_000).rounded(.down)))
+    max(0, Int64((preferredNow().timeIntervalSince1970 * 1_000).rounded(.down)))
+  }
+
+  /// Upload and compaction times: trusted time when the engine has a sample, the device clock otherwise.
+  private var preferredNow: @Sendable () -> Date {
+    Self.wallClock(preferring: trustedClock, device: wallClock)
   }
 
   private func acquire() async {
@@ -516,9 +592,12 @@ public actor SyncEngine {
     }
   }
 
-  private func write<T: Sendable>(_ body: @Sendable (inout WriteTransaction) throws -> T) async throws(SyncError) -> T {
+  private func write<T: Sendable>(as replica: ReplicaID, _ body: @Sendable (inout WriteTransaction) throws -> T) async throws(SyncError) -> T {
     do {
-      return try await store.write(body)
+      return try await store.write { transaction in
+        try SyncReplicaGuard.require(replica, in: transaction.database)
+        return try body(&transaction)
+      }
     } catch {
       throw SyncError(converting: error)
     }

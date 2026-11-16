@@ -57,6 +57,61 @@ enum SyncEngineSchema {
         ) STRICT, WITHOUT ROWID;
         """)
   }
+
+  static let compactionMigration = StoreMigration(identifier: "shadow.sync.engine.3") { db in
+    try db.execute(
+      sql: """
+        CREATE TABLE sync_compaction (
+          id INTEGER PRIMARY KEY CHECK (id = 1),
+          replica TEXT NOT NULL,
+          last INTEGER NOT NULL CHECK (last BETWEEN 1 AND \(VaultPath.maximumSequence)),
+          tag TEXT NOT NULL,
+          parts INTEGER NOT NULL CHECK (parts BETWEEN 1 AND \(VaultPath.maximumParts)),
+          started INTEGER NOT NULL
+        ) STRICT;
+        """)
+  }
+}
+
+enum SyncReplicaGuard {
+  /// Run inside every engine write, so a call never writes under an id the database moved to while it ran.
+  static func require(_ replica: ReplicaID, in db: Database) throws {
+    guard try ReplicaLifecyclePhase.load(db) == .claimed(replica) else { throw SyncError.replicaChanged }
+  }
+}
+
+struct SyncCompactionRow: Sendable, Equatable {
+  let replica: ReplicaID
+  let point: StreamPoint
+  let parts: Int
+
+  var keys: [ObjectKey] {
+    (1...parts).map { VaultPath.basePart(replica, upTo: point.last, tag: point.tag, part: $0, parts: parts) }
+  }
+}
+
+enum SyncCompactionTable {
+  static func load(_ db: Database) throws -> SyncCompactionRow? {
+    guard let row = try Row.fetchOne(db, sql: "SELECT replica, last, tag, parts FROM sync_compaction WHERE id = 1") else { return nil }
+    guard let replica = ReplicaID(try row.decode(String.self, forColumn: "replica")), let tag = ContentTag(try row.decode(String.self, forColumn: "tag")) else {
+      throw SyncError.corruptState("the compaction in progress has a malformed name")
+    }
+    let point = StreamPoint(last: try row.decode(Int64.self, forColumn: "last"), tag: tag)
+    return SyncCompactionRow(replica: replica, point: point, parts: try row.decode(Int.self, forColumn: "parts"))
+  }
+
+  static func save(_ row: SyncCompactionRow, at millis: Int64, in db: Database) throws {
+    try db.execute(
+      sql: """
+        INSERT INTO sync_compaction (id, replica, last, tag, parts, started) VALUES (1, ?, ?, ?, ?, ?)
+        ON CONFLICT (id) DO UPDATE SET replica = excluded.replica, last = excluded.last, tag = excluded.tag, parts = excluded.parts
+        """,
+      arguments: [row.replica.description, row.point.last, row.point.tag.description, row.parts, millis])
+  }
+
+  static func clear(_ db: Database) throws {
+    try db.execute(sql: "DELETE FROM sync_compaction")
+  }
 }
 
 struct SyncOutboxEntry: Sendable, Equatable {
@@ -135,6 +190,28 @@ enum SyncAppliedTable {
 
   static func clear(_ db: Database) throws {
     try db.execute(sql: "DELETE FROM sync_applied")
+  }
+
+  /// Forgets files a replica's highest applied base covers once they are no longer listed; one that is listed again is fetched and applied again, which the join makes harmless.
+  static func prune(keeping listed: Set<SyncFileID>, excluding own: ReplicaID, in db: Database) throws {
+    var highest: [ReplicaID: StreamPoint] = [:]
+    for (replica, files) in try load(db) where replica != own {
+      guard let base = files.bases.max() else { continue }
+      highest[replica] = base
+    }
+    for (replica, base) in highest {
+      let rows = try Row.fetchAll(db, sql: "SELECT kind, last, tag FROM sync_applied WHERE replica = ? AND last <= ?", arguments: [replica.description, base.last])
+      for row in rows {
+        guard let tag = ContentTag(try row.decode(String.self, forColumn: "tag")), let kind = SyncFileKind(rawValue: try row.decode(String.self, forColumn: "kind")) else {
+          throw SyncError.corruptState("an applied file has a malformed name")
+        }
+        let id = SyncFileID(replica: replica, kind: kind, point: StreamPoint(last: try row.decode(Int64.self, forColumn: "last"), tag: tag))
+        guard !listed.contains(id), !(kind == .base && id.point == base) else { continue }
+        try db.execute(
+          sql: "DELETE FROM sync_applied WHERE replica = ? AND kind = ? AND last = ? AND tag = ?",
+          arguments: [replica.description, kind.rawValue, id.point.last, tag.description])
+      }
+    }
   }
 }
 
