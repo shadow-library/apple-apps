@@ -124,3 +124,12 @@ public func replay(seed: UInt64, _ property: (inout SeededGenerator) throws -> V
     throw PropertyFailure(seed: seed, iteration: 0, underlying: String(describing: error))
   }
 }
+
+public func replay(seed: UInt64, _ property: (inout SeededGenerator) async throws -> Void) async throws(PropertyFailure) {
+  var generator = SeededGenerator(seed: seed)
+  do {
+    try await property(&generator)
+  } catch {
+    throw PropertyFailure(seed: seed, iteration: 0, underlying: String(describing: error))
+  }
+}
