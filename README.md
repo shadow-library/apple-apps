@@ -43,7 +43,7 @@ Tuist.swift  Workspace.swift  mise.toml  .swift-format
 | `ShadowKeychain`     | `SecureStore` protocol and `KeychainStore` (data-protection keychain)       | `ShadowCore`                     |
 | `ShadowStore`        | SQLite store through GRDB: entity tables, change log, field clocks          | `ShadowCore`, GRDB               |
 | `ShadowSync`         | Vault sync: replicas, segments, merge, encryption                           | `ShadowCore`, `ShadowStore`, `ShadowKeychain`, GRDB |
-| `ShadowAI`           | Model providers: task and pace to a model, request shaping, streaming, cost | `ShadowCore`, `ShadowNetworking` |
+| `ShadowAI`           | Model providers: task and pace to a model, request shaping, streaming, cost | `ShadowCore`, `ShadowNetworking`, `ShadowStore` |
 | `ShadowDesignSystem` | Tokens, Liquid Glass helpers and native-first SwiftUI components (see below) | —                                |
 | `ShadowTestSupport`  | `StubHTTPTransport`, `InMemorySecureStore` — test targets only              | `ShadowCore`, `ShadowNetworking`, `ShadowKeychain`, `ShadowStore`, `ShadowSync`, `ShadowAI` |
 

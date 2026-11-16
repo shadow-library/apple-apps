@@ -31,7 +31,7 @@ let package = Package(
     .target(name: "ShadowKeychain", dependencies: ["ShadowCore"], swiftSettings: swiftSettings),
     .target(name: "ShadowStore", dependencies: ["ShadowCore", .product(name: "GRDB", package: "GRDB.swift")], swiftSettings: swiftSettings),
     .target(name: "ShadowSync", dependencies: ["ShadowCore", "ShadowStore", "ShadowKeychain", .product(name: "GRDB", package: "GRDB.swift")], swiftSettings: swiftSettings),
-    .target(name: "ShadowAI", dependencies: ["ShadowCore", "ShadowNetworking"], swiftSettings: swiftSettings),
+    .target(name: "ShadowAI", dependencies: ["ShadowCore", "ShadowNetworking", "ShadowStore"], swiftSettings: swiftSettings),
     .target(name: "ShadowDesignSystem", swiftSettings: swiftSettings + [.defaultIsolation(MainActor.self)]),
     .target(name: "ShadowTestSupport", dependencies: ["ShadowCore", "ShadowNetworking", "ShadowKeychain", "ShadowStore", "ShadowSync", "ShadowAI"], swiftSettings: swiftSettings),
 
