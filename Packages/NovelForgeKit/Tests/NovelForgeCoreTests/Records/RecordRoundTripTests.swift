@@ -8,15 +8,15 @@ import Testing
 
 private let iterations = 100
 
-private func expectLive<R: NovelForgeRecord>(_ reading: RecordReading<R>, _ record: R) {
+func expectLive<R: NovelForgeRecord>(_ reading: RecordReading<R>, _ record: R) {
   #expect(reading == .readable(RecordEntry(record: record, isRemoved: false)))
 }
 
-private func expectRemoved<R: NovelForgeRecord>(_ reading: RecordReading<R>, _ record: R) {
+func expectRemoved<R: NovelForgeRecord>(_ reading: RecordReading<R>, _ record: R) {
   #expect(reading == .readable(RecordEntry(record: record, isRemoved: true)))
 }
 
-private func createAndEdit<S: RecordSubject>(_: S.Type, seed: UInt64) async throws {
+func createAndEdit<S: RecordSubject>(_: S.Type, seed: UInt64) async throws {
   let store = try SchemaFixture.store()
   try await forAll(iterations: iterations, seed: seed) { generator in
     let record = S.random(&generator, novel: generator.uuid(), key: Gen.key(&generator))
@@ -38,7 +38,7 @@ private func createAndEdit<S: RecordSubject>(_: S.Type, seed: UInt64) async thro
   }
 }
 
-private func removalCycle<S: RemovableSubject>(_: S.Type, seed: UInt64) async throws {
+func removalCycle<S: RemovableSubject>(_: S.Type, seed: UInt64) async throws {
   let store = try SchemaFixture.store()
   try await forAll(iterations: iterations, seed: seed) { generator in
     let (novel, key) = (generator.uuid(), Gen.key(&generator))
@@ -65,7 +65,7 @@ private func removalCycle<S: RemovableSubject>(_: S.Type, seed: UInt64) async th
   }
 }
 
-private func createOverLiveRecord<S: RemovableSubject>(_: S.Type, seed: UInt64) async throws {
+func createOverLiveRecord<S: RemovableSubject>(_: S.Type, seed: UInt64) async throws {
   let store = try SchemaFixture.store()
   try await forAll(iterations: 30, seed: seed) { generator in
     let (novel, key) = (generator.uuid(), Gen.key(&generator))

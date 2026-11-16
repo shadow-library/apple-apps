@@ -11,7 +11,7 @@ public enum ContentMode: String, CaseIterable, Codable, Sendable {
 }
 
 // apps/novel-forge-server/src/modules/refinement/change-set/op-specs.ts:14
-enum EntityType: String, CaseIterable, Codable, Sendable {
+public enum EntityType: String, CaseIterable, Codable, Sendable {
   case character
   case faction
   case location

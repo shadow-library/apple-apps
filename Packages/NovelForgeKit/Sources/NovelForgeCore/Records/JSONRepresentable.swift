@@ -56,3 +56,22 @@ extension Optional: JSONWritable where Wrapped: JSONWritable {
     return value.json
   }
 }
+
+extension JSONValue: JSONRepresentable {
+  public init?(json: JSONValue) { self = json }
+
+  public var json: JSONValue { self }
+}
+
+extension Dictionary: JSONReadable where Key == String, Value: JSONReadable {
+  public init?(json: JSONValue) {
+    guard let members = json.objectValue else { return nil }
+    let values = members.compactMapValues { Value(json: $0) }
+    guard values.count == members.count else { return nil }
+    self = values
+  }
+}
+
+extension Dictionary: JSONWritable where Key == String, Value: JSONWritable {
+  public var json: JSONValue { .object(mapValues(\.json)) }
+}

@@ -60,7 +60,7 @@ public enum MysteryField: String, CaseIterable {
   case dormant
 }
 
-enum SecretField: String, CaseIterable {
+public enum SecretField: String, CaseIterable {
   case text
   case subjects
   case constraintNote = "constraint_note"
@@ -71,7 +71,7 @@ enum SecretField: String, CaseIterable {
   case source
 }
 
-enum EntityField: String, CaseIterable {
+public enum EntityField: String, CaseIterable {
   case type
   case name
   case attributes
@@ -85,7 +85,7 @@ enum EntityField: String, CaseIterable {
   case wikiVisibility = "wiki_visibility"
 }
 
-enum CharacterKnowledgeField: String, CaseIterable {
+public enum CharacterKnowledgeField: String, CaseIterable {
   case reveal
 }
 

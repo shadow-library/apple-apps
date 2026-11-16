@@ -138,11 +138,11 @@ public struct NovelForgeKey: Hashable, Sendable {
   public static func milestone(novel: UUID, key: String) -> EntityRef { milestoneKey(novel: novel, milestone: key).ref }
   public static func thread(novel: UUID, key: String) -> EntityRef { threadKey(novel: novel, thread: key).ref }
   public static func mystery(novel: UUID, key: String) -> EntityRef { mysteryKey(novel: novel, mystery: key).ref }
-  public static func secret(novel: UUID, key: String) -> EntityRef { textRef(novel, .secret(key)) }
-  public static func entity(novel: UUID, key: String) -> EntityRef { textRef(novel, .entity(key)) }
-  public static func characterKnowledge(novel: UUID, fact: String, entity: String) -> EntityRef { textRef(novel, .characterKnowledge(fact: fact, entity: entity)) }
-  public static func page(novel: UUID, section: BiblePageSection, slug: String) -> EntityRef { textRef(novel, .page(section: .known(section), slug: slug)) }
-  public static func authorNotes(novel: UUID) -> EntityRef { textRef(novel, .authorNotes) }
+  public static func secret(novel: UUID, key: String) -> EntityRef { secretKey(novel: novel, secret: key).ref }
+  public static func entity(novel: UUID, key: String) -> EntityRef { entityKey(novel: novel, entity: key).ref }
+  public static func characterKnowledge(novel: UUID, fact: String, entity: String) -> EntityRef { characterKnowledgeKey(novel: novel, fact: fact, entity: entity).ref }
+  public static func page(novel: UUID, section: BiblePageSection, slug: String) -> EntityRef { pageKey(novel: novel, section: section, slug: slug).ref }
+  public static func authorNotes(novel: UUID) -> EntityRef { authorNotesKey(novel: novel).ref }
 
   public static func chapterPlan(novel: UUID, chapter: Int) throws(NovelForgeKeyError) -> EntityRef { try NovelForgeKey(novel: novel, .chapterPlan(chapter: chapter)).ref }
   public static func draft(novel: UUID, chapter: Int) throws(NovelForgeKeyError) -> EntityRef { try NovelForgeKey(novel: novel, .draft(chapter: chapter)).ref }
@@ -150,11 +150,6 @@ public struct NovelForgeKey: Hashable, Sendable {
 
   private static func randomRef(_ kind: NovelForgeKind, _ id: UUID) -> EntityRef {
     EntityRef(kind: kind.entityKind, key: EntityKey(uuid: id))
-  }
-
-  private static func textRef(_ novel: UUID, _ components: Components) -> EntityRef {
-    precondition(components.chapters.isEmpty, "a key with a chapter goes through the throwing builder")
-    return NovelForgeKey(unchecked: novel, components).ref
   }
 
   private init(unchecked novel: UUID, _ components: Components) {
@@ -184,6 +179,13 @@ extension NovelForgeKey {
   public static func milestoneKey(novel: UUID, milestone: String) -> NovelForgeKey { NovelForgeKey(unchecked: novel, .milestone(milestone)) }
   public static func threadKey(novel: UUID, thread: String) -> NovelForgeKey { NovelForgeKey(unchecked: novel, .thread(thread)) }
   public static func mysteryKey(novel: UUID, mystery: String) -> NovelForgeKey { NovelForgeKey(unchecked: novel, .mystery(mystery)) }
+  public static func secretKey(novel: UUID, secret: String) -> NovelForgeKey { NovelForgeKey(unchecked: novel, .secret(secret)) }
+  public static func entityKey(novel: UUID, entity: String) -> NovelForgeKey { NovelForgeKey(unchecked: novel, .entity(entity)) }
+  public static func characterKnowledgeKey(novel: UUID, fact: String, entity: String) -> NovelForgeKey {
+    NovelForgeKey(unchecked: novel, .characterKnowledge(fact: fact, entity: entity))
+  }
+  public static func pageKey(novel: UUID, section: BiblePageSection, slug: String) -> NovelForgeKey { NovelForgeKey(unchecked: novel, .page(section: .known(section), slug: slug)) }
+  public static func authorNotesKey(novel: UUID) -> NovelForgeKey { NovelForgeKey(unchecked: novel, .authorNotes) }
 }
 
 extension NovelForgeKey.Components {

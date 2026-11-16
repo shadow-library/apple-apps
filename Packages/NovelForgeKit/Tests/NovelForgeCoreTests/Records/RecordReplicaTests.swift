@@ -8,38 +8,38 @@ import Testing
 
 private let replicaCount = 3
 
-private func replicas(seed: UInt64) async throws -> CausalReplicas {
+func replicas(seed: UInt64) async throws -> CausalReplicas {
   try await CausalReplicas(CausalReplicaSetup(count: replicaCount, registry: SchemaFixture.registry, seed: seed))
 }
 
-private func readings<R: NovelForgeRecord>(_ ref: EntityRef, as _: R.Type, in replicas: CausalReplicas) async throws -> [RecordReading<R>] {
+func readings<R: NovelForgeRecord>(_ ref: EntityRef, as _: R.Type, in replicas: CausalReplicas) async throws -> [RecordReading<R>] {
   var result = [RecordReading<R>]()
   for index in 0..<replicas.count { result.append(try await Harness.read(ref, as: R.self, in: await replicas.store(index))) }
   return result
 }
 
-private func expectAgreement<R: NovelForgeRecord>(_ ref: EntityRef, as _: R.Type, in replicas: CausalReplicas, is expected: RecordReading<R>) async throws {
+func expectAgreement<R: NovelForgeRecord>(_ ref: EntityRef, as _: R.Type, in replicas: CausalReplicas, is expected: RecordReading<R>) async throws {
   for reading in try await readings(ref, as: R.self, in: replicas) { #expect(reading == expected) }
 }
 
-private func live<R>(_ record: R) -> RecordReading<R> { .readable(RecordEntry(record: record, isRemoved: false)) }
-private func removed<R>(_ record: R) -> RecordReading<R> { .readable(RecordEntry(record: record, isRemoved: true)) }
+func live<R>(_ record: R) -> RecordReading<R> { .readable(RecordEntry(record: record, isRemoved: false)) }
+func removed<R>(_ record: R) -> RecordReading<R> { .readable(RecordEntry(record: record, isRemoved: true)) }
 
-private func writeCreate<S: RemovableSubject>(_: S.Type, _ record: S.Record, on index: Int, in replicas: CausalReplicas) async throws {
+func writeCreate<S: RemovableSubject>(_: S.Type, _ record: S.Record, on index: Int, in replicas: CausalReplicas) async throws {
   _ = try await replicas.write(index) { transaction in try record.create(in: &transaction) }
 }
 
-private func writeEdit<R>(_ edit: SubjectEdit<R>, on index: Int, in replicas: CausalReplicas) async throws {
+func writeEdit<R>(_ edit: SubjectEdit<R>, on index: Int, in replicas: CausalReplicas) async throws {
   let perform = edit.perform
   _ = try await replicas.write(index) { transaction in try perform(&transaction) }
 }
 
-private func writeRemove<R: RemovableRecord>(_ record: R, on index: Int, in replicas: CausalReplicas) async throws {
+func writeRemove<R: RemovableRecord>(_ record: R, on index: Int, in replicas: CausalReplicas) async throws {
   let ref = record.ref
   _ = try await replicas.write(index) { transaction in try R.remove(ref, in: &transaction) }
 }
 
-private func removalWinsOverAnEditWithAnEarlierClock<S: RemovableSubject>(_: S.Type, seed: UInt64) async throws {
+func removalWinsOverAnEditWithAnEarlierClock<S: RemovableSubject>(_: S.Type, seed: UInt64) async throws {
   try await forAll(iterations: 6, seed: seed) { generator in
     let replicas = try await replicas(seed: generator.next())
     let record = S.random(&generator, novel: generator.uuid(), key: Gen.key(&generator))
@@ -55,7 +55,7 @@ private func removalWinsOverAnEditWithAnEarlierClock<S: RemovableSubject>(_: S.T
   }
 }
 
-private func anEditAfterARemovalDoesNotRevive<S: RemovableSubject>(_: S.Type, seed: UInt64) async throws {
+func anEditAfterARemovalDoesNotRevive<S: RemovableSubject>(_: S.Type, seed: UInt64) async throws {
   try await forAll(iterations: 6, seed: seed) { generator in
     let replicas = try await replicas(seed: generator.next())
     let record = S.random(&generator, novel: generator.uuid(), key: Gen.key(&generator))
@@ -77,7 +77,7 @@ private func anEditAfterARemovalDoesNotRevive<S: RemovableSubject>(_: S.Type, se
   }
 }
 
-private func fieldsEditedOnDifferentReplicasMerge<S: RemovableSubject>(_: S.Type, seed: UInt64) async throws {
+func fieldsEditedOnDifferentReplicasMerge<S: RemovableSubject>(_: S.Type, seed: UInt64) async throws {
   try await forAll(iterations: 6, seed: seed) { generator in
     let replicas = try await replicas(seed: generator.next())
     let record = S.random(&generator, novel: generator.uuid(), key: Gen.key(&generator))
@@ -96,7 +96,7 @@ private func fieldsEditedOnDifferentReplicasMerge<S: RemovableSubject>(_: S.Type
   }
 }
 
-private func concurrentCreatesComeWholeFromOneReplica<S: RemovableSubject>(_: S.Type, seed: UInt64) async throws {
+func concurrentCreatesComeWholeFromOneReplica<S: RemovableSubject>(_: S.Type, seed: UInt64) async throws {
   try await forAll(iterations: 6, seed: seed) { generator in
     let replicas = try await replicas(seed: generator.next())
     let (novel, key) = (generator.uuid(), Gen.key(&generator))
@@ -110,7 +110,7 @@ private func concurrentCreatesComeWholeFromOneReplica<S: RemovableSubject>(_: S.
   }
 }
 
-private func settlesToTheSameRecordsEverywhere<S: RemovableSubject>(_: S.Type, seed: UInt64) async throws {
+func settlesToTheSameRecordsEverywhere<S: RemovableSubject>(_: S.Type, seed: UInt64) async throws {
   try await forAll(iterations: 60, seed: seed) { generator in
     let replicas = try await replicas(seed: generator.next())
     let novel = generator.uuid()

@@ -6,7 +6,7 @@ enum MilestoneState: String, Sendable, Codable {
   case reached
 }
 
-enum FactSource: String, Sendable, Codable {
+public enum FactSource: String, CaseIterable, Sendable, Codable {
   case brief
   case manual
   case `import`

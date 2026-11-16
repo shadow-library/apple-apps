@@ -7,6 +7,7 @@ public enum UnreadableReason: ShadowError, Equatable {
   case missing(field: String)
   case invalid(field: String)
   case naturalKey(NovelForgeKeyError)
+  case unknownSection(String)
 
   public var code: String {
     switch self {
@@ -15,6 +16,7 @@ public enum UnreadableReason: ShadowError, Equatable {
     case .missing: "record.missing_field"
     case .invalid: "record.invalid_field"
     case .naturalKey: "record.natural_key"
+    case .unknownSection: "record.unknown_section"
     }
   }
 
@@ -25,6 +27,7 @@ public enum UnreadableReason: ShadowError, Equatable {
     case .missing(let field): "The stored record has no \"\(field)\" field."
     case .invalid(let field): "The stored record's \"\(field)\" field has the wrong type."
     case .naturalKey(let error): "The stored natural key is unusable: \(error.errorDescription ?? error.code)"
+    case .unknownSection(let section): "The page belongs to the section \"\(section)\", which this version does not know."
     }
   }
 }

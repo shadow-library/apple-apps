@@ -14,8 +14,11 @@ public protocol NovelForgeRecord: Sendable, Equatable {
 
   init(ref: EntityRef, reading reader: FieldReader<Field>) throws(UnreadableReason)
 
+  func create(in transaction: inout WriteTransaction) throws(StoreError) -> ChangeRecord
+
   static func removal(in reader: FieldReader<Field>) throws(UnreadableReason) -> Bool
   static func owner(of ref: EntityRef, in reader: FieldReader<Field>) -> UUID?
+  static func isPending(_ state: EntityState) -> Bool
 }
 
 extension NovelForgeRecord {
@@ -24,32 +27,29 @@ extension NovelForgeRecord {
   public static func removal(in reader: FieldReader<Field>) throws(UnreadableReason) -> Bool { false }
 
   public static func owner(of ref: EntityRef, in reader: FieldReader<Field>) -> UUID? { nil }
+
+  public static func isPending(_ state: EntityState) -> Bool { false }
 }
 
-public protocol RemovableRecord: NovelForgeRecord {
+public protocol KeyedRecord: NovelForgeRecord {
   var key: NovelForgeKey { get }
 
   init(key: NovelForgeKey, reading reader: FieldReader<Field>) throws(UnreadableReason)
 }
 
-extension RemovableRecord {
+extension KeyedRecord {
   public var novel: UUID { key.novel }
   public var ref: EntityRef { key.ref }
 
   public var storedMembers: [String: JSONValue] {
     var members = fields.members
     members[CommonField.naturalKey.rawValue] = key.stored
-    members[CommonField.removed.rawValue] = .bool(false)
     return members
   }
 
   public init(ref: EntityRef, reading reader: FieldReader<Field>) throws(UnreadableReason) {
     guard let stored = reader.stored(.naturalKey) else { throw .missing(field: CommonField.naturalKey.rawValue) }
     try self.init(key: try Self.naturalKey(stored, of: ref), reading: reader)
-  }
-
-  public static func removal(in reader: FieldReader<Field>) throws(UnreadableReason) -> Bool {
-    try reader.common(.removed)
   }
 
   public static func owner(of ref: EntityRef, in reader: FieldReader<Field>) -> UUID? {
@@ -63,5 +63,22 @@ extension RemovableRecord {
     } catch {
       throw .naturalKey(error)
     }
+  }
+}
+
+public protocol RemovableRecord: KeyedRecord {
+  func restore(in transaction: inout WriteTransaction) throws(StoreError) -> ChangeRecord
+}
+
+extension RemovableRecord {
+  public var storedMembers: [String: JSONValue] {
+    var members = fields.members
+    members[CommonField.naturalKey.rawValue] = key.stored
+    members[CommonField.removed.rawValue] = .bool(false)
+    return members
+  }
+
+  public static func removal(in reader: FieldReader<Field>) throws(UnreadableReason) -> Bool {
+    try reader.common(.removed)
   }
 }

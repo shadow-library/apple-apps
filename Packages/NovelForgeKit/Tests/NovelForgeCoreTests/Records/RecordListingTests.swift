@@ -8,7 +8,7 @@ import Testing
 
 private let wrongType = JSONValue.array([.null])
 
-private struct Population<S: RemovableSubject> {
+struct Population<S: RemovableSubject> {
   let novel: UUID
   let other: UUID
   let own: [S.Record]
@@ -20,7 +20,7 @@ private struct Population<S: RemovableSubject> {
   }
 }
 
-private func populate<S: RemovableSubject>(_: S.Type, in store: VaultStore, _ generator: inout SeededGenerator) async throws -> Population<S> {
+func populate<S: RemovableSubject>(_: S.Type, in store: VaultStore, _ generator: inout SeededGenerator) async throws -> Population<S> {
   let (novel, other) = (generator.uuid(), generator.uuid())
   let own = (0..<3).map { S.random(&generator, novel: novel, key: "live-\($0)-" + Gen.key(&generator)) }
   let removedOwn = (0..<2).map { S.random(&generator, novel: novel, key: "gone-\($0)-" + Gen.key(&generator)) }
@@ -30,18 +30,23 @@ private func populate<S: RemovableSubject>(_: S.Type, in store: VaultStore, _ ge
   return Population(novel: novel, other: other, own: own, removedOwn: removedOwn, foreign: foreign)
 }
 
-private func writeOtherKinds(excluding kind: NovelForgeKind, for novel: UUID, key: String, in store: VaultStore, _ generator: inout SeededGenerator) async throws {
+func writeOtherKinds(excluding kind: NovelForgeKind, for novel: UUID, key: String, in store: VaultStore, _ generator: inout SeededGenerator) async throws {
   if kind != .volume { _ = try await Harness.create(VolumeSubject.random(&generator, novel: novel, key: key), in: store) }
   if kind != .milestone { _ = try await Harness.create(MilestoneSubject.random(&generator, novel: novel, key: key), in: store) }
   if kind != .thread { _ = try await Harness.create(ThreadSubject.random(&generator, novel: novel, key: key), in: store) }
   if kind != .mystery { _ = try await Harness.create(MysterySubject.random(&generator, novel: novel, key: key), in: store) }
+  if kind != .secret { _ = try await Harness.create(SecretSubject.random(&generator, novel: novel, key: key), in: store) }
+  if kind != .entity { _ = try await Harness.create(EntitySubject.random(&generator, novel: novel, key: key), in: store) }
+  if kind != .characterKnowledge { _ = try await Harness.create(CharacterKnowledgeSubject.random(&generator, novel: novel, key: key), in: store) }
+  _ = try await Harness.create(PageRecord(novel: novel, section: .lore, slug: key, content: PageContent(body: "p")), in: store)
+  _ = try await Harness.create(AuthorNotesRecord(novel: novel, content: AuthorNotesContent(text: "n")), in: store)
 }
 
-private func listing<S: RemovableSubject>(_: S.Type, novel: UUID, in store: VaultStore) async throws -> RecordListing<S.Record> {
+func listing<S: RemovableSubject>(_: S.Type, novel: UUID, in store: VaultStore) async throws -> RecordListing<S.Record> {
   try await store.read { transaction in try S.Record.listing(novel: novel, in: transaction) }
 }
 
-private func listsOnlyTheNovelsOwnRecords<S: RemovableSubject>(_: S.Type, seed: UInt64) async throws {
+func listsOnlyTheNovelsOwnRecords<S: RemovableSubject>(_: S.Type, seed: UInt64) async throws {
   let store = try SchemaFixture.store()
   try await forAll(iterations: 5, seed: seed) { generator in
     let population = try await populate(S.self, in: store, &generator)
@@ -62,7 +67,7 @@ private func listsOnlyTheNovelsOwnRecords<S: RemovableSubject>(_: S.Type, seed: 
   }
 }
 
-private func skipsUnreadableAndCountsThem<S: RemovableSubject>(_: S.Type) async throws {
+func skipsUnreadableAndCountsThem<S: RemovableSubject>(_: S.Type) async throws {
   let store = try SchemaFixture.store()
   var generator = SeededGenerator(seed: 0xF1)
   let population = try await populate(S.self, in: store, &generator)

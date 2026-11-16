@@ -9,16 +9,16 @@ import Testing
 private let iterations = 6
 private let wrongType = JSONValue.array([.null])
 
-private func reading<S: RecordSubject>(_: S.Type, _ record: S.Record, _ members: [String: JSONValue], in store: VaultStore) async throws -> RecordReading<S.Record> {
+func reading<S: RecordSubject>(_: S.Type, _ record: S.Record, _ members: [String: JSONValue], in store: VaultStore) async throws -> RecordReading<S.Record> {
   try await SchemaFixture.set(record.ref, members, in: store)
   return try await Harness.read(record.ref, as: S.Record.self, in: store)
 }
 
-private func fresh<S: RecordSubject>(_: S.Type, _ generator: inout SeededGenerator) -> S.Record {
+func fresh<S: RecordSubject>(_: S.Type, _ generator: inout SeededGenerator) -> S.Record {
   S.random(&generator, novel: generator.uuid(), key: Gen.key(&generator))
 }
 
-private func totality<S: RecordSubject>(_: S.Type, seed: UInt64) async throws {
+func totality<S: RecordSubject>(_: S.Type, seed: UInt64, anyJSON: Set<String> = []) async throws {
   let store = try SchemaFixture.store()
   let newerStore = try Harness.newerVersionStore()
   var seeding = SeededGenerator(seed: seed)
@@ -44,6 +44,8 @@ private func totality<S: RecordSubject>(_: S.Type, seed: UInt64) async throws {
           Issue.record("wrong type of \(name) gave \(afterCorruption)")
           continue
         }
+      } else if anyJSON.contains(name) {
+        #expect(afterCorruption.entry?.record.fields.members[name] == wrongType, "\(name) carries any JSON")
       } else {
         #expect(afterCorruption == .unreadable(.invalid(field: name)), "wrong type \(name)")
       }
@@ -68,7 +70,7 @@ private func totality<S: RecordSubject>(_: S.Type, seed: UInt64) async throws {
   }
 }
 
-private func mismatchedNaturalKey<S: RemovableSubject>(_: S.Type) async throws {
+func mismatchedNaturalKey<S: RemovableSubject>(_: S.Type) async throws {
   let store = try SchemaFixture.store()
   var generator = SeededGenerator(seed: 0xD1)
   let record = fresh(S.self, &generator)

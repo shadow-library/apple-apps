@@ -14,6 +14,7 @@ extension NovelForgeRecord {
   public static func reading(_ state: EntityState?, of ref: EntityRef) -> RecordReading<Self> {
     guard let state else { return .absent }
     if case .purged = state { return .absent }
+    if isPending(state) { return .absent }
     guard let reader = reader(of: state) else { return .unreadable(.wrongShape) }
     do throws(UnreadableReason) {
       let removed = try removal(in: reader)
@@ -42,6 +43,8 @@ extension NovelForgeRecord {
       case .readable(let entry):
         if let owner, entry.record.novel != owner { continue }
         entries.append(entry)
+      case .unreadable(.unknownSection):
+        continue
       case .unreadable:
         guard let actual = reader(of: state).flatMap({ Self.owner(of: ref, in: $0) }) else {
           if owner == nil { unattributed += 1 }
@@ -56,13 +59,13 @@ extension NovelForgeRecord {
   private static func reader(of state: EntityState) -> FieldReader<Field>? {
     switch state {
     case .record(let record): FieldReader(record.fields)
-    case .revisioned(let revisioned): FieldReader(revisioned.fields)
+    case .revisioned(let revisioned): FieldReader(revisioned)
     case .appended, .purged: nil
     }
   }
 }
 
-extension RemovableRecord {
+extension KeyedRecord {
   public static func listing<Transaction: StateReading & ~Copyable>(novel: UUID, in transaction: borrowing Transaction) throws(StoreError) -> RecordListing<Self> {
     collecting(try transaction.states(ofKind: kind.entityKind, scope: .vault), owner: novel)
   }
