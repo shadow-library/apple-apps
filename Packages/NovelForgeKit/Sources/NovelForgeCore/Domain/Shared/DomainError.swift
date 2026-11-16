@@ -22,6 +22,10 @@ public enum PromiseRef: Hashable, Sendable {
 
 public enum DomainError: ShadowError, Equatable {
   case novelNotFound(UUID)
+  case novelExists(UUID)
+  case wordTargetInverted
+  case notesTooLong(words: Int, maximum: Int)
+  case unreadableRecords(kind: String, count: Int)
   case volumeNotFound(String)
   case volumeExists(String)
   case volumeNotActive(String)
@@ -43,6 +47,7 @@ public enum DomainError: ShadowError, Equatable {
   case invalidKey(field: String)
   case blank(field: String)
   case belowMinimum(field: String, minimum: Int)
+  case aboveMaximum(field: String, maximum: Int)
   case tooLong(field: String, limit: Int)
   case unknownKind(String)
   case noChanges
@@ -52,6 +57,10 @@ public enum DomainError: ShadowError, Equatable {
   public var code: String {
     switch self {
     case .novelNotFound: "PRJ_001"
+    case .novelExists: "library.novel_exists"
+    case .wordTargetInverted: "PRJ_010"
+    case .notesTooLong: "PRJ_012"
+    case .unreadableRecords: "library.unreadable_records"
     case .volumeNotFound: "VOL_001"
     case .volumeExists: "story.volume_exists"
     case .volumeNotActive: "VOL_003"
@@ -73,6 +82,7 @@ public enum DomainError: ShadowError, Equatable {
     case .invalidKey: "domain.invalid_key"
     case .blank: "domain.blank"
     case .belowMinimum: "domain.below_minimum"
+    case .aboveMaximum: "domain.above_maximum"
     case .tooLong: "domain.too_long"
     case .unknownKind: "domain.unknown_kind"
     case .noChanges: "domain.no_changes"
@@ -84,6 +94,10 @@ public enum DomainError: ShadowError, Equatable {
   public var errorDescription: String? {
     switch self {
     case .novelNotFound(let novel): "Project \(novel.uuidString) not found"
+    case .novelExists(let novel): "A novel with the id \(novel.uuidString) already exists"
+    case .wordTargetInverted: "wordTarget.max must be greater than wordTarget.min"
+    case .notesTooLong(let words, let maximum): "The notes are \(words) words; keep them to \(maximum) words or fewer"
+    case .unreadableRecords(let kind, let count): "\(count) \(kind) records are stored in a form this version cannot read, so the novel cannot be copied faithfully"
     case .volumeNotFound(let volume): "Volume \(volume) not found"
     case .volumeExists(let volume): "A volume with the key \(volume) already exists in the novel"
     case .volumeNotActive(let volume): "Only the active volume’s goal can be marked met — volume \(volume) is not active"
@@ -105,6 +119,7 @@ public enum DomainError: ShadowError, Equatable {
     case .invalidKey(let field): "\(field) must be a non-empty key"
     case .blank(let field): "\(field) must not be blank"
     case .belowMinimum(let field, let minimum): "\(field) must be at least \(minimum)"
+    case .aboveMaximum(let field, let maximum): "\(field) must be at most \(maximum)"
     case .tooLong(let field, let limit): "\(field) must be at most \(limit) characters"
     case .unknownKind(let kind): "Milestone kind \(kind) is not one of rank, event, learned_from, custom"
     case .noChanges: "At least one field must change"
