@@ -27,6 +27,7 @@ Apps/                         one folder per app, each with its own Project.swif
   Catalog/                    design-system gallery; also the pipeline's smoke test
 Packages/
   ShadowKit/                  the shared Swift package (one library product per module)
+  NovelForgeKit/              Novel Forge's core (`NovelForgeCore`): domain rules, pipelines, retrieval; no UI
 Tuist/
   Package.swift               external + local package dependencies for the apps
   ProjectDescriptionHelpers/  Project.app(...), shared settings, platform presets
