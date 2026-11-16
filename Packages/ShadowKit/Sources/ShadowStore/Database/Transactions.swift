@@ -7,6 +7,11 @@ public struct ReadTransaction {
 
   let registry: SchemaRegistry
 
+  public init(database: Database, registry: SchemaRegistry) {
+    self.database = database
+    self.registry = registry
+  }
+
   public func state(of ref: EntityRef, scope: StateScope = .vault) throws(StoreError) -> EntityState? {
     try StateLoader(registry: registry).entity(ref, scope: scope, in: database)
   }

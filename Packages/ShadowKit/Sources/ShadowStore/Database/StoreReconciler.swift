@@ -6,6 +6,7 @@ public enum ChangeOrigin: Sendable, Equatable {
   case upgrade
 }
 
+/// Read merged state through ReadTransaction(database:registry:); the kernel's tables must never be written.
 public protocol StoreReconciler: Sendable {
   func reconcile(_ touched: [EntityRef], origin: ChangeOrigin, in database: Database) throws
   /// Called when the vault scope has been cleared: product tables must drop everything they projected.
