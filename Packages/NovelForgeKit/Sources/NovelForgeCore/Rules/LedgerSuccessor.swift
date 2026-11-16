@@ -13,7 +13,7 @@ enum LedgerRuleError: ShadowError, Equatable {
   }
 }
 
-enum LedgerEntryStatus: String, CaseIterable, Sendable {
+public enum LedgerEntryStatus: String, CaseIterable, Codable, Sendable {
   case active
   case superseded
   case withdrawn
