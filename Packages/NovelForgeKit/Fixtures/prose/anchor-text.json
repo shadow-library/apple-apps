@@ -1,0 +1,4414 @@
+{
+"hashes":[
+["","e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"],
+["a","ca978112ca1bbdcafac231b39a23dc4da786eff8147c4e72b9807785afee48bb"],
+["abc","ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad"],
+["é","4a99557e4033c3539de2eb65472017cad5f9557f7a0625a09f1c3f6e2ba69c4c"],
+["é","bf12767b0f2a56b2190075bae8169f656e3ce8d6357d4aff184bc6c7ea48f9f6"],
+["😀","f0443a342c5ef54783a111b51ba56c938e474c32324d90c3a60c9c8e3a37e2d9"],
+[" ","abfbd10daf8965c8860b3582af942d7a7cac972b31d1c50f382b67d9b6c07365"],
+["line\r\nbreak","f6781c34e282ed60ac687682f14e0fa5e72f6ebb70d73692648d86c7b632d954"],
+["xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","1853dfaa6b3a0e3d3c9b25821bfcf7c54ff52ccb3f0b6f6a6868300e762caa8b"],
+["\t , a b \r\n lamp café \n    lamp   \ta b 　a b,x. a b 𝄞 𝄞 　 　rain é a b  the 　𝄞 𝄞","5eae996a364de064973183b79423e01c54ee0e8c51cb25b552bb636c1af9e1db"]
+],
+"fits":[
+["word","new","new"],
+["word"," new ","new"],
+["word","\n\nnew\n","new"],
+["word","",""],
+["word","  ",""],
+["word"," x ","x"],
+["word","é","é"],
+["","new","new"],
+[""," new ","new"],
+["","\n\nnew\n","new"],
+["","",""],
+["","  ",""],
+[""," x ","x"],
+["","é","é"],
+["two words","new","new"],
+["two words"," new ","new"],
+["two words","\n\nnew\n","new"],
+["two words","",""],
+["two words","  ",""],
+["two words"," x ","x"],
+["two words","é","é"],
+["word ","new","new "],
+["word "," new ","new "],
+["word ","\n\nnew\n","new "],
+["word ",""," "],
+["word ","  "," "],
+["word "," x ","x "],
+["word ","é","é "],
+[" ","new"," new "],
+[" "," new "," new "],
+[" ","\n\nnew\n"," new "],
+[" ","","  "],
+[" ","  ","  "],
+[" "," x "," x "],
+[" ","é"," é "],
+["two words ","new","new "],
+["two words "," new ","new "],
+["two words ","\n\nnew\n","new "],
+["two words ",""," "],
+["two words ","  "," "],
+["two words "," x ","x "],
+["two words ","é","é "],
+["word\n","new","new\n"],
+["word\n"," new ","new\n"],
+["word\n","\n\nnew\n","new\n"],
+["word\n","","\n"],
+["word\n","  ","\n"],
+["word\n"," x ","x\n"],
+["word\n","é","é\n"],
+["\n","new","\nnew\n"],
+["\n"," new ","\nnew\n"],
+["\n","\n\nnew\n","\nnew\n"],
+["\n","","\n\n"],
+["\n","  ","\n\n"],
+["\n"," x ","\nx\n"],
+["\n","é","\né\n"],
+["two words\n","new","new\n"],
+["two words\n"," new ","new\n"],
+["two words\n","\n\nnew\n","new\n"],
+["two words\n","","\n"],
+["two words\n","  ","\n"],
+["two words\n"," x ","x\n"],
+["two words\n","é","é\n"],
+["word\n\n","new","new\n\n"],
+["word\n\n"," new ","new\n\n"],
+["word\n\n","\n\nnew\n","new\n\n"],
+["word\n\n","","\n\n"],
+["word\n\n","  ","\n\n"],
+["word\n\n"," x ","x\n\n"],
+["word\n\n","é","é\n\n"],
+["\n\n","new","\n\nnew\n\n"],
+["\n\n"," new ","\n\nnew\n\n"],
+["\n\n","\n\nnew\n","\n\nnew\n\n"],
+["\n\n","","\n\n\n\n"],
+["\n\n","  ","\n\n\n\n"],
+["\n\n"," x ","\n\nx\n\n"],
+["\n\n","é","\n\né\n\n"],
+["two words\n\n","new","new\n\n"],
+["two words\n\n"," new ","new\n\n"],
+["two words\n\n","\n\nnew\n","new\n\n"],
+["two words\n\n","","\n\n"],
+["two words\n\n","  ","\n\n"],
+["two words\n\n"," x ","x\n\n"],
+["two words\n\n","é","é\n\n"],
+["word\t","new","new\t"],
+["word\t"," new ","new\t"],
+["word\t","\n\nnew\n","new\t"],
+["word\t","","\t"],
+["word\t","  ","\t"],
+["word\t"," x ","x\t"],
+["word\t","é","é\t"],
+["\t","new","\tnew\t"],
+["\t"," new ","\tnew\t"],
+["\t","\n\nnew\n","\tnew\t"],
+["\t","","\t\t"],
+["\t","  ","\t\t"],
+["\t"," x ","\tx\t"],
+["\t","é","\té\t"],
+["two words\t","new","new\t"],
+["two words\t"," new ","new\t"],
+["two words\t","\n\nnew\n","new\t"],
+["two words\t","","\t"],
+["two words\t","  ","\t"],
+["two words\t"," x ","x\t"],
+["two words\t","é","é\t"],
+["word\r\n","new","new\r\n"],
+["word\r\n"," new ","new\r\n"],
+["word\r\n","\n\nnew\n","new\r\n"],
+["word\r\n","","\r\n"],
+["word\r\n","  ","\r\n"],
+["word\r\n"," x ","x\r\n"],
+["word\r\n","é","é\r\n"],
+["\r\n","new","\r\nnew\r\n"],
+["\r\n"," new ","\r\nnew\r\n"],
+["\r\n","\n\nnew\n","\r\nnew\r\n"],
+["\r\n","","\r\n\r\n"],
+["\r\n","  ","\r\n\r\n"],
+["\r\n"," x ","\r\nx\r\n"],
+["\r\n","é","\r\né\r\n"],
+["two words\r\n","new","new\r\n"],
+["two words\r\n"," new ","new\r\n"],
+["two words\r\n","\n\nnew\n","new\r\n"],
+["two words\r\n","","\r\n"],
+["two words\r\n","  ","\r\n"],
+["two words\r\n"," x ","x\r\n"],
+["two words\r\n","é","é\r\n"],
+["word ","new","new "],
+["word "," new ","new "],
+["word ","\n\nnew\n","new "],
+["word ",""," "],
+["word ","  "," "],
+["word "," x ","x "],
+["word ","é","é "],
+[" ","new"," new "],
+[" "," new "," new "],
+[" ","\n\nnew\n"," new "],
+[" ","","  "],
+[" ","  ","  "],
+[" "," x "," x "],
+[" ","é"," é "],
+["two words ","new","new "],
+["two words "," new ","new "],
+["two words ","\n\nnew\n","new "],
+["two words ",""," "],
+["two words ","  "," "],
+["two words "," x ","x "],
+["two words ","é","é "],
+["word ","new","new "],
+["word "," new ","new "],
+["word ","\n\nnew\n","new "],
+["word ",""," "],
+["word ","  "," "],
+["word "," x ","x "],
+["word ","é","é "],
+[" ","new"," new "],
+[" "," new "," new "],
+[" ","\n\nnew\n"," new "],
+[" ","","  "],
+[" ","  ","  "],
+[" "," x "," x "],
+[" ","é"," é "],
+["two words ","new","new "],
+["two words "," new ","new "],
+["two words ","\n\nnew\n","new "],
+["two words ",""," "],
+["two words ","  "," "],
+["two words "," x ","x "],
+["two words ","é","é "],
+["word　","new","new　"],
+["word　"," new ","new　"],
+["word　","\n\nnew\n","new　"],
+["word　","","　"],
+["word　","  ","　"],
+["word　"," x ","x　"],
+["word　","é","é　"],
+["　","new","　new　"],
+["　"," new ","　new　"],
+["　","\n\nnew\n","　new　"],
+["　","","　　"],
+["　","  ","　　"],
+["　"," x ","　x　"],
+["　","é","　é　"],
+["two words　","new","new　"],
+["two words　"," new ","new　"],
+["two words　","\n\nnew\n","new　"],
+["two words　","","　"],
+["two words　","  ","　"],
+["two words　"," x ","x　"],
+["two words　","é","é　"],
+["word﻿","new","new﻿"],
+["word﻿"," new ","new﻿"],
+["word﻿","\n\nnew\n","new﻿"],
+["word﻿","","﻿"],
+["word﻿","  ","﻿"],
+["word﻿"," x ","x﻿"],
+["word﻿","é","é﻿"],
+["﻿","new","﻿new﻿"],
+["﻿"," new ","﻿new﻿"],
+["﻿","\n\nnew\n","﻿new﻿"],
+["﻿","","﻿﻿"],
+["﻿","  ","﻿﻿"],
+["﻿"," x ","﻿x﻿"],
+["﻿","é","﻿é﻿"],
+["two words﻿","new","new﻿"],
+["two words﻿"," new ","new﻿"],
+["two words﻿","\n\nnew\n","new﻿"],
+["two words﻿","","﻿"],
+["two words﻿","  ","﻿"],
+["two words﻿"," x ","x﻿"],
+["two words﻿","é","é﻿"],
+["word​","new","new"],
+["word​"," new ","new"],
+["word​","\n\nnew\n","new"],
+["word​","",""],
+["word​","  ",""],
+["word​"," x ","x"],
+["word​","é","é"],
+["​","new","new"],
+["​"," new ","new"],
+["​","\n\nnew\n","new"],
+["​","",""],
+["​","  ",""],
+["​"," x ","x"],
+["​","é","é"],
+["two words​","new","new"],
+["two words​"," new ","new"],
+["two words​","\n\nnew\n","new"],
+["two words​","",""],
+["two words​","  ",""],
+["two words​"," x ","x"],
+["two words​","é","é"],
+["word","new","new"],
+["word"," new ","new"],
+["word","\n\nnew\n","new"],
+["word","",""],
+["word","  ",""],
+["word"," x ","x"],
+["word","é","é"],
+["","new","new"],
+[""," new ","new"],
+["","\n\nnew\n","new"],
+["","",""],
+["","  ",""],
+[""," x ","x"],
+["","é","é"],
+["two words","new","new"],
+["two words"," new ","new"],
+["two words","\n\nnew\n","new"],
+["two words","",""],
+["two words","  ",""],
+["two words"," x ","x"],
+["two words","é","é"],
+["word᠎","new","new"],
+["word᠎"," new ","new"],
+["word᠎","\n\nnew\n","new"],
+["word᠎","",""],
+["word᠎","  ",""],
+["word᠎"," x ","x"],
+["word᠎","é","é"],
+["᠎","new","new"],
+["᠎"," new ","new"],
+["᠎","\n\nnew\n","new"],
+["᠎","",""],
+["᠎","  ",""],
+["᠎"," x ","x"],
+["᠎","é","é"],
+["two words᠎","new","new"],
+["two words᠎"," new ","new"],
+["two words᠎","\n\nnew\n","new"],
+["two words᠎","",""],
+["two words᠎","  ",""],
+["two words᠎"," x ","x"],
+["two words᠎","é","é"],
+["word \n ","new","new \n "],
+["word \n "," new ","new \n "],
+["word \n ","\n\nnew\n","new \n "],
+["word \n ",""," \n "],
+["word \n ","  "," \n "],
+["word \n "," x ","x \n "],
+["word \n ","é","é \n "],
+[" \n ","new"," \n new \n "],
+[" \n "," new "," \n new \n "],
+[" \n ","\n\nnew\n"," \n new \n "],
+[" \n ",""," \n  \n "],
+[" \n ","  "," \n  \n "],
+[" \n "," x "," \n x \n "],
+[" \n ","é"," \n é \n "],
+["two words \n ","new","new \n "],
+["two words \n "," new ","new \n "],
+["two words \n ","\n\nnew\n","new \n "],
+["two words \n ",""," \n "],
+["two words \n ","  "," \n "],
+["two words \n "," x ","x \n "],
+["two words \n ","é","é \n "],
+[" word","new"," new"],
+[" word"," new "," new"],
+[" word","\n\nnew\n"," new"],
+[" word",""," "],
+[" word","  "," "],
+[" word"," x "," x"],
+[" word","é"," é"],
+[" ","new"," new "],
+[" "," new "," new "],
+[" ","\n\nnew\n"," new "],
+[" ","","  "],
+[" ","  ","  "],
+[" "," x "," x "],
+[" ","é"," é "],
+[" two words","new"," new"],
+[" two words"," new "," new"],
+[" two words","\n\nnew\n"," new"],
+[" two words",""," "],
+[" two words","  "," "],
+[" two words"," x "," x"],
+[" two words","é"," é"],
+[" word ","new"," new "],
+[" word "," new "," new "],
+[" word ","\n\nnew\n"," new "],
+[" word ","","  "],
+[" word ","  ","  "],
+[" word "," x "," x "],
+[" word ","é"," é "],
+["  ","new","  new  "],
+["  "," new ","  new  "],
+["  ","\n\nnew\n","  new  "],
+["  ","","    "],
+["  ","  ","    "],
+["  "," x ","  x  "],
+["  ","é","  é  "],
+[" two words ","new"," new "],
+[" two words "," new "," new "],
+[" two words ","\n\nnew\n"," new "],
+[" two words ","","  "],
+[" two words ","  ","  "],
+[" two words "," x "," x "],
+[" two words ","é"," é "],
+[" word\n","new"," new\n"],
+[" word\n"," new "," new\n"],
+[" word\n","\n\nnew\n"," new\n"],
+[" word\n",""," \n"],
+[" word\n","  "," \n"],
+[" word\n"," x "," x\n"],
+[" word\n","é"," é\n"],
+[" \n","new"," \nnew \n"],
+[" \n"," new "," \nnew \n"],
+[" \n","\n\nnew\n"," \nnew \n"],
+[" \n",""," \n \n"],
+[" \n","  "," \n \n"],
+[" \n"," x "," \nx \n"],
+[" \n","é"," \né \n"],
+[" two words\n","new"," new\n"],
+[" two words\n"," new "," new\n"],
+[" two words\n","\n\nnew\n"," new\n"],
+[" two words\n",""," \n"],
+[" two words\n","  "," \n"],
+[" two words\n"," x "," x\n"],
+[" two words\n","é"," é\n"],
+[" word\n\n","new"," new\n\n"],
+[" word\n\n"," new "," new\n\n"],
+[" word\n\n","\n\nnew\n"," new\n\n"],
+[" word\n\n",""," \n\n"],
+[" word\n\n","  "," \n\n"],
+[" word\n\n"," x "," x\n\n"],
+[" word\n\n","é"," é\n\n"],
+[" \n\n","new"," \n\nnew \n\n"],
+[" \n\n"," new "," \n\nnew \n\n"],
+[" \n\n","\n\nnew\n"," \n\nnew \n\n"],
+[" \n\n",""," \n\n \n\n"],
+[" \n\n","  "," \n\n \n\n"],
+[" \n\n"," x "," \n\nx \n\n"],
+[" \n\n","é"," \n\né \n\n"],
+[" two words\n\n","new"," new\n\n"],
+[" two words\n\n"," new "," new\n\n"],
+[" two words\n\n","\n\nnew\n"," new\n\n"],
+[" two words\n\n",""," \n\n"],
+[" two words\n\n","  "," \n\n"],
+[" two words\n\n"," x "," x\n\n"],
+[" two words\n\n","é"," é\n\n"],
+[" word\t","new"," new\t"],
+[" word\t"," new "," new\t"],
+[" word\t","\n\nnew\n"," new\t"],
+[" word\t",""," \t"],
+[" word\t","  "," \t"],
+[" word\t"," x "," x\t"],
+[" word\t","é"," é\t"],
+[" \t","new"," \tnew \t"],
+[" \t"," new "," \tnew \t"],
+[" \t","\n\nnew\n"," \tnew \t"],
+[" \t",""," \t \t"],
+[" \t","  "," \t \t"],
+[" \t"," x "," \tx \t"],
+[" \t","é"," \té \t"],
+[" two words\t","new"," new\t"],
+[" two words\t"," new "," new\t"],
+[" two words\t","\n\nnew\n"," new\t"],
+[" two words\t",""," \t"],
+[" two words\t","  "," \t"],
+[" two words\t"," x "," x\t"],
+[" two words\t","é"," é\t"],
+[" word\r\n","new"," new\r\n"],
+[" word\r\n"," new "," new\r\n"],
+[" word\r\n","\n\nnew\n"," new\r\n"],
+[" word\r\n",""," \r\n"],
+[" word\r\n","  "," \r\n"],
+[" word\r\n"," x "," x\r\n"],
+[" word\r\n","é"," é\r\n"],
+[" \r\n","new"," \r\nnew \r\n"],
+[" \r\n"," new "," \r\nnew \r\n"],
+[" \r\n","\n\nnew\n"," \r\nnew \r\n"],
+[" \r\n",""," \r\n \r\n"],
+[" \r\n","  "," \r\n \r\n"],
+[" \r\n"," x "," \r\nx \r\n"],
+[" \r\n","é"," \r\né \r\n"],
+[" two words\r\n","new"," new\r\n"],
+[" two words\r\n"," new "," new\r\n"],
+[" two words\r\n","\n\nnew\n"," new\r\n"],
+[" two words\r\n",""," \r\n"],
+[" two words\r\n","  "," \r\n"],
+[" two words\r\n"," x "," x\r\n"],
+[" two words\r\n","é"," é\r\n"],
+[" word ","new"," new "],
+[" word "," new "," new "],
+[" word ","\n\nnew\n"," new "],
+[" word ","","  "],
+[" word ","  ","  "],
+[" word "," x "," x "],
+[" word ","é"," é "],
+["  ","new","  new  "],
+["  "," new ","  new  "],
+["  ","\n\nnew\n","  new  "],
+["  ","","    "],
+["  ","  ","    "],
+["  "," x ","  x  "],
+["  ","é","  é  "],
+[" two words ","new"," new "],
+[" two words "," new "," new "],
+[" two words ","\n\nnew\n"," new "],
+[" two words ","","  "],
+[" two words ","  ","  "],
+[" two words "," x "," x "],
+[" two words ","é"," é "],
+[" word ","new"," new "],
+[" word "," new "," new "],
+[" word ","\n\nnew\n"," new "],
+[" word ","","  "],
+[" word ","  ","  "],
+[" word "," x "," x "],
+[" word ","é"," é "],
+["  ","new","  new  "],
+["  "," new ","  new  "],
+["  ","\n\nnew\n","  new  "],
+["  ","","    "],
+["  ","  ","    "],
+["  "," x ","  x  "],
+["  ","é","  é  "],
+[" two words ","new"," new "],
+[" two words "," new "," new "],
+[" two words ","\n\nnew\n"," new "],
+[" two words ","","  "],
+[" two words ","  ","  "],
+[" two words "," x "," x "],
+[" two words ","é"," é "],
+[" word　","new"," new　"],
+[" word　"," new "," new　"],
+[" word　","\n\nnew\n"," new　"],
+[" word　",""," 　"],
+[" word　","  "," 　"],
+[" word　"," x "," x　"],
+[" word　","é"," é　"],
+[" 　","new"," 　new 　"],
+[" 　"," new "," 　new 　"],
+[" 　","\n\nnew\n"," 　new 　"],
+[" 　",""," 　 　"],
+[" 　","  "," 　 　"],
+[" 　"," x "," 　x 　"],
+[" 　","é"," 　é 　"],
+[" two words　","new"," new　"],
+[" two words　"," new "," new　"],
+[" two words　","\n\nnew\n"," new　"],
+[" two words　",""," 　"],
+[" two words　","  "," 　"],
+[" two words　"," x "," x　"],
+[" two words　","é"," é　"],
+[" word﻿","new"," new﻿"],
+[" word﻿"," new "," new﻿"],
+[" word﻿","\n\nnew\n"," new﻿"],
+[" word﻿",""," ﻿"],
+[" word﻿","  "," ﻿"],
+[" word﻿"," x "," x﻿"],
+[" word﻿","é"," é﻿"],
+[" ﻿","new"," ﻿new ﻿"],
+[" ﻿"," new "," ﻿new ﻿"],
+[" ﻿","\n\nnew\n"," ﻿new ﻿"],
+[" ﻿",""," ﻿ ﻿"],
+[" ﻿","  "," ﻿ ﻿"],
+[" ﻿"," x "," ﻿x ﻿"],
+[" ﻿","é"," ﻿é ﻿"],
+[" two words﻿","new"," new﻿"],
+[" two words﻿"," new "," new﻿"],
+[" two words﻿","\n\nnew\n"," new﻿"],
+[" two words﻿",""," ﻿"],
+[" two words﻿","  "," ﻿"],
+[" two words﻿"," x "," x﻿"],
+[" two words﻿","é"," é﻿"],
+[" word​","new"," new"],
+[" word​"," new "," new"],
+[" word​","\n\nnew\n"," new"],
+[" word​",""," "],
+[" word​","  "," "],
+[" word​"," x "," x"],
+[" word​","é"," é"],
+[" ​","new"," new"],
+[" ​"," new "," new"],
+[" ​","\n\nnew\n"," new"],
+[" ​",""," "],
+[" ​","  "," "],
+[" ​"," x "," x"],
+[" ​","é"," é"],
+[" two words​","new"," new"],
+[" two words​"," new "," new"],
+[" two words​","\n\nnew\n"," new"],
+[" two words​",""," "],
+[" two words​","  "," "],
+[" two words​"," x "," x"],
+[" two words​","é"," é"],
+[" word","new"," new"],
+[" word"," new "," new"],
+[" word","\n\nnew\n"," new"],
+[" word",""," "],
+[" word","  "," "],
+[" word"," x "," x"],
+[" word","é"," é"],
+[" ","new"," new"],
+[" "," new "," new"],
+[" ","\n\nnew\n"," new"],
+[" ",""," "],
+[" ","  "," "],
+[" "," x "," x"],
+[" ","é"," é"],
+[" two words","new"," new"],
+[" two words"," new "," new"],
+[" two words","\n\nnew\n"," new"],
+[" two words",""," "],
+[" two words","  "," "],
+[" two words"," x "," x"],
+[" two words","é"," é"],
+[" word᠎","new"," new"],
+[" word᠎"," new "," new"],
+[" word᠎","\n\nnew\n"," new"],
+[" word᠎",""," "],
+[" word᠎","  "," "],
+[" word᠎"," x "," x"],
+[" word᠎","é"," é"],
+[" ᠎","new"," new"],
+[" ᠎"," new "," new"],
+[" ᠎","\n\nnew\n"," new"],
+[" ᠎",""," "],
+[" ᠎","  "," "],
+[" ᠎"," x "," x"],
+[" ᠎","é"," é"],
+[" two words᠎","new"," new"],
+[" two words᠎"," new "," new"],
+[" two words᠎","\n\nnew\n"," new"],
+[" two words᠎",""," "],
+[" two words᠎","  "," "],
+[" two words᠎"," x "," x"],
+[" two words᠎","é"," é"],
+[" word \n ","new"," new \n "],
+[" word \n "," new "," new \n "],
+[" word \n ","\n\nnew\n"," new \n "],
+[" word \n ","","  \n "],
+[" word \n ","  ","  \n "],
+[" word \n "," x "," x \n "],
+[" word \n ","é"," é \n "],
+["  \n ","new","  \n new  \n "],
+["  \n "," new ","  \n new  \n "],
+["  \n ","\n\nnew\n","  \n new  \n "],
+["  \n ","","  \n   \n "],
+["  \n ","  ","  \n   \n "],
+["  \n "," x ","  \n x  \n "],
+["  \n ","é","  \n é  \n "],
+[" two words \n ","new"," new \n "],
+[" two words \n "," new "," new \n "],
+[" two words \n ","\n\nnew\n"," new \n "],
+[" two words \n ","","  \n "],
+[" two words \n ","  ","  \n "],
+[" two words \n "," x "," x \n "],
+[" two words \n ","é"," é \n "],
+["\nword","new","\nnew"],
+["\nword"," new ","\nnew"],
+["\nword","\n\nnew\n","\nnew"],
+["\nword","","\n"],
+["\nword","  ","\n"],
+["\nword"," x ","\nx"],
+["\nword","é","\né"],
+["\n","new","\nnew\n"],
+["\n"," new ","\nnew\n"],
+["\n","\n\nnew\n","\nnew\n"],
+["\n","","\n\n"],
+["\n","  ","\n\n"],
+["\n"," x ","\nx\n"],
+["\n","é","\né\n"],
+["\ntwo words","new","\nnew"],
+["\ntwo words"," new ","\nnew"],
+["\ntwo words","\n\nnew\n","\nnew"],
+["\ntwo words","","\n"],
+["\ntwo words","  ","\n"],
+["\ntwo words"," x ","\nx"],
+["\ntwo words","é","\né"],
+["\nword ","new","\nnew "],
+["\nword "," new ","\nnew "],
+["\nword ","\n\nnew\n","\nnew "],
+["\nword ","","\n "],
+["\nword ","  ","\n "],
+["\nword "," x ","\nx "],
+["\nword ","é","\né "],
+["\n ","new","\n new\n "],
+["\n "," new ","\n new\n "],
+["\n ","\n\nnew\n","\n new\n "],
+["\n ","","\n \n "],
+["\n ","  ","\n \n "],
+["\n "," x ","\n x\n "],
+["\n ","é","\n é\n "],
+["\ntwo words ","new","\nnew "],
+["\ntwo words "," new ","\nnew "],
+["\ntwo words ","\n\nnew\n","\nnew "],
+["\ntwo words ","","\n "],
+["\ntwo words ","  ","\n "],
+["\ntwo words "," x ","\nx "],
+["\ntwo words ","é","\né "],
+["\nword\n","new","\nnew\n"],
+["\nword\n"," new ","\nnew\n"],
+["\nword\n","\n\nnew\n","\nnew\n"],
+["\nword\n","","\n\n"],
+["\nword\n","  ","\n\n"],
+["\nword\n"," x ","\nx\n"],
+["\nword\n","é","\né\n"],
+["\n\n","new","\n\nnew\n\n"],
+["\n\n"," new ","\n\nnew\n\n"],
+["\n\n","\n\nnew\n","\n\nnew\n\n"],
+["\n\n","","\n\n\n\n"],
+["\n\n","  ","\n\n\n\n"],
+["\n\n"," x ","\n\nx\n\n"],
+["\n\n","é","\n\né\n\n"],
+["\ntwo words\n","new","\nnew\n"],
+["\ntwo words\n"," new ","\nnew\n"],
+["\ntwo words\n","\n\nnew\n","\nnew\n"],
+["\ntwo words\n","","\n\n"],
+["\ntwo words\n","  ","\n\n"],
+["\ntwo words\n"," x ","\nx\n"],
+["\ntwo words\n","é","\né\n"],
+["\nword\n\n","new","\nnew\n\n"],
+["\nword\n\n"," new ","\nnew\n\n"],
+["\nword\n\n","\n\nnew\n","\nnew\n\n"],
+["\nword\n\n","","\n\n\n"],
+["\nword\n\n","  ","\n\n\n"],
+["\nword\n\n"," x ","\nx\n\n"],
+["\nword\n\n","é","\né\n\n"],
+["\n\n\n","new","\n\n\nnew\n\n\n"],
+["\n\n\n"," new ","\n\n\nnew\n\n\n"],
+["\n\n\n","\n\nnew\n","\n\n\nnew\n\n\n"],
+["\n\n\n","","\n\n\n\n\n\n"],
+["\n\n\n","  ","\n\n\n\n\n\n"],
+["\n\n\n"," x ","\n\n\nx\n\n\n"],
+["\n\n\n","é","\n\n\né\n\n\n"],
+["\ntwo words\n\n","new","\nnew\n\n"],
+["\ntwo words\n\n"," new ","\nnew\n\n"],
+["\ntwo words\n\n","\n\nnew\n","\nnew\n\n"],
+["\ntwo words\n\n","","\n\n\n"],
+["\ntwo words\n\n","  ","\n\n\n"],
+["\ntwo words\n\n"," x ","\nx\n\n"],
+["\ntwo words\n\n","é","\né\n\n"],
+["\nword\t","new","\nnew\t"],
+["\nword\t"," new ","\nnew\t"],
+["\nword\t","\n\nnew\n","\nnew\t"],
+["\nword\t","","\n\t"],
+["\nword\t","  ","\n\t"],
+["\nword\t"," x ","\nx\t"],
+["\nword\t","é","\né\t"],
+["\n\t","new","\n\tnew\n\t"],
+["\n\t"," new ","\n\tnew\n\t"],
+["\n\t","\n\nnew\n","\n\tnew\n\t"],
+["\n\t","","\n\t\n\t"],
+["\n\t","  ","\n\t\n\t"],
+["\n\t"," x ","\n\tx\n\t"],
+["\n\t","é","\n\té\n\t"],
+["\ntwo words\t","new","\nnew\t"],
+["\ntwo words\t"," new ","\nnew\t"],
+["\ntwo words\t","\n\nnew\n","\nnew\t"],
+["\ntwo words\t","","\n\t"],
+["\ntwo words\t","  ","\n\t"],
+["\ntwo words\t"," x ","\nx\t"],
+["\ntwo words\t","é","\né\t"],
+["\nword\r\n","new","\nnew\r\n"],
+["\nword\r\n"," new ","\nnew\r\n"],
+["\nword\r\n","\n\nnew\n","\nnew\r\n"],
+["\nword\r\n","","\n\r\n"],
+["\nword\r\n","  ","\n\r\n"],
+["\nword\r\n"," x ","\nx\r\n"],
+["\nword\r\n","é","\né\r\n"],
+["\n\r\n","new","\n\r\nnew\n\r\n"],
+["\n\r\n"," new ","\n\r\nnew\n\r\n"],
+["\n\r\n","\n\nnew\n","\n\r\nnew\n\r\n"],
+["\n\r\n","","\n\r\n\n\r\n"],
+["\n\r\n","  ","\n\r\n\n\r\n"],
+["\n\r\n"," x ","\n\r\nx\n\r\n"],
+["\n\r\n","é","\n\r\né\n\r\n"],
+["\ntwo words\r\n","new","\nnew\r\n"],
+["\ntwo words\r\n"," new ","\nnew\r\n"],
+["\ntwo words\r\n","\n\nnew\n","\nnew\r\n"],
+["\ntwo words\r\n","","\n\r\n"],
+["\ntwo words\r\n","  ","\n\r\n"],
+["\ntwo words\r\n"," x ","\nx\r\n"],
+["\ntwo words\r\n","é","\né\r\n"],
+["\nword ","new","\nnew "],
+["\nword "," new ","\nnew "],
+["\nword ","\n\nnew\n","\nnew "],
+["\nword ","","\n "],
+["\nword ","  ","\n "],
+["\nword "," x ","\nx "],
+["\nword ","é","\né "],
+["\n ","new","\n new\n "],
+["\n "," new ","\n new\n "],
+["\n ","\n\nnew\n","\n new\n "],
+["\n ","","\n \n "],
+["\n ","  ","\n \n "],
+["\n "," x ","\n x\n "],
+["\n ","é","\n é\n "],
+["\ntwo words ","new","\nnew "],
+["\ntwo words "," new ","\nnew "],
+["\ntwo words ","\n\nnew\n","\nnew "],
+["\ntwo words ","","\n "],
+["\ntwo words ","  ","\n "],
+["\ntwo words "," x ","\nx "],
+["\ntwo words ","é","\né "],
+["\nword ","new","\nnew "],
+["\nword "," new ","\nnew "],
+["\nword ","\n\nnew\n","\nnew "],
+["\nword ","","\n "],
+["\nword ","  ","\n "],
+["\nword "," x ","\nx "],
+["\nword ","é","\né "],
+["\n ","new","\n new\n "],
+["\n "," new ","\n new\n "],
+["\n ","\n\nnew\n","\n new\n "],
+["\n ","","\n \n "],
+["\n ","  ","\n \n "],
+["\n "," x ","\n x\n "],
+["\n ","é","\n é\n "],
+["\ntwo words ","new","\nnew "],
+["\ntwo words "," new ","\nnew "],
+["\ntwo words ","\n\nnew\n","\nnew "],
+["\ntwo words ","","\n "],
+["\ntwo words ","  ","\n "],
+["\ntwo words "," x ","\nx "],
+["\ntwo words ","é","\né "],
+["\nword　","new","\nnew　"],
+["\nword　"," new ","\nnew　"],
+["\nword　","\n\nnew\n","\nnew　"],
+["\nword　","","\n　"],
+["\nword　","  ","\n　"],
+["\nword　"," x ","\nx　"],
+["\nword　","é","\né　"],
+["\n　","new","\n　new\n　"],
+["\n　"," new ","\n　new\n　"],
+["\n　","\n\nnew\n","\n　new\n　"],
+["\n　","","\n　\n　"],
+["\n　","  ","\n　\n　"],
+["\n　"," x ","\n　x\n　"],
+["\n　","é","\n　é\n　"],
+["\ntwo words　","new","\nnew　"],
+["\ntwo words　"," new ","\nnew　"],
+["\ntwo words　","\n\nnew\n","\nnew　"],
+["\ntwo words　","","\n　"],
+["\ntwo words　","  ","\n　"],
+["\ntwo words　"," x ","\nx　"],
+["\ntwo words　","é","\né　"],
+["\nword﻿","new","\nnew﻿"],
+["\nword﻿"," new ","\nnew﻿"],
+["\nword﻿","\n\nnew\n","\nnew﻿"],
+["\nword﻿","","\n﻿"],
+["\nword﻿","  ","\n﻿"],
+["\nword﻿"," x ","\nx﻿"],
+["\nword﻿","é","\né﻿"],
+["\n﻿","new","\n﻿new\n﻿"],
+["\n﻿"," new ","\n﻿new\n﻿"],
+["\n﻿","\n\nnew\n","\n﻿new\n﻿"],
+["\n﻿","","\n﻿\n﻿"],
+["\n﻿","  ","\n﻿\n﻿"],
+["\n﻿"," x ","\n﻿x\n﻿"],
+["\n﻿","é","\n﻿é\n﻿"],
+["\ntwo words﻿","new","\nnew﻿"],
+["\ntwo words﻿"," new ","\nnew﻿"],
+["\ntwo words﻿","\n\nnew\n","\nnew﻿"],
+["\ntwo words﻿","","\n﻿"],
+["\ntwo words﻿","  ","\n﻿"],
+["\ntwo words﻿"," x ","\nx﻿"],
+["\ntwo words﻿","é","\né﻿"],
+["\nword​","new","\nnew"],
+["\nword​"," new ","\nnew"],
+["\nword​","\n\nnew\n","\nnew"],
+["\nword​","","\n"],
+["\nword​","  ","\n"],
+["\nword​"," x ","\nx"],
+["\nword​","é","\né"],
+["\n​","new","\nnew"],
+["\n​"," new ","\nnew"],
+["\n​","\n\nnew\n","\nnew"],
+["\n​","","\n"],
+["\n​","  ","\n"],
+["\n​"," x ","\nx"],
+["\n​","é","\né"],
+["\ntwo words​","new","\nnew"],
+["\ntwo words​"," new ","\nnew"],
+["\ntwo words​","\n\nnew\n","\nnew"],
+["\ntwo words​","","\n"],
+["\ntwo words​","  ","\n"],
+["\ntwo words​"," x ","\nx"],
+["\ntwo words​","é","\né"],
+["\nword","new","\nnew"],
+["\nword"," new ","\nnew"],
+["\nword","\n\nnew\n","\nnew"],
+["\nword","","\n"],
+["\nword","  ","\n"],
+["\nword"," x ","\nx"],
+["\nword","é","\né"],
+["\n","new","\nnew"],
+["\n"," new ","\nnew"],
+["\n","\n\nnew\n","\nnew"],
+["\n","","\n"],
+["\n","  ","\n"],
+["\n"," x ","\nx"],
+["\n","é","\né"],
+["\ntwo words","new","\nnew"],
+["\ntwo words"," new ","\nnew"],
+["\ntwo words","\n\nnew\n","\nnew"],
+["\ntwo words","","\n"],
+["\ntwo words","  ","\n"],
+["\ntwo words"," x ","\nx"],
+["\ntwo words","é","\né"],
+["\nword᠎","new","\nnew"],
+["\nword᠎"," new ","\nnew"],
+["\nword᠎","\n\nnew\n","\nnew"],
+["\nword᠎","","\n"],
+["\nword᠎","  ","\n"],
+["\nword᠎"," x ","\nx"],
+["\nword᠎","é","\né"],
+["\n᠎","new","\nnew"],
+["\n᠎"," new ","\nnew"],
+["\n᠎","\n\nnew\n","\nnew"],
+["\n᠎","","\n"],
+["\n᠎","  ","\n"],
+["\n᠎"," x ","\nx"],
+["\n᠎","é","\né"],
+["\ntwo words᠎","new","\nnew"],
+["\ntwo words᠎"," new ","\nnew"],
+["\ntwo words᠎","\n\nnew\n","\nnew"],
+["\ntwo words᠎","","\n"],
+["\ntwo words᠎","  ","\n"],
+["\ntwo words᠎"," x ","\nx"],
+["\ntwo words᠎","é","\né"],
+["\nword \n ","new","\nnew \n "],
+["\nword \n "," new ","\nnew \n "],
+["\nword \n ","\n\nnew\n","\nnew \n "],
+["\nword \n ","","\n \n "],
+["\nword \n ","  ","\n \n "],
+["\nword \n "," x ","\nx \n "],
+["\nword \n ","é","\né \n "],
+["\n \n ","new","\n \n new\n \n "],
+["\n \n "," new ","\n \n new\n \n "],
+["\n \n ","\n\nnew\n","\n \n new\n \n "],
+["\n \n ","","\n \n \n \n "],
+["\n \n ","  ","\n \n \n \n "],
+["\n \n "," x ","\n \n x\n \n "],
+["\n \n ","é","\n \n é\n \n "],
+["\ntwo words \n ","new","\nnew \n "],
+["\ntwo words \n "," new ","\nnew \n "],
+["\ntwo words \n ","\n\nnew\n","\nnew \n "],
+["\ntwo words \n ","","\n \n "],
+["\ntwo words \n ","  ","\n \n "],
+["\ntwo words \n "," x ","\nx \n "],
+["\ntwo words \n ","é","\né \n "],
+["\n\nword","new","\n\nnew"],
+["\n\nword"," new ","\n\nnew"],
+["\n\nword","\n\nnew\n","\n\nnew"],
+["\n\nword","","\n\n"],
+["\n\nword","  ","\n\n"],
+["\n\nword"," x ","\n\nx"],
+["\n\nword","é","\n\né"],
+["\n\n","new","\n\nnew\n\n"],
+["\n\n"," new ","\n\nnew\n\n"],
+["\n\n","\n\nnew\n","\n\nnew\n\n"],
+["\n\n","","\n\n\n\n"],
+["\n\n","  ","\n\n\n\n"],
+["\n\n"," x ","\n\nx\n\n"],
+["\n\n","é","\n\né\n\n"],
+["\n\ntwo words","new","\n\nnew"],
+["\n\ntwo words"," new ","\n\nnew"],
+["\n\ntwo words","\n\nnew\n","\n\nnew"],
+["\n\ntwo words","","\n\n"],
+["\n\ntwo words","  ","\n\n"],
+["\n\ntwo words"," x ","\n\nx"],
+["\n\ntwo words","é","\n\né"],
+["\n\nword ","new","\n\nnew "],
+["\n\nword "," new ","\n\nnew "],
+["\n\nword ","\n\nnew\n","\n\nnew "],
+["\n\nword ","","\n\n "],
+["\n\nword ","  ","\n\n "],
+["\n\nword "," x ","\n\nx "],
+["\n\nword ","é","\n\né "],
+["\n\n ","new","\n\n new\n\n "],
+["\n\n "," new ","\n\n new\n\n "],
+["\n\n ","\n\nnew\n","\n\n new\n\n "],
+["\n\n ","","\n\n \n\n "],
+["\n\n ","  ","\n\n \n\n "],
+["\n\n "," x ","\n\n x\n\n "],
+["\n\n ","é","\n\n é\n\n "],
+["\n\ntwo words ","new","\n\nnew "],
+["\n\ntwo words "," new ","\n\nnew "],
+["\n\ntwo words ","\n\nnew\n","\n\nnew "],
+["\n\ntwo words ","","\n\n "],
+["\n\ntwo words ","  ","\n\n "],
+["\n\ntwo words "," x ","\n\nx "],
+["\n\ntwo words ","é","\n\né "],
+["\n\nword\n","new","\n\nnew\n"],
+["\n\nword\n"," new ","\n\nnew\n"],
+["\n\nword\n","\n\nnew\n","\n\nnew\n"],
+["\n\nword\n","","\n\n\n"],
+["\n\nword\n","  ","\n\n\n"],
+["\n\nword\n"," x ","\n\nx\n"],
+["\n\nword\n","é","\n\né\n"],
+["\n\n\n","new","\n\n\nnew\n\n\n"],
+["\n\n\n"," new ","\n\n\nnew\n\n\n"],
+["\n\n\n","\n\nnew\n","\n\n\nnew\n\n\n"],
+["\n\n\n","","\n\n\n\n\n\n"],
+["\n\n\n","  ","\n\n\n\n\n\n"],
+["\n\n\n"," x ","\n\n\nx\n\n\n"],
+["\n\n\n","é","\n\n\né\n\n\n"],
+["\n\ntwo words\n","new","\n\nnew\n"],
+["\n\ntwo words\n"," new ","\n\nnew\n"],
+["\n\ntwo words\n","\n\nnew\n","\n\nnew\n"],
+["\n\ntwo words\n","","\n\n\n"],
+["\n\ntwo words\n","  ","\n\n\n"],
+["\n\ntwo words\n"," x ","\n\nx\n"],
+["\n\ntwo words\n","é","\n\né\n"],
+["\n\nword\n\n","new","\n\nnew\n\n"],
+["\n\nword\n\n"," new ","\n\nnew\n\n"],
+["\n\nword\n\n","\n\nnew\n","\n\nnew\n\n"],
+["\n\nword\n\n","","\n\n\n\n"],
+["\n\nword\n\n","  ","\n\n\n\n"],
+["\n\nword\n\n"," x ","\n\nx\n\n"],
+["\n\nword\n\n","é","\n\né\n\n"],
+["\n\n\n\n","new","\n\n\n\nnew\n\n\n\n"],
+["\n\n\n\n"," new ","\n\n\n\nnew\n\n\n\n"],
+["\n\n\n\n","\n\nnew\n","\n\n\n\nnew\n\n\n\n"],
+["\n\n\n\n","","\n\n\n\n\n\n\n\n"],
+["\n\n\n\n","  ","\n\n\n\n\n\n\n\n"],
+["\n\n\n\n"," x ","\n\n\n\nx\n\n\n\n"],
+["\n\n\n\n","é","\n\n\n\né\n\n\n\n"],
+["\n\ntwo words\n\n","new","\n\nnew\n\n"],
+["\n\ntwo words\n\n"," new ","\n\nnew\n\n"],
+["\n\ntwo words\n\n","\n\nnew\n","\n\nnew\n\n"],
+["\n\ntwo words\n\n","","\n\n\n\n"],
+["\n\ntwo words\n\n","  ","\n\n\n\n"],
+["\n\ntwo words\n\n"," x ","\n\nx\n\n"],
+["\n\ntwo words\n\n","é","\n\né\n\n"],
+["\n\nword\t","new","\n\nnew\t"],
+["\n\nword\t"," new ","\n\nnew\t"],
+["\n\nword\t","\n\nnew\n","\n\nnew\t"],
+["\n\nword\t","","\n\n\t"],
+["\n\nword\t","  ","\n\n\t"],
+["\n\nword\t"," x ","\n\nx\t"],
+["\n\nword\t","é","\n\né\t"],
+["\n\n\t","new","\n\n\tnew\n\n\t"],
+["\n\n\t"," new ","\n\n\tnew\n\n\t"],
+["\n\n\t","\n\nnew\n","\n\n\tnew\n\n\t"],
+["\n\n\t","","\n\n\t\n\n\t"],
+["\n\n\t","  ","\n\n\t\n\n\t"],
+["\n\n\t"," x ","\n\n\tx\n\n\t"],
+["\n\n\t","é","\n\n\té\n\n\t"],
+["\n\ntwo words\t","new","\n\nnew\t"],
+["\n\ntwo words\t"," new ","\n\nnew\t"],
+["\n\ntwo words\t","\n\nnew\n","\n\nnew\t"],
+["\n\ntwo words\t","","\n\n\t"],
+["\n\ntwo words\t","  ","\n\n\t"],
+["\n\ntwo words\t"," x ","\n\nx\t"],
+["\n\ntwo words\t","é","\n\né\t"],
+["\n\nword\r\n","new","\n\nnew\r\n"],
+["\n\nword\r\n"," new ","\n\nnew\r\n"],
+["\n\nword\r\n","\n\nnew\n","\n\nnew\r\n"],
+["\n\nword\r\n","","\n\n\r\n"],
+["\n\nword\r\n","  ","\n\n\r\n"],
+["\n\nword\r\n"," x ","\n\nx\r\n"],
+["\n\nword\r\n","é","\n\né\r\n"],
+["\n\n\r\n","new","\n\n\r\nnew\n\n\r\n"],
+["\n\n\r\n"," new ","\n\n\r\nnew\n\n\r\n"],
+["\n\n\r\n","\n\nnew\n","\n\n\r\nnew\n\n\r\n"],
+["\n\n\r\n","","\n\n\r\n\n\n\r\n"],
+["\n\n\r\n","  ","\n\n\r\n\n\n\r\n"],
+["\n\n\r\n"," x ","\n\n\r\nx\n\n\r\n"],
+["\n\n\r\n","é","\n\n\r\né\n\n\r\n"],
+["\n\ntwo words\r\n","new","\n\nnew\r\n"],
+["\n\ntwo words\r\n"," new ","\n\nnew\r\n"],
+["\n\ntwo words\r\n","\n\nnew\n","\n\nnew\r\n"],
+["\n\ntwo words\r\n","","\n\n\r\n"],
+["\n\ntwo words\r\n","  ","\n\n\r\n"],
+["\n\ntwo words\r\n"," x ","\n\nx\r\n"],
+["\n\ntwo words\r\n","é","\n\né\r\n"],
+["\n\nword ","new","\n\nnew "],
+["\n\nword "," new ","\n\nnew "],
+["\n\nword ","\n\nnew\n","\n\nnew "],
+["\n\nword ","","\n\n "],
+["\n\nword ","  ","\n\n "],
+["\n\nword "," x ","\n\nx "],
+["\n\nword ","é","\n\né "],
+["\n\n ","new","\n\n new\n\n "],
+["\n\n "," new ","\n\n new\n\n "],
+["\n\n ","\n\nnew\n","\n\n new\n\n "],
+["\n\n ","","\n\n \n\n "],
+["\n\n ","  ","\n\n \n\n "],
+["\n\n "," x ","\n\n x\n\n "],
+["\n\n ","é","\n\n é\n\n "],
+["\n\ntwo words ","new","\n\nnew "],
+["\n\ntwo words "," new ","\n\nnew "],
+["\n\ntwo words ","\n\nnew\n","\n\nnew "],
+["\n\ntwo words ","","\n\n "],
+["\n\ntwo words ","  ","\n\n "],
+["\n\ntwo words "," x ","\n\nx "],
+["\n\ntwo words ","é","\n\né "],
+["\n\nword ","new","\n\nnew "],
+["\n\nword "," new ","\n\nnew "],
+["\n\nword ","\n\nnew\n","\n\nnew "],
+["\n\nword ","","\n\n "],
+["\n\nword ","  ","\n\n "],
+["\n\nword "," x ","\n\nx "],
+["\n\nword ","é","\n\né "],
+["\n\n ","new","\n\n new\n\n "],
+["\n\n "," new ","\n\n new\n\n "],
+["\n\n ","\n\nnew\n","\n\n new\n\n "],
+["\n\n ","","\n\n \n\n "],
+["\n\n ","  ","\n\n \n\n "],
+["\n\n "," x ","\n\n x\n\n "],
+["\n\n ","é","\n\n é\n\n "],
+["\n\ntwo words ","new","\n\nnew "],
+["\n\ntwo words "," new ","\n\nnew "],
+["\n\ntwo words ","\n\nnew\n","\n\nnew "],
+["\n\ntwo words ","","\n\n "],
+["\n\ntwo words ","  ","\n\n "],
+["\n\ntwo words "," x ","\n\nx "],
+["\n\ntwo words ","é","\n\né "],
+["\n\nword　","new","\n\nnew　"],
+["\n\nword　"," new ","\n\nnew　"],
+["\n\nword　","\n\nnew\n","\n\nnew　"],
+["\n\nword　","","\n\n　"],
+["\n\nword　","  ","\n\n　"],
+["\n\nword　"," x ","\n\nx　"],
+["\n\nword　","é","\n\né　"],
+["\n\n　","new","\n\n　new\n\n　"],
+["\n\n　"," new ","\n\n　new\n\n　"],
+["\n\n　","\n\nnew\n","\n\n　new\n\n　"],
+["\n\n　","","\n\n　\n\n　"],
+["\n\n　","  ","\n\n　\n\n　"],
+["\n\n　"," x ","\n\n　x\n\n　"],
+["\n\n　","é","\n\n　é\n\n　"],
+["\n\ntwo words　","new","\n\nnew　"],
+["\n\ntwo words　"," new ","\n\nnew　"],
+["\n\ntwo words　","\n\nnew\n","\n\nnew　"],
+["\n\ntwo words　","","\n\n　"],
+["\n\ntwo words　","  ","\n\n　"],
+["\n\ntwo words　"," x ","\n\nx　"],
+["\n\ntwo words　","é","\n\né　"],
+["\n\nword﻿","new","\n\nnew﻿"],
+["\n\nword﻿"," new ","\n\nnew﻿"],
+["\n\nword﻿","\n\nnew\n","\n\nnew﻿"],
+["\n\nword﻿","","\n\n﻿"],
+["\n\nword﻿","  ","\n\n﻿"],
+["\n\nword﻿"," x ","\n\nx﻿"],
+["\n\nword﻿","é","\n\né﻿"],
+["\n\n﻿","new","\n\n﻿new\n\n﻿"],
+["\n\n﻿"," new ","\n\n﻿new\n\n﻿"],
+["\n\n﻿","\n\nnew\n","\n\n﻿new\n\n﻿"],
+["\n\n﻿","","\n\n﻿\n\n﻿"],
+["\n\n﻿","  ","\n\n﻿\n\n﻿"],
+["\n\n﻿"," x ","\n\n﻿x\n\n﻿"],
+["\n\n﻿","é","\n\n﻿é\n\n﻿"],
+["\n\ntwo words﻿","new","\n\nnew﻿"],
+["\n\ntwo words﻿"," new ","\n\nnew﻿"],
+["\n\ntwo words﻿","\n\nnew\n","\n\nnew﻿"],
+["\n\ntwo words﻿","","\n\n﻿"],
+["\n\ntwo words﻿","  ","\n\n﻿"],
+["\n\ntwo words﻿"," x ","\n\nx﻿"],
+["\n\ntwo words﻿","é","\n\né﻿"],
+["\n\nword​","new","\n\nnew"],
+["\n\nword​"," new ","\n\nnew"],
+["\n\nword​","\n\nnew\n","\n\nnew"],
+["\n\nword​","","\n\n"],
+["\n\nword​","  ","\n\n"],
+["\n\nword​"," x ","\n\nx"],
+["\n\nword​","é","\n\né"],
+["\n\n​","new","\n\nnew"],
+["\n\n​"," new ","\n\nnew"],
+["\n\n​","\n\nnew\n","\n\nnew"],
+["\n\n​","","\n\n"],
+["\n\n​","  ","\n\n"],
+["\n\n​"," x ","\n\nx"],
+["\n\n​","é","\n\né"],
+["\n\ntwo words​","new","\n\nnew"],
+["\n\ntwo words​"," new ","\n\nnew"],
+["\n\ntwo words​","\n\nnew\n","\n\nnew"],
+["\n\ntwo words​","","\n\n"],
+["\n\ntwo words​","  ","\n\n"],
+["\n\ntwo words​"," x ","\n\nx"],
+["\n\ntwo words​","é","\n\né"],
+["\n\nword","new","\n\nnew"],
+["\n\nword"," new ","\n\nnew"],
+["\n\nword","\n\nnew\n","\n\nnew"],
+["\n\nword","","\n\n"],
+["\n\nword","  ","\n\n"],
+["\n\nword"," x ","\n\nx"],
+["\n\nword","é","\n\né"],
+["\n\n","new","\n\nnew"],
+["\n\n"," new ","\n\nnew"],
+["\n\n","\n\nnew\n","\n\nnew"],
+["\n\n","","\n\n"],
+["\n\n","  ","\n\n"],
+["\n\n"," x ","\n\nx"],
+["\n\n","é","\n\né"],
+["\n\ntwo words","new","\n\nnew"],
+["\n\ntwo words"," new ","\n\nnew"],
+["\n\ntwo words","\n\nnew\n","\n\nnew"],
+["\n\ntwo words","","\n\n"],
+["\n\ntwo words","  ","\n\n"],
+["\n\ntwo words"," x ","\n\nx"],
+["\n\ntwo words","é","\n\né"],
+["\n\nword᠎","new","\n\nnew"],
+["\n\nword᠎"," new ","\n\nnew"],
+["\n\nword᠎","\n\nnew\n","\n\nnew"],
+["\n\nword᠎","","\n\n"],
+["\n\nword᠎","  ","\n\n"],
+["\n\nword᠎"," x ","\n\nx"],
+["\n\nword᠎","é","\n\né"],
+["\n\n᠎","new","\n\nnew"],
+["\n\n᠎"," new ","\n\nnew"],
+["\n\n᠎","\n\nnew\n","\n\nnew"],
+["\n\n᠎","","\n\n"],
+["\n\n᠎","  ","\n\n"],
+["\n\n᠎"," x ","\n\nx"],
+["\n\n᠎","é","\n\né"],
+["\n\ntwo words᠎","new","\n\nnew"],
+["\n\ntwo words᠎"," new ","\n\nnew"],
+["\n\ntwo words᠎","\n\nnew\n","\n\nnew"],
+["\n\ntwo words᠎","","\n\n"],
+["\n\ntwo words᠎","  ","\n\n"],
+["\n\ntwo words᠎"," x ","\n\nx"],
+["\n\ntwo words᠎","é","\n\né"],
+["\n\nword \n ","new","\n\nnew \n "],
+["\n\nword \n "," new ","\n\nnew \n "],
+["\n\nword \n ","\n\nnew\n","\n\nnew \n "],
+["\n\nword \n ","","\n\n \n "],
+["\n\nword \n ","  ","\n\n \n "],
+["\n\nword \n "," x ","\n\nx \n "],
+["\n\nword \n ","é","\n\né \n "],
+["\n\n \n ","new","\n\n \n new\n\n \n "],
+["\n\n \n "," new ","\n\n \n new\n\n \n "],
+["\n\n \n ","\n\nnew\n","\n\n \n new\n\n \n "],
+["\n\n \n ","","\n\n \n \n\n \n "],
+["\n\n \n ","  ","\n\n \n \n\n \n "],
+["\n\n \n "," x ","\n\n \n x\n\n \n "],
+["\n\n \n ","é","\n\n \n é\n\n \n "],
+["\n\ntwo words \n ","new","\n\nnew \n "],
+["\n\ntwo words \n "," new ","\n\nnew \n "],
+["\n\ntwo words \n ","\n\nnew\n","\n\nnew \n "],
+["\n\ntwo words \n ","","\n\n \n "],
+["\n\ntwo words \n ","  ","\n\n \n "],
+["\n\ntwo words \n "," x ","\n\nx \n "],
+["\n\ntwo words \n ","é","\n\né \n "],
+["\tword","new","\tnew"],
+["\tword"," new ","\tnew"],
+["\tword","\n\nnew\n","\tnew"],
+["\tword","","\t"],
+["\tword","  ","\t"],
+["\tword"," x ","\tx"],
+["\tword","é","\té"],
+["\t","new","\tnew\t"],
+["\t"," new ","\tnew\t"],
+["\t","\n\nnew\n","\tnew\t"],
+["\t","","\t\t"],
+["\t","  ","\t\t"],
+["\t"," x ","\tx\t"],
+["\t","é","\té\t"],
+["\ttwo words","new","\tnew"],
+["\ttwo words"," new ","\tnew"],
+["\ttwo words","\n\nnew\n","\tnew"],
+["\ttwo words","","\t"],
+["\ttwo words","  ","\t"],
+["\ttwo words"," x ","\tx"],
+["\ttwo words","é","\té"],
+["\tword ","new","\tnew "],
+["\tword "," new ","\tnew "],
+["\tword ","\n\nnew\n","\tnew "],
+["\tword ","","\t "],
+["\tword ","  ","\t "],
+["\tword "," x ","\tx "],
+["\tword ","é","\té "],
+["\t ","new","\t new\t "],
+["\t "," new ","\t new\t "],
+["\t ","\n\nnew\n","\t new\t "],
+["\t ","","\t \t "],
+["\t ","  ","\t \t "],
+["\t "," x ","\t x\t "],
+["\t ","é","\t é\t "],
+["\ttwo words ","new","\tnew "],
+["\ttwo words "," new ","\tnew "],
+["\ttwo words ","\n\nnew\n","\tnew "],
+["\ttwo words ","","\t "],
+["\ttwo words ","  ","\t "],
+["\ttwo words "," x ","\tx "],
+["\ttwo words ","é","\té "],
+["\tword\n","new","\tnew\n"],
+["\tword\n"," new ","\tnew\n"],
+["\tword\n","\n\nnew\n","\tnew\n"],
+["\tword\n","","\t\n"],
+["\tword\n","  ","\t\n"],
+["\tword\n"," x ","\tx\n"],
+["\tword\n","é","\té\n"],
+["\t\n","new","\t\nnew\t\n"],
+["\t\n"," new ","\t\nnew\t\n"],
+["\t\n","\n\nnew\n","\t\nnew\t\n"],
+["\t\n","","\t\n\t\n"],
+["\t\n","  ","\t\n\t\n"],
+["\t\n"," x ","\t\nx\t\n"],
+["\t\n","é","\t\né\t\n"],
+["\ttwo words\n","new","\tnew\n"],
+["\ttwo words\n"," new ","\tnew\n"],
+["\ttwo words\n","\n\nnew\n","\tnew\n"],
+["\ttwo words\n","","\t\n"],
+["\ttwo words\n","  ","\t\n"],
+["\ttwo words\n"," x ","\tx\n"],
+["\ttwo words\n","é","\té\n"],
+["\tword\n\n","new","\tnew\n\n"],
+["\tword\n\n"," new ","\tnew\n\n"],
+["\tword\n\n","\n\nnew\n","\tnew\n\n"],
+["\tword\n\n","","\t\n\n"],
+["\tword\n\n","  ","\t\n\n"],
+["\tword\n\n"," x ","\tx\n\n"],
+["\tword\n\n","é","\té\n\n"],
+["\t\n\n","new","\t\n\nnew\t\n\n"],
+["\t\n\n"," new ","\t\n\nnew\t\n\n"],
+["\t\n\n","\n\nnew\n","\t\n\nnew\t\n\n"],
+["\t\n\n","","\t\n\n\t\n\n"],
+["\t\n\n","  ","\t\n\n\t\n\n"],
+["\t\n\n"," x ","\t\n\nx\t\n\n"],
+["\t\n\n","é","\t\n\né\t\n\n"],
+["\ttwo words\n\n","new","\tnew\n\n"],
+["\ttwo words\n\n"," new ","\tnew\n\n"],
+["\ttwo words\n\n","\n\nnew\n","\tnew\n\n"],
+["\ttwo words\n\n","","\t\n\n"],
+["\ttwo words\n\n","  ","\t\n\n"],
+["\ttwo words\n\n"," x ","\tx\n\n"],
+["\ttwo words\n\n","é","\té\n\n"],
+["\tword\t","new","\tnew\t"],
+["\tword\t"," new ","\tnew\t"],
+["\tword\t","\n\nnew\n","\tnew\t"],
+["\tword\t","","\t\t"],
+["\tword\t","  ","\t\t"],
+["\tword\t"," x ","\tx\t"],
+["\tword\t","é","\té\t"],
+["\t\t","new","\t\tnew\t\t"],
+["\t\t"," new ","\t\tnew\t\t"],
+["\t\t","\n\nnew\n","\t\tnew\t\t"],
+["\t\t","","\t\t\t\t"],
+["\t\t","  ","\t\t\t\t"],
+["\t\t"," x ","\t\tx\t\t"],
+["\t\t","é","\t\té\t\t"],
+["\ttwo words\t","new","\tnew\t"],
+["\ttwo words\t"," new ","\tnew\t"],
+["\ttwo words\t","\n\nnew\n","\tnew\t"],
+["\ttwo words\t","","\t\t"],
+["\ttwo words\t","  ","\t\t"],
+["\ttwo words\t"," x ","\tx\t"],
+["\ttwo words\t","é","\té\t"],
+["\tword\r\n","new","\tnew\r\n"],
+["\tword\r\n"," new ","\tnew\r\n"],
+["\tword\r\n","\n\nnew\n","\tnew\r\n"],
+["\tword\r\n","","\t\r\n"],
+["\tword\r\n","  ","\t\r\n"],
+["\tword\r\n"," x ","\tx\r\n"],
+["\tword\r\n","é","\té\r\n"],
+["\t\r\n","new","\t\r\nnew\t\r\n"],
+["\t\r\n"," new ","\t\r\nnew\t\r\n"],
+["\t\r\n","\n\nnew\n","\t\r\nnew\t\r\n"],
+["\t\r\n","","\t\r\n\t\r\n"],
+["\t\r\n","  ","\t\r\n\t\r\n"],
+["\t\r\n"," x ","\t\r\nx\t\r\n"],
+["\t\r\n","é","\t\r\né\t\r\n"],
+["\ttwo words\r\n","new","\tnew\r\n"],
+["\ttwo words\r\n"," new ","\tnew\r\n"],
+["\ttwo words\r\n","\n\nnew\n","\tnew\r\n"],
+["\ttwo words\r\n","","\t\r\n"],
+["\ttwo words\r\n","  ","\t\r\n"],
+["\ttwo words\r\n"," x ","\tx\r\n"],
+["\ttwo words\r\n","é","\té\r\n"],
+["\tword ","new","\tnew "],
+["\tword "," new ","\tnew "],
+["\tword ","\n\nnew\n","\tnew "],
+["\tword ","","\t "],
+["\tword ","  ","\t "],
+["\tword "," x ","\tx "],
+["\tword ","é","\té "],
+["\t ","new","\t new\t "],
+["\t "," new ","\t new\t "],
+["\t ","\n\nnew\n","\t new\t "],
+["\t ","","\t \t "],
+["\t ","  ","\t \t "],
+["\t "," x ","\t x\t "],
+["\t ","é","\t é\t "],
+["\ttwo words ","new","\tnew "],
+["\ttwo words "," new ","\tnew "],
+["\ttwo words ","\n\nnew\n","\tnew "],
+["\ttwo words ","","\t "],
+["\ttwo words ","  ","\t "],
+["\ttwo words "," x ","\tx "],
+["\ttwo words ","é","\té "],
+["\tword ","new","\tnew "],
+["\tword "," new ","\tnew "],
+["\tword ","\n\nnew\n","\tnew "],
+["\tword ","","\t "],
+["\tword ","  ","\t "],
+["\tword "," x ","\tx "],
+["\tword ","é","\té "],
+["\t ","new","\t new\t "],
+["\t "," new ","\t new\t "],
+["\t ","\n\nnew\n","\t new\t "],
+["\t ","","\t \t "],
+["\t ","  ","\t \t "],
+["\t "," x ","\t x\t "],
+["\t ","é","\t é\t "],
+["\ttwo words ","new","\tnew "],
+["\ttwo words "," new ","\tnew "],
+["\ttwo words ","\n\nnew\n","\tnew "],
+["\ttwo words ","","\t "],
+["\ttwo words ","  ","\t "],
+["\ttwo words "," x ","\tx "],
+["\ttwo words ","é","\té "],
+["\tword　","new","\tnew　"],
+["\tword　"," new ","\tnew　"],
+["\tword　","\n\nnew\n","\tnew　"],
+["\tword　","","\t　"],
+["\tword　","  ","\t　"],
+["\tword　"," x ","\tx　"],
+["\tword　","é","\té　"],
+["\t　","new","\t　new\t　"],
+["\t　"," new ","\t　new\t　"],
+["\t　","\n\nnew\n","\t　new\t　"],
+["\t　","","\t　\t　"],
+["\t　","  ","\t　\t　"],
+["\t　"," x ","\t　x\t　"],
+["\t　","é","\t　é\t　"],
+["\ttwo words　","new","\tnew　"],
+["\ttwo words　"," new ","\tnew　"],
+["\ttwo words　","\n\nnew\n","\tnew　"],
+["\ttwo words　","","\t　"],
+["\ttwo words　","  ","\t　"],
+["\ttwo words　"," x ","\tx　"],
+["\ttwo words　","é","\té　"],
+["\tword﻿","new","\tnew﻿"],
+["\tword﻿"," new ","\tnew﻿"],
+["\tword﻿","\n\nnew\n","\tnew﻿"],
+["\tword﻿","","\t﻿"],
+["\tword﻿","  ","\t﻿"],
+["\tword﻿"," x ","\tx﻿"],
+["\tword﻿","é","\té﻿"],
+["\t﻿","new","\t﻿new\t﻿"],
+["\t﻿"," new ","\t﻿new\t﻿"],
+["\t﻿","\n\nnew\n","\t﻿new\t﻿"],
+["\t﻿","","\t﻿\t﻿"],
+["\t﻿","  ","\t﻿\t﻿"],
+["\t﻿"," x ","\t﻿x\t﻿"],
+["\t﻿","é","\t﻿é\t﻿"],
+["\ttwo words﻿","new","\tnew﻿"],
+["\ttwo words﻿"," new ","\tnew﻿"],
+["\ttwo words﻿","\n\nnew\n","\tnew﻿"],
+["\ttwo words﻿","","\t﻿"],
+["\ttwo words﻿","  ","\t﻿"],
+["\ttwo words﻿"," x ","\tx﻿"],
+["\ttwo words﻿","é","\té﻿"],
+["\tword​","new","\tnew"],
+["\tword​"," new ","\tnew"],
+["\tword​","\n\nnew\n","\tnew"],
+["\tword​","","\t"],
+["\tword​","  ","\t"],
+["\tword​"," x ","\tx"],
+["\tword​","é","\té"],
+["\t​","new","\tnew"],
+["\t​"," new ","\tnew"],
+["\t​","\n\nnew\n","\tnew"],
+["\t​","","\t"],
+["\t​","  ","\t"],
+["\t​"," x ","\tx"],
+["\t​","é","\té"],
+["\ttwo words​","new","\tnew"],
+["\ttwo words​"," new ","\tnew"],
+["\ttwo words​","\n\nnew\n","\tnew"],
+["\ttwo words​","","\t"],
+["\ttwo words​","  ","\t"],
+["\ttwo words​"," x ","\tx"],
+["\ttwo words​","é","\té"],
+["\tword","new","\tnew"],
+["\tword"," new ","\tnew"],
+["\tword","\n\nnew\n","\tnew"],
+["\tword","","\t"],
+["\tword","  ","\t"],
+["\tword"," x ","\tx"],
+["\tword","é","\té"],
+["\t","new","\tnew"],
+["\t"," new ","\tnew"],
+["\t","\n\nnew\n","\tnew"],
+["\t","","\t"],
+["\t","  ","\t"],
+["\t"," x ","\tx"],
+["\t","é","\té"],
+["\ttwo words","new","\tnew"],
+["\ttwo words"," new ","\tnew"],
+["\ttwo words","\n\nnew\n","\tnew"],
+["\ttwo words","","\t"],
+["\ttwo words","  ","\t"],
+["\ttwo words"," x ","\tx"],
+["\ttwo words","é","\té"],
+["\tword᠎","new","\tnew"],
+["\tword᠎"," new ","\tnew"],
+["\tword᠎","\n\nnew\n","\tnew"],
+["\tword᠎","","\t"],
+["\tword᠎","  ","\t"],
+["\tword᠎"," x ","\tx"],
+["\tword᠎","é","\té"],
+["\t᠎","new","\tnew"],
+["\t᠎"," new ","\tnew"],
+["\t᠎","\n\nnew\n","\tnew"],
+["\t᠎","","\t"],
+["\t᠎","  ","\t"],
+["\t᠎"," x ","\tx"],
+["\t᠎","é","\té"],
+["\ttwo words᠎","new","\tnew"],
+["\ttwo words᠎"," new ","\tnew"],
+["\ttwo words᠎","\n\nnew\n","\tnew"],
+["\ttwo words᠎","","\t"],
+["\ttwo words᠎","  ","\t"],
+["\ttwo words᠎"," x ","\tx"],
+["\ttwo words᠎","é","\té"],
+["\tword \n ","new","\tnew \n "],
+["\tword \n "," new ","\tnew \n "],
+["\tword \n ","\n\nnew\n","\tnew \n "],
+["\tword \n ","","\t \n "],
+["\tword \n ","  ","\t \n "],
+["\tword \n "," x ","\tx \n "],
+["\tword \n ","é","\té \n "],
+["\t \n ","new","\t \n new\t \n "],
+["\t \n "," new ","\t \n new\t \n "],
+["\t \n ","\n\nnew\n","\t \n new\t \n "],
+["\t \n ","","\t \n \t \n "],
+["\t \n ","  ","\t \n \t \n "],
+["\t \n "," x ","\t \n x\t \n "],
+["\t \n ","é","\t \n é\t \n "],
+["\ttwo words \n ","new","\tnew \n "],
+["\ttwo words \n "," new ","\tnew \n "],
+["\ttwo words \n ","\n\nnew\n","\tnew \n "],
+["\ttwo words \n ","","\t \n "],
+["\ttwo words \n ","  ","\t \n "],
+["\ttwo words \n "," x ","\tx \n "],
+["\ttwo words \n ","é","\té \n "],
+["\r\nword","new","\r\nnew"],
+["\r\nword"," new ","\r\nnew"],
+["\r\nword","\n\nnew\n","\r\nnew"],
+["\r\nword","","\r\n"],
+["\r\nword","  ","\r\n"],
+["\r\nword"," x ","\r\nx"],
+["\r\nword","é","\r\né"],
+["\r\n","new","\r\nnew\r\n"],
+["\r\n"," new ","\r\nnew\r\n"],
+["\r\n","\n\nnew\n","\r\nnew\r\n"],
+["\r\n","","\r\n\r\n"],
+["\r\n","  ","\r\n\r\n"],
+["\r\n"," x ","\r\nx\r\n"],
+["\r\n","é","\r\né\r\n"],
+["\r\ntwo words","new","\r\nnew"],
+["\r\ntwo words"," new ","\r\nnew"],
+["\r\ntwo words","\n\nnew\n","\r\nnew"],
+["\r\ntwo words","","\r\n"],
+["\r\ntwo words","  ","\r\n"],
+["\r\ntwo words"," x ","\r\nx"],
+["\r\ntwo words","é","\r\né"],
+["\r\nword ","new","\r\nnew "],
+["\r\nword "," new ","\r\nnew "],
+["\r\nword ","\n\nnew\n","\r\nnew "],
+["\r\nword ","","\r\n "],
+["\r\nword ","  ","\r\n "],
+["\r\nword "," x ","\r\nx "],
+["\r\nword ","é","\r\né "],
+["\r\n ","new","\r\n new\r\n "],
+["\r\n "," new ","\r\n new\r\n "],
+["\r\n ","\n\nnew\n","\r\n new\r\n "],
+["\r\n ","","\r\n \r\n "],
+["\r\n ","  ","\r\n \r\n "],
+["\r\n "," x ","\r\n x\r\n "],
+["\r\n ","é","\r\n é\r\n "],
+["\r\ntwo words ","new","\r\nnew "],
+["\r\ntwo words "," new ","\r\nnew "],
+["\r\ntwo words ","\n\nnew\n","\r\nnew "],
+["\r\ntwo words ","","\r\n "],
+["\r\ntwo words ","  ","\r\n "],
+["\r\ntwo words "," x ","\r\nx "],
+["\r\ntwo words ","é","\r\né "],
+["\r\nword\n","new","\r\nnew\n"],
+["\r\nword\n"," new ","\r\nnew\n"],
+["\r\nword\n","\n\nnew\n","\r\nnew\n"],
+["\r\nword\n","","\r\n\n"],
+["\r\nword\n","  ","\r\n\n"],
+["\r\nword\n"," x ","\r\nx\n"],
+["\r\nword\n","é","\r\né\n"],
+["\r\n\n","new","\r\n\nnew\r\n\n"],
+["\r\n\n"," new ","\r\n\nnew\r\n\n"],
+["\r\n\n","\n\nnew\n","\r\n\nnew\r\n\n"],
+["\r\n\n","","\r\n\n\r\n\n"],
+["\r\n\n","  ","\r\n\n\r\n\n"],
+["\r\n\n"," x ","\r\n\nx\r\n\n"],
+["\r\n\n","é","\r\n\né\r\n\n"],
+["\r\ntwo words\n","new","\r\nnew\n"],
+["\r\ntwo words\n"," new ","\r\nnew\n"],
+["\r\ntwo words\n","\n\nnew\n","\r\nnew\n"],
+["\r\ntwo words\n","","\r\n\n"],
+["\r\ntwo words\n","  ","\r\n\n"],
+["\r\ntwo words\n"," x ","\r\nx\n"],
+["\r\ntwo words\n","é","\r\né\n"],
+["\r\nword\n\n","new","\r\nnew\n\n"],
+["\r\nword\n\n"," new ","\r\nnew\n\n"],
+["\r\nword\n\n","\n\nnew\n","\r\nnew\n\n"],
+["\r\nword\n\n","","\r\n\n\n"],
+["\r\nword\n\n","  ","\r\n\n\n"],
+["\r\nword\n\n"," x ","\r\nx\n\n"],
+["\r\nword\n\n","é","\r\né\n\n"],
+["\r\n\n\n","new","\r\n\n\nnew\r\n\n\n"],
+["\r\n\n\n"," new ","\r\n\n\nnew\r\n\n\n"],
+["\r\n\n\n","\n\nnew\n","\r\n\n\nnew\r\n\n\n"],
+["\r\n\n\n","","\r\n\n\n\r\n\n\n"],
+["\r\n\n\n","  ","\r\n\n\n\r\n\n\n"],
+["\r\n\n\n"," x ","\r\n\n\nx\r\n\n\n"],
+["\r\n\n\n","é","\r\n\n\né\r\n\n\n"],
+["\r\ntwo words\n\n","new","\r\nnew\n\n"],
+["\r\ntwo words\n\n"," new ","\r\nnew\n\n"],
+["\r\ntwo words\n\n","\n\nnew\n","\r\nnew\n\n"],
+["\r\ntwo words\n\n","","\r\n\n\n"],
+["\r\ntwo words\n\n","  ","\r\n\n\n"],
+["\r\ntwo words\n\n"," x ","\r\nx\n\n"],
+["\r\ntwo words\n\n","é","\r\né\n\n"],
+["\r\nword\t","new","\r\nnew\t"],
+["\r\nword\t"," new ","\r\nnew\t"],
+["\r\nword\t","\n\nnew\n","\r\nnew\t"],
+["\r\nword\t","","\r\n\t"],
+["\r\nword\t","  ","\r\n\t"],
+["\r\nword\t"," x ","\r\nx\t"],
+["\r\nword\t","é","\r\né\t"],
+["\r\n\t","new","\r\n\tnew\r\n\t"],
+["\r\n\t"," new ","\r\n\tnew\r\n\t"],
+["\r\n\t","\n\nnew\n","\r\n\tnew\r\n\t"],
+["\r\n\t","","\r\n\t\r\n\t"],
+["\r\n\t","  ","\r\n\t\r\n\t"],
+["\r\n\t"," x ","\r\n\tx\r\n\t"],
+["\r\n\t","é","\r\n\té\r\n\t"],
+["\r\ntwo words\t","new","\r\nnew\t"],
+["\r\ntwo words\t"," new ","\r\nnew\t"],
+["\r\ntwo words\t","\n\nnew\n","\r\nnew\t"],
+["\r\ntwo words\t","","\r\n\t"],
+["\r\ntwo words\t","  ","\r\n\t"],
+["\r\ntwo words\t"," x ","\r\nx\t"],
+["\r\ntwo words\t","é","\r\né\t"],
+["\r\nword\r\n","new","\r\nnew\r\n"],
+["\r\nword\r\n"," new ","\r\nnew\r\n"],
+["\r\nword\r\n","\n\nnew\n","\r\nnew\r\n"],
+["\r\nword\r\n","","\r\n\r\n"],
+["\r\nword\r\n","  ","\r\n\r\n"],
+["\r\nword\r\n"," x ","\r\nx\r\n"],
+["\r\nword\r\n","é","\r\né\r\n"],
+["\r\n\r\n","new","\r\n\r\nnew\r\n\r\n"],
+["\r\n\r\n"," new ","\r\n\r\nnew\r\n\r\n"],
+["\r\n\r\n","\n\nnew\n","\r\n\r\nnew\r\n\r\n"],
+["\r\n\r\n","","\r\n\r\n\r\n\r\n"],
+["\r\n\r\n","  ","\r\n\r\n\r\n\r\n"],
+["\r\n\r\n"," x ","\r\n\r\nx\r\n\r\n"],
+["\r\n\r\n","é","\r\n\r\né\r\n\r\n"],
+["\r\ntwo words\r\n","new","\r\nnew\r\n"],
+["\r\ntwo words\r\n"," new ","\r\nnew\r\n"],
+["\r\ntwo words\r\n","\n\nnew\n","\r\nnew\r\n"],
+["\r\ntwo words\r\n","","\r\n\r\n"],
+["\r\ntwo words\r\n","  ","\r\n\r\n"],
+["\r\ntwo words\r\n"," x ","\r\nx\r\n"],
+["\r\ntwo words\r\n","é","\r\né\r\n"],
+["\r\nword ","new","\r\nnew "],
+["\r\nword "," new ","\r\nnew "],
+["\r\nword ","\n\nnew\n","\r\nnew "],
+["\r\nword ","","\r\n "],
+["\r\nword ","  ","\r\n "],
+["\r\nword "," x ","\r\nx "],
+["\r\nword ","é","\r\né "],
+["\r\n ","new","\r\n new\r\n "],
+["\r\n "," new ","\r\n new\r\n "],
+["\r\n ","\n\nnew\n","\r\n new\r\n "],
+["\r\n ","","\r\n \r\n "],
+["\r\n ","  ","\r\n \r\n "],
+["\r\n "," x ","\r\n x\r\n "],
+["\r\n ","é","\r\n é\r\n "],
+["\r\ntwo words ","new","\r\nnew "],
+["\r\ntwo words "," new ","\r\nnew "],
+["\r\ntwo words ","\n\nnew\n","\r\nnew "],
+["\r\ntwo words ","","\r\n "],
+["\r\ntwo words ","  ","\r\n "],
+["\r\ntwo words "," x ","\r\nx "],
+["\r\ntwo words ","é","\r\né "],
+["\r\nword ","new","\r\nnew "],
+["\r\nword "," new ","\r\nnew "],
+["\r\nword ","\n\nnew\n","\r\nnew "],
+["\r\nword ","","\r\n "],
+["\r\nword ","  ","\r\n "],
+["\r\nword "," x ","\r\nx "],
+["\r\nword ","é","\r\né "],
+["\r\n ","new","\r\n new\r\n "],
+["\r\n "," new ","\r\n new\r\n "],
+["\r\n ","\n\nnew\n","\r\n new\r\n "],
+["\r\n ","","\r\n \r\n "],
+["\r\n ","  ","\r\n \r\n "],
+["\r\n "," x ","\r\n x\r\n "],
+["\r\n ","é","\r\n é\r\n "],
+["\r\ntwo words ","new","\r\nnew "],
+["\r\ntwo words "," new ","\r\nnew "],
+["\r\ntwo words ","\n\nnew\n","\r\nnew "],
+["\r\ntwo words ","","\r\n "],
+["\r\ntwo words ","  ","\r\n "],
+["\r\ntwo words "," x ","\r\nx "],
+["\r\ntwo words ","é","\r\né "],
+["\r\nword　","new","\r\nnew　"],
+["\r\nword　"," new ","\r\nnew　"],
+["\r\nword　","\n\nnew\n","\r\nnew　"],
+["\r\nword　","","\r\n　"],
+["\r\nword　","  ","\r\n　"],
+["\r\nword　"," x ","\r\nx　"],
+["\r\nword　","é","\r\né　"],
+["\r\n　","new","\r\n　new\r\n　"],
+["\r\n　"," new ","\r\n　new\r\n　"],
+["\r\n　","\n\nnew\n","\r\n　new\r\n　"],
+["\r\n　","","\r\n　\r\n　"],
+["\r\n　","  ","\r\n　\r\n　"],
+["\r\n　"," x ","\r\n　x\r\n　"],
+["\r\n　","é","\r\n　é\r\n　"],
+["\r\ntwo words　","new","\r\nnew　"],
+["\r\ntwo words　"," new ","\r\nnew　"],
+["\r\ntwo words　","\n\nnew\n","\r\nnew　"],
+["\r\ntwo words　","","\r\n　"],
+["\r\ntwo words　","  ","\r\n　"],
+["\r\ntwo words　"," x ","\r\nx　"],
+["\r\ntwo words　","é","\r\né　"],
+["\r\nword﻿","new","\r\nnew﻿"],
+["\r\nword﻿"," new ","\r\nnew﻿"],
+["\r\nword﻿","\n\nnew\n","\r\nnew﻿"],
+["\r\nword﻿","","\r\n﻿"],
+["\r\nword﻿","  ","\r\n﻿"],
+["\r\nword﻿"," x ","\r\nx﻿"],
+["\r\nword﻿","é","\r\né﻿"],
+["\r\n﻿","new","\r\n﻿new\r\n﻿"],
+["\r\n﻿"," new ","\r\n﻿new\r\n﻿"],
+["\r\n﻿","\n\nnew\n","\r\n﻿new\r\n﻿"],
+["\r\n﻿","","\r\n﻿\r\n﻿"],
+["\r\n﻿","  ","\r\n﻿\r\n﻿"],
+["\r\n﻿"," x ","\r\n﻿x\r\n﻿"],
+["\r\n﻿","é","\r\n﻿é\r\n﻿"],
+["\r\ntwo words﻿","new","\r\nnew﻿"],
+["\r\ntwo words﻿"," new ","\r\nnew﻿"],
+["\r\ntwo words﻿","\n\nnew\n","\r\nnew﻿"],
+["\r\ntwo words﻿","","\r\n﻿"],
+["\r\ntwo words﻿","  ","\r\n﻿"],
+["\r\ntwo words﻿"," x ","\r\nx﻿"],
+["\r\ntwo words﻿","é","\r\né﻿"],
+["\r\nword​","new","\r\nnew"],
+["\r\nword​"," new ","\r\nnew"],
+["\r\nword​","\n\nnew\n","\r\nnew"],
+["\r\nword​","","\r\n"],
+["\r\nword​","  ","\r\n"],
+["\r\nword​"," x ","\r\nx"],
+["\r\nword​","é","\r\né"],
+["\r\n​","new","\r\nnew"],
+["\r\n​"," new ","\r\nnew"],
+["\r\n​","\n\nnew\n","\r\nnew"],
+["\r\n​","","\r\n"],
+["\r\n​","  ","\r\n"],
+["\r\n​"," x ","\r\nx"],
+["\r\n​","é","\r\né"],
+["\r\ntwo words​","new","\r\nnew"],
+["\r\ntwo words​"," new ","\r\nnew"],
+["\r\ntwo words​","\n\nnew\n","\r\nnew"],
+["\r\ntwo words​","","\r\n"],
+["\r\ntwo words​","  ","\r\n"],
+["\r\ntwo words​"," x ","\r\nx"],
+["\r\ntwo words​","é","\r\né"],
+["\r\nword","new","\r\nnew"],
+["\r\nword"," new ","\r\nnew"],
+["\r\nword","\n\nnew\n","\r\nnew"],
+["\r\nword","","\r\n"],
+["\r\nword","  ","\r\n"],
+["\r\nword"," x ","\r\nx"],
+["\r\nword","é","\r\né"],
+["\r\n","new","\r\nnew"],
+["\r\n"," new ","\r\nnew"],
+["\r\n","\n\nnew\n","\r\nnew"],
+["\r\n","","\r\n"],
+["\r\n","  ","\r\n"],
+["\r\n"," x ","\r\nx"],
+["\r\n","é","\r\né"],
+["\r\ntwo words","new","\r\nnew"],
+["\r\ntwo words"," new ","\r\nnew"],
+["\r\ntwo words","\n\nnew\n","\r\nnew"],
+["\r\ntwo words","","\r\n"],
+["\r\ntwo words","  ","\r\n"],
+["\r\ntwo words"," x ","\r\nx"],
+["\r\ntwo words","é","\r\né"],
+["\r\nword᠎","new","\r\nnew"],
+["\r\nword᠎"," new ","\r\nnew"],
+["\r\nword᠎","\n\nnew\n","\r\nnew"],
+["\r\nword᠎","","\r\n"],
+["\r\nword᠎","  ","\r\n"],
+["\r\nword᠎"," x ","\r\nx"],
+["\r\nword᠎","é","\r\né"],
+["\r\n᠎","new","\r\nnew"],
+["\r\n᠎"," new ","\r\nnew"],
+["\r\n᠎","\n\nnew\n","\r\nnew"],
+["\r\n᠎","","\r\n"],
+["\r\n᠎","  ","\r\n"],
+["\r\n᠎"," x ","\r\nx"],
+["\r\n᠎","é","\r\né"],
+["\r\ntwo words᠎","new","\r\nnew"],
+["\r\ntwo words᠎"," new ","\r\nnew"],
+["\r\ntwo words᠎","\n\nnew\n","\r\nnew"],
+["\r\ntwo words᠎","","\r\n"],
+["\r\ntwo words᠎","  ","\r\n"],
+["\r\ntwo words᠎"," x ","\r\nx"],
+["\r\ntwo words᠎","é","\r\né"],
+["\r\nword \n ","new","\r\nnew \n "],
+["\r\nword \n "," new ","\r\nnew \n "],
+["\r\nword \n ","\n\nnew\n","\r\nnew \n "],
+["\r\nword \n ","","\r\n \n "],
+["\r\nword \n ","  ","\r\n \n "],
+["\r\nword \n "," x ","\r\nx \n "],
+["\r\nword \n ","é","\r\né \n "],
+["\r\n \n ","new","\r\n \n new\r\n \n "],
+["\r\n \n "," new ","\r\n \n new\r\n \n "],
+["\r\n \n ","\n\nnew\n","\r\n \n new\r\n \n "],
+["\r\n \n ","","\r\n \n \r\n \n "],
+["\r\n \n ","  ","\r\n \n \r\n \n "],
+["\r\n \n "," x ","\r\n \n x\r\n \n "],
+["\r\n \n ","é","\r\n \n é\r\n \n "],
+["\r\ntwo words \n ","new","\r\nnew \n "],
+["\r\ntwo words \n "," new ","\r\nnew \n "],
+["\r\ntwo words \n ","\n\nnew\n","\r\nnew \n "],
+["\r\ntwo words \n ","","\r\n \n "],
+["\r\ntwo words \n ","  ","\r\n \n "],
+["\r\ntwo words \n "," x ","\r\nx \n "],
+["\r\ntwo words \n ","é","\r\né \n "],
+[" word","new"," new"],
+[" word"," new "," new"],
+[" word","\n\nnew\n"," new"],
+[" word",""," "],
+[" word","  "," "],
+[" word"," x "," x"],
+[" word","é"," é"],
+[" ","new"," new "],
+[" "," new "," new "],
+[" ","\n\nnew\n"," new "],
+[" ","","  "],
+[" ","  ","  "],
+[" "," x "," x "],
+[" ","é"," é "],
+[" two words","new"," new"],
+[" two words"," new "," new"],
+[" two words","\n\nnew\n"," new"],
+[" two words",""," "],
+[" two words","  "," "],
+[" two words"," x "," x"],
+[" two words","é"," é"],
+[" word ","new"," new "],
+[" word "," new "," new "],
+[" word ","\n\nnew\n"," new "],
+[" word ","","  "],
+[" word ","  ","  "],
+[" word "," x "," x "],
+[" word ","é"," é "],
+["  ","new","  new  "],
+["  "," new ","  new  "],
+["  ","\n\nnew\n","  new  "],
+["  ","","    "],
+["  ","  ","    "],
+["  "," x ","  x  "],
+["  ","é","  é  "],
+[" two words ","new"," new "],
+[" two words "," new "," new "],
+[" two words ","\n\nnew\n"," new "],
+[" two words ","","  "],
+[" two words ","  ","  "],
+[" two words "," x "," x "],
+[" two words ","é"," é "],
+[" word\n","new"," new\n"],
+[" word\n"," new "," new\n"],
+[" word\n","\n\nnew\n"," new\n"],
+[" word\n",""," \n"],
+[" word\n","  "," \n"],
+[" word\n"," x "," x\n"],
+[" word\n","é"," é\n"],
+[" \n","new"," \nnew \n"],
+[" \n"," new "," \nnew \n"],
+[" \n","\n\nnew\n"," \nnew \n"],
+[" \n",""," \n \n"],
+[" \n","  "," \n \n"],
+[" \n"," x "," \nx \n"],
+[" \n","é"," \né \n"],
+[" two words\n","new"," new\n"],
+[" two words\n"," new "," new\n"],
+[" two words\n","\n\nnew\n"," new\n"],
+[" two words\n",""," \n"],
+[" two words\n","  "," \n"],
+[" two words\n"," x "," x\n"],
+[" two words\n","é"," é\n"],
+[" word\n\n","new"," new\n\n"],
+[" word\n\n"," new "," new\n\n"],
+[" word\n\n","\n\nnew\n"," new\n\n"],
+[" word\n\n",""," \n\n"],
+[" word\n\n","  "," \n\n"],
+[" word\n\n"," x "," x\n\n"],
+[" word\n\n","é"," é\n\n"],
+[" \n\n","new"," \n\nnew \n\n"],
+[" \n\n"," new "," \n\nnew \n\n"],
+[" \n\n","\n\nnew\n"," \n\nnew \n\n"],
+[" \n\n",""," \n\n \n\n"],
+[" \n\n","  "," \n\n \n\n"],
+[" \n\n"," x "," \n\nx \n\n"],
+[" \n\n","é"," \n\né \n\n"],
+[" two words\n\n","new"," new\n\n"],
+[" two words\n\n"," new "," new\n\n"],
+[" two words\n\n","\n\nnew\n"," new\n\n"],
+[" two words\n\n",""," \n\n"],
+[" two words\n\n","  "," \n\n"],
+[" two words\n\n"," x "," x\n\n"],
+[" two words\n\n","é"," é\n\n"],
+[" word\t","new"," new\t"],
+[" word\t"," new "," new\t"],
+[" word\t","\n\nnew\n"," new\t"],
+[" word\t",""," \t"],
+[" word\t","  "," \t"],
+[" word\t"," x "," x\t"],
+[" word\t","é"," é\t"],
+[" \t","new"," \tnew \t"],
+[" \t"," new "," \tnew \t"],
+[" \t","\n\nnew\n"," \tnew \t"],
+[" \t",""," \t \t"],
+[" \t","  "," \t \t"],
+[" \t"," x "," \tx \t"],
+[" \t","é"," \té \t"],
+[" two words\t","new"," new\t"],
+[" two words\t"," new "," new\t"],
+[" two words\t","\n\nnew\n"," new\t"],
+[" two words\t",""," \t"],
+[" two words\t","  "," \t"],
+[" two words\t"," x "," x\t"],
+[" two words\t","é"," é\t"],
+[" word\r\n","new"," new\r\n"],
+[" word\r\n"," new "," new\r\n"],
+[" word\r\n","\n\nnew\n"," new\r\n"],
+[" word\r\n",""," \r\n"],
+[" word\r\n","  "," \r\n"],
+[" word\r\n"," x "," x\r\n"],
+[" word\r\n","é"," é\r\n"],
+[" \r\n","new"," \r\nnew \r\n"],
+[" \r\n"," new "," \r\nnew \r\n"],
+[" \r\n","\n\nnew\n"," \r\nnew \r\n"],
+[" \r\n",""," \r\n \r\n"],
+[" \r\n","  "," \r\n \r\n"],
+[" \r\n"," x "," \r\nx \r\n"],
+[" \r\n","é"," \r\né \r\n"],
+[" two words\r\n","new"," new\r\n"],
+[" two words\r\n"," new "," new\r\n"],
+[" two words\r\n","\n\nnew\n"," new\r\n"],
+[" two words\r\n",""," \r\n"],
+[" two words\r\n","  "," \r\n"],
+[" two words\r\n"," x "," x\r\n"],
+[" two words\r\n","é"," é\r\n"],
+[" word ","new"," new "],
+[" word "," new "," new "],
+[" word ","\n\nnew\n"," new "],
+[" word ","","  "],
+[" word ","  ","  "],
+[" word "," x "," x "],
+[" word ","é"," é "],
+["  ","new","  new  "],
+["  "," new ","  new  "],
+["  ","\n\nnew\n","  new  "],
+["  ","","    "],
+["  ","  ","    "],
+["  "," x ","  x  "],
+["  ","é","  é  "],
+[" two words ","new"," new "],
+[" two words "," new "," new "],
+[" two words ","\n\nnew\n"," new "],
+[" two words ","","  "],
+[" two words ","  ","  "],
+[" two words "," x "," x "],
+[" two words ","é"," é "],
+[" word ","new"," new "],
+[" word "," new "," new "],
+[" word ","\n\nnew\n"," new "],
+[" word ","","  "],
+[" word ","  ","  "],
+[" word "," x "," x "],
+[" word ","é"," é "],
+["  ","new","  new  "],
+["  "," new ","  new  "],
+["  ","\n\nnew\n","  new  "],
+["  ","","    "],
+["  ","  ","    "],
+["  "," x ","  x  "],
+["  ","é","  é  "],
+[" two words ","new"," new "],
+[" two words "," new "," new "],
+[" two words ","\n\nnew\n"," new "],
+[" two words ","","  "],
+[" two words ","  ","  "],
+[" two words "," x "," x "],
+[" two words ","é"," é "],
+[" word　","new"," new　"],
+[" word　"," new "," new　"],
+[" word　","\n\nnew\n"," new　"],
+[" word　",""," 　"],
+[" word　","  "," 　"],
+[" word　"," x "," x　"],
+[" word　","é"," é　"],
+[" 　","new"," 　new 　"],
+[" 　"," new "," 　new 　"],
+[" 　","\n\nnew\n"," 　new 　"],
+[" 　",""," 　 　"],
+[" 　","  "," 　 　"],
+[" 　"," x "," 　x 　"],
+[" 　","é"," 　é 　"],
+[" two words　","new"," new　"],
+[" two words　"," new "," new　"],
+[" two words　","\n\nnew\n"," new　"],
+[" two words　",""," 　"],
+[" two words　","  "," 　"],
+[" two words　"," x "," x　"],
+[" two words　","é"," é　"],
+[" word﻿","new"," new﻿"],
+[" word﻿"," new "," new﻿"],
+[" word﻿","\n\nnew\n"," new﻿"],
+[" word﻿",""," ﻿"],
+[" word﻿","  "," ﻿"],
+[" word﻿"," x "," x﻿"],
+[" word﻿","é"," é﻿"],
+[" ﻿","new"," ﻿new ﻿"],
+[" ﻿"," new "," ﻿new ﻿"],
+[" ﻿","\n\nnew\n"," ﻿new ﻿"],
+[" ﻿",""," ﻿ ﻿"],
+[" ﻿","  "," ﻿ ﻿"],
+[" ﻿"," x "," ﻿x ﻿"],
+[" ﻿","é"," ﻿é ﻿"],
+[" two words﻿","new"," new﻿"],
+[" two words﻿"," new "," new﻿"],
+[" two words﻿","\n\nnew\n"," new﻿"],
+[" two words﻿",""," ﻿"],
+[" two words﻿","  "," ﻿"],
+[" two words﻿"," x "," x﻿"],
+[" two words﻿","é"," é﻿"],
+[" word​","new"," new"],
+[" word​"," new "," new"],
+[" word​","\n\nnew\n"," new"],
+[" word​",""," "],
+[" word​","  "," "],
+[" word​"," x "," x"],
+[" word​","é"," é"],
+[" ​","new"," new"],
+[" ​"," new "," new"],
+[" ​","\n\nnew\n"," new"],
+[" ​",""," "],
+[" ​","  "," "],
+[" ​"," x "," x"],
+[" ​","é"," é"],
+[" two words​","new"," new"],
+[" two words​"," new "," new"],
+[" two words​","\n\nnew\n"," new"],
+[" two words​",""," "],
+[" two words​","  "," "],
+[" two words​"," x "," x"],
+[" two words​","é"," é"],
+[" word","new"," new"],
+[" word"," new "," new"],
+[" word","\n\nnew\n"," new"],
+[" word",""," "],
+[" word","  "," "],
+[" word"," x "," x"],
+[" word","é"," é"],
+[" ","new"," new"],
+[" "," new "," new"],
+[" ","\n\nnew\n"," new"],
+[" ",""," "],
+[" ","  "," "],
+[" "," x "," x"],
+[" ","é"," é"],
+[" two words","new"," new"],
+[" two words"," new "," new"],
+[" two words","\n\nnew\n"," new"],
+[" two words",""," "],
+[" two words","  "," "],
+[" two words"," x "," x"],
+[" two words","é"," é"],
+[" word᠎","new"," new"],
+[" word᠎"," new "," new"],
+[" word᠎","\n\nnew\n"," new"],
+[" word᠎",""," "],
+[" word᠎","  "," "],
+[" word᠎"," x "," x"],
+[" word᠎","é"," é"],
+[" ᠎","new"," new"],
+[" ᠎"," new "," new"],
+[" ᠎","\n\nnew\n"," new"],
+[" ᠎",""," "],
+[" ᠎","  "," "],
+[" ᠎"," x "," x"],
+[" ᠎","é"," é"],
+[" two words᠎","new"," new"],
+[" two words᠎"," new "," new"],
+[" two words᠎","\n\nnew\n"," new"],
+[" two words᠎",""," "],
+[" two words᠎","  "," "],
+[" two words᠎"," x "," x"],
+[" two words᠎","é"," é"],
+[" word \n ","new"," new \n "],
+[" word \n "," new "," new \n "],
+[" word \n ","\n\nnew\n"," new \n "],
+[" word \n ","","  \n "],
+[" word \n ","  ","  \n "],
+[" word \n "," x "," x \n "],
+[" word \n ","é"," é \n "],
+["  \n ","new","  \n new  \n "],
+["  \n "," new ","  \n new  \n "],
+["  \n ","\n\nnew\n","  \n new  \n "],
+["  \n ","","  \n   \n "],
+["  \n ","  ","  \n   \n "],
+["  \n "," x ","  \n x  \n "],
+["  \n ","é","  \n é  \n "],
+[" two words \n ","new"," new \n "],
+[" two words \n "," new "," new \n "],
+[" two words \n ","\n\nnew\n"," new \n "],
+[" two words \n ","","  \n "],
+[" two words \n ","  ","  \n "],
+[" two words \n "," x "," x \n "],
+[" two words \n ","é"," é \n "],
+[" word","new"," new"],
+[" word"," new "," new"],
+[" word","\n\nnew\n"," new"],
+[" word",""," "],
+[" word","  "," "],
+[" word"," x "," x"],
+[" word","é"," é"],
+[" ","new"," new "],
+[" "," new "," new "],
+[" ","\n\nnew\n"," new "],
+[" ","","  "],
+[" ","  ","  "],
+[" "," x "," x "],
+[" ","é"," é "],
+[" two words","new"," new"],
+[" two words"," new "," new"],
+[" two words","\n\nnew\n"," new"],
+[" two words",""," "],
+[" two words","  "," "],
+[" two words"," x "," x"],
+[" two words","é"," é"],
+[" word ","new"," new "],
+[" word "," new "," new "],
+[" word ","\n\nnew\n"," new "],
+[" word ","","  "],
+[" word ","  ","  "],
+[" word "," x "," x "],
+[" word ","é"," é "],
+["  ","new","  new  "],
+["  "," new ","  new  "],
+["  ","\n\nnew\n","  new  "],
+["  ","","    "],
+["  ","  ","    "],
+["  "," x ","  x  "],
+["  ","é","  é  "],
+[" two words ","new"," new "],
+[" two words "," new "," new "],
+[" two words ","\n\nnew\n"," new "],
+[" two words ","","  "],
+[" two words ","  ","  "],
+[" two words "," x "," x "],
+[" two words ","é"," é "],
+[" word\n","new"," new\n"],
+[" word\n"," new "," new\n"],
+[" word\n","\n\nnew\n"," new\n"],
+[" word\n",""," \n"],
+[" word\n","  "," \n"],
+[" word\n"," x "," x\n"],
+[" word\n","é"," é\n"],
+[" \n","new"," \nnew \n"],
+[" \n"," new "," \nnew \n"],
+[" \n","\n\nnew\n"," \nnew \n"],
+[" \n",""," \n \n"],
+[" \n","  "," \n \n"],
+[" \n"," x "," \nx \n"],
+[" \n","é"," \né \n"],
+[" two words\n","new"," new\n"],
+[" two words\n"," new "," new\n"],
+[" two words\n","\n\nnew\n"," new\n"],
+[" two words\n",""," \n"],
+[" two words\n","  "," \n"],
+[" two words\n"," x "," x\n"],
+[" two words\n","é"," é\n"],
+[" word\n\n","new"," new\n\n"],
+[" word\n\n"," new "," new\n\n"],
+[" word\n\n","\n\nnew\n"," new\n\n"],
+[" word\n\n",""," \n\n"],
+[" word\n\n","  "," \n\n"],
+[" word\n\n"," x "," x\n\n"],
+[" word\n\n","é"," é\n\n"],
+[" \n\n","new"," \n\nnew \n\n"],
+[" \n\n"," new "," \n\nnew \n\n"],
+[" \n\n","\n\nnew\n"," \n\nnew \n\n"],
+[" \n\n",""," \n\n \n\n"],
+[" \n\n","  "," \n\n \n\n"],
+[" \n\n"," x "," \n\nx \n\n"],
+[" \n\n","é"," \n\né \n\n"],
+[" two words\n\n","new"," new\n\n"],
+[" two words\n\n"," new "," new\n\n"],
+[" two words\n\n","\n\nnew\n"," new\n\n"],
+[" two words\n\n",""," \n\n"],
+[" two words\n\n","  "," \n\n"],
+[" two words\n\n"," x "," x\n\n"],
+[" two words\n\n","é"," é\n\n"],
+[" word\t","new"," new\t"],
+[" word\t"," new "," new\t"],
+[" word\t","\n\nnew\n"," new\t"],
+[" word\t",""," \t"],
+[" word\t","  "," \t"],
+[" word\t"," x "," x\t"],
+[" word\t","é"," é\t"],
+[" \t","new"," \tnew \t"],
+[" \t"," new "," \tnew \t"],
+[" \t","\n\nnew\n"," \tnew \t"],
+[" \t",""," \t \t"],
+[" \t","  "," \t \t"],
+[" \t"," x "," \tx \t"],
+[" \t","é"," \té \t"],
+[" two words\t","new"," new\t"],
+[" two words\t"," new "," new\t"],
+[" two words\t","\n\nnew\n"," new\t"],
+[" two words\t",""," \t"],
+[" two words\t","  "," \t"],
+[" two words\t"," x "," x\t"],
+[" two words\t","é"," é\t"],
+[" word\r\n","new"," new\r\n"],
+[" word\r\n"," new "," new\r\n"],
+[" word\r\n","\n\nnew\n"," new\r\n"],
+[" word\r\n",""," \r\n"],
+[" word\r\n","  "," \r\n"],
+[" word\r\n"," x "," x\r\n"],
+[" word\r\n","é"," é\r\n"],
+[" \r\n","new"," \r\nnew \r\n"],
+[" \r\n"," new "," \r\nnew \r\n"],
+[" \r\n","\n\nnew\n"," \r\nnew \r\n"],
+[" \r\n",""," \r\n \r\n"],
+[" \r\n","  "," \r\n \r\n"],
+[" \r\n"," x "," \r\nx \r\n"],
+[" \r\n","é"," \r\né \r\n"],
+[" two words\r\n","new"," new\r\n"],
+[" two words\r\n"," new "," new\r\n"],
+[" two words\r\n","\n\nnew\n"," new\r\n"],
+[" two words\r\n",""," \r\n"],
+[" two words\r\n","  "," \r\n"],
+[" two words\r\n"," x "," x\r\n"],
+[" two words\r\n","é"," é\r\n"],
+[" word ","new"," new "],
+[" word "," new "," new "],
+[" word ","\n\nnew\n"," new "],
+[" word ","","  "],
+[" word ","  ","  "],
+[" word "," x "," x "],
+[" word ","é"," é "],
+["  ","new","  new  "],
+["  "," new ","  new  "],
+["  ","\n\nnew\n","  new  "],
+["  ","","    "],
+["  ","  ","    "],
+["  "," x ","  x  "],
+["  ","é","  é  "],
+[" two words ","new"," new "],
+[" two words "," new "," new "],
+[" two words ","\n\nnew\n"," new "],
+[" two words ","","  "],
+[" two words ","  ","  "],
+[" two words "," x "," x "],
+[" two words ","é"," é "],
+[" word ","new"," new "],
+[" word "," new "," new "],
+[" word ","\n\nnew\n"," new "],
+[" word ","","  "],
+[" word ","  ","  "],
+[" word "," x "," x "],
+[" word ","é"," é "],
+["  ","new","  new  "],
+["  "," new ","  new  "],
+["  ","\n\nnew\n","  new  "],
+["  ","","    "],
+["  ","  ","    "],
+["  "," x ","  x  "],
+["  ","é","  é  "],
+[" two words ","new"," new "],
+[" two words "," new "," new "],
+[" two words ","\n\nnew\n"," new "],
+[" two words ","","  "],
+[" two words ","  ","  "],
+[" two words "," x "," x "],
+[" two words ","é"," é "],
+[" word　","new"," new　"],
+[" word　"," new "," new　"],
+[" word　","\n\nnew\n"," new　"],
+[" word　",""," 　"],
+[" word　","  "," 　"],
+[" word　"," x "," x　"],
+[" word　","é"," é　"],
+[" 　","new"," 　new 　"],
+[" 　"," new "," 　new 　"],
+[" 　","\n\nnew\n"," 　new 　"],
+[" 　",""," 　 　"],
+[" 　","  "," 　 　"],
+[" 　"," x "," 　x 　"],
+[" 　","é"," 　é 　"],
+[" two words　","new"," new　"],
+[" two words　"," new "," new　"],
+[" two words　","\n\nnew\n"," new　"],
+[" two words　",""," 　"],
+[" two words　","  "," 　"],
+[" two words　"," x "," x　"],
+[" two words　","é"," é　"],
+[" word﻿","new"," new﻿"],
+[" word﻿"," new "," new﻿"],
+[" word﻿","\n\nnew\n"," new﻿"],
+[" word﻿",""," ﻿"],
+[" word﻿","  "," ﻿"],
+[" word﻿"," x "," x﻿"],
+[" word﻿","é"," é﻿"],
+[" ﻿","new"," ﻿new ﻿"],
+[" ﻿"," new "," ﻿new ﻿"],
+[" ﻿","\n\nnew\n"," ﻿new ﻿"],
+[" ﻿",""," ﻿ ﻿"],
+[" ﻿","  "," ﻿ ﻿"],
+[" ﻿"," x "," ﻿x ﻿"],
+[" ﻿","é"," ﻿é ﻿"],
+[" two words﻿","new"," new﻿"],
+[" two words﻿"," new "," new﻿"],
+[" two words﻿","\n\nnew\n"," new﻿"],
+[" two words﻿",""," ﻿"],
+[" two words﻿","  "," ﻿"],
+[" two words﻿"," x "," x﻿"],
+[" two words﻿","é"," é﻿"],
+[" word​","new"," new"],
+[" word​"," new "," new"],
+[" word​","\n\nnew\n"," new"],
+[" word​",""," "],
+[" word​","  "," "],
+[" word​"," x "," x"],
+[" word​","é"," é"],
+[" ​","new"," new"],
+[" ​"," new "," new"],
+[" ​","\n\nnew\n"," new"],
+[" ​",""," "],
+[" ​","  "," "],
+[" ​"," x "," x"],
+[" ​","é"," é"],
+[" two words​","new"," new"],
+[" two words​"," new "," new"],
+[" two words​","\n\nnew\n"," new"],
+[" two words​",""," "],
+[" two words​","  "," "],
+[" two words​"," x "," x"],
+[" two words​","é"," é"],
+[" word","new"," new"],
+[" word"," new "," new"],
+[" word","\n\nnew\n"," new"],
+[" word",""," "],
+[" word","  "," "],
+[" word"," x "," x"],
+[" word","é"," é"],
+[" ","new"," new"],
+[" "," new "," new"],
+[" ","\n\nnew\n"," new"],
+[" ",""," "],
+[" ","  "," "],
+[" "," x "," x"],
+[" ","é"," é"],
+[" two words","new"," new"],
+[" two words"," new "," new"],
+[" two words","\n\nnew\n"," new"],
+[" two words",""," "],
+[" two words","  "," "],
+[" two words"," x "," x"],
+[" two words","é"," é"],
+[" word᠎","new"," new"],
+[" word᠎"," new "," new"],
+[" word᠎","\n\nnew\n"," new"],
+[" word᠎",""," "],
+[" word᠎","  "," "],
+[" word᠎"," x "," x"],
+[" word᠎","é"," é"],
+[" ᠎","new"," new"],
+[" ᠎"," new "," new"],
+[" ᠎","\n\nnew\n"," new"],
+[" ᠎",""," "],
+[" ᠎","  "," "],
+[" ᠎"," x "," x"],
+[" ᠎","é"," é"],
+[" two words᠎","new"," new"],
+[" two words᠎"," new "," new"],
+[" two words᠎","\n\nnew\n"," new"],
+[" two words᠎",""," "],
+[" two words᠎","  "," "],
+[" two words᠎"," x "," x"],
+[" two words᠎","é"," é"],
+[" word \n ","new"," new \n "],
+[" word \n "," new "," new \n "],
+[" word \n ","\n\nnew\n"," new \n "],
+[" word \n ","","  \n "],
+[" word \n ","  ","  \n "],
+[" word \n "," x "," x \n "],
+[" word \n ","é"," é \n "],
+["  \n ","new","  \n new  \n "],
+["  \n "," new ","  \n new  \n "],
+["  \n ","\n\nnew\n","  \n new  \n "],
+["  \n ","","  \n   \n "],
+["  \n ","  ","  \n   \n "],
+["  \n "," x ","  \n x  \n "],
+["  \n ","é","  \n é  \n "],
+[" two words \n ","new"," new \n "],
+[" two words \n "," new "," new \n "],
+[" two words \n ","\n\nnew\n"," new \n "],
+[" two words \n ","","  \n "],
+[" two words \n ","  ","  \n "],
+[" two words \n "," x "," x \n "],
+[" two words \n ","é"," é \n "],
+["　word","new","　new"],
+["　word"," new ","　new"],
+["　word","\n\nnew\n","　new"],
+["　word","","　"],
+["　word","  ","　"],
+["　word"," x ","　x"],
+["　word","é","　é"],
+["　","new","　new　"],
+["　"," new ","　new　"],
+["　","\n\nnew\n","　new　"],
+["　","","　　"],
+["　","  ","　　"],
+["　"," x ","　x　"],
+["　","é","　é　"],
+["　two words","new","　new"],
+["　two words"," new ","　new"],
+["　two words","\n\nnew\n","　new"],
+["　two words","","　"],
+["　two words","  ","　"],
+["　two words"," x ","　x"],
+["　two words","é","　é"],
+["　word ","new","　new "],
+["　word "," new ","　new "],
+["　word ","\n\nnew\n","　new "],
+["　word ","","　 "],
+["　word ","  ","　 "],
+["　word "," x ","　x "],
+["　word ","é","　é "],
+["　 ","new","　 new　 "],
+["　 "," new ","　 new　 "],
+["　 ","\n\nnew\n","　 new　 "],
+["　 ","","　 　 "],
+["　 ","  ","　 　 "],
+["　 "," x ","　 x　 "],
+["　 ","é","　 é　 "],
+["　two words ","new","　new "],
+["　two words "," new ","　new "],
+["　two words ","\n\nnew\n","　new "],
+["　two words ","","　 "],
+["　two words ","  ","　 "],
+["　two words "," x ","　x "],
+["　two words ","é","　é "],
+["　word\n","new","　new\n"],
+["　word\n"," new ","　new\n"],
+["　word\n","\n\nnew\n","　new\n"],
+["　word\n","","　\n"],
+["　word\n","  ","　\n"],
+["　word\n"," x ","　x\n"],
+["　word\n","é","　é\n"],
+["　\n","new","　\nnew　\n"],
+["　\n"," new ","　\nnew　\n"],
+["　\n","\n\nnew\n","　\nnew　\n"],
+["　\n","","　\n　\n"],
+["　\n","  ","　\n　\n"],
+["　\n"," x ","　\nx　\n"],
+["　\n","é","　\né　\n"],
+["　two words\n","new","　new\n"],
+["　two words\n"," new ","　new\n"],
+["　two words\n","\n\nnew\n","　new\n"],
+["　two words\n","","　\n"],
+["　two words\n","  ","　\n"],
+["　two words\n"," x ","　x\n"],
+["　two words\n","é","　é\n"],
+["　word\n\n","new","　new\n\n"],
+["　word\n\n"," new ","　new\n\n"],
+["　word\n\n","\n\nnew\n","　new\n\n"],
+["　word\n\n","","　\n\n"],
+["　word\n\n","  ","　\n\n"],
+["　word\n\n"," x ","　x\n\n"],
+["　word\n\n","é","　é\n\n"],
+["　\n\n","new","　\n\nnew　\n\n"],
+["　\n\n"," new ","　\n\nnew　\n\n"],
+["　\n\n","\n\nnew\n","　\n\nnew　\n\n"],
+["　\n\n","","　\n\n　\n\n"],
+["　\n\n","  ","　\n\n　\n\n"],
+["　\n\n"," x ","　\n\nx　\n\n"],
+["　\n\n","é","　\n\né　\n\n"],
+["　two words\n\n","new","　new\n\n"],
+["　two words\n\n"," new ","　new\n\n"],
+["　two words\n\n","\n\nnew\n","　new\n\n"],
+["　two words\n\n","","　\n\n"],
+["　two words\n\n","  ","　\n\n"],
+["　two words\n\n"," x ","　x\n\n"],
+["　two words\n\n","é","　é\n\n"],
+["　word\t","new","　new\t"],
+["　word\t"," new ","　new\t"],
+["　word\t","\n\nnew\n","　new\t"],
+["　word\t","","　\t"],
+["　word\t","  ","　\t"],
+["　word\t"," x ","　x\t"],
+["　word\t","é","　é\t"],
+["　\t","new","　\tnew　\t"],
+["　\t"," new ","　\tnew　\t"],
+["　\t","\n\nnew\n","　\tnew　\t"],
+["　\t","","　\t　\t"],
+["　\t","  ","　\t　\t"],
+["　\t"," x ","　\tx　\t"],
+["　\t","é","　\té　\t"],
+["　two words\t","new","　new\t"],
+["　two words\t"," new ","　new\t"],
+["　two words\t","\n\nnew\n","　new\t"],
+["　two words\t","","　\t"],
+["　two words\t","  ","　\t"],
+["　two words\t"," x ","　x\t"],
+["　two words\t","é","　é\t"],
+["　word\r\n","new","　new\r\n"],
+["　word\r\n"," new ","　new\r\n"],
+["　word\r\n","\n\nnew\n","　new\r\n"],
+["　word\r\n","","　\r\n"],
+["　word\r\n","  ","　\r\n"],
+["　word\r\n"," x ","　x\r\n"],
+["　word\r\n","é","　é\r\n"],
+["　\r\n","new","　\r\nnew　\r\n"],
+["　\r\n"," new ","　\r\nnew　\r\n"],
+["　\r\n","\n\nnew\n","　\r\nnew　\r\n"],
+["　\r\n","","　\r\n　\r\n"],
+["　\r\n","  ","　\r\n　\r\n"],
+["　\r\n"," x ","　\r\nx　\r\n"],
+["　\r\n","é","　\r\né　\r\n"],
+["　two words\r\n","new","　new\r\n"],
+["　two words\r\n"," new ","　new\r\n"],
+["　two words\r\n","\n\nnew\n","　new\r\n"],
+["　two words\r\n","","　\r\n"],
+["　two words\r\n","  ","　\r\n"],
+["　two words\r\n"," x ","　x\r\n"],
+["　two words\r\n","é","　é\r\n"],
+["　word ","new","　new "],
+["　word "," new ","　new "],
+["　word ","\n\nnew\n","　new "],
+["　word ","","　 "],
+["　word ","  ","　 "],
+["　word "," x ","　x "],
+["　word ","é","　é "],
+["　 ","new","　 new　 "],
+["　 "," new ","　 new　 "],
+["　 ","\n\nnew\n","　 new　 "],
+["　 ","","　 　 "],
+["　 ","  ","　 　 "],
+["　 "," x ","　 x　 "],
+["　 ","é","　 é　 "],
+["　two words ","new","　new "],
+["　two words "," new ","　new "],
+["　two words ","\n\nnew\n","　new "],
+["　two words ","","　 "],
+["　two words ","  ","　 "],
+["　two words "," x ","　x "],
+["　two words ","é","　é "],
+["　word ","new","　new "],
+["　word "," new ","　new "],
+["　word ","\n\nnew\n","　new "],
+["　word ","","　 "],
+["　word ","  ","　 "],
+["　word "," x ","　x "],
+["　word ","é","　é "],
+["　 ","new","　 new　 "],
+["　 "," new ","　 new　 "],
+["　 ","\n\nnew\n","　 new　 "],
+["　 ","","　 　 "],
+["　 ","  ","　 　 "],
+["　 "," x ","　 x　 "],
+["　 ","é","　 é　 "],
+["　two words ","new","　new "],
+["　two words "," new ","　new "],
+["　two words ","\n\nnew\n","　new "],
+["　two words ","","　 "],
+["　two words ","  ","　 "],
+["　two words "," x ","　x "],
+["　two words ","é","　é "],
+["　word　","new","　new　"],
+["　word　"," new ","　new　"],
+["　word　","\n\nnew\n","　new　"],
+["　word　","","　　"],
+["　word　","  ","　　"],
+["　word　"," x ","　x　"],
+["　word　","é","　é　"],
+["　　","new","　　new　　"],
+["　　"," new ","　　new　　"],
+["　　","\n\nnew\n","　　new　　"],
+["　　","","　　　　"],
+["　　","  ","　　　　"],
+["　　"," x ","　　x　　"],
+["　　","é","　　é　　"],
+["　two words　","new","　new　"],
+["　two words　"," new ","　new　"],
+["　two words　","\n\nnew\n","　new　"],
+["　two words　","","　　"],
+["　two words　","  ","　　"],
+["　two words　"," x ","　x　"],
+["　two words　","é","　é　"],
+["　word﻿","new","　new﻿"],
+["　word﻿"," new ","　new﻿"],
+["　word﻿","\n\nnew\n","　new﻿"],
+["　word﻿","","　﻿"],
+["　word﻿","  ","　﻿"],
+["　word﻿"," x ","　x﻿"],
+["　word﻿","é","　é﻿"],
+["　﻿","new","　﻿new　﻿"],
+["　﻿"," new ","　﻿new　﻿"],
+["　﻿","\n\nnew\n","　﻿new　﻿"],
+["　﻿","","　﻿　﻿"],
+["　﻿","  ","　﻿　﻿"],
+["　﻿"," x ","　﻿x　﻿"],
+["　﻿","é","　﻿é　﻿"],
+["　two words﻿","new","　new﻿"],
+["　two words﻿"," new ","　new﻿"],
+["　two words﻿","\n\nnew\n","　new﻿"],
+["　two words﻿","","　﻿"],
+["　two words﻿","  ","　﻿"],
+["　two words﻿"," x ","　x﻿"],
+["　two words﻿","é","　é﻿"],
+["　word​","new","　new"],
+["　word​"," new ","　new"],
+["　word​","\n\nnew\n","　new"],
+["　word​","","　"],
+["　word​","  ","　"],
+["　word​"," x ","　x"],
+["　word​","é","　é"],
+["　​","new","　new"],
+["　​"," new ","　new"],
+["　​","\n\nnew\n","　new"],
+["　​","","　"],
+["　​","  ","　"],
+["　​"," x ","　x"],
+["　​","é","　é"],
+["　two words​","new","　new"],
+["　two words​"," new ","　new"],
+["　two words​","\n\nnew\n","　new"],
+["　two words​","","　"],
+["　two words​","  ","　"],
+["　two words​"," x ","　x"],
+["　two words​","é","　é"],
+["　word","new","　new"],
+["　word"," new ","　new"],
+["　word","\n\nnew\n","　new"],
+["　word","","　"],
+["　word","  ","　"],
+["　word"," x ","　x"],
+["　word","é","　é"],
+["　","new","　new"],
+["　"," new ","　new"],
+["　","\n\nnew\n","　new"],
+["　","","　"],
+["　","  ","　"],
+["　"," x ","　x"],
+["　","é","　é"],
+["　two words","new","　new"],
+["　two words"," new ","　new"],
+["　two words","\n\nnew\n","　new"],
+["　two words","","　"],
+["　two words","  ","　"],
+["　two words"," x ","　x"],
+["　two words","é","　é"],
+["　word᠎","new","　new"],
+["　word᠎"," new ","　new"],
+["　word᠎","\n\nnew\n","　new"],
+["　word᠎","","　"],
+["　word᠎","  ","　"],
+["　word᠎"," x ","　x"],
+["　word᠎","é","　é"],
+["　᠎","new","　new"],
+["　᠎"," new ","　new"],
+["　᠎","\n\nnew\n","　new"],
+["　᠎","","　"],
+["　᠎","  ","　"],
+["　᠎"," x ","　x"],
+["　᠎","é","　é"],
+["　two words᠎","new","　new"],
+["　two words᠎"," new ","　new"],
+["　two words᠎","\n\nnew\n","　new"],
+["　two words᠎","","　"],
+["　two words᠎","  ","　"],
+["　two words᠎"," x ","　x"],
+["　two words᠎","é","　é"],
+["　word \n ","new","　new \n "],
+["　word \n "," new ","　new \n "],
+["　word \n ","\n\nnew\n","　new \n "],
+["　word \n ","","　 \n "],
+["　word \n ","  ","　 \n "],
+["　word \n "," x ","　x \n "],
+["　word \n ","é","　é \n "],
+["　 \n ","new","　 \n new　 \n "],
+["　 \n "," new ","　 \n new　 \n "],
+["　 \n ","\n\nnew\n","　 \n new　 \n "],
+["　 \n ","","　 \n 　 \n "],
+["　 \n ","  ","　 \n 　 \n "],
+["　 \n "," x ","　 \n x　 \n "],
+["　 \n ","é","　 \n é　 \n "],
+["　two words \n ","new","　new \n "],
+["　two words \n "," new ","　new \n "],
+["　two words \n ","\n\nnew\n","　new \n "],
+["　two words \n ","","　 \n "],
+["　two words \n ","  ","　 \n "],
+["　two words \n "," x ","　x \n "],
+["　two words \n ","é","　é \n "],
+["﻿word","new","﻿new"],
+["﻿word"," new ","﻿new"],
+["﻿word","\n\nnew\n","﻿new"],
+["﻿word","","﻿"],
+["﻿word","  ","﻿"],
+["﻿word"," x ","﻿x"],
+["﻿word","é","﻿é"],
+["﻿","new","﻿new﻿"],
+["﻿"," new ","﻿new﻿"],
+["﻿","\n\nnew\n","﻿new﻿"],
+["﻿","","﻿﻿"],
+["﻿","  ","﻿﻿"],
+["﻿"," x ","﻿x﻿"],
+["﻿","é","﻿é﻿"],
+["﻿two words","new","﻿new"],
+["﻿two words"," new ","﻿new"],
+["﻿two words","\n\nnew\n","﻿new"],
+["﻿two words","","﻿"],
+["﻿two words","  ","﻿"],
+["﻿two words"," x ","﻿x"],
+["﻿two words","é","﻿é"],
+["﻿word ","new","﻿new "],
+["﻿word "," new ","﻿new "],
+["﻿word ","\n\nnew\n","﻿new "],
+["﻿word ","","﻿ "],
+["﻿word ","  ","﻿ "],
+["﻿word "," x ","﻿x "],
+["﻿word ","é","﻿é "],
+["﻿ ","new","﻿ new﻿ "],
+["﻿ "," new ","﻿ new﻿ "],
+["﻿ ","\n\nnew\n","﻿ new﻿ "],
+["﻿ ","","﻿ ﻿ "],
+["﻿ ","  ","﻿ ﻿ "],
+["﻿ "," x ","﻿ x﻿ "],
+["﻿ ","é","﻿ é﻿ "],
+["﻿two words ","new","﻿new "],
+["﻿two words "," new ","﻿new "],
+["﻿two words ","\n\nnew\n","﻿new "],
+["﻿two words ","","﻿ "],
+["﻿two words ","  ","﻿ "],
+["﻿two words "," x ","﻿x "],
+["﻿two words ","é","﻿é "],
+["﻿word\n","new","﻿new\n"],
+["﻿word\n"," new ","﻿new\n"],
+["﻿word\n","\n\nnew\n","﻿new\n"],
+["﻿word\n","","﻿\n"],
+["﻿word\n","  ","﻿\n"],
+["﻿word\n"," x ","﻿x\n"],
+["﻿word\n","é","﻿é\n"],
+["﻿\n","new","﻿\nnew﻿\n"],
+["﻿\n"," new ","﻿\nnew﻿\n"],
+["﻿\n","\n\nnew\n","﻿\nnew﻿\n"],
+["﻿\n","","﻿\n﻿\n"],
+["﻿\n","  ","﻿\n﻿\n"],
+["﻿\n"," x ","﻿\nx﻿\n"],
+["﻿\n","é","﻿\né﻿\n"],
+["﻿two words\n","new","﻿new\n"],
+["﻿two words\n"," new ","﻿new\n"],
+["﻿two words\n","\n\nnew\n","﻿new\n"],
+["﻿two words\n","","﻿\n"],
+["﻿two words\n","  ","﻿\n"],
+["﻿two words\n"," x ","﻿x\n"],
+["﻿two words\n","é","﻿é\n"],
+["﻿word\n\n","new","﻿new\n\n"],
+["﻿word\n\n"," new ","﻿new\n\n"],
+["﻿word\n\n","\n\nnew\n","﻿new\n\n"],
+["﻿word\n\n","","﻿\n\n"],
+["﻿word\n\n","  ","﻿\n\n"],
+["﻿word\n\n"," x ","﻿x\n\n"],
+["﻿word\n\n","é","﻿é\n\n"],
+["﻿\n\n","new","﻿\n\nnew﻿\n\n"],
+["﻿\n\n"," new ","﻿\n\nnew﻿\n\n"],
+["﻿\n\n","\n\nnew\n","﻿\n\nnew﻿\n\n"],
+["﻿\n\n","","﻿\n\n﻿\n\n"],
+["﻿\n\n","  ","﻿\n\n﻿\n\n"],
+["﻿\n\n"," x ","﻿\n\nx﻿\n\n"],
+["﻿\n\n","é","﻿\n\né﻿\n\n"],
+["﻿two words\n\n","new","﻿new\n\n"],
+["﻿two words\n\n"," new ","﻿new\n\n"],
+["﻿two words\n\n","\n\nnew\n","﻿new\n\n"],
+["﻿two words\n\n","","﻿\n\n"],
+["﻿two words\n\n","  ","﻿\n\n"],
+["﻿two words\n\n"," x ","﻿x\n\n"],
+["﻿two words\n\n","é","﻿é\n\n"],
+["﻿word\t","new","﻿new\t"],
+["﻿word\t"," new ","﻿new\t"],
+["﻿word\t","\n\nnew\n","﻿new\t"],
+["﻿word\t","","﻿\t"],
+["﻿word\t","  ","﻿\t"],
+["﻿word\t"," x ","﻿x\t"],
+["﻿word\t","é","﻿é\t"],
+["﻿\t","new","﻿\tnew﻿\t"],
+["﻿\t"," new ","﻿\tnew﻿\t"],
+["﻿\t","\n\nnew\n","﻿\tnew﻿\t"],
+["﻿\t","","﻿\t﻿\t"],
+["﻿\t","  ","﻿\t﻿\t"],
+["﻿\t"," x ","﻿\tx﻿\t"],
+["﻿\t","é","﻿\té﻿\t"],
+["﻿two words\t","new","﻿new\t"],
+["﻿two words\t"," new ","﻿new\t"],
+["﻿two words\t","\n\nnew\n","﻿new\t"],
+["﻿two words\t","","﻿\t"],
+["﻿two words\t","  ","﻿\t"],
+["﻿two words\t"," x ","﻿x\t"],
+["﻿two words\t","é","﻿é\t"],
+["﻿word\r\n","new","﻿new\r\n"],
+["﻿word\r\n"," new ","﻿new\r\n"],
+["﻿word\r\n","\n\nnew\n","﻿new\r\n"],
+["﻿word\r\n","","﻿\r\n"],
+["﻿word\r\n","  ","﻿\r\n"],
+["﻿word\r\n"," x ","﻿x\r\n"],
+["﻿word\r\n","é","﻿é\r\n"],
+["﻿\r\n","new","﻿\r\nnew﻿\r\n"],
+["﻿\r\n"," new ","﻿\r\nnew﻿\r\n"],
+["﻿\r\n","\n\nnew\n","﻿\r\nnew﻿\r\n"],
+["﻿\r\n","","﻿\r\n﻿\r\n"],
+["﻿\r\n","  ","﻿\r\n﻿\r\n"],
+["﻿\r\n"," x ","﻿\r\nx﻿\r\n"],
+["﻿\r\n","é","﻿\r\né﻿\r\n"],
+["﻿two words\r\n","new","﻿new\r\n"],
+["﻿two words\r\n"," new ","﻿new\r\n"],
+["﻿two words\r\n","\n\nnew\n","﻿new\r\n"],
+["﻿two words\r\n","","﻿\r\n"],
+["﻿two words\r\n","  ","﻿\r\n"],
+["﻿two words\r\n"," x ","﻿x\r\n"],
+["﻿two words\r\n","é","﻿é\r\n"],
+["﻿word ","new","﻿new "],
+["﻿word "," new ","﻿new "],
+["﻿word ","\n\nnew\n","﻿new "],
+["﻿word ","","﻿ "],
+["﻿word ","  ","﻿ "],
+["﻿word "," x ","﻿x "],
+["﻿word ","é","﻿é "],
+["﻿ ","new","﻿ new﻿ "],
+["﻿ "," new ","﻿ new﻿ "],
+["﻿ ","\n\nnew\n","﻿ new﻿ "],
+["﻿ ","","﻿ ﻿ "],
+["﻿ ","  ","﻿ ﻿ "],
+["﻿ "," x ","﻿ x﻿ "],
+["﻿ ","é","﻿ é﻿ "],
+["﻿two words ","new","﻿new "],
+["﻿two words "," new ","﻿new "],
+["﻿two words ","\n\nnew\n","﻿new "],
+["﻿two words ","","﻿ "],
+["﻿two words ","  ","﻿ "],
+["﻿two words "," x ","﻿x "],
+["﻿two words ","é","﻿é "],
+["﻿word ","new","﻿new "],
+["﻿word "," new ","﻿new "],
+["﻿word ","\n\nnew\n","﻿new "],
+["﻿word ","","﻿ "],
+["﻿word ","  ","﻿ "],
+["﻿word "," x ","﻿x "],
+["﻿word ","é","﻿é "],
+["﻿ ","new","﻿ new﻿ "],
+["﻿ "," new ","﻿ new﻿ "],
+["﻿ ","\n\nnew\n","﻿ new﻿ "],
+["﻿ ","","﻿ ﻿ "],
+["﻿ ","  ","﻿ ﻿ "],
+["﻿ "," x ","﻿ x﻿ "],
+["﻿ ","é","﻿ é﻿ "],
+["﻿two words ","new","﻿new "],
+["﻿two words "," new ","﻿new "],
+["﻿two words ","\n\nnew\n","﻿new "],
+["﻿two words ","","﻿ "],
+["﻿two words ","  ","﻿ "],
+["﻿two words "," x ","﻿x "],
+["﻿two words ","é","﻿é "],
+["﻿word　","new","﻿new　"],
+["﻿word　"," new ","﻿new　"],
+["﻿word　","\n\nnew\n","﻿new　"],
+["﻿word　","","﻿　"],
+["﻿word　","  ","﻿　"],
+["﻿word　"," x ","﻿x　"],
+["﻿word　","é","﻿é　"],
+["﻿　","new","﻿　new﻿　"],
+["﻿　"," new ","﻿　new﻿　"],
+["﻿　","\n\nnew\n","﻿　new﻿　"],
+["﻿　","","﻿　﻿　"],
+["﻿　","  ","﻿　﻿　"],
+["﻿　"," x ","﻿　x﻿　"],
+["﻿　","é","﻿　é﻿　"],
+["﻿two words　","new","﻿new　"],
+["﻿two words　"," new ","﻿new　"],
+["﻿two words　","\n\nnew\n","﻿new　"],
+["﻿two words　","","﻿　"],
+["﻿two words　","  ","﻿　"],
+["﻿two words　"," x ","﻿x　"],
+["﻿two words　","é","﻿é　"],
+["﻿word﻿","new","﻿new﻿"],
+["﻿word﻿"," new ","﻿new﻿"],
+["﻿word﻿","\n\nnew\n","﻿new﻿"],
+["﻿word﻿","","﻿﻿"],
+["﻿word﻿","  ","﻿﻿"],
+["﻿word﻿"," x ","﻿x﻿"],
+["﻿word﻿","é","﻿é﻿"],
+["﻿﻿","new","﻿﻿new﻿﻿"],
+["﻿﻿"," new ","﻿﻿new﻿﻿"],
+["﻿﻿","\n\nnew\n","﻿﻿new﻿﻿"],
+["﻿﻿","","﻿﻿﻿﻿"],
+["﻿﻿","  ","﻿﻿﻿﻿"],
+["﻿﻿"," x ","﻿﻿x﻿﻿"],
+["﻿﻿","é","﻿﻿é﻿﻿"],
+["﻿two words﻿","new","﻿new﻿"],
+["﻿two words﻿"," new ","﻿new﻿"],
+["﻿two words﻿","\n\nnew\n","﻿new﻿"],
+["﻿two words﻿","","﻿﻿"],
+["﻿two words﻿","  ","﻿﻿"],
+["﻿two words﻿"," x ","﻿x﻿"],
+["﻿two words﻿","é","﻿é﻿"],
+["﻿word​","new","﻿new"],
+["﻿word​"," new ","﻿new"],
+["﻿word​","\n\nnew\n","﻿new"],
+["﻿word​","","﻿"],
+["﻿word​","  ","﻿"],
+["﻿word​"," x ","﻿x"],
+["﻿word​","é","﻿é"],
+["﻿​","new","﻿new"],
+["﻿​"," new ","﻿new"],
+["﻿​","\n\nnew\n","﻿new"],
+["﻿​","","﻿"],
+["﻿​","  ","﻿"],
+["﻿​"," x ","﻿x"],
+["﻿​","é","﻿é"],
+["﻿two words​","new","﻿new"],
+["﻿two words​"," new ","﻿new"],
+["﻿two words​","\n\nnew\n","﻿new"],
+["﻿two words​","","﻿"],
+["﻿two words​","  ","﻿"],
+["﻿two words​"," x ","﻿x"],
+["﻿two words​","é","﻿é"],
+["﻿word","new","﻿new"],
+["﻿word"," new ","﻿new"],
+["﻿word","\n\nnew\n","﻿new"],
+["﻿word","","﻿"],
+["﻿word","  ","﻿"],
+["﻿word"," x ","﻿x"],
+["﻿word","é","﻿é"],
+["﻿","new","﻿new"],
+["﻿"," new ","﻿new"],
+["﻿","\n\nnew\n","﻿new"],
+["﻿","","﻿"],
+["﻿","  ","﻿"],
+["﻿"," x ","﻿x"],
+["﻿","é","﻿é"],
+["﻿two words","new","﻿new"],
+["﻿two words"," new ","﻿new"],
+["﻿two words","\n\nnew\n","﻿new"],
+["﻿two words","","﻿"],
+["﻿two words","  ","﻿"],
+["﻿two words"," x ","﻿x"],
+["﻿two words","é","﻿é"],
+["﻿word᠎","new","﻿new"],
+["﻿word᠎"," new ","﻿new"],
+["﻿word᠎","\n\nnew\n","﻿new"],
+["﻿word᠎","","﻿"],
+["﻿word᠎","  ","﻿"],
+["﻿word᠎"," x ","﻿x"],
+["﻿word᠎","é","﻿é"],
+["﻿᠎","new","﻿new"],
+["﻿᠎"," new ","﻿new"],
+["﻿᠎","\n\nnew\n","﻿new"],
+["﻿᠎","","﻿"],
+["﻿᠎","  ","﻿"],
+["﻿᠎"," x ","﻿x"],
+["﻿᠎","é","﻿é"],
+["﻿two words᠎","new","﻿new"],
+["﻿two words᠎"," new ","﻿new"],
+["﻿two words᠎","\n\nnew\n","﻿new"],
+["﻿two words᠎","","﻿"],
+["﻿two words᠎","  ","﻿"],
+["﻿two words᠎"," x ","﻿x"],
+["﻿two words᠎","é","﻿é"],
+["﻿word \n ","new","﻿new \n "],
+["﻿word \n "," new ","﻿new \n "],
+["﻿word \n ","\n\nnew\n","﻿new \n "],
+["﻿word \n ","","﻿ \n "],
+["﻿word \n ","  ","﻿ \n "],
+["﻿word \n "," x ","﻿x \n "],
+["﻿word \n ","é","﻿é \n "],
+["﻿ \n ","new","﻿ \n new﻿ \n "],
+["﻿ \n "," new ","﻿ \n new﻿ \n "],
+["﻿ \n ","\n\nnew\n","﻿ \n new﻿ \n "],
+["﻿ \n ","","﻿ \n ﻿ \n "],
+["﻿ \n ","  ","﻿ \n ﻿ \n "],
+["﻿ \n "," x ","﻿ \n x﻿ \n "],
+["﻿ \n ","é","﻿ \n é﻿ \n "],
+["﻿two words \n ","new","﻿new \n "],
+["﻿two words \n "," new ","﻿new \n "],
+["﻿two words \n ","\n\nnew\n","﻿new \n "],
+["﻿two words \n ","","﻿ \n "],
+["﻿two words \n ","  ","﻿ \n "],
+["﻿two words \n "," x ","﻿x \n "],
+["﻿two words \n ","é","﻿é \n "],
+["​word","new","new"],
+["​word"," new ","new"],
+["​word","\n\nnew\n","new"],
+["​word","",""],
+["​word","  ",""],
+["​word"," x ","x"],
+["​word","é","é"],
+["​","new","new"],
+["​"," new ","new"],
+["​","\n\nnew\n","new"],
+["​","",""],
+["​","  ",""],
+["​"," x ","x"],
+["​","é","é"],
+["​two words","new","new"],
+["​two words"," new ","new"],
+["​two words","\n\nnew\n","new"],
+["​two words","",""],
+["​two words","  ",""],
+["​two words"," x ","x"],
+["​two words","é","é"],
+["​word ","new","new "],
+["​word "," new ","new "],
+["​word ","\n\nnew\n","new "],
+["​word ",""," "],
+["​word ","  "," "],
+["​word "," x ","x "],
+["​word ","é","é "],
+["​ ","new","new "],
+["​ "," new ","new "],
+["​ ","\n\nnew\n","new "],
+["​ ",""," "],
+["​ ","  "," "],
+["​ "," x ","x "],
+["​ ","é","é "],
+["​two words ","new","new "],
+["​two words "," new ","new "],
+["​two words ","\n\nnew\n","new "],
+["​two words ",""," "],
+["​two words ","  "," "],
+["​two words "," x ","x "],
+["​two words ","é","é "],
+["​word\n","new","new\n"],
+["​word\n"," new ","new\n"],
+["​word\n","\n\nnew\n","new\n"],
+["​word\n","","\n"],
+["​word\n","  ","\n"],
+["​word\n"," x ","x\n"],
+["​word\n","é","é\n"],
+["​\n","new","new\n"],
+["​\n"," new ","new\n"],
+["​\n","\n\nnew\n","new\n"],
+["​\n","","\n"],
+["​\n","  ","\n"],
+["​\n"," x ","x\n"],
+["​\n","é","é\n"],
+["​two words\n","new","new\n"],
+["​two words\n"," new ","new\n"],
+["​two words\n","\n\nnew\n","new\n"],
+["​two words\n","","\n"],
+["​two words\n","  ","\n"],
+["​two words\n"," x ","x\n"],
+["​two words\n","é","é\n"],
+["​word\n\n","new","new\n\n"],
+["​word\n\n"," new ","new\n\n"],
+["​word\n\n","\n\nnew\n","new\n\n"],
+["​word\n\n","","\n\n"],
+["​word\n\n","  ","\n\n"],
+["​word\n\n"," x ","x\n\n"],
+["​word\n\n","é","é\n\n"],
+["​\n\n","new","new\n\n"],
+["​\n\n"," new ","new\n\n"],
+["​\n\n","\n\nnew\n","new\n\n"],
+["​\n\n","","\n\n"],
+["​\n\n","  ","\n\n"],
+["​\n\n"," x ","x\n\n"],
+["​\n\n","é","é\n\n"],
+["​two words\n\n","new","new\n\n"],
+["​two words\n\n"," new ","new\n\n"],
+["​two words\n\n","\n\nnew\n","new\n\n"],
+["​two words\n\n","","\n\n"],
+["​two words\n\n","  ","\n\n"],
+["​two words\n\n"," x ","x\n\n"],
+["​two words\n\n","é","é\n\n"],
+["​word\t","new","new\t"],
+["​word\t"," new ","new\t"],
+["​word\t","\n\nnew\n","new\t"],
+["​word\t","","\t"],
+["​word\t","  ","\t"],
+["​word\t"," x ","x\t"],
+["​word\t","é","é\t"],
+["​\t","new","new\t"],
+["​\t"," new ","new\t"],
+["​\t","\n\nnew\n","new\t"],
+["​\t","","\t"],
+["​\t","  ","\t"],
+["​\t"," x ","x\t"],
+["​\t","é","é\t"],
+["​two words\t","new","new\t"],
+["​two words\t"," new ","new\t"],
+["​two words\t","\n\nnew\n","new\t"],
+["​two words\t","","\t"],
+["​two words\t","  ","\t"],
+["​two words\t"," x ","x\t"],
+["​two words\t","é","é\t"],
+["​word\r\n","new","new\r\n"],
+["​word\r\n"," new ","new\r\n"],
+["​word\r\n","\n\nnew\n","new\r\n"],
+["​word\r\n","","\r\n"],
+["​word\r\n","  ","\r\n"],
+["​word\r\n"," x ","x\r\n"],
+["​word\r\n","é","é\r\n"],
+["​\r\n","new","new\r\n"],
+["​\r\n"," new ","new\r\n"],
+["​\r\n","\n\nnew\n","new\r\n"],
+["​\r\n","","\r\n"],
+["​\r\n","  ","\r\n"],
+["​\r\n"," x ","x\r\n"],
+["​\r\n","é","é\r\n"],
+["​two words\r\n","new","new\r\n"],
+["​two words\r\n"," new ","new\r\n"],
+["​two words\r\n","\n\nnew\n","new\r\n"],
+["​two words\r\n","","\r\n"],
+["​two words\r\n","  ","\r\n"],
+["​two words\r\n"," x ","x\r\n"],
+["​two words\r\n","é","é\r\n"],
+["​word ","new","new "],
+["​word "," new ","new "],
+["​word ","\n\nnew\n","new "],
+["​word ",""," "],
+["​word ","  "," "],
+["​word "," x ","x "],
+["​word ","é","é "],
+["​ ","new","new "],
+["​ "," new ","new "],
+["​ ","\n\nnew\n","new "],
+["​ ",""," "],
+["​ ","  "," "],
+["​ "," x ","x "],
+["​ ","é","é "],
+["​two words ","new","new "],
+["​two words "," new ","new "],
+["​two words ","\n\nnew\n","new "],
+["​two words ",""," "],
+["​two words ","  "," "],
+["​two words "," x ","x "],
+["​two words ","é","é "],
+["​word ","new","new "],
+["​word "," new ","new "],
+["​word ","\n\nnew\n","new "],
+["​word ",""," "],
+["​word ","  "," "],
+["​word "," x ","x "],
+["​word ","é","é "],
+["​ ","new","new "],
+["​ "," new ","new "],
+["​ ","\n\nnew\n","new "],
+["​ ",""," "],
+["​ ","  "," "],
+["​ "," x ","x "],
+["​ ","é","é "],
+["​two words ","new","new "],
+["​two words "," new ","new "],
+["​two words ","\n\nnew\n","new "],
+["​two words ",""," "],
+["​two words ","  "," "],
+["​two words "," x ","x "],
+["​two words ","é","é "],
+["​word　","new","new　"],
+["​word　"," new ","new　"],
+["​word　","\n\nnew\n","new　"],
+["​word　","","　"],
+["​word　","  ","　"],
+["​word　"," x ","x　"],
+["​word　","é","é　"],
+["​　","new","new　"],
+["​　"," new ","new　"],
+["​　","\n\nnew\n","new　"],
+["​　","","　"],
+["​　","  ","　"],
+["​　"," x ","x　"],
+["​　","é","é　"],
+["​two words　","new","new　"],
+["​two words　"," new ","new　"],
+["​two words　","\n\nnew\n","new　"],
+["​two words　","","　"],
+["​two words　","  ","　"],
+["​two words　"," x ","x　"],
+["​two words　","é","é　"],
+["​word﻿","new","new﻿"],
+["​word﻿"," new ","new﻿"],
+["​word﻿","\n\nnew\n","new﻿"],
+["​word﻿","","﻿"],
+["​word﻿","  ","﻿"],
+["​word﻿"," x ","x﻿"],
+["​word﻿","é","é﻿"],
+["​﻿","new","new﻿"],
+["​﻿"," new ","new﻿"],
+["​﻿","\n\nnew\n","new﻿"],
+["​﻿","","﻿"],
+["​﻿","  ","﻿"],
+["​﻿"," x ","x﻿"],
+["​﻿","é","é﻿"],
+["​two words﻿","new","new﻿"],
+["​two words﻿"," new ","new﻿"],
+["​two words﻿","\n\nnew\n","new﻿"],
+["​two words﻿","","﻿"],
+["​two words﻿","  ","﻿"],
+["​two words﻿"," x ","x﻿"],
+["​two words﻿","é","é﻿"],
+["​word​","new","new"],
+["​word​"," new ","new"],
+["​word​","\n\nnew\n","new"],
+["​word​","",""],
+["​word​","  ",""],
+["​word​"," x ","x"],
+["​word​","é","é"],
+["​​","new","new"],
+["​​"," new ","new"],
+["​​","\n\nnew\n","new"],
+["​​","",""],
+["​​","  ",""],
+["​​"," x ","x"],
+["​​","é","é"],
+["​two words​","new","new"],
+["​two words​"," new ","new"],
+["​two words​","\n\nnew\n","new"],
+["​two words​","",""],
+["​two words​","  ",""],
+["​two words​"," x ","x"],
+["​two words​","é","é"],
+["​word","new","new"],
+["​word"," new ","new"],
+["​word","\n\nnew\n","new"],
+["​word","",""],
+["​word","  ",""],
+["​word"," x ","x"],
+["​word","é","é"],
+["​","new","new"],
+["​"," new ","new"],
+["​","\n\nnew\n","new"],
+["​","",""],
+["​","  ",""],
+["​"," x ","x"],
+["​","é","é"],
+["​two words","new","new"],
+["​two words"," new ","new"],
+["​two words","\n\nnew\n","new"],
+["​two words","",""],
+["​two words","  ",""],
+["​two words"," x ","x"],
+["​two words","é","é"],
+["​word᠎","new","new"],
+["​word᠎"," new ","new"],
+["​word᠎","\n\nnew\n","new"],
+["​word᠎","",""],
+["​word᠎","  ",""],
+["​word᠎"," x ","x"],
+["​word᠎","é","é"],
+["​᠎","new","new"],
+["​᠎"," new ","new"],
+["​᠎","\n\nnew\n","new"],
+["​᠎","",""],
+["​᠎","  ",""],
+["​᠎"," x ","x"],
+["​᠎","é","é"],
+["​two words᠎","new","new"],
+["​two words᠎"," new ","new"],
+["​two words᠎","\n\nnew\n","new"],
+["​two words᠎","",""],
+["​two words᠎","  ",""],
+["​two words᠎"," x ","x"],
+["​two words᠎","é","é"],
+["​word \n ","new","new \n "],
+["​word \n "," new ","new \n "],
+["​word \n ","\n\nnew\n","new \n "],
+["​word \n ",""," \n "],
+["​word \n ","  "," \n "],
+["​word \n "," x ","x \n "],
+["​word \n ","é","é \n "],
+["​ \n ","new","new \n "],
+["​ \n "," new ","new \n "],
+["​ \n ","\n\nnew\n","new \n "],
+["​ \n ",""," \n "],
+["​ \n ","  "," \n "],
+["​ \n "," x ","x \n "],
+["​ \n ","é","é \n "],
+["​two words \n ","new","new \n "],
+["​two words \n "," new ","new \n "],
+["​two words \n ","\n\nnew\n","new \n "],
+["​two words \n ",""," \n "],
+["​two words \n ","  "," \n "],
+["​two words \n "," x ","x \n "],
+["​two words \n ","é","é \n "],
+["word","new","new"],
+["word"," new ","new"],
+["word","\n\nnew\n","new"],
+["word","",""],
+["word","  ",""],
+["word"," x ","x"],
+["word","é","é"],
+["","new","new"],
+[""," new ","new"],
+["","\n\nnew\n","new"],
+["","",""],
+["","  ",""],
+[""," x ","x"],
+["","é","é"],
+["two words","new","new"],
+["two words"," new ","new"],
+["two words","\n\nnew\n","new"],
+["two words","",""],
+["two words","  ",""],
+["two words"," x ","x"],
+["two words","é","é"],
+["word ","new","new "],
+["word "," new ","new "],
+["word ","\n\nnew\n","new "],
+["word ",""," "],
+["word ","  "," "],
+["word "," x ","x "],
+["word ","é","é "],
+[" ","new","new "],
+[" "," new ","new "],
+[" ","\n\nnew\n","new "],
+[" ",""," "],
+[" ","  "," "],
+[" "," x ","x "],
+[" ","é","é "],
+["two words ","new","new "],
+["two words "," new ","new "],
+["two words ","\n\nnew\n","new "],
+["two words ",""," "],
+["two words ","  "," "],
+["two words "," x ","x "],
+["two words ","é","é "],
+["word\n","new","new\n"],
+["word\n"," new ","new\n"],
+["word\n","\n\nnew\n","new\n"],
+["word\n","","\n"],
+["word\n","  ","\n"],
+["word\n"," x ","x\n"],
+["word\n","é","é\n"],
+["\n","new","new\n"],
+["\n"," new ","new\n"],
+["\n","\n\nnew\n","new\n"],
+["\n","","\n"],
+["\n","  ","\n"],
+["\n"," x ","x\n"],
+["\n","é","é\n"],
+["two words\n","new","new\n"],
+["two words\n"," new ","new\n"],
+["two words\n","\n\nnew\n","new\n"],
+["two words\n","","\n"],
+["two words\n","  ","\n"],
+["two words\n"," x ","x\n"],
+["two words\n","é","é\n"],
+["word\n\n","new","new\n\n"],
+["word\n\n"," new ","new\n\n"],
+["word\n\n","\n\nnew\n","new\n\n"],
+["word\n\n","","\n\n"],
+["word\n\n","  ","\n\n"],
+["word\n\n"," x ","x\n\n"],
+["word\n\n","é","é\n\n"],
+["\n\n","new","new\n\n"],
+["\n\n"," new ","new\n\n"],
+["\n\n","\n\nnew\n","new\n\n"],
+["\n\n","","\n\n"],
+["\n\n","  ","\n\n"],
+["\n\n"," x ","x\n\n"],
+["\n\n","é","é\n\n"],
+["two words\n\n","new","new\n\n"],
+["two words\n\n"," new ","new\n\n"],
+["two words\n\n","\n\nnew\n","new\n\n"],
+["two words\n\n","","\n\n"],
+["two words\n\n","  ","\n\n"],
+["two words\n\n"," x ","x\n\n"],
+["two words\n\n","é","é\n\n"],
+["word\t","new","new\t"],
+["word\t"," new ","new\t"],
+["word\t","\n\nnew\n","new\t"],
+["word\t","","\t"],
+["word\t","  ","\t"],
+["word\t"," x ","x\t"],
+["word\t","é","é\t"],
+["\t","new","new\t"],
+["\t"," new ","new\t"],
+["\t","\n\nnew\n","new\t"],
+["\t","","\t"],
+["\t","  ","\t"],
+["\t"," x ","x\t"],
+["\t","é","é\t"],
+["two words\t","new","new\t"],
+["two words\t"," new ","new\t"],
+["two words\t","\n\nnew\n","new\t"],
+["two words\t","","\t"],
+["two words\t","  ","\t"],
+["two words\t"," x ","x\t"],
+["two words\t","é","é\t"],
+["word\r\n","new","new\r\n"],
+["word\r\n"," new ","new\r\n"],
+["word\r\n","\n\nnew\n","new\r\n"],
+["word\r\n","","\r\n"],
+["word\r\n","  ","\r\n"],
+["word\r\n"," x ","x\r\n"],
+["word\r\n","é","é\r\n"],
+["\r\n","new","new\r\n"],
+["\r\n"," new ","new\r\n"],
+["\r\n","\n\nnew\n","new\r\n"],
+["\r\n","","\r\n"],
+["\r\n","  ","\r\n"],
+["\r\n"," x ","x\r\n"],
+["\r\n","é","é\r\n"],
+["two words\r\n","new","new\r\n"],
+["two words\r\n"," new ","new\r\n"],
+["two words\r\n","\n\nnew\n","new\r\n"],
+["two words\r\n","","\r\n"],
+["two words\r\n","  ","\r\n"],
+["two words\r\n"," x ","x\r\n"],
+["two words\r\n","é","é\r\n"],
+["word ","new","new "],
+["word "," new ","new "],
+["word ","\n\nnew\n","new "],
+["word ",""," "],
+["word ","  "," "],
+["word "," x ","x "],
+["word ","é","é "],
+[" ","new","new "],
+[" "," new ","new "],
+[" ","\n\nnew\n","new "],
+[" ",""," "],
+[" ","  "," "],
+[" "," x ","x "],
+[" ","é","é "],
+["two words ","new","new "],
+["two words "," new ","new "],
+["two words ","\n\nnew\n","new "],
+["two words ",""," "],
+["two words ","  "," "],
+["two words "," x ","x "],
+["two words ","é","é "],
+["word ","new","new "],
+["word "," new ","new "],
+["word ","\n\nnew\n","new "],
+["word ",""," "],
+["word ","  "," "],
+["word "," x ","x "],
+["word ","é","é "],
+[" ","new","new "],
+[" "," new ","new "],
+[" ","\n\nnew\n","new "],
+[" ",""," "],
+[" ","  "," "],
+[" "," x ","x "],
+[" ","é","é "],
+["two words ","new","new "],
+["two words "," new ","new "],
+["two words ","\n\nnew\n","new "],
+["two words ",""," "],
+["two words ","  "," "],
+["two words "," x ","x "],
+["two words ","é","é "],
+["word　","new","new　"],
+["word　"," new ","new　"],
+["word　","\n\nnew\n","new　"],
+["word　","","　"],
+["word　","  ","　"],
+["word　"," x ","x　"],
+["word　","é","é　"],
+["　","new","new　"],
+["　"," new ","new　"],
+["　","\n\nnew\n","new　"],
+["　","","　"],
+["　","  ","　"],
+["　"," x ","x　"],
+["　","é","é　"],
+["two words　","new","new　"],
+["two words　"," new ","new　"],
+["two words　","\n\nnew\n","new　"],
+["two words　","","　"],
+["two words　","  ","　"],
+["two words　"," x ","x　"],
+["two words　","é","é　"],
+["word﻿","new","new﻿"],
+["word﻿"," new ","new﻿"],
+["word﻿","\n\nnew\n","new﻿"],
+["word﻿","","﻿"],
+["word﻿","  ","﻿"],
+["word﻿"," x ","x﻿"],
+["word﻿","é","é﻿"],
+["﻿","new","new﻿"],
+["﻿"," new ","new﻿"],
+["﻿","\n\nnew\n","new﻿"],
+["﻿","","﻿"],
+["﻿","  ","﻿"],
+["﻿"," x ","x﻿"],
+["﻿","é","é﻿"],
+["two words﻿","new","new﻿"],
+["two words﻿"," new ","new﻿"],
+["two words﻿","\n\nnew\n","new﻿"],
+["two words﻿","","﻿"],
+["two words﻿","  ","﻿"],
+["two words﻿"," x ","x﻿"],
+["two words﻿","é","é﻿"],
+["word​","new","new"],
+["word​"," new ","new"],
+["word​","\n\nnew\n","new"],
+["word​","",""],
+["word​","  ",""],
+["word​"," x ","x"],
+["word​","é","é"],
+["​","new","new"],
+["​"," new ","new"],
+["​","\n\nnew\n","new"],
+["​","",""],
+["​","  ",""],
+["​"," x ","x"],
+["​","é","é"],
+["two words​","new","new"],
+["two words​"," new ","new"],
+["two words​","\n\nnew\n","new"],
+["two words​","",""],
+["two words​","  ",""],
+["two words​"," x ","x"],
+["two words​","é","é"],
+["word","new","new"],
+["word"," new ","new"],
+["word","\n\nnew\n","new"],
+["word","",""],
+["word","  ",""],
+["word"," x ","x"],
+["word","é","é"],
+["","new","new"],
+[""," new ","new"],
+["","\n\nnew\n","new"],
+["","",""],
+["","  ",""],
+[""," x ","x"],
+["","é","é"],
+["two words","new","new"],
+["two words"," new ","new"],
+["two words","\n\nnew\n","new"],
+["two words","",""],
+["two words","  ",""],
+["two words"," x ","x"],
+["two words","é","é"],
+["word᠎","new","new"],
+["word᠎"," new ","new"],
+["word᠎","\n\nnew\n","new"],
+["word᠎","",""],
+["word᠎","  ",""],
+["word᠎"," x ","x"],
+["word᠎","é","é"],
+["᠎","new","new"],
+["᠎"," new ","new"],
+["᠎","\n\nnew\n","new"],
+["᠎","",""],
+["᠎","  ",""],
+["᠎"," x ","x"],
+["᠎","é","é"],
+["two words᠎","new","new"],
+["two words᠎"," new ","new"],
+["two words᠎","\n\nnew\n","new"],
+["two words᠎","",""],
+["two words᠎","  ",""],
+["two words᠎"," x ","x"],
+["two words᠎","é","é"],
+["word \n ","new","new \n "],
+["word \n "," new ","new \n "],
+["word \n ","\n\nnew\n","new \n "],
+["word \n ",""," \n "],
+["word \n ","  "," \n "],
+["word \n "," x ","x \n "],
+["word \n ","é","é \n "],
+[" \n ","new","new \n "],
+[" \n "," new ","new \n "],
+[" \n ","\n\nnew\n","new \n "],
+[" \n ",""," \n "],
+[" \n ","  "," \n "],
+[" \n "," x ","x \n "],
+[" \n ","é","é \n "],
+["two words \n ","new","new \n "],
+["two words \n "," new ","new \n "],
+["two words \n ","\n\nnew\n","new \n "],
+["two words \n ",""," \n "],
+["two words \n ","  "," \n "],
+["two words \n "," x ","x \n "],
+["two words \n ","é","é \n "],
+["᠎word","new","new"],
+["᠎word"," new ","new"],
+["᠎word","\n\nnew\n","new"],
+["᠎word","",""],
+["᠎word","  ",""],
+["᠎word"," x ","x"],
+["᠎word","é","é"],
+["᠎","new","new"],
+["᠎"," new ","new"],
+["᠎","\n\nnew\n","new"],
+["᠎","",""],
+["᠎","  ",""],
+["᠎"," x ","x"],
+["᠎","é","é"],
+["᠎two words","new","new"],
+["᠎two words"," new ","new"],
+["᠎two words","\n\nnew\n","new"],
+["᠎two words","",""],
+["᠎two words","  ",""],
+["᠎two words"," x ","x"],
+["᠎two words","é","é"],
+["᠎word ","new","new "],
+["᠎word "," new ","new "],
+["᠎word ","\n\nnew\n","new "],
+["᠎word ",""," "],
+["᠎word ","  "," "],
+["᠎word "," x ","x "],
+["᠎word ","é","é "],
+["᠎ ","new","new "],
+["᠎ "," new ","new "],
+["᠎ ","\n\nnew\n","new "],
+["᠎ ",""," "],
+["᠎ ","  "," "],
+["᠎ "," x ","x "],
+["᠎ ","é","é "],
+["᠎two words ","new","new "],
+["᠎two words "," new ","new "],
+["᠎two words ","\n\nnew\n","new "],
+["᠎two words ",""," "],
+["᠎two words ","  "," "],
+["᠎two words "," x ","x "],
+["᠎two words ","é","é "],
+["᠎word\n","new","new\n"],
+["᠎word\n"," new ","new\n"],
+["᠎word\n","\n\nnew\n","new\n"],
+["᠎word\n","","\n"],
+["᠎word\n","  ","\n"],
+["᠎word\n"," x ","x\n"],
+["᠎word\n","é","é\n"],
+["᠎\n","new","new\n"],
+["᠎\n"," new ","new\n"],
+["᠎\n","\n\nnew\n","new\n"],
+["᠎\n","","\n"],
+["᠎\n","  ","\n"],
+["᠎\n"," x ","x\n"],
+["᠎\n","é","é\n"],
+["᠎two words\n","new","new\n"],
+["᠎two words\n"," new ","new\n"],
+["᠎two words\n","\n\nnew\n","new\n"],
+["᠎two words\n","","\n"],
+["᠎two words\n","  ","\n"],
+["᠎two words\n"," x ","x\n"],
+["᠎two words\n","é","é\n"],
+["᠎word\n\n","new","new\n\n"],
+["᠎word\n\n"," new ","new\n\n"],
+["᠎word\n\n","\n\nnew\n","new\n\n"],
+["᠎word\n\n","","\n\n"],
+["᠎word\n\n","  ","\n\n"],
+["᠎word\n\n"," x ","x\n\n"],
+["᠎word\n\n","é","é\n\n"],
+["᠎\n\n","new","new\n\n"],
+["᠎\n\n"," new ","new\n\n"],
+["᠎\n\n","\n\nnew\n","new\n\n"],
+["᠎\n\n","","\n\n"],
+["᠎\n\n","  ","\n\n"],
+["᠎\n\n"," x ","x\n\n"],
+["᠎\n\n","é","é\n\n"],
+["᠎two words\n\n","new","new\n\n"],
+["᠎two words\n\n"," new ","new\n\n"],
+["᠎two words\n\n","\n\nnew\n","new\n\n"],
+["᠎two words\n\n","","\n\n"],
+["᠎two words\n\n","  ","\n\n"],
+["᠎two words\n\n"," x ","x\n\n"],
+["᠎two words\n\n","é","é\n\n"],
+["᠎word\t","new","new\t"],
+["᠎word\t"," new ","new\t"],
+["᠎word\t","\n\nnew\n","new\t"],
+["᠎word\t","","\t"],
+["᠎word\t","  ","\t"],
+["᠎word\t"," x ","x\t"],
+["᠎word\t","é","é\t"],
+["᠎\t","new","new\t"],
+["᠎\t"," new ","new\t"],
+["᠎\t","\n\nnew\n","new\t"],
+["᠎\t","","\t"],
+["᠎\t","  ","\t"],
+["᠎\t"," x ","x\t"],
+["᠎\t","é","é\t"],
+["᠎two words\t","new","new\t"],
+["᠎two words\t"," new ","new\t"],
+["᠎two words\t","\n\nnew\n","new\t"],
+["᠎two words\t","","\t"],
+["᠎two words\t","  ","\t"],
+["᠎two words\t"," x ","x\t"],
+["᠎two words\t","é","é\t"],
+["᠎word\r\n","new","new\r\n"],
+["᠎word\r\n"," new ","new\r\n"],
+["᠎word\r\n","\n\nnew\n","new\r\n"],
+["᠎word\r\n","","\r\n"],
+["᠎word\r\n","  ","\r\n"],
+["᠎word\r\n"," x ","x\r\n"],
+["᠎word\r\n","é","é\r\n"],
+["᠎\r\n","new","new\r\n"],
+["᠎\r\n"," new ","new\r\n"],
+["᠎\r\n","\n\nnew\n","new\r\n"],
+["᠎\r\n","","\r\n"],
+["᠎\r\n","  ","\r\n"],
+["᠎\r\n"," x ","x\r\n"],
+["᠎\r\n","é","é\r\n"],
+["᠎two words\r\n","new","new\r\n"],
+["᠎two words\r\n"," new ","new\r\n"],
+["᠎two words\r\n","\n\nnew\n","new\r\n"],
+["᠎two words\r\n","","\r\n"],
+["᠎two words\r\n","  ","\r\n"],
+["᠎two words\r\n"," x ","x\r\n"],
+["᠎two words\r\n","é","é\r\n"],
+["᠎word ","new","new "],
+["᠎word "," new ","new "],
+["᠎word ","\n\nnew\n","new "],
+["᠎word ",""," "],
+["᠎word ","  "," "],
+["᠎word "," x ","x "],
+["᠎word ","é","é "],
+["᠎ ","new","new "],
+["᠎ "," new ","new "],
+["᠎ ","\n\nnew\n","new "],
+["᠎ ",""," "],
+["᠎ ","  "," "],
+["᠎ "," x ","x "],
+["᠎ ","é","é "],
+["᠎two words ","new","new "],
+["᠎two words "," new ","new "],
+["᠎two words ","\n\nnew\n","new "],
+["᠎two words ",""," "],
+["᠎two words ","  "," "],
+["᠎two words "," x ","x "],
+["᠎two words ","é","é "],
+["᠎word ","new","new "],
+["᠎word "," new ","new "],
+["᠎word ","\n\nnew\n","new "],
+["᠎word ",""," "],
+["᠎word ","  "," "],
+["᠎word "," x ","x "],
+["᠎word ","é","é "],
+["᠎ ","new","new "],
+["᠎ "," new ","new "],
+["᠎ ","\n\nnew\n","new "],
+["᠎ ",""," "],
+["᠎ ","  "," "],
+["᠎ "," x ","x "],
+["᠎ ","é","é "],
+["᠎two words ","new","new "],
+["᠎two words "," new ","new "],
+["᠎two words ","\n\nnew\n","new "],
+["᠎two words ",""," "],
+["᠎two words ","  "," "],
+["᠎two words "," x ","x "],
+["᠎two words ","é","é "],
+["᠎word　","new","new　"],
+["᠎word　"," new ","new　"],
+["᠎word　","\n\nnew\n","new　"],
+["᠎word　","","　"],
+["᠎word　","  ","　"],
+["᠎word　"," x ","x　"],
+["᠎word　","é","é　"],
+["᠎　","new","new　"],
+["᠎　"," new ","new　"],
+["᠎　","\n\nnew\n","new　"],
+["᠎　","","　"],
+["᠎　","  ","　"],
+["᠎　"," x ","x　"],
+["᠎　","é","é　"],
+["᠎two words　","new","new　"],
+["᠎two words　"," new ","new　"],
+["᠎two words　","\n\nnew\n","new　"],
+["᠎two words　","","　"],
+["᠎two words　","  ","　"],
+["᠎two words　"," x ","x　"],
+["᠎two words　","é","é　"],
+["᠎word﻿","new","new﻿"],
+["᠎word﻿"," new ","new﻿"],
+["᠎word﻿","\n\nnew\n","new﻿"],
+["᠎word﻿","","﻿"],
+["᠎word﻿","  ","﻿"],
+["᠎word﻿"," x ","x﻿"],
+["᠎word﻿","é","é﻿"],
+["᠎﻿","new","new﻿"],
+["᠎﻿"," new ","new﻿"],
+["᠎﻿","\n\nnew\n","new﻿"],
+["᠎﻿","","﻿"],
+["᠎﻿","  ","﻿"],
+["᠎﻿"," x ","x﻿"],
+["᠎﻿","é","é﻿"],
+["᠎two words﻿","new","new﻿"],
+["᠎two words﻿"," new ","new﻿"],
+["᠎two words﻿","\n\nnew\n","new﻿"],
+["᠎two words﻿","","﻿"],
+["᠎two words﻿","  ","﻿"],
+["᠎two words﻿"," x ","x﻿"],
+["᠎two words﻿","é","é﻿"],
+["᠎word​","new","new"],
+["᠎word​"," new ","new"],
+["᠎word​","\n\nnew\n","new"],
+["᠎word​","",""],
+["᠎word​","  ",""],
+["᠎word​"," x ","x"],
+["᠎word​","é","é"],
+["᠎​","new","new"],
+["᠎​"," new ","new"],
+["᠎​","\n\nnew\n","new"],
+["᠎​","",""],
+["᠎​","  ",""],
+["᠎​"," x ","x"],
+["᠎​","é","é"],
+["᠎two words​","new","new"],
+["᠎two words​"," new ","new"],
+["᠎two words​","\n\nnew\n","new"],
+["᠎two words​","",""],
+["᠎two words​","  ",""],
+["᠎two words​"," x ","x"],
+["᠎two words​","é","é"],
+["᠎word","new","new"],
+["᠎word"," new ","new"],
+["᠎word","\n\nnew\n","new"],
+["᠎word","",""],
+["᠎word","  ",""],
+["᠎word"," x ","x"],
+["᠎word","é","é"],
+["᠎","new","new"],
+["᠎"," new ","new"],
+["᠎","\n\nnew\n","new"],
+["᠎","",""],
+["᠎","  ",""],
+["᠎"," x ","x"],
+["᠎","é","é"],
+["᠎two words","new","new"],
+["᠎two words"," new ","new"],
+["᠎two words","\n\nnew\n","new"],
+["᠎two words","",""],
+["᠎two words","  ",""],
+["᠎two words"," x ","x"],
+["᠎two words","é","é"],
+["᠎word᠎","new","new"],
+["᠎word᠎"," new ","new"],
+["᠎word᠎","\n\nnew\n","new"],
+["᠎word᠎","",""],
+["᠎word᠎","  ",""],
+["᠎word᠎"," x ","x"],
+["᠎word᠎","é","é"],
+["᠎᠎","new","new"],
+["᠎᠎"," new ","new"],
+["᠎᠎","\n\nnew\n","new"],
+["᠎᠎","",""],
+["᠎᠎","  ",""],
+["᠎᠎"," x ","x"],
+["᠎᠎","é","é"],
+["᠎two words᠎","new","new"],
+["᠎two words᠎"," new ","new"],
+["᠎two words᠎","\n\nnew\n","new"],
+["᠎two words᠎","",""],
+["᠎two words᠎","  ",""],
+["᠎two words᠎"," x ","x"],
+["᠎two words᠎","é","é"],
+["᠎word \n ","new","new \n "],
+["᠎word \n "," new ","new \n "],
+["᠎word \n ","\n\nnew\n","new \n "],
+["᠎word \n ",""," \n "],
+["᠎word \n ","  "," \n "],
+["᠎word \n "," x ","x \n "],
+["᠎word \n ","é","é \n "],
+["᠎ \n ","new","new \n "],
+["᠎ \n "," new ","new \n "],
+["᠎ \n ","\n\nnew\n","new \n "],
+["᠎ \n ",""," \n "],
+["᠎ \n ","  "," \n "],
+["᠎ \n "," x ","x \n "],
+["᠎ \n ","é","é \n "],
+["᠎two words \n ","new","new \n "],
+["᠎two words \n "," new ","new \n "],
+["᠎two words \n ","\n\nnew\n","new \n "],
+["᠎two words \n ",""," \n "],
+["᠎two words \n ","  "," \n "],
+["᠎two words \n "," x ","x \n "],
+["᠎two words \n ","é","é \n "],
+[" \n word","new"," \n new"],
+[" \n word"," new "," \n new"],
+[" \n word","\n\nnew\n"," \n new"],
+[" \n word",""," \n "],
+[" \n word","  "," \n "],
+[" \n word"," x "," \n x"],
+[" \n word","é"," \n é"],
+[" \n ","new"," \n new \n "],
+[" \n "," new "," \n new \n "],
+[" \n ","\n\nnew\n"," \n new \n "],
+[" \n ",""," \n  \n "],
+[" \n ","  "," \n  \n "],
+[" \n "," x "," \n x \n "],
+[" \n ","é"," \n é \n "],
+[" \n two words","new"," \n new"],
+[" \n two words"," new "," \n new"],
+[" \n two words","\n\nnew\n"," \n new"],
+[" \n two words",""," \n "],
+[" \n two words","  "," \n "],
+[" \n two words"," x "," \n x"],
+[" \n two words","é"," \n é"],
+[" \n word ","new"," \n new "],
+[" \n word "," new "," \n new "],
+[" \n word ","\n\nnew\n"," \n new "],
+[" \n word ",""," \n  "],
+[" \n word ","  "," \n  "],
+[" \n word "," x "," \n x "],
+[" \n word ","é"," \n é "],
+[" \n  ","new"," \n  new \n  "],
+[" \n  "," new "," \n  new \n  "],
+[" \n  ","\n\nnew\n"," \n  new \n  "],
+[" \n  ",""," \n   \n  "],
+[" \n  ","  "," \n   \n  "],
+[" \n  "," x "," \n  x \n  "],
+[" \n  ","é"," \n  é \n  "],
+[" \n two words ","new"," \n new "],
+[" \n two words "," new "," \n new "],
+[" \n two words ","\n\nnew\n"," \n new "],
+[" \n two words ",""," \n  "],
+[" \n two words ","  "," \n  "],
+[" \n two words "," x "," \n x "],
+[" \n two words ","é"," \n é "],
+[" \n word\n","new"," \n new\n"],
+[" \n word\n"," new "," \n new\n"],
+[" \n word\n","\n\nnew\n"," \n new\n"],
+[" \n word\n",""," \n \n"],
+[" \n word\n","  "," \n \n"],
+[" \n word\n"," x "," \n x\n"],
+[" \n word\n","é"," \n é\n"],
+[" \n \n","new"," \n \nnew \n \n"],
+[" \n \n"," new "," \n \nnew \n \n"],
+[" \n \n","\n\nnew\n"," \n \nnew \n \n"],
+[" \n \n",""," \n \n \n \n"],
+[" \n \n","  "," \n \n \n \n"],
+[" \n \n"," x "," \n \nx \n \n"],
+[" \n \n","é"," \n \né \n \n"],
+[" \n two words\n","new"," \n new\n"],
+[" \n two words\n"," new "," \n new\n"],
+[" \n two words\n","\n\nnew\n"," \n new\n"],
+[" \n two words\n",""," \n \n"],
+[" \n two words\n","  "," \n \n"],
+[" \n two words\n"," x "," \n x\n"],
+[" \n two words\n","é"," \n é\n"],
+[" \n word\n\n","new"," \n new\n\n"],
+[" \n word\n\n"," new "," \n new\n\n"],
+[" \n word\n\n","\n\nnew\n"," \n new\n\n"],
+[" \n word\n\n",""," \n \n\n"],
+[" \n word\n\n","  "," \n \n\n"],
+[" \n word\n\n"," x "," \n x\n\n"],
+[" \n word\n\n","é"," \n é\n\n"],
+[" \n \n\n","new"," \n \n\nnew \n \n\n"],
+[" \n \n\n"," new "," \n \n\nnew \n \n\n"],
+[" \n \n\n","\n\nnew\n"," \n \n\nnew \n \n\n"],
+[" \n \n\n",""," \n \n\n \n \n\n"],
+[" \n \n\n","  "," \n \n\n \n \n\n"],
+[" \n \n\n"," x "," \n \n\nx \n \n\n"],
+[" \n \n\n","é"," \n \n\né \n \n\n"],
+[" \n two words\n\n","new"," \n new\n\n"],
+[" \n two words\n\n"," new "," \n new\n\n"],
+[" \n two words\n\n","\n\nnew\n"," \n new\n\n"],
+[" \n two words\n\n",""," \n \n\n"],
+[" \n two words\n\n","  "," \n \n\n"],
+[" \n two words\n\n"," x "," \n x\n\n"],
+[" \n two words\n\n","é"," \n é\n\n"],
+[" \n word\t","new"," \n new\t"],
+[" \n word\t"," new "," \n new\t"],
+[" \n word\t","\n\nnew\n"," \n new\t"],
+[" \n word\t",""," \n \t"],
+[" \n word\t","  "," \n \t"],
+[" \n word\t"," x "," \n x\t"],
+[" \n word\t","é"," \n é\t"],
+[" \n \t","new"," \n \tnew \n \t"],
+[" \n \t"," new "," \n \tnew \n \t"],
+[" \n \t","\n\nnew\n"," \n \tnew \n \t"],
+[" \n \t",""," \n \t \n \t"],
+[" \n \t","  "," \n \t \n \t"],
+[" \n \t"," x "," \n \tx \n \t"],
+[" \n \t","é"," \n \té \n \t"],
+[" \n two words\t","new"," \n new\t"],
+[" \n two words\t"," new "," \n new\t"],
+[" \n two words\t","\n\nnew\n"," \n new\t"],
+[" \n two words\t",""," \n \t"],
+[" \n two words\t","  "," \n \t"],
+[" \n two words\t"," x "," \n x\t"],
+[" \n two words\t","é"," \n é\t"],
+[" \n word\r\n","new"," \n new\r\n"],
+[" \n word\r\n"," new "," \n new\r\n"],
+[" \n word\r\n","\n\nnew\n"," \n new\r\n"],
+[" \n word\r\n",""," \n \r\n"],
+[" \n word\r\n","  "," \n \r\n"],
+[" \n word\r\n"," x "," \n x\r\n"],
+[" \n word\r\n","é"," \n é\r\n"],
+[" \n \r\n","new"," \n \r\nnew \n \r\n"],
+[" \n \r\n"," new "," \n \r\nnew \n \r\n"],
+[" \n \r\n","\n\nnew\n"," \n \r\nnew \n \r\n"],
+[" \n \r\n",""," \n \r\n \n \r\n"],
+[" \n \r\n","  "," \n \r\n \n \r\n"],
+[" \n \r\n"," x "," \n \r\nx \n \r\n"],
+[" \n \r\n","é"," \n \r\né \n \r\n"],
+[" \n two words\r\n","new"," \n new\r\n"],
+[" \n two words\r\n"," new "," \n new\r\n"],
+[" \n two words\r\n","\n\nnew\n"," \n new\r\n"],
+[" \n two words\r\n",""," \n \r\n"],
+[" \n two words\r\n","  "," \n \r\n"],
+[" \n two words\r\n"," x "," \n x\r\n"],
+[" \n two words\r\n","é"," \n é\r\n"],
+[" \n word ","new"," \n new "],
+[" \n word "," new "," \n new "],
+[" \n word ","\n\nnew\n"," \n new "],
+[" \n word ",""," \n  "],
+[" \n word ","  "," \n  "],
+[" \n word "," x "," \n x "],
+[" \n word ","é"," \n é "],
+[" \n  ","new"," \n  new \n  "],
+[" \n  "," new "," \n  new \n  "],
+[" \n  ","\n\nnew\n"," \n  new \n  "],
+[" \n  ",""," \n   \n  "],
+[" \n  ","  "," \n   \n  "],
+[" \n  "," x "," \n  x \n  "],
+[" \n  ","é"," \n  é \n  "],
+[" \n two words ","new"," \n new "],
+[" \n two words "," new "," \n new "],
+[" \n two words ","\n\nnew\n"," \n new "],
+[" \n two words ",""," \n  "],
+[" \n two words ","  "," \n  "],
+[" \n two words "," x "," \n x "],
+[" \n two words ","é"," \n é "],
+[" \n word ","new"," \n new "],
+[" \n word "," new "," \n new "],
+[" \n word ","\n\nnew\n"," \n new "],
+[" \n word ",""," \n  "],
+[" \n word ","  "," \n  "],
+[" \n word "," x "," \n x "],
+[" \n word ","é"," \n é "],
+[" \n  ","new"," \n  new \n  "],
+[" \n  "," new "," \n  new \n  "],
+[" \n  ","\n\nnew\n"," \n  new \n  "],
+[" \n  ",""," \n   \n  "],
+[" \n  ","  "," \n   \n  "],
+[" \n  "," x "," \n  x \n  "],
+[" \n  ","é"," \n  é \n  "],
+[" \n two words ","new"," \n new "],
+[" \n two words "," new "," \n new "],
+[" \n two words ","\n\nnew\n"," \n new "],
+[" \n two words ",""," \n  "],
+[" \n two words ","  "," \n  "],
+[" \n two words "," x "," \n x "],
+[" \n two words ","é"," \n é "],
+[" \n word　","new"," \n new　"],
+[" \n word　"," new "," \n new　"],
+[" \n word　","\n\nnew\n"," \n new　"],
+[" \n word　",""," \n 　"],
+[" \n word　","  "," \n 　"],
+[" \n word　"," x "," \n x　"],
+[" \n word　","é"," \n é　"],
+[" \n 　","new"," \n 　new \n 　"],
+[" \n 　"," new "," \n 　new \n 　"],
+[" \n 　","\n\nnew\n"," \n 　new \n 　"],
+[" \n 　",""," \n 　 \n 　"],
+[" \n 　","  "," \n 　 \n 　"],
+[" \n 　"," x "," \n 　x \n 　"],
+[" \n 　","é"," \n 　é \n 　"],
+[" \n two words　","new"," \n new　"],
+[" \n two words　"," new "," \n new　"],
+[" \n two words　","\n\nnew\n"," \n new　"],
+[" \n two words　",""," \n 　"],
+[" \n two words　","  "," \n 　"],
+[" \n two words　"," x "," \n x　"],
+[" \n two words　","é"," \n é　"],
+[" \n word﻿","new"," \n new﻿"],
+[" \n word﻿"," new "," \n new﻿"],
+[" \n word﻿","\n\nnew\n"," \n new﻿"],
+[" \n word﻿",""," \n ﻿"],
+[" \n word﻿","  "," \n ﻿"],
+[" \n word﻿"," x "," \n x﻿"],
+[" \n word﻿","é"," \n é﻿"],
+[" \n ﻿","new"," \n ﻿new \n ﻿"],
+[" \n ﻿"," new "," \n ﻿new \n ﻿"],
+[" \n ﻿","\n\nnew\n"," \n ﻿new \n ﻿"],
+[" \n ﻿",""," \n ﻿ \n ﻿"],
+[" \n ﻿","  "," \n ﻿ \n ﻿"],
+[" \n ﻿"," x "," \n ﻿x \n ﻿"],
+[" \n ﻿","é"," \n ﻿é \n ﻿"],
+[" \n two words﻿","new"," \n new﻿"],
+[" \n two words﻿"," new "," \n new﻿"],
+[" \n two words﻿","\n\nnew\n"," \n new﻿"],
+[" \n two words﻿",""," \n ﻿"],
+[" \n two words﻿","  "," \n ﻿"],
+[" \n two words﻿"," x "," \n x﻿"],
+[" \n two words﻿","é"," \n é﻿"],
+[" \n word​","new"," \n new"],
+[" \n word​"," new "," \n new"],
+[" \n word​","\n\nnew\n"," \n new"],
+[" \n word​",""," \n "],
+[" \n word​","  "," \n "],
+[" \n word​"," x "," \n x"],
+[" \n word​","é"," \n é"],
+[" \n ​","new"," \n new"],
+[" \n ​"," new "," \n new"],
+[" \n ​","\n\nnew\n"," \n new"],
+[" \n ​",""," \n "],
+[" \n ​","  "," \n "],
+[" \n ​"," x "," \n x"],
+[" \n ​","é"," \n é"],
+[" \n two words​","new"," \n new"],
+[" \n two words​"," new "," \n new"],
+[" \n two words​","\n\nnew\n"," \n new"],
+[" \n two words​",""," \n "],
+[" \n two words​","  "," \n "],
+[" \n two words​"," x "," \n x"],
+[" \n two words​","é"," \n é"],
+[" \n word","new"," \n new"],
+[" \n word"," new "," \n new"],
+[" \n word","\n\nnew\n"," \n new"],
+[" \n word",""," \n "],
+[" \n word","  "," \n "],
+[" \n word"," x "," \n x"],
+[" \n word","é"," \n é"],
+[" \n ","new"," \n new"],
+[" \n "," new "," \n new"],
+[" \n ","\n\nnew\n"," \n new"],
+[" \n ",""," \n "],
+[" \n ","  "," \n "],
+[" \n "," x "," \n x"],
+[" \n ","é"," \n é"],
+[" \n two words","new"," \n new"],
+[" \n two words"," new "," \n new"],
+[" \n two words","\n\nnew\n"," \n new"],
+[" \n two words",""," \n "],
+[" \n two words","  "," \n "],
+[" \n two words"," x "," \n x"],
+[" \n two words","é"," \n é"],
+[" \n word᠎","new"," \n new"],
+[" \n word᠎"," new "," \n new"],
+[" \n word᠎","\n\nnew\n"," \n new"],
+[" \n word᠎",""," \n "],
+[" \n word᠎","  "," \n "],
+[" \n word᠎"," x "," \n x"],
+[" \n word᠎","é"," \n é"],
+[" \n ᠎","new"," \n new"],
+[" \n ᠎"," new "," \n new"],
+[" \n ᠎","\n\nnew\n"," \n new"],
+[" \n ᠎",""," \n "],
+[" \n ᠎","  "," \n "],
+[" \n ᠎"," x "," \n x"],
+[" \n ᠎","é"," \n é"],
+[" \n two words᠎","new"," \n new"],
+[" \n two words᠎"," new "," \n new"],
+[" \n two words᠎","\n\nnew\n"," \n new"],
+[" \n two words᠎",""," \n "],
+[" \n two words᠎","  "," \n "],
+[" \n two words᠎"," x "," \n x"],
+[" \n two words᠎","é"," \n é"],
+[" \n word \n ","new"," \n new \n "],
+[" \n word \n "," new "," \n new \n "],
+[" \n word \n ","\n\nnew\n"," \n new \n "],
+[" \n word \n ",""," \n  \n "],
+[" \n word \n ","  "," \n  \n "],
+[" \n word \n "," x "," \n x \n "],
+[" \n word \n ","é"," \n é \n "],
+[" \n  \n ","new"," \n  \n new \n  \n "],
+[" \n  \n "," new "," \n  \n new \n  \n "],
+[" \n  \n ","\n\nnew\n"," \n  \n new \n  \n "],
+[" \n  \n ",""," \n  \n  \n  \n "],
+[" \n  \n ","  "," \n  \n  \n  \n "],
+[" \n  \n "," x "," \n  \n x \n  \n "],
+[" \n  \n ","é"," \n  \n é \n  \n "],
+[" \n two words \n ","new"," \n new \n "],
+[" \n two words \n "," new "," \n new \n "],
+[" \n two words \n ","\n\nnew\n"," \n new \n "],
+[" \n two words \n ",""," \n  \n "],
+[" \n two words \n ","  "," \n  \n "],
+[" \n two words \n "," x "," \n x \n "],
+[" \n two words \n ","é"," \n é \n "]
+],
+"replaces":[
+["😀   the   the   , 𝄞   heir",0,4,"new","new the   the   , 𝄞   heir"],
+["\t 　 .caféa bheir, 　 \n \r\n café café 😀x .  heir",24,-5,"é","\t 　 .caféa bheir, 　 \n \r\né heir"],
+["\t𝄞rain\tthethe 　 　   lamp , 𝄞 ,\na bé",24,13,"é","\t𝄞rain\tthethe 　 　   lamée 　 　   lamp , 𝄞 ,\na bé"],
+["\t \r\nthecafé ,𝄞\né . x   . 𝄞é lamp x",7,27,"é","\t \r\ntheé𝄞é lamp x"],
+["𝄞 a b 𝄞 rain rain\n é . \n ﻿ heir é rainlamp the x　",-1,46,"é","𝄞 a b 𝄞 rain rain\n é . \n ﻿ heir é rainlamp the xé the x　"],
+["rain\r\n lamp é 𝄞rain 𝄞 \r\n 　 café",31,1,"😀","rain\r\n lamp é 𝄞rain 𝄞 \r\n 　 c😀ain\r\n lamp é 𝄞rain 𝄞 \r\n 　 café"],
+["the , \n the ,thethe﻿   ",8,14,"😀","the , \n 😀hethe﻿   "],
+["lamp heir 𝄞　 é é \n",2,7,"\n","la\nir 𝄞　 é é \n"],
+["   rain café　 rain",24,5,"😀","   rain café　 rain😀in café　 rain"],
+["﻿ 😀 \t rain",15,8,"é","﻿ 😀 \t rainéain"],
+["heir a b heir . . 　 ﻿    heir \n 😀a b 😀 𝄞   é　 \t",60,10,"😀","heir a b heir . . 　 ﻿    heir \n 😀a b 😀 𝄞   é　 \t😀eir . . 　 ﻿    heir \n 😀a b 😀 𝄞   é　 \t"],
+["\r\n . \r\n 　😀 𝄞the\t 　a blamp xrain \nheir ﻿ ﻿",-5,26,"\n","\r\n . \r\n 　😀 𝄞the\t 　a blamp xrain \nhei\np xrain \nheir ﻿ ﻿"],
+["café x , 😀   x 　 café",-8,7,"new","café x , 😀   new, 😀   x 　 café"],
+["  \r\n   .the, heir    　 the é  rain 　\r\n　",21,0,"new","  \r\n   .the, heir    new  \r\n   .the, heir    　 the é  rain 　\r\n　"],
+["lamp heira b ﻿   😀  \n . café \n café   \nheira b",29,10,"new","lamp heira b ﻿   😀  \n . cafénew b ﻿   😀  \n . café \n café   \nheira b"],
+["x café ﻿𝄞 lamp 𝄞 𝄞  ",26,21,"😀","x café ﻿𝄞 lamp 𝄞 𝄞  😀  "],
+[", 　 ﻿ café heir lamp rain 　　 😀\r\n \t ",32,34,"😀",", 　 ﻿ café heir lamp rain 　　 😀\r😀\t "],
+["\t 　 \r\n𝄞 the \n",20,2,"","\t 　 \r\n𝄞 the \n　 \r\n𝄞 the \n"],
+["\t lamp \n.thex 　the the,",21,25,"new","\t lamp \n.thex 　the thnew"],
+["😀 𝄞 𝄞\nx😀 the   é　 .the",31,18,"😀","😀 𝄞 𝄞\nx😀 the   é　 .the😀 é　 .the"],
+[", the café    ",6,-5,"😀",", the 😀é    "],
+["\n lamp  x    𝄞 \t café é😀 é😀\r\n a b rain \r\n a b",17,27,"\n","\n lamp  x    𝄞 \t\n é😀\r\n a b rain \r\n a b"],
+["heir    \t",-8,17,"😀","h😀"],
+["",10,3,"new","new"],
+["😀 \r\na b lamp𝄞 lamp",28,0,"\n","😀 \r\na b lamp𝄞 lamp\n😀 \r\na b lamp𝄞 lamp"],
+[", x",-7,1,"é","é x"],
+["\n𝄞﻿ \n ﻿ , é the a b  lamp   rain é .　\r\n é the,",41,34,"new","\n𝄞﻿ \n ﻿ , é the a b  lamp   rain é .　\rnew é .　\r\n é the,"],
+["a bx\r\n heir",14,15,"é","a bx\r\n heiré"],
+["\r\n the 　 . ﻿ a b \r\n 😀 \t",24,1,"😀","\r\n the 　 . ﻿ a b \r\n 😀 \t😀\n the 　 . ﻿ a b \r\n 😀 \t"],
+["",-3,-9,"",""],
+["   😀﻿ ﻿ ﻿, rain rain \r\n   \r\n 😀 café , \r\n \t ﻿ \r\n",36,46,"new","   😀﻿ ﻿ ﻿, rain rain \r\n   \r\n 😀 cafnew \r\n"],
+["😀  the the😀 . \r\n café😀 \n ,",10,14,"new","😀  the thnew. \r\n café😀 \n ,"],
+["the 　 a b é   café \r\n caféx a b ,   𝄞　 café\n the ﻿  ",52,-7,"\n","the 　 a b é   café \r\n caféx a b ,   𝄞　 café\n the ﻿\nthe ﻿  "],
+["é therain 𝄞 ﻿ heir a b x \n𝄞 😀  ",26,35,"new","é therain 𝄞 ﻿ heir a b xnew"],
+["café𝄞 \t　 heir \r\n    x",20,14,"é","café𝄞 \t　 heir \r\n   é \r\n    x"],
+["\n 𝄞.   a b  heir x\t﻿ a b 　 é \t rain heirthe the   heir",10,10,"é","\n 𝄞.   a éb  heir x\t﻿ a b 　 é \t rain heirthe the   heir"],
+["\r\n ﻿ \t \ta b\r\n﻿.",19,6,"new","\r\n ﻿ \t \ta b\r\n﻿.new \ta b\r\n﻿."],
+["é",1,1,"","é"],
+["caféheir   \r\n \n",-3,13,"😀","caféheir   \r😀 \n"],
+["\r\n é \t 😀 😀, . 　 heir a b,\r\n",-10,-4,"é","\r\n é \t 😀 😀, . 　 héb,\r\n"],
+["𝄞 a b rain , .😀 　 \r\n 　\n　the the\n café\n \n a b. 𝄞",18,56,"","𝄞 a b rain , .😀 "],
+["café\n 𝄞 café",2,-5,"\n","ca\n café"],
+["café écafé café , café ,heir 𝄞      , rain \tcafé.,",4,34,"é","caféé    , rain \tcafé.,"],
+["lamp",10,9,"\n","lamp\n"],
+["the heircafé 𝄞 \n ﻿  ,   a b",29,-3,"😀","the heircafé 𝄞 \n ﻿  ,   a b😀a b"],
+["rain a b rain. x \r\n\t \n 𝄞 　 café 𝄞 rain    éx\r\n the",-8,31,"é","rain a b rain. x \r\n\t \n 𝄞 　 café 𝄞 rain    eéé 𝄞 rain    éx\r\n the"],
+[". ﻿ heir \t﻿heir       \r\nheirthe a b ﻿ ",15,21,"new",". ﻿ heir \t﻿heirnew \r\nheirthe a b ﻿ "],
+["\n .é",1,-4,"é","\né .é"],
+["\r\n .   \t café the. ,　 ,\né heir",38,25,"","\r\n .   \t café the. ,　 ,\né heiŕ heir"],
+[". . cafécafé   . 𝄞 caféa b",22,22,"new",". . cafécafé   . 𝄞 canewféa b"],
+["😀 café 😀 rain 😀😀 , ﻿ thethe 😀 \t😀 café ,       　 𝄞",62,51,"😀","😀 café 😀 rain 😀😀 , ﻿ thethe 😀 \t😀 café ,       　 𝄞😀 　 𝄞"],
+["a b a b﻿ é   rain 😀 heir 　lamp 𝄞 xheir\n \t heir \n ﻿ café   ",17,41,"new","a b a b﻿ é   rainew\n \t heir \n ﻿ café   "],
+["    \n",-5,15,"new","new"],
+["lamp𝄞   \t 😀 x café    café   ",4,29,"é","lampé  "],
+["\n .\r\n café x  ﻿ the é the ,\r\n",12,0,"é","\n .\r\n café xé\n .\r\n café x  ﻿ the é the ,\r\n"],
+["é 😀 the , rain \n\r\n café \t",9,1,"😀","é 😀 the😀́ 😀 the , rain \n\r\n café \t"],
+["😀a b 　 😀 😀 heir 　",11,14,"new","😀a b 　 😀 newheir 　"],
+["lamp \r\n😀 \t lamp",19,10,"😀","lamp \r\n😀 \t lamp😀\t lamp"],
+["﻿heir\ncafé",7,-5,"😀","﻿heir\nc😀\ncafé"],
+["  　 rain theheir lamp",24,5,"","  　 rain theheir lampain theheir lamp"],
+["𝄞 . ﻿   　 the    😀 café　😀the a b",14,4,"new","𝄞 . ﻿   　 thenew ﻿   　 the    😀 café　😀the a b"],
+["\t rain lamp a b    𝄞",23,29,"","\t rain lamp a b    𝄞"],
+["the x",-2,0,"é","theéthe x"],
+["　 .a b😀",6,5,"😀","　 .a b😀b😀"],
+["the \n😀   lamp café . ,\r\nthe  𝄞 heirheir x 𝄞 \r\n é",58,24,"","the \n😀   lamp café . ,\r\nthe  𝄞 heirheir x 𝄞 \r\n é\nthe  𝄞 heirheir x 𝄞 \r\n é"],
+["heir . heir 　\r\n café﻿café café x",23,-7,"new","heir . heir 　\r\n café﻿canew café x"],
+["é",1,1,"\n","e\ń"],
+["a b the 𝄞\r\n a b \n😀 café lampé😀. \n \n heir .",10,4,"","a b the 𝄞the 𝄞\r\n a b \n😀 café lampé😀. \n \n heir ."],
+["　 heirthe　 heir   \r\n ﻿ 𝄞 café the. \t \n",27,-3,"new","　 heirthe　 heir   \r\n ﻿ 𝄞 cnew\t \n"],
+[".x",4,-3,"😀",".x😀.x"],
+["　 é lamp𝄞 lampheir",-4,11,"new","　 é lamp𝄞 lampnew lampheir"],
+["x a b𝄞",9,-4,"é","x a b𝄞é b𝄞"],
+[". . café x    ﻿. café",8,-2,"",". . caféfé"],
+["",-5,-7,"",""],
+["rain a b \r\n 𝄞\r\n   é \n \t café rain\n the😀cafélamp café",57,55,"😀","rain a b \r\n 𝄞\r\n   é \n \t café rain\n the😀cafélamp café😀"],
+["rain , rain 𝄞 ﻿ \r\n heir \t\n heir 😀﻿",0,3,"😀","😀n , rain 𝄞 ﻿ \r\n heir \t\n heir 😀﻿"],
+["𝄞 　 \ncafé rain  heir .   café \r\n\r\n.😀 café x 　 lamp   ",6,17,"\n","𝄞 　 \n\nheir .   café \r\n\r\n.😀 café x 　 lamp   "],
+["😀 a blamp\train \their  é a b 　 the 😀 rain﻿ lamp \n \t é,",57,54,"new","😀 a blamp\train \their  é a b 　 the 😀 rain﻿ lamp \n \t é,newé,"],
+["rain",0,6,"é","é"],
+["\r\n lamp",6,17,"é","\r\n lamé"],
+["😀\t 😀,.heir a b. ﻿",-10,14,"\n","😀\t 😀,.h\n b. ﻿"],
+["",-7,-7,"\n","\n"],
+[" . \ncafé",14,-7,"new"," . \ncafénew. \ncafé"],
+["",5,-1,"new","new"],
+[", 𝄞\r\n the the   \n,",0,6,"😀","😀 the the   \n,"],
+["lampx the rain 　rain,",21,0,"é","lampx the rain 　rain,élampx the rain 　rain,"],
+["\t ﻿ rain 　 \t .\r\n　 ﻿lamp ﻿,   a b .the heir﻿",35,-9,"","\t ﻿ rain 　 \t .\r\n　 ﻿lamp ﻿,   a b .tthe heir﻿"],
+["x caféé a b😀 .heir . é ﻿",3,17,"","x ceir . é ﻿"],
+[". 😀 é \t x \t a b heir café 𝄞   café    , . heir",15,34,"😀",". 😀 é \t x \t a😀afé    , . heir"],
+[",𝄞  lamp 𝄞   lamp 𝄞 café a b , 　 x lamp",29,33,"",",𝄞  lamp 𝄞   lamp 𝄞 café a 　 x lamp"],
+["theheir 𝄞 lamp 　 ,a b　 é rain lamp \n lamp    😀 😀   , lamp",31,54,"é","theheir 𝄞 lamp 　 ,a b　 é rainé , lamp"],
+["   ﻿     \r\n café    lamp the 😀\té 😀 .\t,. x ",51,-4,"😀","   ﻿     \r\n café    lamp the 😀\té 😀 .\t,. x 😀. x "],
+["\n é. a b 😀 \r\n    \t café rain",3,22,"\n","\n e\nafé rain"],
+["rain é x rain\nheir x\t 　😀",14,-6,"\n","rain é x rain\nx\t 　😀"],
+["\r\n 😀rain raina b é x . ﻿café. 　,a b \t",17,17,"😀","\r\n 😀rain raina b😀 é x . ﻿café. 　,a b \t"],
+["café   rain😀 the 　 . é",28,-10,"\n","café   rain😀 the 　 . é\nthe 　 . é"],
+[". \n 𝄞 𝄞 , ,\r\n",4,0,"\n",". \n \n. \n 𝄞 𝄞 , ,\r\n"],
+["rain😀rain \nrain   , rainé😀",3,23,"\n","rai\niné😀"],
+["é . \t\n \r\n ﻿    😀 rain    \t \r\n\n lamp𝄞the x",26,-2,"","é . \t\n \r\n ﻿    😀 rain    x"],
+["😀 \t ,é 　 é𝄞\r\n  😀 𝄞 \r\n café",11,7,"","😀 \t ,é 　 ́ 　 é𝄞\r\n  😀 𝄞 \r\n café"],
+[" ,café",2,-4,""," ,café"],
+[", lamprainé the 😀",16,29,"\n",", lamprainé the\n"],
+["  𝄞lamp 　 the 𝄞 \t　 \t 𝄞 x. é , é 😀 😀",-9,45,"😀","  𝄞lamp 　 the 𝄞 \t　 \t 𝄞 x. é ,😀"],
+["x \né , . \their é \r\n .lamp",11,-1,"new","x \né , . \tnewp"],
+["heir , lamp    😀   . heir\n \t \r\n the",29,10,"😀","heir , lamp    😀   . heir\n \t😀p    😀   . heir\n \t \r\n the"],
+["　, 😀 \n \r\n 😀    rain 😀 ,𝄞 x \n﻿heir  , the x",41,50,"\n","　, 😀 \n \r\n 😀    rain 😀 ,𝄞 x \n﻿heir  , \n"],
+["😀the the 😀  .",-9,16,"é","😀the é"],
+["　 café rain \n ﻿",-10,8,"new","　 cafnewain \n ﻿"],
+["　 \n﻿ \t rain a b",8,24,"","　 \n﻿ \t r"],
+["lamp . a b    , the, \n é x",17,11,"é","lamp . a b    , té   , the, \n é x"],
+["rain",3,11,"😀","rai😀"],
+["   𝄞 café café　",-7,11,"\n","   𝄞 caf\ncafé　"],
+[" a b　 the é       ",8,18,""," a b　 th "],
+["lamp   ﻿  a b   😀    　é😀 \t lamp é   😀 ",38,34,"\n","lamp   ﻿  a b   😀    　é😀 \t lamp é \n é   😀 "],
+["rain rain ﻿ café é café x é heir. .",12,-2,"","rain rain ﻿  ."],
+["",-10,9,"new","new"],
+["﻿ the café \ta b 　café ,\t heir the rain café a b",53,56,"😀","﻿ the café \ta b 　café ,\t heir the rain café a b😀"],
+["the .  a b 😀 heir rain ﻿ é café",2,23,"\n","th\n ﻿ é café"],
+["  😀 . caféheir cafééheir﻿ a b   rain x café",55,11,"😀","  😀 . caféheir cafééheir﻿ a b   rain x café😀heir cafééheir﻿ a b   rain x café"],
+[", cafécafé    , .   .lamp",7,12,"é",", cafécé  , .   .lamp"],
+["heir a ba b a b. 😀é , .﻿ rain 😀 ,\n lamp lamp café café ",25,32,"\n","heir a ba b a b. 😀é , .\n😀 ,\n lamp lamp café café "],
+["rain ,",16,15,"é","rain ,é"],
+["\t   \t \r\n ﻿ 　 \r\n \t ﻿the lamp",25,8,"é","\t   \t \r\n ﻿ 　 \r\n \t ﻿the laé ﻿ 　 \r\n \t ﻿the lamp"],
+["𝄞 é. ﻿ x😀 \t \r\n a b rain\r\n 　café \t",-4,30,"new","𝄞 é. ﻿ x😀 \t \r\n a b rain\r\n 　canewcafé \t"],
+["the , rain a b é",-9,5,"😀","the , ra😀 rain a b é"],
+["é\t \t é    heir",22,2,"new","é\t \t é    heirnew\t \t é    heir"],
+["café ,,  the  the xa bé😀﻿ the ,lamp x, x",27,-5,"😀","café ,,  the  the xa bé😀﻿😀 x, x"],
+["café \n\t heir　café ﻿ a b😀 \r\n",17,36,"é","café \n\t heir　caféé"],
+["😀   .",-10,11,"\n","\n"],
+["rain thea brain",-7,17,"\n","rain the\n"],
+["﻿a b rain    😀\t",-3,-8,"\n","﻿a b rain    \nn    😀\t"],
+["😀 x x rain 𝄞 thethe \t ﻿ rain lamp",25,33,"😀","😀 x x rain 𝄞 thethe \t ﻿😀mp"],
+["café x , 　𝄞 　 \r\n   caféthe \n . , ﻿ rain",-10,18,"😀","café x , 　𝄞 　 \r\n   caféthe \n 😀  caféthe \n . , ﻿ rain"],
+[".    a b rain lamp. . \n",29,1,"new",".    a b rain lamp. . \nnew    a b rain lamp. . \n"],
+["the , 𝄞 \n",16,13,"é","the , 𝄞 \né"],
+["café 𝄞   a b rain a b . \n ﻿ \n",14,9,"","café 𝄞   a b  a b rain a b . \n ﻿ \n"],
+["",-5,-2,"\n","\n"],
+["\n 𝄞 ﻿   😀a b lamp \t",20,6,"\n","\n 𝄞 ﻿   😀a b lamp \n   😀a b lamp \t"],
+["﻿",7,-7,"é","﻿é﻿"],
+["the café \t\n\n é 　 \r\n 　 𝄞. lamp é ,\traina b é heirheir",40,38,"é","the café \t\n\n é 　 \r\n 　 𝄞. lamp é ,\traiéaina b é heirheir"],
+["﻿  a b 　 café \n.",-3,13,"new","﻿  a b 　 cafénew \n."],
+["lamp ﻿ rain the 𝄞é",16,-7,"é","lamp ﻿ rain the éhe 𝄞é"],
+[" ,\t lamp﻿ rainé ééx cafécafé heir ﻿    ﻿ \t é",-6,-10,"\n"," ,\t lamp﻿ rainé ééx cafécafé heir ﻿    \n    ﻿ \t é"],
+[", ,𝄞 \n lamp café\n \t     \t",8,29,"",", ,𝄞 \n "],
+["  café　\n café \n, 𝄞　 heir the 😀\n \r\n ﻿ heir \r\n 　 café",63,16,"new","  café　\n café \n, 𝄞　 heir the 😀\n \r\n ﻿ heir \r\n 　 cafénew 𝄞　 heir the 😀\n \r\n ﻿ heir \r\n 　 café"],
+["heir , 　 rainlamp x \r\né the　　 éa bé. lamp café",33,24,"😀","heir , 　 rainlamp x \r\né the　　 é😀 the　　 éa bé. lamp café"],
+["x a b é",2,1,"é","x é a b é"],
+["\n😀 \t  ",-6,10,"é","\né"],
+["﻿ ﻿  , \r\n 𝄞\r\n , a b\r\n café café　    é ﻿ x ﻿ \t café",59,10,"😀","﻿ ﻿  , \r\n 𝄞\r\n , a b\r\n café café　    é ﻿ x ﻿ \t café😀𝄞\r\n , a b\r\n café café　    é ﻿ x ﻿ \t café"],
+["heir heir x \r\n x   \n lamp the 😀 é café 　   café 😀",5,-8,"","heir  café 😀"],
+["",6,2,"é","é"],
+["\n x ,\r\n heir the x rain \n　　 , 😀the the",12,42,"new","\n x ,\r\n heirnew"],
+[", 　 x😀 rain　, ..xx😀 ﻿😀 é",9,7,"é",", 　 x😀 ré rain　, ..xx😀 ﻿😀 é"],
+[". \train 　 é, heircafé　 😀   　 , é x    café ﻿\r\n",27,22,"\n",". \train 　 é, heircafé　 😀 \n　 😀   　 , é x    café ﻿\r\n"],
+[".heir   the 𝄞 \n \r\n 😀 é𝄞    é \t",23,24,"😀",".heir   the 𝄞 \n \r\n 😀 😀́𝄞    é \t"],
+[", the﻿ \n café , é \t",9,19,"\n",", the﻿ \n \n\t"],
+["   lampé \t   heirrain.rain  the a b rain , x é lamp",48,48,"new","   lampé \t   heirrain.rain  the a b rain , x énew lamp"],
+["𝄞 \n a b heiré lamp a b      . xx lamp heir",-9,2,"\n","𝄞 \n a b heiré lamp a b      . xx \n \n a b heiré lamp a b      . xx lamp heir"],
+[".      \t , .. 𝄞𝄞 .😀   x 𝄞 　,rain",24,46,"😀",".      \t , .. 𝄞𝄞 .😀  😀"],
+["café lamp  the é a b rain\t .café x . rain",27,20,"","café lamp  the é a b rain\tb rain\t .café x . rain"],
+[",   a b caféa bx.. 😀",8,0,"é",",   a b é,   a b caféa bx.. 😀"],
+["raina bx😀 lamp, .",-3,18,"","raina bx😀 lamp"],
+["café",-4,-5,"é","écafé"],
+["   𝄞 😀𝄞x 𝄞 heir x ﻿é . lamp \r\n\t 　  ﻿ é . .",34,29,"\n","   𝄞 😀𝄞x 𝄞 heir x ﻿é . lamp \r\namp \r\n\t 　  ﻿ é . ."],
+["",7,2,"😀","😀"],
+["😀 　\t. \t𝄞 ,a b x café x x 　 \t",35,34,"","😀 　\t. \t𝄞 ,a b x café x x 　 \t"],
+["heir\t , 𝄞x café",-2,-10,"new","heir\t , 𝄞x canew, 𝄞x café"],
+["a béthe 𝄞 x 𝄞   lampthe ,the \r\n   𝄞 😀lamp heir",-3,-8,"é","a béthe 𝄞 x 𝄞   lampthe ,the \r\n   𝄞 😀lamp héamp heir"],
+["",-4,-6,"new","new"],
+[".﻿﻿ heir😀 \r\n",15,-2,"new",".﻿﻿ heir😀 \r\nnew\r\n"],
+["　",0,3,"\n","\n"],
+["𝄞 ,,é  lamp .heir\t , , ﻿ heirheir . . 𝄞 ﻿\r\n ﻿",29,33,"\n","𝄞 ,,é  lamp .heir\t , , ﻿ he\nir . . 𝄞 ﻿\r\n ﻿"],
+["a b﻿ rain          lamprain ,\n rain, é",-2,42,"","a b﻿ rain          lamprain ,\n rain, "],
+["\t \r\n .   \t ﻿a b lamp heir   the    　 𝄞a b",3,-8,"","\t \r 　 𝄞a b"],
+[".café",-5,-5,"new","new.café"],
+["lamp   ",3,16,"new","lamnew"],
+["\t \n   \r\n \r\n﻿ . the   a b",2,-7,"new","\t newe   a b"],
+[".﻿\r\n ﻿",-10,15,"é","é"],
+["lamp \n 　",9,-10,"é","lamp \n 　élamp \n 　"],
+["rain heir ,  , x   the ",11,21,"é","rain heir ,ée "],
+["   \n .éx the the",-7,27,"😀","   \n .éx 😀"],
+["the café𝄞 😀 😀  𝄞   \t a blamp café 😀 x",38,17,"é","the café𝄞 😀 😀  𝄞   \t a blamp café é 𝄞   \t a blamp café 😀 x"],
+["　   . 　 a b lamp ﻿   lamprain \r\n heir 𝄞 lamp",-1,8,"\n","　   . 　 a b lamp ﻿   lamprain \r\n heir 𝄞 lam\na b lamp ﻿   lamprain \r\n heir 𝄞 lamp"],
+[", ﻿    café .rain a b café lamp the　 　,",36,1,"é",", ﻿    café .rain a b café lamp the　é ﻿    café .rain a b café lamp the　 　,"],
+["lamp x,heirlamp é café the ., \nrain lamp",11,27,"","lamp x,heir ., \nrain lamp"],
+["𝄞",0,11,"\n","\n"],
+["a b heir 　 　 the",22,5,"new","a b heir 　 　 theneweir 　 　 the"],
+["lamp",1,-7,"é","lélamp"],
+["\n𝄞 café ﻿, rain 　 the 😀. the ﻿﻿ a b 𝄞 . heir ,heir é",16,20,"\n","\n𝄞 café ﻿, rain\nhe 😀. the ﻿﻿ a b 𝄞 . heir ,heir é"],
+["\té lamp. \n \n \n ﻿ 😀café é \n \t é",26,41,"new","\té lamp. \n \n \n ﻿ 😀café enew"],
+["    a b , lamp   a b xx \t 😀 , 😀 .",23,29,"new","    a b , lamp   a b xxnew, 😀 ."],
+["𝄞 ,rain𝄞 \t café　 heir \r\n, . 𝄞rain  the",36,30,"new","𝄞 ,rain𝄞 \t café　 heir \r\n, . 𝄞rainnew𝄞rain  the"],
+["    , café é \t café xcafé raincafé a b . x \n  ",37,8,"é","    , café é \t café xcafé raincafé aéfé é \t café xcafé raincafé a b . x \n  "],
+["heir heirheir",10,-5,"new","heir heirhnewrheir"],
+["　x 　 　 heircafé😀 élamp   ",31,18,"","　x 　 　 heircafé😀 élamp   élamp   "],
+["a b",-2,11,"😀","a😀"],
+["😀 café \nrain\r\n   \nlampheir lamp a b rain  a b rainrain😀 \r\n    lamp",27,31,"😀","😀 café \nrain\r\n   \nlampheir😀p a b rain  a b rainrain😀 \r\n    lamp"],
+["the",6,-5,"\n","the\nthe"],
+["a b a bé    , x café    ﻿ x\n a b a b　 rain 😀 .𝄞",24,13,"\n","a b a bé    , x café   \n, x café    ﻿ x\n a b a b　 rain 😀 .𝄞"],
+["\n thecafé  𝄞  \n   😀. é    😀𝄞 ..\r\n",-4,40,"é","\n thecafé  𝄞  \n   😀. é    😀𝄞 é"],
+["　",-2,-2,"","　"],
+["\n lamp a b . café.",3,9,"\n","\n l\nb . café."],
+["\t.lamprain.. .",16,-7,"","\t.lamprain.. .ain.. ."],
+["cafécafé the rain é .",32,6,"new","cafécafé the rain é .newfé the rain é ."],
+["𝄞",-10,-6,"😀","😀𝄞"],
+[".    ﻿  \t",19,-4,"new",".    ﻿  \tnew﻿  \t"],
+["a b😀 rain😀 x 𝄞 the    heirrain x",37,13,"é","a b😀 rain😀 x 𝄞 the    heirrain xéx 𝄞 the    heirrain x"],
+["\t ﻿😀. \t a b\r\n x \t x \r\n 　",20,-6,"","\t ﻿😀. \t a b\r\n x \t xx \r\n 　"],
+["\n rain caféheir, the    lamp 　 heir",34,-4,"new","\n rain caféheir, the    lamp 　 heinewheir"],
+["\té a ba b \t lamp .\t  ",16,2,"new","\té a ba b \t lamneẃ a ba b \t lamp .\t  "],
+["\t\n \n 😀",15,10,"new","\t\n \n 😀new"],
+["😀   x the 𝄞 .\n  \r\n 😀 lamp 　heir the    . \n",42,45,"é","😀   x the 𝄞 .\n  \r\n 😀 lamp 　heir the    é"],
+["　😀 x \r\nheir heir x rain 😀 heir   . café érain",-4,56,"é","　😀 x \r\nheir heir x rain 😀 heir   . café éé"],
+["",1,3,"\n","\n"],
+["\r\n \r\n lamp \n x , heir    café    😀é 𝄞",37,-4,"\n","\r\n \r\n lamp \n x , heir    café    😀é\ń 𝄞"],
+["rain \n ,",11,-1,"é","rain \n ,é,"],
+["heir  ﻿\n.x   \n , heir a b    é lamp ﻿ é ,",48,15,"😀","heir  ﻿\n.x   \n , heir a b    é lamp ﻿ é ,😀, heir a b    é lamp ﻿ é ,"],
+["x heir  \r\n   rain 𝄞 , the ﻿x rain",12,-6,"\n","x heir  \r\n  \nx rain"],
+["",2,-5,"new","new"],
+["𝄞  lamp heir ﻿\r\n rain  the x lamp rain café﻿x",55,5,"é","𝄞  lamp heir ﻿\r\n rain  the x lamp rain café﻿xéamp heir ﻿\r\n rain  the x lamp rain café﻿x"],
+["raincafé𝄞 é  ",22,5,"é","raincafé𝄞 é  éafé𝄞 é  "],
+["rain x rain　 a b éélamp \n rain . \r\n x   a b rain \n ,rain café",17,66,"","rain x rain　 a b "],
+["  .\r\n﻿é, rain    é é a b \r\n ,heircafé   ",43,30,"\n","  .\r\n﻿é, rain    é é a b \r\n ,heircafé   \n ,heircafé   "],
+["　😀 , lamp\n   a b    \n é 𝄞 the,",-7,16,"\n","　😀 , lamp\n   a b    \n é \nb    \n é 𝄞 the,"],
+["rain\t \r\n 𝄞. a b . \t\t　    café 𝄞\r\n",41,30,"é","rain\t \r\n 𝄞. a b . \t\t　    café 𝄞\r\né 𝄞\r\n"],
+["rain   ﻿",-8,12,"😀","😀"],
+["",-3,-10,"\n","\n"],
+["rain éa b é x   .\n 𝄞 . \r\n é𝄞 　 　 rain, rain",55,53,"new","rain éa b é x   .\n 𝄞 . \r\n é𝄞 　 　 rain, rainnew"],
+["😀　 café 𝄞 , 　rain\r\n\t   😀   \tthe , é\t",39,50,"","😀　 café 𝄞 , 　rain\r\n\t   😀   \tthe , é"],
+["heir heir 𝄞 😀  ",6,27,"\n","heir h\n"],
+["\n lamp😀 café \n 😀",-4,2,"é","\n lamp😀 café élamp😀 café \n 😀"],
+["rain    ﻿ rain, ,😀     the       . rain 😀 the",2,3,"é","raén    ﻿ rain, ,😀     the       . rain 😀 the"],
+["  \n 𝄞",-5,14,"😀"," 😀"],
+["\n é café \r\n 😀 　 😀 lamp , .x 　a b😀",27,22,"é","\n é café \r\n 😀 　 😀 lamp ,éamp , .x 　a b😀"],
+["x rain 　 　 x 　 \r\n",2,3,"é","x éain 　 　 x 　 \r\n"],
+["     heir 　 café the",6,5,"new","     hnewheir 　 café the"],
+["\r\n 𝄞 𝄞 x lamp 😀the    lampcafé\n ﻿ café",-10,5,"😀","\r\n 𝄞 𝄞 x lamp 😀the    lampca😀 𝄞 x lamp 😀the    lampcafé\n ﻿ café"],
+["lamp . café \t x　 x a b \t \t heir\n      \r\n a b , 　",3,6,"😀","lam😀 café \t x　 x a b \t \t heir\n      \r\n a b , 　"],
+["　 heir 𝄞 😀   thelamp ,",3,0,"\n","　 h\n　 heir 𝄞 😀   thelamp ,"],
+["  😀 é caféa b",-3,25,"new","  😀 é cafénew"],
+["﻿   heira b",6,17,"new","﻿   henew"],
+[".",-6,-3,"","."],
+["﻿ \t",2,2,"","﻿ \t"],
+["  lamp é heir x 　 ﻿    \r\n .  thecafé therain lamp café",9,41,"","  lamp érain lamp café"],
+["rain   ﻿café",-8,15,"new","rainnew"],
+[", 😀 , a b﻿",2,6,"é",", é a b﻿"],
+["  heiré",14,-5,"new","  heiréneweiré"],
+["\t \n   x ﻿",16,0,"","\t \n   x ﻿\t \n   x ﻿"],
+["lamplampcafé    , ﻿ . rain é \t é the",42,39,"😀","lamplampcafé    , ﻿ . rain é \t é the😀"],
+["  😀𝄞   . .  \t\n heir \t😀 \t\n rain \r\n 　 \r\n",0,7,"😀","😀  . .  \t\n heir \t😀 \t\n rain \r\n 　 \r\n"],
+["heir , \n , x 𝄞 heircafé heir heirx 𝄞 😀café the ﻿ 😀the",-10,-2,"\n","heir , \n , x 𝄞 heircafé heir heirx 𝄞 😀café t\nhe"],
+["\r\nheir ,\n x heir café   ",14,-4,"new","\r\nheir ,\n x henewé   "],
+["😀   heir rain  . café café\t 　 a b ﻿",26,32,"","😀   heir rain  . café caf b ﻿"],
+["\t 𝄞 ﻿😀　 𝄞\tlamp  lamp a bcafé 😀 😀",2,-8,"","\t fé 😀 😀"],
+["\t 😀café , x 　 ,é𝄞 rain x café ﻿𝄞 heir😀 a b   ",-7,10,"\n","\t 😀café , x 　 ,é𝄞 rain x café ﻿𝄞 heir😀\n x 　 ,é𝄞 rain x café ﻿𝄞 heir😀 a b   "],
+["😀 \t \n\r\n\n é\t 𝄞 \r\n rain the the\r\n .",2,-9,"new","😀newe the\r\n ."],
+["x ﻿ the café café \t\t    ﻿ ,\r\n    😀 \r\n é",2,16,"é","x éé \t\t    ﻿ ,\r\n    😀 \r\n é"],
+["   the café lamp heir , ﻿ ﻿ lamp ﻿lamp . 𝄞 \t    　 the heir",28,0,"é","   the café lamp heir , ﻿ ﻿ é   the café lamp heir , ﻿ ﻿ lamp ﻿lamp . 𝄞 \t    　 the heir"],
+["heir heir",14,-1,"😀","heir heir😀r"],
+["é 𝄞😀 😀 lamp ,\n",-2,22,"😀","é 𝄞😀 😀 lamp 😀"],
+["x éthe 😀rain .",-5,2,"😀","x éthe 😀r😀éthe 😀rain ."],
+["heiré\r\na b   heir   𝄞 a b ﻿ , \r\n\r\n \tlamp 𝄞  𝄞",57,21,"new","heiré\r\na b   heir   𝄞 a b ﻿ , \r\n\r\n \tlamp 𝄞  𝄞new𝄞 a b ﻿ , \r\n\r\n \tlamp 𝄞  𝄞"],
+["heir ﻿ ,. lamp",14,-5,"new","heir ﻿ ,. lampnew lamp"],
+["the lamp lamp\t caféxlamp\n , 𝄞 😀 😀\r\n 😀 \t \r\n lamp",20,13,"\n","the lamp lamp\t caféx\n\t caféxlamp\n , 𝄞 😀 😀\r\n 😀 \t \r\n lamp"],
+["",-6,7,"",""],
+["😀 rain \t heir 　𝄞    　    lampthe",35,35,"\n","😀 rain \t heir 　𝄞    　    lampthe\n"],
+["rain 😀 ﻿ 😀😀 é é café heir lampé 😀 . .a b café",14,59,"é","rain 😀 ﻿ 😀😀é"],
+["𝄞a b \n \t,",10,-10,"é","𝄞a b \n \t,é𝄞a b \n \t,"],
+[",lamp lamp ﻿ ,\t ﻿﻿ x",19,28,"😀",",lamp lamp ﻿ ,\t ﻿﻿ 😀"],
+["😀 　 , \t a b﻿ \t heiré ﻿ heir",7,-8,"","😀 　 , ́ ﻿ heir"],
+["\r\n the\t cafécafé .",-3,8,"","\r\n the\t cafécafcafécafé ."],
+["x \r\n. heir a b rain café é lamp 　 😀",22,42,"é","x \r\n. heir a b rain caé"],
+["\r\n. 　 \ta b",-4,4,"😀","\r\n. 　 😀　 \ta b"],
+["heir .",-1,-7,"😀","heir 😀heir ."],
+["heircafé lamp   \n 　 x   lamp , x é a b    ﻿",2,17,"😀","he😀 　 x   lamp , x é a b    ﻿"],
+["\t ﻿",-1,11,"","\t "],
+["\n",9,11,"","\n"],
+["   caféthe　",0,-10,"😀","😀  caféthe　"],
+[". 　 　 the \n \t . é . \r\n  \nthe 😀 ﻿ rain lamp",5,18,"new",". 　 　new . \r\n  \nthe 😀 ﻿ rain lamp"],
+["\their lamp heir lamp caféheir 😀𝄞 lampa b 𝄞　 \t é lamp",7,49,"","\their lé lamp"]
+]
+}
