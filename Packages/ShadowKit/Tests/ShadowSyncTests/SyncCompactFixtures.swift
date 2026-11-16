@@ -158,13 +158,15 @@ final class SyncCompactWorld: Sendable {
 
   func harness(
     _ device: String, store: VaultStore, provider: (any StorageProvider)? = nil, configuration: SyncConfiguration, crashAt step: SyncUploadStep? = nil,
-    probe: SyncCompactionProbe = SyncCompactionProbe()
+    probe: SyncCompactionProbe = SyncCompactionProbe(),
+    compactionCheckpoint: (@Sendable (SyncCompactionStep) async throws(SyncError) -> Void)? = nil,
+    adoptionCheckpoint: @escaping @Sendable (SyncAdoptionStep) async throws(SyncError) -> Void = { _ async throws(SyncError) in }
   ) -> SyncHarness {
     let clock = clock
     let trusted = TrustedClock(wallClock: { clock.now }, monotonic: SyncFixedMonotonic())
     return SyncHarness(
       store: store, provider: provider ?? SyncCompactProvider(wrapping: storage), keychain: keychain, device: device, configuration: configuration, trustedClock: trusted,
-      wallClock: { clock.now }, crashAt: step, compactionCheckpoint: probe.checkpoint)
+      wallClock: { clock.now }, crashAt: step, compactionCheckpoint: compactionCheckpoint ?? probe.checkpoint, adoptionCheckpoint: adoptionCheckpoint)
   }
 
   /// The first peer creates the vault key; every later one receives it through the keychain.

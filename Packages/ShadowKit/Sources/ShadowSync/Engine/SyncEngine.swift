@@ -48,9 +48,10 @@ public actor SyncEngine {
   private let trustedClock: TrustedClock
   private let configuration: SyncConfiguration
   private let wallClock: @Sendable () -> Date
-  private let checkpoint: @Sendable (SyncUploadStep) throws(SyncError) -> Void
+  private let checkpoint: @Sendable (SyncUploadStep) async throws(SyncError) -> Void
   private let downloadCheckpoint: @Sendable (SyncDownloadStep) throws(SyncError) -> Void
   private let compactionCheckpoint: @Sendable (SyncCompactionStep) async throws(SyncError) -> Void
+  private let adoptionCheckpoint: @Sendable (SyncAdoptionStep) async throws(SyncError) -> Void
   private let publicFloor: @Sendable () async throws(SyncError) -> HLCTimestamp?
   private var readiness = Readiness.notStarted
   private var unsupportedFiles: [SyncFileID: Int] = [:]
@@ -93,9 +94,10 @@ public actor SyncEngine {
     configuration: SyncConfiguration,
     wallClock: @escaping @Sendable () -> Date,
     publicFloor: @escaping @Sendable () async throws(SyncError) -> HLCTimestamp?,
-    checkpoint: @escaping @Sendable (SyncUploadStep) throws(SyncError) -> Void,
+    checkpoint: @escaping @Sendable (SyncUploadStep) async throws(SyncError) -> Void,
     downloadCheckpoint: @escaping @Sendable (SyncDownloadStep) throws(SyncError) -> Void = { _ throws(SyncError) in },
-    compactionCheckpoint: @escaping @Sendable (SyncCompactionStep) async throws(SyncError) -> Void = { _ async throws(SyncError) in }
+    compactionCheckpoint: @escaping @Sendable (SyncCompactionStep) async throws(SyncError) -> Void = { _ async throws(SyncError) in },
+    adoptionCheckpoint: @escaping @Sendable (SyncAdoptionStep) async throws(SyncError) -> Void = { _ async throws(SyncError) in }
   ) {
     self.store = store
     self.provider = provider
@@ -108,11 +110,14 @@ public actor SyncEngine {
     self.checkpoint = checkpoint
     self.downloadCheckpoint = downloadCheckpoint
     self.compactionCheckpoint = compactionCheckpoint
+    self.adoptionCheckpoint = adoptionCheckpoint
     self.publicFloor = publicFloor
   }
 
   public static var migrations: [StoreMigration] {
-    ReplicaLifecycle.migrations + [SyncEngineSchema.migration, SyncEngineSchema.heldMigration, SyncEngineSchema.compactionMigration]
+    ReplicaLifecycle.migrations + [
+      SyncEngineSchema.migration, SyncEngineSchema.heldMigration, SyncEngineSchema.compactionMigration, SyncEngineSchema.adoptionMigration,
+    ]
   }
 
   public static func wallClock(preferring trustedClock: TrustedClock, device: @escaping @Sendable () -> Date = { Date() }) -> @Sendable () -> Date {
@@ -154,6 +159,13 @@ public actor SyncEngine {
     return try await postponing(.postponed) { () async throws(SyncError) in try await performCompaction(force: force) }
   }
 
+  /// Takes over retired replicas' files so their prefixes can be removed, after the same self-check, clock check and passes `upload()` runs.
+  public func adopt() async throws(SyncError) -> SyncAdoptionOutcome {
+    await acquire()
+    defer { release() }
+    return try await postponing(.postponed) { () async throws(SyncError) in try await performAdoption() }
+  }
+
   private static let postponedDownload = SyncDownloadOutcome(applied: [], held: [:], missingKeys: [:], reminted: false, postponed: true)
 
   private func postponing<T>(_ postponed: T, _ body: () async throws(SyncError) -> T) async throws(SyncError) -> T {
@@ -172,6 +184,30 @@ public actor SyncEngine {
       key: settled.key, now: preferredNow, checkpoint: compactionCheckpoint
     ) { key, replica async throws(SyncError) in try await self.putManifest(sealedWith: key, as: replica) }
     return try await SyncCompactor(context: context).run(force: force, listing: settled.listing)
+  }
+
+  private func performAdoption() async throws(SyncError) -> SyncAdoptionOutcome {
+    guard case .settled(let settled) = try await settleUploads(), !settled.reminted else { return .postponed }
+    let replica = settled.replica
+    let directory = try await lifecycleCall { () async throws(ReplicaLifecycleError) in try await lifecycle.directory() }
+    let context = SyncAdoptionContext(
+      store: store, provider: provider, vault: vault, ring: ring, lifecycle: lifecycle, configuration: configuration, replica: replica, directory: directory,
+      limit: try readerLimit(), now: preferredNow, checkpoint: adoptionCheckpoint,
+      upload: { () async throws(SyncError) -> Bool in
+        guard case .settled(let again) = try await self.settleUploads(), !again.reminted, again.replica == replica else { return false }
+        return true
+      },
+      compact: { () async throws(SyncError) -> SyncCompactionOutcome in
+        guard self.store.replica == replica else { throw .replicaChanged }
+        return try await self.performCompaction(force: true)
+      },
+      remint: { found async throws(SyncError) in try await self.remintOnCollision(replica, found: found) })
+    return try await SyncAdopter(context: context).run()
+  }
+
+  private func remintOnCollision(_ replica: ReplicaID, found: ReplicaID) async throws(SyncError) {
+    var remints = 0
+    _ = try await remint(replica, reason: .replicaCollision(found: found), mode: .keepState, count: &remints)
   }
 
   private func performUpload() async throws(SyncError) -> SyncUploadOutcome {
@@ -339,11 +375,8 @@ public actor SyncEngine {
     try await dropChanges(through: head.last, of: replica)
   }
 
-  /// The store offers no hook inside its drop transaction, so the replica is checked just before it; a re-mint in between can still lose the drop's target.
   private func dropChanges(through sequence: Int64, of replica: ReplicaID) async throws(SyncError) {
-    try await requireClaimed(replica)
-    guard store.replica == replica else { throw .replicaChanged }
-    try await storeCall { () async throws(StoreError) in try await store.dropChanges(through: sequence) }
+    try await storeCall { () async throws(StoreError) in try await store.dropChanges(through: sequence) { try SyncReplicaGuard.require(replica, in: $0) } }
   }
 
   /// A saved upload of an earlier id was re-logged by the re-mint that retired that id, so it is dropped rather than put under a prefix this database left.
@@ -364,15 +397,15 @@ public actor SyncEngine {
     } catch {
       guard case .alreadyExists = error else { throw .storage(error) }
     }
-    try checkpoint(.putDone)
+    try await checkpoint(.putDone)
     let millis = millis
     try await write(as: entry.replica) { transaction in
       try ReplicaHistory.recordSegment(entry.point, first: entry.first, replica: entry.replica, at: millis, in: transaction.database)
       try SyncOutbox.clear(transaction.database)
     }
-    try checkpoint(.recorded)
+    try await checkpoint(.recorded)
     try await dropChanges(through: entry.last, of: entry.replica)
-    try checkpoint(.dropped)
+    try await checkpoint(.dropped)
     return entry.point
   }
 
@@ -430,6 +463,7 @@ public actor SyncEngine {
     let also: @Sendable (Database) throws -> Void = { db in
       guard case .moving(_, let retiring, _, _) = try ReplicaLifecyclePhase.load(db), retiring == replica else { throw SyncError.replicaChanged }
       try SyncCompactionTable.clear(db)
+      try SyncAdoptionTable.clear(db)
       if mode == .rebuild { try SyncAppliedTable.clear(db) }
     }
     do {
@@ -472,7 +506,7 @@ public actor SyncEngine {
       for entry in try await sealPass(pending, as: replica, with: key) {
         let millis = millis
         try await write(as: replica) { try SyncOutbox.save(entry, at: millis, in: $0.database) }
-        try checkpoint(.outboxSaved)
+        try await checkpoint(.outboxSaved)
         points.append(try await finish(entry))
       }
     }

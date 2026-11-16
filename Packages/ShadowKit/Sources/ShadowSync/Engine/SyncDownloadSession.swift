@@ -99,6 +99,7 @@ struct SyncDownloadSession {
   private var forcing: Set<SyncFileID> = []
   private var listed: Set<SyncFileID> = []
   private var files: [ReplicaID: SyncAppliedFiles] = [:]
+  private var adoptions: [ReplicaID: [SyncAdoptionFact]] = [:]
   private var own: ReplicaID
   private var head: StreamPoint?
 
@@ -147,6 +148,7 @@ struct SyncDownloadSession {
     let replica = own
     (files, head) = try await read { db in (try SyncAppliedTable.load(db), try ReplicaHistory.head(of: replica, in: db)) }
     let order = listing.keys.sorted()
+    try await loadAdoptions()
     while true {
       var progressed = false
       for replica in order {
@@ -228,7 +230,7 @@ struct SyncDownloadSession {
 
   private mutating func consider(_ segment: SyncListedSegment, of replica: ReplicaID) async throws(SyncError) -> Step {
     let id = SyncFileID(replica: replica, kind: .segment, point: segment.point)
-    guard files[replica, default: SyncAppliedFiles()].maySatisfyPredecessor(ofFirst: segment.first) else {
+    guard files[replica, default: SyncAppliedFiles()].maySatisfyPredecessor(ofFirst: segment.first) || isAdopted(replica, through: segment.first - 1) else {
       hold(id, size: segment.size, .waitingForPredecessor)
       return .held
     }
@@ -247,13 +249,35 @@ struct SyncDownloadSession {
   }
 
   private func unreadiness(of header: SegmentHeader, id: SyncFileID) -> SyncHoldReason? {
-    if let previous = header.previous, !(files[id.replica]?.satisfies(previous) ?? false) { return .waitingForPredecessor }
+    if let previous = header.previous, !(files[id.replica]?.satisfies(previous) ?? false), !isAdopted(id.replica, through: previous.last) { return .waitingForPredecessor }
     guard !forcing.contains(id) else { return nil }
     for (dependency, point) in header.dependencies.sorted(by: { $0.key < $1.key }) {
       let satisfied = dependency == own ? (head.map { $0.last >= point.last } ?? false) : (files[dependency]?.satisfies(point) ?? false)
-      if !satisfied { return .waitingForDependency(dependency) }
+      if !satisfied && !isAdopted(dependency, through: point.last) { return .waitingForDependency(dependency) }
     }
     return nil
+  }
+
+  private mutating func loadAdoptions() async throws(SyncError) {
+    let facts: [SyncAdoptionFact]
+    do {
+      facts = try await context.store.read { try ReplicaDirectory.adoptions(in: $0) }
+    } catch {
+      throw SyncError(converting: error)
+    }
+    adoptions = Dictionary(grouping: facts, by: \.adopted)
+  }
+
+  /// True when every change of `replica` numbered up to `last` is here through a fact about it whose adopter's content is here.
+  private func isAdopted(_ replica: ReplicaID, through last: Int64) -> Bool {
+    (adoptions[replica] ?? []).contains { $0.through >= last && isHere($0, visited: [replica]) }
+  }
+
+  /// True when the adopter is this replica, a base of it reaching `at` is applied, or an adopter of it folded such a base whole and is here in turn: adopted lines live only in bases.
+  private func isHere(_ fact: SyncAdoptionFact, visited: Set<ReplicaID>) -> Bool {
+    if fact.adopter == own || files[fact.adopter]?.hasBase(reaching: fact.at) == true { return true }
+    guard !visited.contains(fact.adopter) else { return false }
+    return (adoptions[fact.adopter] ?? []).contains { $0.baseUpTo >= fact.at && isHere($0, visited: visited.union([fact.adopter])) }
   }
 
   private mutating func fetchSegment(_ segment: SyncListedSegment, id: SyncFileID) async throws(SyncError) -> SegmentFile? {
@@ -318,13 +342,15 @@ struct SyncDownloadSession {
 
   private mutating func apply(_ lines: [Data], id: SyncFileID, first: Int64?, size: Int) async throws(SyncError) -> Step {
     let millis = context.millis
+    let bringsFact: Bool
     do {
       let own = own
-      _ = try await context.store.applyRemote(lines, notAfter: context.limit) { db in
+      let result = try await context.store.applyRemote(lines, notAfter: context.limit) { db in
         try SyncReplicaGuard.require(own, in: db)
         try SyncAppliedTable.record(id.point, first: first, isBase: id.kind == .base, replica: id.replica, at: millis, in: db)
         try SyncHeldTable.remove(id, in: db)
       }
+      bringsFact = result.touched.contains { $0.kind == SyncKernelSchema.adoptionKind }
     } catch {
       if case .replicaCollision = error { return .collision(id.replica) }
       guard case .clockAhead(let clock) = error else { throw SyncError(converting: error) }
@@ -332,6 +358,7 @@ struct SyncDownloadSession {
       return .held
     }
     try context.checkpoint(.applied)
+    if bringsFact { try await loadAdoptions() }
     files[id.replica, default: SyncAppliedFiles()].insert(id.point, kind: id.kind)
     held[id] = nil
     headers[id] = nil

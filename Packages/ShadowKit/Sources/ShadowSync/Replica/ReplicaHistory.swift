@@ -132,6 +132,10 @@ public enum ReplicaHistory {
     return reference
   }
 
+  static func lastCompletion(in database: Database) throws -> Int64 {
+    try Int64.fetchOne(database, sql: "SELECT COALESCE(MAX(completed), 0) FROM sync_replica_upload") ?? 0
+  }
+
   public static func clear(replica: ReplicaID, in database: Database) throws {
     try database.execute(sql: "DELETE FROM sync_replica_upload WHERE replica = ?", arguments: [replica.description])
   }

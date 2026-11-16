@@ -48,6 +48,9 @@ struct SyncKernelSchemaTests {
         kind: ReplicaFixture.kind("_recovery"),
         shape: .record(fields: ["public_key": .firstWriterWins, "sealing_key": .firstWriterWins, "state": lifecycle, "created": .firstWriterWins]),
         syncClass: .general),
+      EntitySchema(
+        kind: ReplicaFixture.kind("_adoption"), shape: .record(fields: ["through": .firstWriterWins, "at": .firstWriterWins, "base_up_to": .firstWriterWins]),
+        syncClass: .general),
     ]
     #expect(SyncKernelSchema.entities == pinned)
   }

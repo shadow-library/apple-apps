@@ -203,15 +203,14 @@ struct SyncCompactor {
     return .sealed(SyncSealedBase(point: StreamPoint(last: snapshot.upTo, tag: tag), parts: parts))
   }
 
+  /// An opaque line or a kind this registry does not declare reaches the own writes only by adoption, from a file a newer app already stored with this provider.
   private func refuseUnstorable(_ lines: [Data]) throws(SyncError) {
     let policy = context.provider.capabilities.classPolicy
     var admitted: Set<EntityKind> = []
     for line in lines {
-      guard let json = try? CanonicalJSON.decode(line), let record = try? ChangeRecord(json: json) else { throw .corruptState("an own write is not a change record") }
-      guard !admitted.contains(record.entity) else { continue }
-      let syncClass = context.store.registry[record.entity]?.syncClass
-      guard let syncClass, policy.admits(syncClass) else { throw .syncClassRefused(kind: record.entity, syncClass: syncClass) }
-      admitted.insert(record.entity)
+      guard let json = try? CanonicalJSON.decode(line), let record = try? ChangeRecord(json: json), admitted.insert(record.entity).inserted else { continue }
+      guard let schema = context.store.registry[record.entity] else { continue }
+      guard policy.admits(schema.syncClass) else { throw .syncClassRefused(kind: record.entity, syncClass: schema.syncClass) }
     }
   }
 
@@ -250,7 +249,7 @@ struct SyncCompactor {
     guard verdict == .pass else { return (0, 0) }
     let inProgress = row.flatMap { $0.replica == replica ? $0.point : nil }
     var bases = 0
-    for entry in entries where entry.isBase && entry.isLive && entry.point != current.point && entry.point != inProgress && entry.point.last <= current.point.last {
+    for entry in entries where entry.isBase && entry.isLive && entry.point != current.point && entry.point != inProgress && Self.isSuperseded(entry, by: current) {
       guard let keys = baseKeys(entry) else { continue }
       try await delete(keys)
       try await mark([entry.point], isBase: true)
@@ -270,6 +269,13 @@ struct SyncCompactor {
       segments += batch.count
     }
     return (segments, bases)
+  }
+
+  /// Adopted lines make a new base at the same `upTo`, so there only a base completed earlier is known to be contained in the current one.
+  private static func isSuperseded(_ entry: SyncUploadEntry, by current: SyncUploadEntry) -> Bool {
+    guard entry.point.last == current.point.last else { return entry.point.last < current.point.last }
+    guard let completed = entry.completed, let currentCompleted = current.completed else { return false }
+    return completed < currentCompleted
   }
 
   private func baseKeys(_ entry: SyncUploadEntry) -> [ObjectKey]? {
@@ -348,7 +354,7 @@ struct SyncCompactor {
 }
 
 extension Duration {
-  fileprivate var milliseconds: Int64 {
+  var milliseconds: Int64 {
     let (seconds, attoseconds) = components
     return seconds.multipliedReportingOverflow(by: 1_000).overflow ? .max : seconds * 1_000 + attoseconds / 1_000_000_000_000_000
   }

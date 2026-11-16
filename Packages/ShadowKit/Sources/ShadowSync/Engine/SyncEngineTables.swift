@@ -239,6 +239,10 @@ struct SyncAppliedFiles: Sendable, Equatable {
     segments.contains(point) || highestBase >= point.last
   }
 
+  func hasBase(reaching last: Int64) -> Bool {
+    highestBase >= last
+  }
+
   /// Decides from a file name alone, before any download, whether a segment starting at `first` can have a satisfied predecessor.
   func maySatisfyPredecessor(ofFirst first: Int64) -> Bool {
     first == 1 || segmentEnds.contains(first - 1) || highestBase >= first - 1

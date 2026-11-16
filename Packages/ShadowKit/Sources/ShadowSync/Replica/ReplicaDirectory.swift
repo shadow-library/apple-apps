@@ -15,6 +15,8 @@ public struct ReplicaEntry: Sendable, Equatable {
   /// When two copies retire the same id, the register keeps one successor, so the chain is a hint and not a complete history.
   public let successor: ReplicaID?
   public let created: Int64?
+  /// The wall time, in milliseconds, of the record that retired it, as the retiring device's clock stamped it.
+  public let retired: Int64?
 
   init?(key: EntityKey, record: RecordState) {
     typealias Field = SyncKernelSchema.Field
@@ -25,6 +27,24 @@ public struct ReplicaEntry: Sendable, Equatable {
     platform = record.text(Field.platform)
     successor = record.text(Field.successor).flatMap(ReplicaID.init)
     created = record[field: Field.created]?.value.intValue
+    retired = state == .retired ? record[field: Field.state]?.clock.wallMillis : nil
+  }
+}
+
+/// Every base of `adopter` from `at` on holds the files of `adopted` it folded: every change numbered up to `through`, and a complete base of `adopted` reaching `baseUpTo` (0 when none).
+public struct SyncAdoptionFact: Sendable, Hashable {
+  public let adopted: ReplicaID
+  public let adopter: ReplicaID
+  public let through: Int64
+  public let at: Int64
+  public let baseUpTo: Int64
+
+  public init(adopted: ReplicaID, adopter: ReplicaID, through: Int64, at: Int64, baseUpTo: Int64) {
+    self.adopted = adopted
+    self.adopter = adopter
+    self.through = through
+    self.at = at
+    self.baseUpTo = baseUpTo
   }
 }
 
@@ -34,6 +54,8 @@ public struct ReplicaDirectory: Sendable, Equatable {
   public let minimumSchema: Int?
   public let keyFloor: KeyID?
   public let recovery: RecoveryRecipient?
+  /// Read from entity keys, purged entities included; every fact stays valid, however many there are about one replica.
+  public let adoptions: [SyncAdoptionFact]
 
   public init(state: VaultState) {
     self.init(entities: state.refs.compactMap { ref in state.state(of: ref).map { (ref: ref, state: $0) } })
@@ -44,6 +66,7 @@ public struct ReplicaDirectory: Sendable, Equatable {
     var schemaFloors = [Int]()
     var keyFloors = [KeyID]()
     var recipients = [(recipient: RecoveryRecipient, created: Int64)]()
+    var adoptions = Set<SyncAdoptionFact>()
     for (ref, state) in entities {
       switch ref.kind {
       case SyncKernelSchema.schemaFloorKind:
@@ -56,6 +79,8 @@ public struct ReplicaDirectory: Sendable, Equatable {
       case SyncKernelSchema.recoveryKind:
         guard case .record(let record) = state, let candidate = Self.activeRecipient(ref, record) else { continue }
         recipients.append(candidate)
+      case SyncKernelSchema.adoptionKind:
+        if let fact = SyncKernelSchema.adoption(of: ref.key) { adoptions.insert(fact) }
       default:
         continue
       }
@@ -64,6 +89,11 @@ public struct ReplicaDirectory: Sendable, Equatable {
     minimumSchema = schemaFloors.max()
     keyFloor = keyFloors.max()
     recovery = recipients.max { ($0.created, $0.recipient.id) < ($1.created, $1.recipient.id) }?.recipient
+    self.adoptions = adoptions.sorted { ($0.adopted, $0.adopter, $0.at, $0.through, $0.baseUpTo) < ($1.adopted, $1.adopter, $1.at, $1.through, $1.baseUpTo) }
+  }
+
+  static func adoptions(in transaction: ReadTransaction) throws(StoreError) -> [SyncAdoptionFact] {
+    ReplicaDirectory(entities: try transaction.states(ofKind: SyncKernelSchema.adoptionKind)).adoptions
   }
 
   public func entry(for replica: ReplicaID) -> ReplicaEntry? {
@@ -129,6 +159,14 @@ extension ReplicaDirectory {
     let ref = SyncKernelSchema.keyFloorRef(key)
     guard case .absent = try Self.lookup(ref, in: transaction) else { return }
     try Self.write(ref, [SyncKernelSchema.Field.key: .string(key.description)], in: &transaction)
+  }
+
+  /// Written once per fact; a purged fact is still read from its key.
+  public static func recordAdoption(_ fact: SyncAdoptionFact, in transaction: inout WriteTransaction) throws(StoreError) {
+    let ref = SyncKernelSchema.adoptionRef(fact)
+    guard case .absent = try lookup(ref, in: transaction) else { return }
+    typealias Field = SyncKernelSchema.Field
+    try write(ref, [Field.through: .int(fact.through), Field.at: .int(fact.at), Field.baseUpTo: .int(fact.baseUpTo)], in: &transaction)
   }
 
   public static func setRecovery(_ recipient: RecoveryRecipient, createdMillis: Int64, in transaction: inout WriteTransaction) throws(StoreError) {

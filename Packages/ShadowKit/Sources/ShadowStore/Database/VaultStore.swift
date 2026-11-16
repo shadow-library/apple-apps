@@ -122,8 +122,10 @@ public final class VaultStore: Sendable {
     }
   }
 
-  public func dropChanges(through sequence: Int64) async throws(StoreError) {
+  /// `also` runs in the drop's transaction, so a change it refuses is neither dropped nor acknowledged.
+  public func dropChanges(through sequence: Int64, also body: @Sendable (Database) throws -> Void = { _ in }) async throws(StoreError) {
     try await writing { db in
+      try body(db)
       let dropped = try db.storeFetchAll("SELECT line FROM change_log WHERE seq <= ?", [sequence]).map { row throws(StoreError) in try Stored.record(row.stored("line")).clock }
       try db.storeExecute("DELETE FROM change_log WHERE seq <= ?", [sequence])
       if let highest = dropped.max() { try KernelRow.acknowledge(highest, in: db) }

@@ -88,7 +88,8 @@ struct SyncHarness {
     lifecycleCrashAt lifecycleStep: ReplicaLifecycleStep? = nil,
     publicFloor: @escaping @Sendable () -> HLCTimestamp? = { nil },
     markerStore: (any SecureStore)? = nil,
-    compactionCheckpoint: @escaping @Sendable (SyncCompactionStep) async throws(SyncError) -> Void = { _ async throws(SyncError) in }
+    compactionCheckpoint: @escaping @Sendable (SyncCompactionStep) async throws(SyncError) -> Void = { _ async throws(SyncError) in },
+    adoptionCheckpoint: @escaping @Sendable (SyncAdoptionStep) async throws(SyncError) -> Void = { _ async throws(SyncError) in }
   ) {
     self.store = store
     self.provider = provider
@@ -110,7 +111,8 @@ struct SyncHarness {
     }
     engine = SyncEngine(
       store: store, provider: provider, vault: SyncFixture.vault, ring: ring, lifecycle: lifecycle, trustedClock: trustedClock, configuration: configuration,
-      wallClock: wallClock, publicFloor: { publicFloor() }, checkpoint: checkpoint, downloadCheckpoint: downloadCheckpoint, compactionCheckpoint: compactionCheckpoint)
+      wallClock: wallClock, publicFloor: { publicFloor() }, checkpoint: checkpoint, downloadCheckpoint: downloadCheckpoint, compactionCheckpoint: compactionCheckpoint,
+      adoptionCheckpoint: adoptionCheckpoint)
   }
 
   static func started(

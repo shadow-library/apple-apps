@@ -19,6 +19,10 @@ public struct SyncConfiguration: Sendable, Equatable {
   /// The least time between two bases of one replica: every other device downloads each base once.
   public var compactionInterval: Duration
   public var basePartBytes: Int
+  /// Counted from the directory record that retired a replica: time for a returning owner to notice, and for readers to finish its stream directly.
+  public var adoptionDelay: Duration
+  /// How long a base's missing parts or a held file must stay unlisted before an adopter gives up waiting for them; timed on trusted time when the engine has a sample, otherwise on the device clock, which a forward jump cuts short.
+  public var adoptionAbandonDelay: Duration
 
   public init(
     maximumSegmentBytes: Int = 512 * 1024,
@@ -32,7 +36,9 @@ public struct SyncConfiguration: Sendable, Equatable {
     compactionBytes: Int = 8 * 1024 * 1024,
     compactionFiles: Int = 500,
     compactionInterval: Duration = .seconds(30 * 24 * 60 * 60),
-    basePartBytes: Int = BaseCodec.defaultPartPayloadBytes
+    basePartBytes: Int = BaseCodec.defaultPartPayloadBytes,
+    adoptionDelay: Duration = .seconds(30 * 24 * 60 * 60),
+    adoptionAbandonDelay: Duration? = nil
   ) {
     self.maximumSegmentBytes = maximumSegmentBytes
     self.maximumSegmentLines = maximumSegmentLines
@@ -46,6 +52,8 @@ public struct SyncConfiguration: Sendable, Equatable {
     self.compactionFiles = compactionFiles
     self.compactionInterval = compactionInterval
     self.basePartBytes = basePartBytes
+    self.adoptionDelay = adoptionDelay
+    self.adoptionAbandonDelay = adoptionAbandonDelay ?? adoptionDelay
   }
 }
 
