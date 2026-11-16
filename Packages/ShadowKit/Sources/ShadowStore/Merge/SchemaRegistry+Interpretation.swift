@@ -96,6 +96,11 @@ extension SchemaRegistry {
 }
 
 extension ChangeRecord {
+  /// A field-less purge of an undeclared kind still drops its entity's other foreign records, so purged content is not re-uploaded.
+  var absorbsForeign: Bool {
+    kind == .purge && fields.isEmpty
+  }
+
   func restricted(to fields: [String: JSONValue]) -> ChangeRecord {
     ChangeRecord(id: id, clock: clock, schema: schema, entity: entity, key: key, kind: kind, fields: fields)
   }

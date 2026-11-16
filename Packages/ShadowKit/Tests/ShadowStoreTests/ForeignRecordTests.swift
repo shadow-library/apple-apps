@@ -10,7 +10,7 @@ private func sortedByBytes(_ records: [ChangeRecord]) -> [ChangeRecord] {
 }
 
 private func expectedForeign(_ changes: [ChangeRecord], _ registry: SchemaRegistry) -> [ChangeRecord] {
-  let purged = Set(changes.filter { $0.kind == .purge && registry.isInterpretable($0) }.map(\.ref))
+  let purged = Set(changes.filter { $0.kind == .purge && $0.fields.isEmpty }.map(\.ref))
   return sortedByBytes(changes.compactMap(registry.foreignPart(of:)).filter { $0.kind == .purge || !purged.contains($0.ref) })
 }
 
@@ -70,7 +70,9 @@ struct ForeignRecordTests {
 
   @Test("should equal a fresh state under the newer registry for states built under two successive registries")
   func shouldReinterpretMixedRegistryStates() throws {
-    let pairs = [(Fixture.v1, Fixture.vMid), (Fixture.vMid, Fixture.v2), (Fixture.v1, Fixture.v2), (Fixture.v2, Fixture.v2)]
+    let pairs = [
+      (Fixture.v1, Fixture.vMid), (Fixture.vMid, Fixture.v2), (Fixture.v1, Fixture.v2), (Fixture.v2, Fixture.v2), (Fixture.v2, Fixture.vInsert), (Fixture.v1, Fixture.vInsert),
+    ]
     try forAll(iterations: 300) { generator in
       var factory = ChangeFactory()
       let (older, newer) = generator.pick(from: pairs)
@@ -130,7 +132,8 @@ struct ForeignRecordTests {
     }
     var tagged = Fixture.state([Fixture.change(.set, Fixture.tag, Fixture.key("t1"), clock: Fixture.clock(2), fields: ["label": 1])])
     tagged.apply(Fixture.change(.purge, Fixture.tag, Fixture.key("t1"), clock: Fixture.clock(1)), registry: Fixture.v1)
-    #expect(tagged.foreign.count == 2)
+    #expect(tagged.foreign.count == 1)
+    #expect(tagged.foreign.first?.kind == .purge)
     try tagged.reinterpretForeign(registry: Fixture.v2)
     #expect(tagged.foreign.isEmpty)
     #expect(tagged.state(of: EntityRef(kind: Fixture.tag, key: Fixture.key("t1"))) == .purged(PurgedState(clock: Fixture.clock(1))))
@@ -157,6 +160,67 @@ struct ForeignRecordTests {
       try #require(partitioned(changes, Fixture.v1, &generator) == reference)
       try #require(try VaultState(decodingLines: reference.encodedLines()) == reference)
       try #require(Fixture.rebuilt(reference) == reference)
+    }
+  }
+
+  @Test("should let a foreign field-less purge of an undeclared kind drop the other foreign records of its entity in any order")
+  func shouldAbsorbForeignOfUndeclaredPurge() throws {
+    let tag = EntityRef(kind: Fixture.tag, key: Fixture.key("t1"))
+    let other = EntityRef(kind: Fixture.tag, key: Fixture.key("t2"))
+    let purge = Fixture.change(.purge, tag.kind, tag.key, clock: Fixture.clock(3))
+    let reasoned = Fixture.change(.purge, tag.kind, tag.key, clock: Fixture.clock(4), fields: ["reason": "spam"])
+    let sets = [1, 5].map { Fixture.change(.set, tag.kind, tag.key, clock: Fixture.clock($0), fields: ["label": .int($0)]) }
+    let survivor = Fixture.change(.set, other.kind, other.key, clock: Fixture.clock(2), fields: ["label": 1])
+    let changes = sets + [purge, reasoned, survivor]
+    for order in [changes, changes.reversed(), [purge] + sets + [survivor, reasoned]] {
+      let state = Fixture.state(order)
+      #expect(state.foreign == sortedByBytes([purge, reasoned, survivor]))
+      #expect(Fixture.state(Array(order.prefix(2))).merging(Fixture.state(Array(order.dropFirst(2)))) == state)
+      #expect(try VaultState(decodingLines: state.encodedLines()) == state)
+      #expect(Fixture.rebuilt(state) == state)
+      var updated = state
+      try updated.reinterpretForeign(registry: Fixture.v2)
+      #expect(updated == Fixture.state(order, Fixture.v2))
+      #expect(updated.state(of: tag) == .purged(PurgedState(clock: Fixture.clock(3))))
+    }
+  }
+
+  @Test("should reject lines that keep foreign data beside a foreign field-less purge of its entity")
+  func shouldRejectForeignBesideAbsorbingPurge() throws {
+    let key = Fixture.key("t1")
+    let purge = Fixture.change(.purge, Fixture.tag, key, clock: Fixture.clock(1))
+    let set = Fixture.change(.set, Fixture.tag, key, clock: Fixture.clock(2), fields: ["label": 1])
+    let foreign = sortedByBytes([purge, set]).map { record -> Data in CanonicalJSON.encode(["record": record.json, "type": "foreign"]) }
+    let lines = [VaultState().encodedLines()[0]] + foreign
+    let offending = foreign.firstIndex(of: CanonicalJSON.encode(["record": set.json, "type": "foreign"])).map { $0 + 1 } ?? 0
+    #expect(throws: VaultStateError.malformedLine(line: offending)) { try VaultState(decodingLines: lines) }
+  }
+
+  @Test("should drop the foreign records of an undeclared kind's purged entity for any order, partition and later registry")
+  func shouldAbsorbForeignOnRandomHistories() throws {
+    try forAll(iterations: 300) { generator in
+      var factory = ChangeFactory()
+      let keys = ["t1", "t2"].map(Fixture.key)
+      var changes = (0..<generator.int(in: 1...10)).map { _ in
+        let clock = factory.clock(&generator)
+        let key = generator.pick(from: keys)
+        let id = Fixture.uuid(&generator)
+        switch generator.int(in: 0...5) {
+        case 0: return Fixture.change(.purge, Fixture.tag, key, clock: clock, id: id)
+        case 1: return Fixture.change(.purge, Fixture.tag, key, clock: clock, fields: ["reason": generator.pick(from: Fixture.values)], id: id)
+        case 2: return Fixture.change(.append, Fixture.tag, key, clock: clock, fields: ["label": generator.pick(from: Fixture.values)], id: id)
+        default: return Fixture.change(.set, Fixture.tag, key, clock: clock, fields: ["label": generator.pick(from: Fixture.values)], id: id)
+        }
+      }
+      changes += factory.changes(&generator, count: 0...10)
+      let reference = Fixture.state(changes)
+      try #require(reference.foreign == expectedForeign(changes, Fixture.v1))
+      try #require(partitioned(changes, Fixture.v1, &generator) == reference)
+      try #require(try VaultState(decodingLines: reference.encodedLines()) == reference)
+      try #require(Fixture.rebuilt(reference) == reference)
+      var updated = reference
+      try updated.reinterpretForeign(registry: Fixture.v2)
+      try #require(updated == fresh(changes, Fixture.v2, &generator))
     }
   }
 

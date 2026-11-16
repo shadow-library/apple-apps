@@ -85,6 +85,8 @@ struct SchemaCompatibilityTests {
     #expect(Fixture.vMid.incompatibilities(with: Fixture.v1).isEmpty)
     #expect(Fixture.v2.incompatibilities(with: Fixture.vMid).isEmpty)
     #expect(Fixture.v2.incompatibilities(with: Fixture.v1).isEmpty)
+    #expect(Fixture.vInsert.incompatibilities(with: Fixture.v2).isEmpty)
+    #expect(Fixture.vInsert.incompatibilities(with: Fixture.v1).isEmpty)
     #expect(!Fixture.v1.incompatibilities(with: Fixture.v2).isEmpty)
   }
 }

@@ -31,6 +31,7 @@ extension VaultState {
     var lastRef: EntityRef?
     var lastForeign: Data?
     var lastOpaque: Data?
+    var droppable = [(number: Int, ref: EntityRef)]()
     for (number, line) in lines.enumerated().dropFirst() {
       let value = try Self.decodeLine(line, number: number)
       guard case .object(let object) = value, let type = object["type"]?.stringValue else { throw .malformedLine(line: number) }
@@ -52,6 +53,7 @@ extension VaultState {
         if let lastForeign { guard lastForeign.lexicographicallyPrecedes(bytes) else { throw .outOfOrder(line: number) } }
         lastForeign = bytes
         foreignRecords[bytes] = record
+        if record.kind != .purge { droppable.append((number, record.ref)) }
         continue
       }
       guard lastForeign == nil else { throw .outOfOrder(line: number) }
@@ -60,6 +62,8 @@ extension VaultState {
       lastRef = ref
       entities[ref] = state
     }
+    let absorbed = Set(foreignRecords.values.filter(\.absorbsForeign).map(\.ref))
+    if let line = droppable.first(where: { absorbed.contains($0.ref) }) { throw .malformedLine(line: line.number) }
   }
 
   private static func decodeLine(_ line: Data, number: Int) throws(VaultStateError) -> JSONValue {

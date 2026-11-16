@@ -20,14 +20,18 @@ public struct VaultState: Sendable, Equatable {
   }
 
   public mutating func apply(_ change: ChangeRecord, registry: SchemaRegistry) {
-    merge(VaultState(change, registry: registry))
+    let ref = change.ref
+    let interpretation = registry.interpretation(of: change)
+    if let state = interpretation.state { entities[ref] = entities[ref].map { $0.joined(with: state) } ?? state }
+    if let remainder = interpretation.foreign, remainder.kind == .purge || !isPurged(ref) { foreignRecords[remainder.canonicalBytes()] = remainder }
+    if interpretation.state?.isPurged == true || interpretation.foreign?.absorbsForeign == true { dropForeign(of: ref) }
   }
 
   public mutating func keepOpaque(_ line: Data) {
     opaque.insert(line)
   }
 
-  /// The join laws hold for states built under one registry, or under registries where one is an additive successor of the other.
+  /// The join laws hold for states built under registries on one additive chain.
   public mutating func merge(_ other: VaultState) {
     entities.merge(other.entities) { $0.joined(with: $1) }
     foreignRecords.merge(other.foreignRecords) { mine, _ in mine }
@@ -59,10 +63,18 @@ public struct VaultState: Sendable, Equatable {
   }
 
   private mutating func dropForeignOfPurged() {
-    for (bytes, record) in foreignRecords where record.kind != .purge {
-      guard case .purged = entities[record.ref] else { continue }
+    let absorbed = Set(foreignRecords.values.filter(\.absorbsForeign).map(\.ref))
+    for (bytes, record) in foreignRecords where record.kind != .purge && (entities[record.ref]?.isPurged == true || absorbed.contains(record.ref)) {
       foreignRecords[bytes] = nil
     }
+  }
+
+  private mutating func dropForeign(of ref: EntityRef) {
+    for (bytes, record) in foreignRecords where record.kind != .purge && record.ref == ref { foreignRecords[bytes] = nil }
+  }
+
+  private func isPurged(_ ref: EntityRef) -> Bool {
+    entities[ref]?.isPurged == true || foreignRecords.values.contains { $0.absorbsForeign && $0.ref == ref }
   }
 
   public var foreign: [ChangeRecord] {

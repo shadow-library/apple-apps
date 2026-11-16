@@ -17,6 +17,7 @@ enum Fixture {
 
   static let statusOrder = ["draft", "review", "final"]
   static let extendedStatusOrder = ["draft", "review", "final", "archived"]
+  static let insertedStatusOrder = ["draft", "triage", "review", "final", "archived"]
 
   static let replicas = ["00000000-0000-0000-0000-00000000000a", "00000000-0000-0000-0000-00000000000b", "00000000-0000-0000-0000-00000000000c"].map {
     must(ReplicaID($0), $0)
@@ -31,6 +32,7 @@ enum Fixture {
   static let v1 = registry(version: 1, noteFields: [:], status: statusOrder, marks: ["approved"], tag: false)
   static let vMid = registry(version: 2, noteFields: ["pinned": .register], status: statusOrder, marks: ["approved"], tag: false)
   static let v2 = registry(version: 3, noteFields: ["pinned": .register], status: extendedStatusOrder, marks: ["approved", "reviewed"], tag: true)
+  static let vInsert = registry(version: 4, noteFields: ["pinned": .register], status: insertedStatusOrder, marks: ["approved", "reviewed"], tag: true)
 
   static func registry(version: Int, noteFields: [String: FieldRule], status: [String], marks: [String], tag: Bool) -> SchemaRegistry {
     let noteShape = EntityShape.record(fields: noteFields.merging(["title": .register, "status": .monotone(order: status), "origin": .firstWriterWins]) { $1 })
@@ -183,7 +185,7 @@ struct ChangeFactory {
     let draftKey = generator.pick(from: Fixture.draftKeys)
     let value = generator.pick(from: Fixture.values)
     let revise = Fixture.revise(RevisionItem(parent: nil, body: value, created: clock, generation: 0), clock: clock, key: draftKey, id: id).fields
-    switch generator.int(in: 0...10) {
+    switch generator.int(in: 0...11) {
     case 0: return Fixture.change(.set, Fixture.note, noteKey, clock: clock, schema: 9, fields: ["title": value], id: id)
     case 1: return Fixture.change(.set, Fixture.tag, Fixture.key("t1"), clock: clock, fields: ["label": value], id: id)
     case 2: return Fixture.change(.set, Fixture.note, noteKey, clock: clock, fields: ["pinned": value, "title": value, "status": "archived"], id: id)
@@ -194,6 +196,7 @@ struct ChangeFactory {
     case 7: return Fixture.change(.revise, Fixture.draft, draftKey, clock: clock, fields: revise.merging(["created": "yesterday"]) { $1 }, id: id)
     case 8: return Fixture.change(.revise, Fixture.draft, draftKey, clock: clock, fields: revise.merging(["generation": -1]) { $1 }, id: id)
     case 9: return Fixture.change(.purge, Fixture.note, noteKey, clock: clock, fields: ["reason": value], id: id)
+    case 11: return Fixture.change(.set, Fixture.note, noteKey, clock: clock, fields: ["status": "triage"], id: id)
     default: return Fixture.change(.set, Fixture.message, generator.pick(from: Fixture.messageKeys), clock: clock, fields: ["text": value], id: id)
     }
   }

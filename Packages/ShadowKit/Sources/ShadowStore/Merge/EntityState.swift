@@ -104,6 +104,11 @@ public enum EntityState: Sendable, Equatable {
     }
   }
 
+  var isPurged: Bool {
+    guard case .purged = self else { return false }
+    return true
+  }
+
   var shapeName: String {
     switch self {
     case .record: "record"
