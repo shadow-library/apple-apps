@@ -32,46 +32,47 @@ public enum Entities {
   // entity.service.ts:46: inserts, or on a live key updates every field the call names (the type is kept); a removed key is created anew
   public static func create(
     novel: UUID, entity: String, type: EntityType, name: String, _ details: EntityDetails = EntityDetails(), in transaction: inout WriteTransaction
-  ) throws(BibleError) {
-    try requireBibleKey(entity, field: "entityKey")
-    try requireBibleText(name, field: "name")
-    try transaction.requireBibleNovel(novel)
+  ) throws(DomainError) {
+    try requireKey(entity, field: "entityKey")
+    try requireNonBlank(name, field: "name")
+    try transaction.requireNovel(novel)
     let ref = EntityRecord.ref(novel: novel, entity: entity)
-    switch try transaction.biblePresence(ref, as: EntityRecord.self) {
+    switch try transaction.presence(ref, as: EntityRecord.self) {
     case .live(let existing):
-      try transaction.bibleEdit(EntityRecord.self, ref, difference(from: existing, to: applying(details, name: name, to: existing)).fields)
+      try transaction.edit(EntityRecord.self, ref, difference(from: existing, to: applying(details, name: name, to: existing)).fields)
     case .removed, .absent:
       let record = EntityRecord(novel: novel, entity: entity, type: .known(type), name: name)
-      try transaction.bibleCreate(applying(details, name: name, to: record))
+      try transaction.create(applying(details, name: name, to: record))
     }
   }
 
   // entity.service.ts:119: UpdateEntityBody needs at least one property; a missing or removed entity is ENT_001
-  public static func edit(novel: UUID, entity: String, name: String? = nil, _ details: EntityDetails = EntityDetails(), in transaction: inout WriteTransaction) throws(BibleError) {
+  public static func edit(novel: UUID, entity: String, name: String? = nil, _ details: EntityDetails = EntityDetails(), in transaction: inout WriteTransaction) throws(DomainError)
+  {
     guard name != nil || !details.isEmpty else { throw .noChanges }
-    if let name { try requireBibleText(name, field: "name") }
+    if let name { try requireNonBlank(name, field: "name") }
     let ref = EntityRecord.ref(novel: novel, entity: entity)
-    guard case .live(let existing) = try transaction.biblePresence(ref, as: EntityRecord.self) else { throw .entityNotFound(entity) }
-    try transaction.bibleEdit(EntityRecord.self, ref, difference(from: existing, to: applying(details, name: name ?? existing.name, to: existing)).fields)
+    guard case .live(let existing) = try transaction.presence(ref, as: EntityRecord.self) else { throw .entityNotFound(entity) }
+    try transaction.edit(EntityRecord.self, ref, difference(from: existing, to: applying(details, name: name ?? existing.name, to: existing)).fields)
   }
 
   // entity.service.ts:261: the reference deletes the row; here the record is marked removed and its dependants are hidden by derivation
-  public static func remove(novel: UUID, entity: String, in transaction: inout WriteTransaction) throws(BibleError) {
+  public static func remove(novel: UUID, entity: String, in transaction: inout WriteTransaction) throws(DomainError) {
     let ref = EntityRecord.ref(novel: novel, entity: entity)
-    guard case .live = try transaction.biblePresence(ref, as: EntityRecord.self) else { throw .entityNotFound(entity) }
-    try transaction.bibleRemove(EntityRecord.self, ref)
+    guard case .live = try transaction.presence(ref, as: EntityRecord.self) else { throw .entityNotFound(entity) }
+    try transaction.remove(EntityRecord.self, ref)
   }
 
-  public static func restore(novel: UUID, entity: String, in transaction: inout WriteTransaction) throws(BibleError) {
-    switch try transaction.biblePresence(EntityRecord.ref(novel: novel, entity: entity), as: EntityRecord.self) {
-    case .removed(let record): try transaction.bibleRestore(record)
+  public static func restore(novel: UUID, entity: String, in transaction: inout WriteTransaction) throws(DomainError) {
+    switch try transaction.presence(EntityRecord.ref(novel: novel, entity: entity), as: EntityRecord.self) {
+    case .removed(let record): try transaction.restore(record)
     case .live: return
     case .absent: throw .entityNotFound(entity)
     }
   }
 
   // entity.service.ts:110
-  public static func get<Transaction: StateReading & ~Copyable>(novel: UUID, entity: String, in transaction: borrowing Transaction) throws(BibleError) -> EntityRecord? {
+  public static func get<Transaction: StateReading & ~Copyable>(novel: UUID, entity: String, in transaction: borrowing Transaction) throws(DomainError) -> EntityRecord? {
     let ref = EntityRecord.ref(novel: novel, entity: entity)
     let reading: RecordReading<EntityRecord>
     do throws(StoreError) {
@@ -79,14 +80,14 @@ public enum Entities {
     } catch {
       throw .store(error)
     }
-    guard let found = try bibleReading(reading, ref: ref), !found.isRemoved else { return nil }
+    guard let found = try readable(reading, ref: ref), !found.isRemoved else { return nil }
     return found.record
   }
 
   // entity.service.ts:83: the reference pages by updated time, which a record does not carry; here the order is the entity key
   public static func list<Transaction: StateReading & ~Copyable>(
     novel: UUID, type: EntityType? = nil, origin: EntityOrigin? = nil, in transaction: borrowing Transaction
-  ) throws(BibleError) -> [EntityRecord] {
+  ) throws(DomainError) -> [EntityRecord] {
     let listing: RecordListing<EntityRecord>
     do throws(StoreError) {
       listing = try EntityRecord.listing(novel: novel, in: transaction)

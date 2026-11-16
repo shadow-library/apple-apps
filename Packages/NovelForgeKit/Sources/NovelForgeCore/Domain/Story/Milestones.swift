@@ -25,7 +25,7 @@ public enum Milestones {
   // milestone.service.ts:27
   public static func create(
     novel: UUID, milestone: String, label: String, subject: String? = nil, kind: StoredEnum<MilestoneKind> = .known(.custom), in transaction: inout WriteTransaction
-  ) throws(StoryError) {
+  ) throws(DomainError) {
     try requireSpacelessKey(milestone, field: "milestoneKey")
     try requireAtMost(milestone, milestoneKeyLimit, field: "milestoneKey")
     try requireNonBlank(label, field: "label")
@@ -40,7 +40,7 @@ public enum Milestones {
   }
 
   // milestone.service.ts:42
-  public static func edit(novel: UUID, milestone: String, _ changes: MilestoneChanges, in transaction: inout WriteTransaction) throws(StoryError) {
+  public static func edit(novel: UUID, milestone: String, _ changes: MilestoneChanges, in transaction: inout WriteTransaction) throws(DomainError) {
     try requireSpacelessKey(milestone, field: "milestoneKey")
     guard !changes.isEmpty else { throw .noChanges }
     if let label = changes.label {
@@ -62,7 +62,7 @@ public enum Milestones {
   }
 
   // milestone.service.ts:57
-  public static func remove(novel: UUID, milestone: String, in transaction: inout WriteTransaction) throws(StoryError) {
+  public static func remove(novel: UUID, milestone: String, in transaction: inout WriteTransaction) throws(DomainError) {
     let ref = MilestoneRecord.ref(novel: novel, milestone: milestone)
     let key = milestone.precomposedStringWithCanonicalMapping
     let references = try references(to: key, novel: novel, in: transaction)
@@ -71,7 +71,7 @@ public enum Milestones {
     try transaction.remove(MilestoneRecord.self, ref)
   }
 
-  public static func restore(novel: UUID, milestone: String, in transaction: inout WriteTransaction) throws(StoryError) {
+  public static func restore(novel: UUID, milestone: String, in transaction: inout WriteTransaction) throws(DomainError) {
     switch try transaction.presence(MilestoneRecord.ref(novel: novel, milestone: milestone), as: MilestoneRecord.self) {
     case .removed(let record): try transaction.restore(record)
     case .live: return
@@ -80,7 +80,7 @@ public enum Milestones {
   }
 
   // apps/novel-forge-server/src/common/plan-state.ts:152
-  static func references(to milestone: String, novel: UUID, in transaction: borrowing WriteTransaction) throws(StoryError) -> [String] {
+  static func references(to milestone: String, novel: UUID, in transaction: borrowing WriteTransaction) throws(DomainError) -> [String] {
     let claiming = try transaction.listing(ChapterPlanRecord.self, novel: novel)
       .filter { $0.content.contract.claimedMilestones.contains { $0.jsEquals(milestone) } }
       .map(\.chapter)
@@ -99,13 +99,13 @@ public enum Milestones {
     return terms.contains { $0.objectValue?["milestone"]?.stringValue?.jsEquals(milestone) == true }
   }
 
-  private static func requireKnown(_ kind: StoredEnum<MilestoneKind>) throws(StoryError) {
+  private static func requireKnown(_ kind: StoredEnum<MilestoneKind>) throws(DomainError) {
     guard case .unknown(let raw) = kind else { return }
     throw .unknownKind(raw)
   }
 
   // plan-state.ts:146
-  private static func requireSubject(novel: UUID, _ subject: String, in transaction: borrowing WriteTransaction) throws(StoryError) {
+  private static func requireSubject(novel: UUID, _ subject: String, in transaction: borrowing WriteTransaction) throws(DomainError) {
     guard case .live = try transaction.presence(EntityRecord.ref(novel: novel, entity: subject), as: EntityRecord.self) else { throw .milestoneSubjectUnknown(subject) }
   }
 }

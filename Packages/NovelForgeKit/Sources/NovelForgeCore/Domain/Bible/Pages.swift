@@ -32,11 +32,11 @@ public enum Pages {
   @discardableResult
   public static func save(
     novel: UUID, section: BiblePageSection, slug: String, frontmatter: [String: JSONValue]? = nil, body: String? = nil, in transaction: inout WriteTransaction
-  ) throws(BibleError) -> PageSaved {
-    try requireBibleKey(slug, field: "slug")
-    try transaction.requireBibleNovel(novel)
+  ) throws(DomainError) -> PageSaved {
+    try requireKey(slug, field: "slug")
+    try transaction.requireNovel(novel)
     let record = PageRecord(novel: novel, section: section, slug: slug)
-    switch try transaction.biblePresence(record.ref, as: PageRecord.self) {
+    switch try transaction.presence(record.ref, as: PageRecord.self) {
     case .live(let existing): return try revise(existing, frontmatter, body, in: &transaction)
     case .removed, .absent: return try create(record, folded(record.content, frontmatter, body, slug: record.slug), in: &transaction)
     }
@@ -45,27 +45,27 @@ public enum Pages {
   @discardableResult
   public static func create(
     novel: UUID, section: BiblePageSection, slug: String, frontmatter: [String: JSONValue]? = nil, body: String? = nil, in transaction: inout WriteTransaction
-  ) throws(BibleError) -> PageSaved {
-    try requireBibleKey(slug, field: "slug")
-    try transaction.requireBibleNovel(novel)
+  ) throws(DomainError) -> PageSaved {
+    try requireKey(slug, field: "slug")
+    try transaction.requireNovel(novel)
     let record = PageRecord(novel: novel, section: section, slug: slug)
-    if case .live = try transaction.biblePresence(record.ref, as: PageRecord.self) { throw .documentExists(section: section.rawValue, slug: record.slug) }
+    if case .live = try transaction.presence(record.ref, as: PageRecord.self) { throw .documentExists(section: section.rawValue, slug: record.slug) }
     return try create(record, folded(record.content, frontmatter, body, slug: record.slug), in: &transaction)
   }
 
   @discardableResult
   public static func revise(
     novel: UUID, section: BiblePageSection, slug: String, frontmatter: [String: JSONValue]? = nil, body: String? = nil, in transaction: inout WriteTransaction
-  ) throws(BibleError) -> PageSaved {
+  ) throws(DomainError) -> PageSaved {
     let ref = PageRecord.ref(novel: novel, section: section, slug: slug)
-    guard case .live(let existing) = try transaction.biblePresence(ref, as: PageRecord.self) else { throw .documentNotFound(section: section.rawValue, slug: slug) }
+    guard case .live(let existing) = try transaction.presence(ref, as: PageRecord.self) else { throw .documentNotFound(section: section.rawValue, slug: slug) }
     return try revise(existing, frontmatter, body, in: &transaction)
   }
 
   // Newest first; a removed page keeps its versions, an absent one has none
   public static func versions<Transaction: StateReading & ~Copyable>(
     novel: UUID, section: BiblePageSection, slug: String, in transaction: borrowing Transaction
-  ) throws(BibleError) -> [PageVersion] {
+  ) throws(DomainError) -> [PageVersion] {
     let ref = PageRecord.ref(novel: novel, section: section, slug: slug)
     let reading: HistoryReading<PageContent, NoMark>
     do throws(StoreError) {
@@ -83,10 +83,10 @@ public enum Pages {
 
   // The older version becomes the content of a new revision; restoring the head writes nothing
   @discardableResult
-  public static func restoreVersion(novel: UUID, section: BiblePageSection, slug: String, revision: String, in transaction: inout WriteTransaction) throws(BibleError) -> PageSaved
+  public static func restoreVersion(novel: UUID, section: BiblePageSection, slug: String, revision: String, in transaction: inout WriteTransaction) throws(DomainError) -> PageSaved
   {
     let ref = PageRecord.ref(novel: novel, section: section, slug: slug)
-    guard case .live(let existing) = try transaction.biblePresence(ref, as: PageRecord.self) else { throw .documentNotFound(section: section.rawValue, slug: slug) }
+    guard case .live(let existing) = try transaction.presence(ref, as: PageRecord.self) else { throw .documentNotFound(section: section.rawValue, slug: slug) }
     guard let version = try versions(novel: novel, section: section, slug: slug, in: transaction).first(where: { $0.revision == revision }) else {
       throw .revisionNotFound(revision)
     }
@@ -99,22 +99,22 @@ public enum Pages {
   }
 
   // bible-document.handler.ts:55: the reference deletes the row; the record is marked removed and keeps its versions
-  public static func remove(novel: UUID, section: BiblePageSection, slug: String, in transaction: inout WriteTransaction) throws(BibleError) {
+  public static func remove(novel: UUID, section: BiblePageSection, slug: String, in transaction: inout WriteTransaction) throws(DomainError) {
     let ref = PageRecord.ref(novel: novel, section: section, slug: slug)
-    guard case .live = try transaction.biblePresence(ref, as: PageRecord.self) else { throw .documentNotFound(section: section.rawValue, slug: slug) }
-    try transaction.bibleRemove(PageRecord.self, ref)
+    guard case .live = try transaction.presence(ref, as: PageRecord.self) else { throw .documentNotFound(section: section.rawValue, slug: slug) }
+    try transaction.remove(PageRecord.self, ref)
   }
 
-  public static func restore(novel: UUID, section: BiblePageSection, slug: String, in transaction: inout WriteTransaction) throws(BibleError) {
-    switch try transaction.biblePresence(PageRecord.ref(novel: novel, section: section, slug: slug), as: PageRecord.self) {
-    case .removed(let record): try transaction.bibleRestore(record)
+  public static func restore(novel: UUID, section: BiblePageSection, slug: String, in transaction: inout WriteTransaction) throws(DomainError) {
+    switch try transaction.presence(PageRecord.ref(novel: novel, section: section, slug: slug), as: PageRecord.self) {
+    case .removed(let record): try transaction.restore(record)
     case .live: return
     case .absent: throw .documentNotFound(section: section.rawValue, slug: slug)
     }
   }
 
   // bible-document.service.ts:47
-  public static func get<Transaction: StateReading & ~Copyable>(novel: UUID, section: BiblePageSection, slug: String, in transaction: borrowing Transaction) throws(BibleError)
+  public static func get<Transaction: StateReading & ~Copyable>(novel: UUID, section: BiblePageSection, slug: String, in transaction: borrowing Transaction) throws(DomainError)
     -> PageRecord?
   {
     let ref = PageRecord.ref(novel: novel, section: section, slug: slug)
@@ -124,12 +124,12 @@ public enum Pages {
     } catch {
       throw .store(error)
     }
-    guard let found = try bibleReading(reading, ref: ref), !found.isRemoved else { return nil }
+    guard let found = try readable(reading, ref: ref), !found.isRemoved else { return nil }
     return found.record
   }
 
   // bible-document.service.ts:26: by section in the stored order, then slug; pages of a section this version does not know are skipped
-  public static func list<Transaction: StateReading & ~Copyable>(novel: UUID, section: BiblePageSection? = nil, in transaction: borrowing Transaction) throws(BibleError)
+  public static func list<Transaction: StateReading & ~Copyable>(novel: UUID, section: BiblePageSection? = nil, in transaction: borrowing Transaction) throws(DomainError)
     -> [PageSummary]
   {
     let listing: RecordListing<PageRecord>
@@ -172,14 +172,15 @@ public enum Pages {
     return folded
   }
 
-  private static func create(_ record: PageRecord, _ content: PageContent, in transaction: inout WriteTransaction) throws(BibleError) -> PageSaved {
+  private static func create(_ record: PageRecord, _ content: PageContent, in transaction: inout WriteTransaction) throws(DomainError) -> PageSaved {
     var page = record
     page.content = content
-    try transaction.bibleCreate(page)
+    try transaction.create(page)
     return .created(revision: try headRevision(of: page, in: transaction))
   }
 
-  private static func revise(_ existing: PageRecord, _ frontmatter: [String: JSONValue]?, _ body: String?, in transaction: inout WriteTransaction) throws(BibleError) -> PageSaved {
+  private static func revise(_ existing: PageRecord, _ frontmatter: [String: JSONValue]?, _ body: String?, in transaction: inout WriteTransaction) throws(DomainError) -> PageSaved
+  {
     var raw = existing.content
     raw.frontmatter = frontmatter
     raw.body = body
@@ -187,7 +188,7 @@ public enum Pages {
     return try revise(existing, folded(existing.content, frontmatter, body, slug: existing.slug), in: &transaction)
   }
 
-  private static func revise(_ existing: PageRecord, _ content: PageContent, in transaction: inout WriteTransaction) throws(BibleError) -> PageSaved {
+  private static func revise(_ existing: PageRecord, _ content: PageContent, in transaction: inout WriteTransaction) throws(DomainError) -> PageSaved {
     guard content != existing.content else { return .unchanged }
     do throws(StoreError) {
       return .revised(revision: try PageRecord.revise(novel: existing.novel, section: existing.section, slug: existing.slug, content, in: &transaction).revision)
@@ -196,7 +197,7 @@ public enum Pages {
     }
   }
 
-  private static func headRevision(of page: PageRecord, in transaction: borrowing WriteTransaction) throws(BibleError) -> String {
+  private static func headRevision(of page: PageRecord, in transaction: borrowing WriteTransaction) throws(DomainError) -> String {
     let versions = try versions(novel: page.novel, section: page.section, slug: page.slug, in: transaction)
     guard let head = versions.first(where: \.isHead) else { throw .unreadable(page.ref) }
     return head.revision

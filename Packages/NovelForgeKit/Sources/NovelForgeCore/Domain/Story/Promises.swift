@@ -14,7 +14,7 @@ public enum PayoffChange: Sendable, Equatable {
 // apps/novel-forge-server/src/modules/refinement/apply/promise.handler.ts; a pipeline's observations (last advanced chapter) get kinds of their own
 public enum Promises {
   // promise.handler.ts:112
-  public static func create(novel: UUID, _ promise: PromiseRef, label: String, openedChapter: Int? = nil, in transaction: inout WriteTransaction) throws(StoryError) {
+  public static func create(novel: UUID, _ promise: PromiseRef, label: String, openedChapter: Int? = nil, in transaction: inout WriteTransaction) throws(DomainError) {
     try requireSpacelessKey(promise.key, field: "key")
     try requireNonBlank(label, field: "label")
     try transaction.requireNovel(novel)
@@ -30,7 +30,7 @@ public enum Promises {
   // promise.handler.ts:124: paying off stamps the latest chapter, reopening clears it
   public static func update(
     novel: UUID, _ promise: PromiseRef, label: String? = nil, settlement: PromiseSettlement? = nil, in transaction: inout WriteTransaction
-  ) throws(StoryError) {
+  ) throws(DomainError) {
     try requireSpacelessKey(promise.key, field: "key")
     guard case .live(let existing) = try presence(of: promise, novel: novel, in: transaction) else { throw .promiseNotFound(promise) }
     var stamped: Int?
@@ -50,7 +50,7 @@ public enum Promises {
   }
 
   // promise.handler.ts:167
-  public static func setPayoff(novel: UUID, _ promise: PromiseRef, _ payoff: PayoffChange, in transaction: inout WriteTransaction) throws(StoryError) {
+  public static func setPayoff(novel: UUID, _ promise: PromiseRef, _ payoff: PayoffChange, in transaction: inout WriteTransaction) throws(DomainError) {
     try requireSpacelessKey(promise.key, field: "key")
     guard case .live(let existing) = try presence(of: promise, novel: novel, in: transaction) else { throw .promiseNotFound(promise) }
     let (milestone, volume, window, dormant) = payoff.changes
@@ -73,7 +73,7 @@ public enum Promises {
   }
 
   // promise.handler.ts:192: a drop keeps the record and the chapter it had
-  public static func drop(novel: UUID, _ promise: PromiseRef, in transaction: inout WriteTransaction) throws(StoryError) {
+  public static func drop(novel: UUID, _ promise: PromiseRef, in transaction: inout WriteTransaction) throws(DomainError) {
     try requireSpacelessKey(promise.key, field: "key")
     guard case .live(let existing) = try presence(of: promise, novel: novel, in: transaction) else { throw .promiseNotFound(promise) }
     switch existing {
@@ -88,7 +88,7 @@ public enum Promises {
     }
   }
 
-  public static func remove(novel: UUID, _ promise: PromiseRef, in transaction: inout WriteTransaction) throws(StoryError) {
+  public static func remove(novel: UUID, _ promise: PromiseRef, in transaction: inout WriteTransaction) throws(DomainError) {
     guard case .live(let existing) = try presence(of: promise, novel: novel, in: transaction) else { throw .promiseNotFound(promise) }
     switch existing {
     case .thread(let thread): try transaction.remove(ThreadRecord.self, thread.ref)
@@ -96,7 +96,7 @@ public enum Promises {
     }
   }
 
-  public static func restore(novel: UUID, _ promise: PromiseRef, in transaction: inout WriteTransaction) throws(StoryError) {
+  public static func restore(novel: UUID, _ promise: PromiseRef, in transaction: inout WriteTransaction) throws(DomainError) {
     switch promise {
     case .thread(let key):
       switch try transaction.presence(ThreadRecord.ref(novel: novel, thread: key), as: ThreadRecord.self) {
@@ -114,14 +114,14 @@ public enum Promises {
   }
 
   // apps/novel-forge-server/src/common/next-chapter.ts:11
-  private static func nextChapter(novel: UUID, in transaction: borrowing WriteTransaction) throws(StoryError) -> Int {
+  private static func nextChapter(novel: UUID, in transaction: borrowing WriteTransaction) throws(DomainError) -> Int {
     let drafts = try transaction.listing(DraftRecord.self, novel: novel).map(\.chapter)
     let finals = try transaction.listing(FinalChapterRecord.self, novel: novel).map(\.chapter)
     return nextWritableChapter(draftChapters: drafts, finalizedChapters: finals)
   }
 
   // promise.handler.ts:71: the highest chapter that exists at all, drafted or final
-  private static func latestChapter(novel: UUID, in transaction: borrowing WriteTransaction) throws(StoryError) -> Int {
+  private static func latestChapter(novel: UUID, in transaction: borrowing WriteTransaction) throws(DomainError) -> Int {
     let drafted = try transaction.listing(DraftRecord.self, novel: novel).map(\.chapter)
     let finalized = try transaction.listing(FinalChapterRecord.self, novel: novel).map(\.chapter)
     return (drafted + finalized).max() ?? 0
@@ -132,7 +132,7 @@ public enum Promises {
     case mystery(MysteryRecord)
   }
 
-  private static func presence(of promise: PromiseRef, novel: UUID, in transaction: borrowing WriteTransaction) throws(StoryError) -> Presence<Existing> {
+  private static func presence(of promise: PromiseRef, novel: UUID, in transaction: borrowing WriteTransaction) throws(DomainError) -> Presence<Existing> {
     switch promise {
     case .thread(let key):
       switch try transaction.presence(ThreadRecord.ref(novel: novel, thread: key), as: ThreadRecord.self) {

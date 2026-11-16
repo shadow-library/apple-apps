@@ -28,7 +28,7 @@ public struct SecretChanges: Sendable, Equatable {
 // apps/novel-forge-server/src/modules/bible/fact/fact.service.ts; the reveal-term guard on allowed clues (FCT_006) waits for the reveal-term port, and plan state is derived
 public enum Secrets {
   // fact.service.ts:61: creates the secret or merges the changes into it; an omitted field keeps its value, a nil clears it
-  public static func upsert(novel: UUID, secret: String, text: String, _ changes: SecretChanges = SecretChanges(), in transaction: inout WriteTransaction) throws(StoryError) {
+  public static func upsert(novel: UUID, secret: String, text: String, _ changes: SecretChanges = SecretChanges(), in transaction: inout WriteTransaction) throws(DomainError) {
     try requireKey(secret, field: "factKey")
     guard !text.isEmpty else { throw .blank(field: "text") }
     if case .set(let unlock?) = changes.unlock {
@@ -47,14 +47,14 @@ public enum Secrets {
   }
 
   // fact.service.ts:102: the knowledge rows of a removed secret are hidden by derivation, never deleted
-  public static func remove(novel: UUID, secret: String, in transaction: inout WriteTransaction) throws(StoryError) {
+  public static func remove(novel: UUID, secret: String, in transaction: inout WriteTransaction) throws(DomainError) {
     try transaction.requireNovel(novel)
     let ref = SecretRecord.ref(novel: novel, secret: secret)
     guard case .live = try transaction.presence(ref, as: SecretRecord.self) else { throw .secretNotFound(secret) }
     try transaction.remove(SecretRecord.self, ref)
   }
 
-  public static func restore(novel: UUID, secret: String, in transaction: inout WriteTransaction) throws(StoryError) {
+  public static func restore(novel: UUID, secret: String, in transaction: inout WriteTransaction) throws(DomainError) {
     switch try transaction.presence(SecretRecord.ref(novel: novel, secret: secret), as: SecretRecord.self) {
     case .removed(let record): try transaction.restore(record)
     case .live: return
@@ -93,7 +93,7 @@ public enum Secrets {
 
 // fact.service.ts:119,140: only the author's manual reveals are records; a retraction is a removal
 public enum ManualReveals {
-  public static func reveal(novel: UUID, secret: String, entity: String, chapter: Int, note: String? = nil, in transaction: inout WriteTransaction) throws(StoryError) {
+  public static func reveal(novel: UUID, secret: String, entity: String, chapter: Int, note: String? = nil, in transaction: inout WriteTransaction) throws(DomainError) {
     try requireAtLeast(chapter, 1, field: "chapter")
     try requireTargets(novel: novel, secret: secret, entity: entity, in: transaction)
     let record = CharacterKnowledgeRecord(novel: novel, fact: secret, entity: entity, reveal: ManualReveal(chapter: chapter, note: note))
@@ -101,14 +101,14 @@ public enum ManualReveals {
     try transaction.create(record)
   }
 
-  public static func retract(novel: UUID, secret: String, entity: String, in transaction: inout WriteTransaction) throws(StoryError) {
+  public static func retract(novel: UUID, secret: String, entity: String, in transaction: inout WriteTransaction) throws(DomainError) {
     try requireTargets(novel: novel, secret: secret, entity: entity, in: transaction)
     let ref = CharacterKnowledgeRecord.ref(novel: novel, fact: secret, entity: entity)
     guard case .live = try transaction.presence(ref, as: CharacterKnowledgeRecord.self) else { return }
     try transaction.remove(CharacterKnowledgeRecord.self, ref)
   }
 
-  private static func requireTargets(novel: UUID, secret: String, entity: String, in transaction: borrowing WriteTransaction) throws(StoryError) {
+  private static func requireTargets(novel: UUID, secret: String, entity: String, in transaction: borrowing WriteTransaction) throws(DomainError) {
     try transaction.requireNovel(novel)
     guard case .live = try transaction.presence(SecretRecord.ref(novel: novel, secret: secret), as: SecretRecord.self) else { throw .secretNotFound(secret) }
     guard case .live = try transaction.presence(EntityRecord.ref(novel: novel, entity: entity), as: EntityRecord.self) else { throw .entityUnknown(entity) }

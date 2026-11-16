@@ -27,7 +27,7 @@ private let volumeTitleLimit = 500
 public enum Volumes {
   public static func create(
     novel: UUID, volume: String, ordinal: Int? = nil, title: String? = nil, objective: String? = nil, body: String? = nil, in transaction: inout WriteTransaction
-  ) throws(StoryError) {
+  ) throws(DomainError) {
     try requireKey(volume, field: "volumeKey")
     try requireTitle(title)
     try transaction.requireNovel(novel)
@@ -38,7 +38,7 @@ public enum Volumes {
     try transaction.create(record)
   }
 
-  public static func edit(novel: UUID, volume: String, _ changes: VolumeChanges, in transaction: inout WriteTransaction) throws(StoryError) {
+  public static func edit(novel: UUID, volume: String, _ changes: VolumeChanges, in transaction: inout WriteTransaction) throws(DomainError) {
     try requireKey(volume, field: "volumeKey")
     if case .set(let title) = changes.title { try requireTitle(title) }
     let ref = VolumeRecord.ref(novel: novel, volume: volume)
@@ -52,7 +52,7 @@ public enum Volumes {
   }
 
   // volume.handler.ts:51 refuses while a chapter plan still names the volume
-  public static func remove(novel: UUID, volume: String, in transaction: inout WriteTransaction) throws(StoryError) {
+  public static func remove(novel: UUID, volume: String, in transaction: inout WriteTransaction) throws(DomainError) {
     let ref = VolumeRecord.ref(novel: novel, volume: volume)
     guard case .live(let record) = try transaction.presence(ref, as: VolumeRecord.self) else { throw .volumeNotFound(volume) }
     let planned = try transaction.listing(ChapterPlanRecord.self, novel: novel).filter { $0.content.volume?.jsEquals(record.volume) == true }.map(\.chapter).min()
@@ -60,7 +60,7 @@ public enum Volumes {
     try transaction.remove(VolumeRecord.self, ref)
   }
 
-  public static func restore(novel: UUID, volume: String, in transaction: inout WriteTransaction) throws(StoryError) {
+  public static func restore(novel: UUID, volume: String, in transaction: inout WriteTransaction) throws(DomainError) {
     switch try transaction.presence(VolumeRecord.ref(novel: novel, volume: volume), as: VolumeRecord.self) {
     case .removed(let record): try transaction.restore(record)
     case .live: return
@@ -69,7 +69,7 @@ public enum Volumes {
   }
 
   // volume.service.ts:101: only the active volume can be completed; the next volume becomes active by derivation, never by a write
-  public static func markGoalMet(novel: UUID, volume: String, in transaction: inout WriteTransaction) throws(StoryError) -> VolumeAdvance {
+  public static func markGoalMet(novel: UUID, volume: String, in transaction: inout WriteTransaction) throws(DomainError) -> VolumeAdvance {
     let ref = VolumeRecord.ref(novel: novel, volume: volume)
     guard case .live(let target) = try transaction.presence(ref, as: VolumeRecord.self) else { throw .volumeNotFound(volume) }
     let volumes = try transaction.listing(VolumeRecord.self, novel: novel)
@@ -83,7 +83,7 @@ public enum Volumes {
     return VolumeAdvance(completed: target.volume, activated: activeVolume(of: after))
   }
 
-  private static func requireTitle(_ title: String?) throws(StoryError) {
+  private static func requireTitle(_ title: String?) throws(DomainError) {
     guard let title else { return }
     try requireAtMost(title, volumeTitleLimit, field: "title")
   }

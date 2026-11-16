@@ -20,7 +20,7 @@ public enum PromiseRef: Hashable, Sendable {
   }
 }
 
-public enum StoryError: ShadowError, Equatable {
+public enum DomainError: ShadowError, Equatable {
   case novelNotFound(UUID)
   case volumeNotFound(String)
   case volumeExists(String)
@@ -33,6 +33,11 @@ public enum StoryError: ShadowError, Equatable {
   case promiseNotFound(PromiseRef)
   case promiseExists(PromiseRef)
   case secretNotFound(String)
+  case entityNotFound(String)
+  case documentNotFound(section: String, slug: String)
+  case documentExists(section: String, slug: String)
+  case revisionNotFound(String)
+  case revisionUnreadable(String)
   case entityUnknown(String)
   case unlockMalformed(String)
   case invalidKey(field: String)
@@ -58,15 +63,20 @@ public enum StoryError: ShadowError, Equatable {
     case .promiseNotFound: "PMS_001"
     case .promiseExists: "PMS_002"
     case .secretNotFound: "FCT_001"
+    case .entityNotFound: "ENT_001"
+    case .documentNotFound: "DOC_001"
+    case .documentExists: "bible.document_exists"
+    case .revisionNotFound: "bible.revision_not_found"
+    case .revisionUnreadable: "bible.revision_unreadable"
     case .entityUnknown: "FCT_002"
     case .unlockMalformed: "FCT_005"
-    case .invalidKey: "story.invalid_key"
-    case .blank: "story.blank"
-    case .belowMinimum: "story.below_minimum"
-    case .tooLong: "story.too_long"
-    case .unknownKind: "story.unknown_kind"
-    case .noChanges: "story.no_changes"
-    case .unreadable: "story.unreadable"
+    case .invalidKey: "domain.invalid_key"
+    case .blank: "domain.blank"
+    case .belowMinimum: "domain.below_minimum"
+    case .tooLong: "domain.too_long"
+    case .unknownKind: "domain.unknown_kind"
+    case .noChanges: "domain.no_changes"
+    case .unreadable: "domain.unreadable"
     case .store(let error): error.code
     }
   }
@@ -85,9 +95,14 @@ public enum StoryError: ShadowError, Equatable {
     case .promiseNotFound(let promise): "Promise \(promise.kindName) \(promise.key) not found"
     case .promiseExists(let promise): "A \(promise.kindName) with the key \(promise.key) already exists in the project"
     case .secretNotFound(let secret): "Canon fact \(secret) not found"
+    case .entityNotFound: "Entity not found"
+    case .documentNotFound: "Bible document not found"
+    case .documentExists(let section, let slug): "The page \(section)/\(slug) already exists"
+    case .revisionNotFound(let revision): "The page has no version \(revision)"
+    case .revisionUnreadable(let revision): "Version \(revision) of the page is stored in a form this version cannot read"
     case .entityUnknown(let entity): "Unknown entity key \(entity) referenced by the knowledge operation"
     case .unlockMalformed(let reason): "Unlock condition is malformed — \(reason)"
-    case .invalidKey(let field): "\(field) must be a non-empty key without spaces"
+    case .invalidKey(let field): "\(field) must be a non-empty key"
     case .blank(let field): "\(field) must not be blank"
     case .belowMinimum(let field, let minimum): "\(field) must be at least \(minimum)"
     case .tooLong(let field, let limit): "\(field) must be at most \(limit) characters"
@@ -98,7 +113,7 @@ public enum StoryError: ShadowError, Equatable {
     }
   }
 
-  public static func == (left: StoryError, right: StoryError) -> Bool {
+  public static func == (left: DomainError, right: DomainError) -> Bool {
     left.code == right.code && left.errorDescription == right.errorDescription
   }
 }

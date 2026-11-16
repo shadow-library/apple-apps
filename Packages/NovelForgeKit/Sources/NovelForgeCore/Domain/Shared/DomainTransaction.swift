@@ -3,11 +3,11 @@ import ShadowCore
 import ShadowStore
 
 extension VaultStore {
-  public func writeStory<T: Sendable>(_ body: @Sendable (inout WriteTransaction) throws(StoryError) -> T) async throws(StoryError) -> T {
+  public func writeDomain<T: Sendable>(_ body: @Sendable (inout WriteTransaction) throws(DomainError) -> T) async throws(DomainError) -> T {
     do {
       return try await write { transaction in try body(&transaction) }
     } catch {
-      if case .aborted(let cause) = error, let story = cause as? StoryError { throw story }
+      if case .aborted(let cause) = error, let domain = cause as? DomainError { throw domain }
       throw .store(error)
     }
   }
@@ -19,29 +19,29 @@ enum Presence<Record: Sendable & Equatable>: Sendable {
   case live(Record)
 }
 
-func requireKey(_ key: String, field: String) throws(StoryError) {
+func requireKey(_ key: String, field: String) throws(DomainError) {
   guard !key.isEmpty else { throw .invalidKey(field: field) }
 }
 
 // apps/novel-forge-server/src/modules/refinement/change-set/op-specs.ts:16 pins keys to /^\S+$/
-func requireSpacelessKey(_ key: String, field: String) throws(StoryError) {
+func requireSpacelessKey(_ key: String, field: String) throws(DomainError) {
   guard !key.isEmpty, !key.unicodeScalars.contains(where: JSText.isWhitespace) else { throw .invalidKey(field: field) }
 }
 
-func requireNonBlank(_ text: String, field: String) throws(StoryError) {
+func requireNonBlank(_ text: String, field: String) throws(DomainError) {
   guard !text.jsTrim().isEmpty else { throw .blank(field: field) }
 }
 
-func requireAtMost(_ text: String, _ limit: Int, field: String) throws(StoryError) {
+func requireAtMost(_ text: String, _ limit: Int, field: String) throws(DomainError) {
   guard text.unicodeScalars.count <= limit else { throw .tooLong(field: field, limit: limit) }
 }
 
-func requireAtLeast(_ value: Int, _ minimum: Int, field: String) throws(StoryError) {
+func requireAtLeast(_ value: Int, _ minimum: Int, field: String) throws(DomainError) {
   guard value >= minimum else { throw .belowMinimum(field: field, minimum: minimum) }
 }
 
 extension WriteTransaction {
-  func presence<Record: NovelForgeRecord>(_ ref: EntityRef, as _: Record.Type) throws(StoryError) -> Presence<Record> {
+  func presence<Record: NovelForgeRecord>(_ ref: EntityRef, as _: Record.Type) throws(DomainError) -> Presence<Record> {
     let reading: RecordReading<Record>
     do throws(StoreError) {
       reading = try Record.read(ref, in: self)
@@ -55,7 +55,7 @@ extension WriteTransaction {
     }
   }
 
-  func listing<Record: KeyedRecord>(_: Record.Type, novel: UUID) throws(StoryError) -> [Record] {
+  func listing<Record: KeyedRecord>(_: Record.Type, novel: UUID) throws(DomainError) -> [Record] {
     do throws(StoreError) {
       return try Record.listing(novel: novel, in: self).live
     } catch {
@@ -63,12 +63,12 @@ extension WriteTransaction {
     }
   }
 
-  func requireNovel(_ novel: UUID) throws(StoryError) {
+  func requireNovel(_ novel: UUID) throws(DomainError) {
     let ref = NovelForgeKey.novel(novel)
     guard case .live = try presence(ref, as: NovelRecord.self) else { throw .novelNotFound(novel) }
   }
 
-  mutating func create(_ record: some NovelForgeRecord) throws(StoryError) {
+  mutating func create(_ record: some NovelForgeRecord) throws(DomainError) {
     do throws(StoreError) {
       _ = try record.create(in: &self)
     } catch {
@@ -76,7 +76,7 @@ extension WriteTransaction {
     }
   }
 
-  mutating func restore(_ record: some RemovableRecord) throws(StoryError) {
+  mutating func restore(_ record: some RemovableRecord) throws(DomainError) {
     do throws(StoreError) {
       _ = try record.restore(in: &self)
     } catch {
@@ -84,7 +84,7 @@ extension WriteTransaction {
     }
   }
 
-  mutating func edit<Record: NovelForgeRecord>(_: Record.Type, _ ref: EntityRef, _ fields: RecordFields<Record.Field>) throws(StoryError) {
+  mutating func edit<Record: NovelForgeRecord>(_: Record.Type, _ ref: EntityRef, _ fields: RecordFields<Record.Field>) throws(DomainError) {
     guard !fields.members.isEmpty else { return }
     do throws(StoreError) {
       _ = try Record.edit(ref, fields, in: &self)
@@ -93,11 +93,19 @@ extension WriteTransaction {
     }
   }
 
-  mutating func remove<Record: RemovableRecord>(_: Record.Type, _ ref: EntityRef) throws(StoryError) {
+  mutating func remove<Record: RemovableRecord>(_: Record.Type, _ ref: EntityRef) throws(DomainError) {
     do throws(StoreError) {
       _ = try Record.remove(ref, in: &self)
     } catch {
       throw .store(error)
     }
+  }
+}
+
+func readable<Record: Sendable & Equatable>(_ reading: RecordReading<Record>, ref: EntityRef) throws(DomainError) -> RecordEntry<Record>? {
+  switch reading {
+  case .absent: nil
+  case .unreadable: throw .unreadable(ref)
+  case .readable(let entry): entry
   }
 }

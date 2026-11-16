@@ -21,7 +21,7 @@ struct BibleWorld: Sendable {
     try await store.write(body)
   }
 
-  func expect(_ expected: BibleError, _ body: BibleBody, sourceLocation: SourceLocation = #_sourceLocation) async {
+  func expect(_ expected: DomainError, _ body: BibleBody, sourceLocation: SourceLocation = #_sourceLocation) async {
     do {
       try await store.write(body)
       Issue.record("expected \(expected.code) but the operation succeeded", sourceLocation: sourceLocation)
@@ -30,7 +30,7 @@ struct BibleWorld: Sendable {
         Issue.record("expected \(expected.code) but got \(error)", sourceLocation: sourceLocation)
         return
       }
-      #expect(cause as? BibleError == expected, sourceLocation: sourceLocation)
+      #expect(cause as? DomainError == expected, sourceLocation: sourceLocation)
     }
   }
 

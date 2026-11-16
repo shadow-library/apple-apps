@@ -298,11 +298,11 @@ struct ManualRevealTests {
 @Suite("Story write transaction")
 struct StoryTransactionTests {
   @Test
-  func shouldSurfaceATypedStoryErrorAndRollBackEarlierWrites() async throws {
+  func shouldSurfaceATypedDomainErrorAndRollBackEarlierWrites() async throws {
     let world = try await StoryWorld.make()
     let novel = world.novel
     do {
-      try await world.store.writeStory { (transaction: inout WriteTransaction) throws(StoryError) in
+      try await world.store.writeDomain { (transaction: inout WriteTransaction) throws(DomainError) in
         try Volumes.create(novel: novel, volume: "one", in: &transaction)
         try Volumes.create(novel: novel, volume: "one", in: &transaction)
       }
@@ -317,7 +317,7 @@ struct StoryTransactionTests {
   func shouldReturnTheResultOfASuccessfulWrite() async throws {
     let world = try await StoryWorld.make()
     let novel = world.novel
-    let advance = try await world.store.writeStory { (transaction: inout WriteTransaction) throws(StoryError) -> VolumeAdvance in
+    let advance = try await world.store.writeDomain { (transaction: inout WriteTransaction) throws(DomainError) -> VolumeAdvance in
       try Volumes.create(novel: novel, volume: "one", ordinal: 1, in: &transaction)
       try Volumes.create(novel: novel, volume: "two", ordinal: 2, in: &transaction)
       return try Volumes.markGoalMet(novel: novel, volume: "one", in: &transaction)
