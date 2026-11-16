@@ -5,7 +5,7 @@ enum BriefWriteMode: String, CaseIterable, Codable, Sendable {
 }
 
 // apps/novel-forge-server/src/modules/refinement/change-set/op-specs.ts:12
-enum ContentMode: String, CaseIterable, Codable, Sendable {
+public enum ContentMode: String, CaseIterable, Codable, Sendable {
   case standard
   case unrestricted
 }
@@ -21,7 +21,7 @@ enum EntityType: String, CaseIterable, Codable, Sendable {
 }
 
 // apps/novel-forge-server/src/modules/refinement/change-set/op-specs.ts:15
-enum MilestoneKind: String, CaseIterable, Codable, Sendable {
+public enum MilestoneKind: String, CaseIterable, Codable, Sendable {
   case rank
   case event
   case learnedFrom = "learned_from"
@@ -54,14 +54,14 @@ enum VolumeState: String, CaseIterable, Codable, Sendable {
 }
 
 // apps/novel-forge-server/src/database/schemas/story.ts:14
-enum ThreadStatus: String, CaseIterable, Codable, Sendable {
+public enum ThreadStatus: String, CaseIterable, Codable, Sendable {
   case open
   case closed
   case dropped
 }
 
 // apps/novel-forge-server/src/database/schemas/story.ts:15
-enum MysteryStatus: String, CaseIterable, Codable, Sendable {
+public enum MysteryStatus: String, CaseIterable, Codable, Sendable {
   case open
   case resolved
   case dropped

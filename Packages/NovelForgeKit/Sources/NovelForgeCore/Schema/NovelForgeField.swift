@@ -4,7 +4,7 @@ enum CommonField: String, CaseIterable {
   case removed
 }
 
-enum NovelField: String, CaseIterable {
+public enum NovelField: String, CaseIterable {
   case name
   case title
   case contentMode = "content_mode"
@@ -23,7 +23,7 @@ enum NovelField: String, CaseIterable {
   case archived
 }
 
-enum VolumeField: String, CaseIterable {
+public enum VolumeField: String, CaseIterable {
   case ordinal
   case title
   case objective
@@ -31,13 +31,13 @@ enum VolumeField: String, CaseIterable {
   case goalMet = "goal_met"
 }
 
-enum MilestoneField: String, CaseIterable {
+public enum MilestoneField: String, CaseIterable {
   case label
   case subject
   case kind
 }
 
-enum ThreadField: String, CaseIterable {
+public enum ThreadField: String, CaseIterable {
   case summary
   case openedChapter = "opened_chapter"
   // Only the author's own operations write it; what a pipeline observes about a promise gets its own records (apps/novel-forge-server/src/modules/ai/graphs/apply-continuity.ts:137-146 does not hold across devices).
@@ -48,7 +48,7 @@ enum ThreadField: String, CaseIterable {
   case dormant
 }
 
-enum MysteryField: String, CaseIterable {
+public enum MysteryField: String, CaseIterable {
   case question
   case openedChapter = "opened_chapter"
   // Only the author's own operations write it; what a pipeline observes about a promise gets its own records (apps/novel-forge-server/src/modules/ai/graphs/apply-continuity.ts:137-146 does not hold across devices).

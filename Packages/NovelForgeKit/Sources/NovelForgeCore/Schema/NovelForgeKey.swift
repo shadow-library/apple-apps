@@ -134,10 +134,10 @@ public struct NovelForgeKey: Hashable, Sendable {
   public static func notebookEntry(_ id: UUID) -> EntityRef { randomRef(.notebookEntry, id) }
   public static func notebookWithdrawal(_ id: UUID) -> EntityRef { randomRef(.notebookWithdrawal, id) }
 
-  public static func volume(novel: UUID, key: String) -> EntityRef { textRef(novel, .volume(key)) }
-  public static func milestone(novel: UUID, key: String) -> EntityRef { textRef(novel, .milestone(key)) }
-  public static func thread(novel: UUID, key: String) -> EntityRef { textRef(novel, .thread(key)) }
-  public static func mystery(novel: UUID, key: String) -> EntityRef { textRef(novel, .mystery(key)) }
+  public static func volume(novel: UUID, key: String) -> EntityRef { volumeKey(novel: novel, volume: key).ref }
+  public static func milestone(novel: UUID, key: String) -> EntityRef { milestoneKey(novel: novel, milestone: key).ref }
+  public static func thread(novel: UUID, key: String) -> EntityRef { threadKey(novel: novel, thread: key).ref }
+  public static func mystery(novel: UUID, key: String) -> EntityRef { mysteryKey(novel: novel, mystery: key).ref }
   public static func secret(novel: UUID, key: String) -> EntityRef { textRef(novel, .secret(key)) }
   public static func entity(novel: UUID, key: String) -> EntityRef { textRef(novel, .entity(key)) }
   public static func characterKnowledge(novel: UUID, fact: String, entity: String) -> EntityRef { textRef(novel, .characterKnowledge(fact: fact, entity: entity)) }
@@ -177,6 +177,13 @@ public struct NovelForgeKey: Hashable, Sendable {
     case .novel, .approval, .notebookEntry, .notebookWithdrawal: nil
     }
   }
+}
+
+extension NovelForgeKey {
+  public static func volumeKey(novel: UUID, volume: String) -> NovelForgeKey { NovelForgeKey(unchecked: novel, .volume(volume)) }
+  public static func milestoneKey(novel: UUID, milestone: String) -> NovelForgeKey { NovelForgeKey(unchecked: novel, .milestone(milestone)) }
+  public static func threadKey(novel: UUID, thread: String) -> NovelForgeKey { NovelForgeKey(unchecked: novel, .thread(thread)) }
+  public static func mysteryKey(novel: UUID, mystery: String) -> NovelForgeKey { NovelForgeKey(unchecked: novel, .mystery(mystery)) }
 }
 
 extension NovelForgeKey.Components {
