@@ -270,4 +270,71 @@ struct SyncSimulationStorageTests {
     try await world.settle()
     try await world.verify("the hidden file adopted")
   }
+
+  @Test("should remove the prefix of a retired replica that holds only its manifest once it has listed so for the abandon delay, and not before")
+  func shouldRemoveStrayManifest() async throws {
+    let world = try SyncSimWorld()
+    let phone = try await world.addDevice("phone")
+    try await world.settle()
+    let ghost = world.minter.next()
+    let manifest = ReplicaManifest(
+      replica: ghost, deviceName: "Ghost", platform: "iOS", appVersion: "1.0", schema: 3, head: nil, base: nil, applied: [:], updatedMillis: 0)
+    let sealed = try ReplicaManifestCodec.seal(manifest, vault: SyncFixture.vault, with: try #require(phone.harness.ring.writingKey()))
+    _ = try await world.log.put(sealed.key, data: sealed.data, condition: .overwrite)
+    try await phone.harness.lifecycle.retire(ghost)
+
+    world.advance(days: 3)
+    try await world.settle()
+    #expect(try await SyncAdoptCheck.stored(under: ghost, in: world.log) == [VaultPath.manifest(ghost)])
+
+    world.advance(days: 3)
+    try await world.settle()
+    #expect(try await SyncAdoptCheck.stored(under: ghost, in: world.log) == [VaultPath.manifest(ghost)])
+
+    world.advance(days: 2)
+    try await world.settle()
+    #expect(try await SyncAdoptCheck.stored(under: ghost, in: world.log).isEmpty)
+    try await world.verify("the stray manifest removed")
+  }
+
+  @Test(
+    "should neither delete the manifest nor report adopted while a listing hides a retired replica's segments, until they list or it has shown only the manifest for the abandon delay",
+    arguments: [false, true])
+  func shouldWaitWhileSegmentsAreHidden(_ hiddenForLong: Bool) async throws {
+    let world = try SyncSimWorld(serverTime: true)
+    let adopter = try await world.addDevice("adopter")
+    let lost = try await world.addDevice("lost")
+    try await world.write(2, on: lost)
+    _ = try await lost.engine.upload()
+    try await world.write(2, on: lost)
+    _ = try await lost.engine.upload()
+    try await world.settle()
+    let lostID = lost.replica
+    let segments = try await SyncAdoptCheck.stored(under: lostID, in: world.log).filter { $0 != VaultPath.manifest(lostID) }
+    try #require(segments.count >= 2)
+    try await world.remove(lost)
+    try await adopter.harness.lifecycle.retire(lostID, successor: adopter.replica)
+    world.advance(days: 7)
+    for key in segments { adopter.lag.hide(key, listings: hiddenForLong ? 1_000 : 2) }
+
+    for call in 0..<2 {
+      #expect(try await adopter.engine.adopt() == .progressed(adopted: [], waiting: [lostID]), "call \(call)")
+      #expect(try await SyncAdoptCheck.stored(under: lostID, in: world.log).contains(VaultPath.manifest(lostID)))
+      try await world.expectFreshReaderConverges("call \(call)")
+      world.advance(days: 1)
+    }
+
+    if hiddenForLong {
+      world.advance(days: 3)
+      #expect(try await adopter.engine.adopt() == .progressed(adopted: [lostID], waiting: []))
+      #expect(Set(try await SyncAdoptCheck.stored(under: lostID, in: world.log)) == Set(segments))
+      try await world.expectFreshReaderConverges("the manifest given up while the segments are hidden")
+      adopter.heal()
+    }
+    #expect(adopter.lag.omissions > 0)
+    #expect(try await adopter.engine.adopt() == .progressed(adopted: [lostID], waiting: []))
+    #expect(try await SyncAdoptCheck.stored(under: lostID, in: world.log).isEmpty)
+    try await world.settle()
+    try await world.verify("the hidden segments adopted")
+  }
 }

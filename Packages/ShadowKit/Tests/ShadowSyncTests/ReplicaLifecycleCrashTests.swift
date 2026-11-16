@@ -105,11 +105,11 @@ private func expectClaimed(_ outcome: ReplicaCrashOutcome) {
   #expect(outcome.records.contains { $0.entity == ReplicaFixture.note })
 }
 
-private func expectMoved(_ outcome: ReplicaCrashOutcome, from old: ReplicaID, alsoActive others: Set<ReplicaID> = []) {
+private func expectMoved(_ outcome: ReplicaCrashOutcome, from old: ReplicaID, alsoActive others: Set<ReplicaID> = [], successor: ReplicaID? = nil) {
   let new = outcome.store.replica
   #expect(new != old)
   #expect(Set(outcome.directory.replicas.map(\.replica)).subtracting(others) == [old, new])
-  #expect(outcome.directory.entry(for: old)?.state == .retired && outcome.directory.entry(for: old)?.successor == new)
+  #expect(outcome.directory.entry(for: old)?.state == .retired && outcome.directory.entry(for: old)?.successor == (successor ?? new))
   #expect(outcome.directory.entry(for: new)?.state == .active)
   #expect(stateWrites(outcome, new, "active") == 1 && stateWrites(outcome, old, "retired") == 1)
   #expect(outcome.records.contains { $0.entity == ReplicaFixture.note })
@@ -228,7 +228,9 @@ struct ReplicaLifecycleCrashTests {
     #expect(Set([old, onMac.store.replica, onTablet.store.replica]).count == 3)
     #expect(onPhone.store.replica == old)
     expectMoved(onMac, from: old)
-    expectMoved(onTablet, from: old, alsoActive: [onMac.store.replica])
+    // Copied after the Mac declared its successor: a successor is first-writer-wins, so the tablet's later re-mint cannot re-point `old`.
+    let declared = [ReplicaLifecycleStep.remintDeclared, .remintMarked].contains(step)
+    expectMoved(onTablet, from: old, alsoActive: [onMac.store.replica], successor: declared ? onMac.store.replica : nil)
     #expect(onTablet.directory.replicas.allSatisfy { [old, onMac.store.replica, onTablet.store.replica].contains($0.replica) })
   }
 

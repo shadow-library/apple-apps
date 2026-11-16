@@ -41,7 +41,7 @@ struct SyncKernelSchemaTests {
     let pinned: [EntitySchema] = [
       EntitySchema(
         kind: ReplicaFixture.kind("_replica"),
-        shape: .record(fields: ["state": lifecycle, "name": .register, "platform": .register, "successor": .register, "created": .firstWriterWins]), syncClass: .general),
+        shape: .record(fields: ["state": lifecycle, "name": .register, "platform": .register, "successor": .firstWriterWins, "created": .firstWriterWins]), syncClass: .general),
       EntitySchema(kind: ReplicaFixture.kind("_schema_floor"), shape: .record(fields: ["version": .firstWriterWins]), syncClass: .general),
       EntitySchema(kind: ReplicaFixture.kind("_key_floor"), shape: .record(fields: ["key": .firstWriterWins]), syncClass: .general),
       EntitySchema(

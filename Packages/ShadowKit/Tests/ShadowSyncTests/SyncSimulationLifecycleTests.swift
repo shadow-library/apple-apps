@@ -22,6 +22,21 @@ private func expectAdopted(_ retired: [ReplicaID], in world: SyncSimWorld, _ lab
   }
 }
 
+/// The clone adopts the shared id while the original is away; the original then uploads two more segments under it, not yet knowing it was retired.
+private func cloneAdoptsThenOriginalWrites(_ phone: SyncSimDevice, in world: SyncSimWorld) async throws -> (shared: ReplicaID, clone: SyncSimDevice) {
+  try await world.write(3, on: phone)
+  _ = try await phone.engine.upload()
+  let shared = phone.replica
+  let tablet = try await world.clone(phone, as: "tablet")
+  world.offline.insert(phone.name)
+  try await expectAdopted([shared], in: world, "the clone adopted the shared id")
+  try await world.write(2, on: tablet)
+  try await world.write(2, on: phone)
+  #expect(try await phone.engine.upload() != .nothingToUpload)
+  #expect(phone.replica == shared)
+  return (shared, tablet)
+}
+
 @Suite("Sync simulation: replica lifecycle on the local-folder provider")
 struct SyncSimulationLifecycleTests {
   @Test("should re-mint a database restored from an old copy, give back every change it had uploaded since, and lose nothing when restored again from the same copy")
@@ -157,32 +172,38 @@ struct SyncSimulationLifecycleTests {
     try await expectAdopted([awayID], in: world, "the owner's late files adopted")
   }
 
-  @Test("should lose nothing, and should finish the adoption, when the original keeps writing under a shared id its clone already adopted")
+  @Test("should finish adopting a shared id when the original keeps writing under it after its clone adopted it, since the clone stays the successor")
   func shouldAdoptTailWrittenAfterCloneAdopted() async throws {
     let world = try SyncSimWorld()
     let phone = try await world.addDevice("phone")
-    try await world.write(3, on: phone)
-    _ = try await phone.engine.upload()
-    let shared = phone.replica
-    let tablet = try await world.clone(phone, as: "tablet")
-    world.offline.insert(phone.name)
-    try await expectAdopted([shared], in: world, "the clone adopted the shared id")
-    try await world.write(2, on: tablet)
-    try await world.write(2, on: phone)
-    #expect(try await phone.engine.upload() != .nothingToUpload)
-    #expect(phone.replica == shared)
+    let (shared, tablet) = try await cloneAdoptsThenOriginalWrites(phone, in: world)
 
     world.offline.remove(phone.name)
     try await world.settle()
-    world.advance(days: 5)
-    try await world.settle()
 
     #expect(phone.replica != shared)
-    try await world.verify("the original's late segments")
-    await withKnownIssue("the chain now ends at the original, whose head starts at 0 because only the clone's base holds what the clone's fact covers") {
-      let left = try await stored(under: shared, in: world)
-      #expect(left.isEmpty, "files left under the shared id: \(left)")
-    }
+    #expect(try await phone.harness.lifecycle.directory().entry(for: shared)?.successor == tablet.replica)
+    try await expectAdopted([shared], in: world, "the original's late segments")
+  }
+
+  @Test("should finish adopting the original's late segments through the replica that adopted the clone, when the clone holding the fact is retired")
+  func shouldAdoptTailThroughCloneSuccessor() async throws {
+    let world = try SyncSimWorld()
+    let phone = try await world.addDevice("phone")
+    let laptop = try await world.addDevice("laptop")
+    let (shared, tablet) = try await cloneAdoptsThenOriginalWrites(phone, in: world)
+    let tabletID = tablet.replica
+    _ = try await tablet.engine.sync()
+    try await world.remove(tablet)
+    try await laptop.harness.lifecycle.retire(tabletID, successor: laptop.replica)
+
+    world.offline.remove(phone.name)
+    try await world.settle()
+
+    let facts = try await SyncAdoptCheck.facts(laptop.harness)
+    #expect(facts.contains { $0.adopted == shared && $0.adopter == tabletID })
+    try await expectAdopted([shared, tabletID], in: world, "the clone's successor adopted both")
+    #expect(try await SyncAdoptCheck.facts(laptop.harness).contains { $0.adopted == shared && $0.adopter == laptop.replica })
   }
 
   @Test("should adopt in a later pass a segment a retired owner put after its adoption, once the owner is gone")
@@ -230,5 +251,33 @@ struct SyncSimulationLifecycleTests {
     try await world.remove(away)
 
     try await expectAdopted([awayID, firstID], in: world, "the late segment adopted through the adopter's base")
+  }
+
+  @Test("should adopt a late segment through the replica that published the fact, after an earlier-stamped successor moved the chain to another replica")
+  func shouldAdoptTailAfterEarlierSuccessorArrives() async throws {
+    let world = try SyncSimWorld()
+    let first = try await world.addDevice("first")
+    let late = try await world.addDevice("late")
+    let away = try await world.addDevice("away")
+    for device in world.devices { try await world.write(3, on: device) }
+    try await world.settle()
+    let awayID = away.replica
+    world.offline.formUnion([away.name, late.name])
+    try await late.harness.lifecycle.retire(awayID, successor: late.replica)
+    world.advance(days: 0.1)
+    try await first.harness.lifecycle.retire(awayID, successor: first.replica)
+    try await expectAdopted([awayID], in: world, "the first adopter")
+    #expect(try await SyncAdoptCheck.facts(first.harness).contains { $0.adopted == awayID && $0.adopter == first.replica })
+
+    world.offline.remove(late.name)
+    try await world.settle()
+    #expect(try await first.harness.lifecycle.directory().entry(for: awayID)?.successor == late.replica)
+    try await world.expectFreshReaderConverges("the chain moved to the late successor")
+
+    try await world.write(2, on: away)
+    #expect(try await away.engine.upload() != .nothingToUpload)
+    try await world.remove(away)
+    try await world.expectFreshReaderConverges("the late tail put")
+    try await expectAdopted([awayID], in: world, "the late tail adopted")
   }
 }

@@ -75,6 +75,7 @@ struct SyncAdopter {
     }
     let (rows, folds) = try await read { db in (try SyncAdoptionTable.rows(of: replica, in: db), try SyncAdoptionTable.folds(of: replica, in: db)) }
     let listing = try await listReplicas()
+    try await forgetStraysListingFiles(listing)
     let leftManifests = rows.keys.filter { Self.showsOnlyManifest(listing[$0] ?? [], of: $0) }
     let targets = Set(volunteers(listing)).union(rows.values.filter { $0.phase == .published }.map(\.adopted)).union(folds.filter { !$0.value.isEmpty }.map(\.key))
       .union(leftManifests).subtracting([replica]).sorted()
@@ -102,6 +103,8 @@ struct SyncAdopter {
           if try await publish(target, from: start) { finishing.append(target) } else { waiting.insert(target) }
         } else if !current.isEmpty {
           finishing.append(target)
+        } else if rows[target] == nil, try await !hasStayedStray(target) {
+          waiting.insert(target)
         } else {
           try await finish(target, manifestListed: !(listing[target] ?? []).isEmpty)
           adopted.append(target)
@@ -133,7 +136,26 @@ struct SyncAdopter {
     objects.contains { $0.key == VaultPath.manifest(replica) } && !objects.contains { isFoldable($0.key, of: replica) }
   }
 
-  /// A retired replica this one should adopt: its chain of successors ends here, or nowhere active and this is the lowest active id.
+  /// A prefix a stale listing shows as its manifest alone may still hold files, so it is finished only once it has listed so for the abandon delay.
+  private func hasStayedStray(_ adopted: ReplicaID) async throws(SyncError) -> Bool {
+    let replica = context.replica
+    let now = context.millis
+    let seen = try await write { try SyncAdoptionTable.straySeen(of: adopted, by: replica, now: now, in: $0.database) }
+    return now - min(seen, now) >= context.configuration.adoptionAbandonDelay.milliseconds
+  }
+
+  private func forgetStraysListingFiles(_ listing: [ReplicaID: [StorageObject]]) async throws(SyncError) {
+    let replica = context.replica
+    let strays = try await read { try SyncAdoptionTable.strays(of: replica, in: $0) }
+    let listingFiles = strays.filter { stray in (listing[stray] ?? []).contains { Self.isFoldable($0.key, of: stray) } }
+    guard !listingFiles.isEmpty else { return }
+    try await write { transaction in
+      for stray in listingFiles { try SyncAdoptionTable.forgetStray(stray, by: replica, in: transaction.database) }
+    }
+  }
+
+  /// A retired replica this one should adopt: it already published a fact about it, whose head covers its later files wherever an earlier-stamped successor
+  /// moved the chain; or its chain of successors ends here, or nowhere active and this is the lowest active id.
   private func volunteers(_ listing: [ReplicaID: [StorageObject]]) -> [ReplicaID] {
     let directory = context.directory
     let now = context.millis
@@ -142,7 +164,10 @@ struct SyncAdopter {
     return directory.replicas.compactMap { entry in
       guard entry.state == .retired, entry.replica != context.replica, let retired = entry.retired else { return nil }
       guard retired <= now, now - retired >= delay else { return nil }
-      guard (listing[entry.replica] ?? []).contains(where: { Self.isFoldable($0.key, of: entry.replica) }) else { return nil }
+      let listed = listing[entry.replica] ?? []
+      let isStray = Self.showsOnlyManifest(listed, of: entry.replica)
+      guard listed.contains(where: { Self.isFoldable($0.key, of: entry.replica) }) || isStray else { return nil }
+      if directory.adoptions.contains(where: { $0.adopted == entry.replica && $0.adopter == context.replica }) { return entry.replica }
       switch chainEnd(from: entry.replica) {
       case .some(let end): return end == context.replica ? entry.replica : nil
       case .none: return lowestActive == context.replica ? entry.replica : nil
@@ -409,6 +434,7 @@ struct SyncAdopter {
       try await context.checkpoint(.manifestDeleted)
     }
     try await write { transaction in
+      try SyncAdoptionTable.forgetStray(adopted, by: replica, in: transaction.database)
       guard var row = try SyncAdoptionTable.rows(of: replica, in: transaction.database)[adopted] else { return }
       row.phase = .finished
       try SyncAdoptionTable.save(row, of: replica, in: transaction.database)

@@ -18,9 +18,6 @@ private struct SyncSimTally {
   var wrongClocks = 0
   var freshReaders = 0
   var foreignDeletes = 0
-  /// Retired replicas whose prefix holds only a manifest: adoption volunteers only for a prefix with a segment or a base part.
-  var strayManifests = 0
-  var stalledTails = 0
   /// Replicas with files in storage whose active record never reached it, so no device list could offer to remove them.
   var undeclared = 0
 }
@@ -41,49 +38,6 @@ private func tolerate(_ body: () async throws(SyncError) -> Void) async throws -
     default: throw error
     }
   }
-}
-
-private func isManifest(_ key: ObjectKey) -> Bool {
-  guard case .manifest = VaultPath.classify(key) else { return false }
-  return true
-}
-
-private enum SyncSimLeftover {
-  case manifest
-  /// The known stall K17c removes: the successor chain was re-pointed around the adopter whose fact covers the gap, to a replica that holds none of what
-  /// that fact covers, so it can never publish the segments after it.
-  case tailBeyondFact
-  case unexplained
-}
-
-private func leftover(_ files: [ObjectKey], of owner: ReplicaID, in directory: ReplicaDirectory) -> SyncSimLeftover {
-  var firsts: [Int64] = []
-  for key in files {
-    switch VaultPath.classify(key) {
-    case .manifest: continue
-    case .segment(_, let first, _, _): firsts.append(first)
-    default: return .unexplained
-    }
-  }
-  guard let first = firsts.min() else { return .manifest }
-  let facts = directory.adoptions.filter { $0.adopted == owner }
-  let covered = facts.filter { $0.through >= first - 1 }
-  guard first > 1, !covered.isEmpty, let chain = activeChain(from: owner, in: directory), !covered.contains(where: { chain.contains($0.adopter) }) else {
-    return .unexplained
-  }
-  return .tailBeyondFact
-}
-
-/// Every replica on the successor chain from `start` when it ends at an active replica, else nil.
-private func activeChain(from start: ReplicaID, in directory: ReplicaDirectory) -> Set<ReplicaID>? {
-  var visited: Set<ReplicaID> = []
-  var current = start
-  while visited.insert(current).inserted, let entry = directory.entry(for: current) {
-    if entry.state == .active { return visited }
-    guard let successor = entry.successor else { return nil }
-    current = successor
-  }
-  return nil
 }
 
 /// The user confirms the retirement of a replica the device list shows without a device, as Settings offers after a restore or a reinstall.
@@ -225,20 +179,15 @@ private func simulate(_ generator: inout SeededGenerator, tally: inout SyncSimTa
       tally.undeclared += 1
       retired += 1
     }
-    if retired == 0, try await world.leftovers().values.joined().allSatisfy(isManifest) { break }
+    if retired == 0, try await world.leftovers().isEmpty { break }
   }
   try await world.settle()
   try await world.verify("settled")
   let final = try await world.devices[0].harness.lifecycle.directory()
-  for (owner, files) in try await world.leftovers() {
-    switch leftover(files, of: owner, in: final) {
-    case .manifest: tally.strayManifests += 1
-    case .tailBeyondFact: tally.stalledTails += 1
-    case .unexplained:
-      throw SyncFixtureFailure(
-        "files of a retired replica were never adopted: \(owner) \(String(describing: final.entry(for: owner))): \(files.map(\.rawValue)); facts \(final.adoptions); trace \(world.trace)"
-      )
-    }
+  let left = try await world.leftovers()
+  guard left.isEmpty else {
+    let described = left.map { owner, files in "\(owner) \(String(describing: final.entry(for: owner))): \(files.map(\.rawValue))" }
+    throw SyncFixtureFailure("files of retired replicas were never adopted: \(described); facts \(final.adoptions); trace \(world.trace)")
   }
   tally.foreignDeletes += world.audit.foreignDeletes
 }

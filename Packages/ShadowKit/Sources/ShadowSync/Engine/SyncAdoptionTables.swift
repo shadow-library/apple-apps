@@ -41,6 +41,21 @@ extension SyncEngineSchema {
   }
 }
 
+extension SyncEngineSchema {
+  /// When a retired prefix was first seen holding only its manifest; a listing that shows anything else forgets it.
+  static let strayMigration = StoreMigration(identifier: "shadow.sync.engine.5") { db in
+    try db.execute(
+      sql: """
+        CREATE TABLE sync_adoption_stray (
+          adopter TEXT NOT NULL,
+          adopted TEXT NOT NULL,
+          seen INTEGER NOT NULL,
+          PRIMARY KEY (adopter, adopted)
+        ) STRICT, WITHOUT ROWID;
+        """)
+  }
+}
+
 enum SyncAdoptionPhase: String, Sendable {
   case folding
   case published
@@ -162,19 +177,34 @@ enum SyncAdoptionTable {
       arguments: [adopter.description, adopted.description, base.upTo, base.tag.description, base.parts])
   }
 
+  static func straySeen(of adopted: ReplicaID, by adopter: ReplicaID, now millis: Int64, in db: Database) throws -> Int64 {
+    let arguments: StatementArguments = [adopter.description, adopted.description]
+    try db.execute(sql: "INSERT OR IGNORE INTO sync_adoption_stray (adopter, adopted, seen) VALUES (?, ?, ?)", arguments: arguments + [millis])
+    return try Int64.fetchOne(db, sql: "SELECT seen FROM sync_adoption_stray WHERE adopter = ? AND adopted = ?", arguments: arguments) ?? millis
+  }
+
+  static func strays(of adopter: ReplicaID, in db: Database) throws -> Set<ReplicaID> {
+    let rows = try String.fetchAll(db, sql: "SELECT adopted FROM sync_adoption_stray WHERE adopter = ?", arguments: [adopter.description])
+    return Set(rows.compactMap(ReplicaID.init))
+  }
+
+  static func forgetStray(_ adopted: ReplicaID, by adopter: ReplicaID, in db: Database) throws {
+    try db.execute(sql: "DELETE FROM sync_adoption_stray WHERE adopter = ? AND adopted = ?", arguments: [adopter.description, adopted.description])
+  }
+
   static func hasRows(otherThan adopter: ReplicaID, in db: Database) throws -> Bool {
-    try ["sync_adoption", "sync_adoption_fold", "sync_adoption_gap"].contains { table in
+    try ["sync_adoption", "sync_adoption_fold", "sync_adoption_gap", "sync_adoption_stray"].contains { table in
       try Bool.fetchOne(db, sql: "SELECT EXISTS (SELECT 1 FROM \(table) WHERE adopter <> ?)", arguments: [adopter.description]) ?? false
     }
   }
 
   static func clear(otherThan adopter: ReplicaID, in db: Database) throws {
-    for table in ["sync_adoption", "sync_adoption_fold", "sync_adoption_gap"] {
+    for table in ["sync_adoption", "sync_adoption_fold", "sync_adoption_gap", "sync_adoption_stray"] {
       try db.execute(sql: "DELETE FROM \(table) WHERE adopter <> ?", arguments: [adopter.description])
     }
   }
 
   static func clear(_ db: Database) throws {
-    for table in ["sync_adoption", "sync_adoption_fold", "sync_adoption_gap"] { try db.execute(sql: "DELETE FROM \(table)") }
+    for table in ["sync_adoption", "sync_adoption_fold", "sync_adoption_gap", "sync_adoption_stray"] { try db.execute(sql: "DELETE FROM \(table)") }
   }
 }

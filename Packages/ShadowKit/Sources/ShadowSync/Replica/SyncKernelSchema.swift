@@ -34,7 +34,7 @@ public enum SyncKernelSchema {
     EntitySchema(
       kind: replicaKind,
       shape: .record(fields: [
-        Field.state: .monotone(order: lifecycleOrder), Field.name: .register, Field.platform: .register, Field.successor: .register, Field.created: .firstWriterWins,
+        Field.state: .monotone(order: lifecycleOrder), Field.name: .register, Field.platform: .register, Field.successor: .firstWriterWins, Field.created: .firstWriterWins,
       ]),
       syncClass: .general),
     EntitySchema(kind: schemaFloorKind, shape: .record(fields: [Field.version: .firstWriterWins]), syncClass: .general),
