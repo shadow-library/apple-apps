@@ -4,8 +4,6 @@ import ShadowStore
 
 @testable import NovelForgeCore
 
-extension DraftMark: FieldName {}
-
 struct ChapterStubRecord: RemovableRecord {
   static let kind = NovelForgeKind.draft
 

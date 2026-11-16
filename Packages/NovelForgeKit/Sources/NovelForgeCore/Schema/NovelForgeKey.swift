@@ -144,9 +144,9 @@ public struct NovelForgeKey: Hashable, Sendable {
   public static func page(novel: UUID, section: BiblePageSection, slug: String) -> EntityRef { pageKey(novel: novel, section: section, slug: slug).ref }
   public static func authorNotes(novel: UUID) -> EntityRef { authorNotesKey(novel: novel).ref }
 
-  public static func chapterPlan(novel: UUID, chapter: Int) throws(NovelForgeKeyError) -> EntityRef { try NovelForgeKey(novel: novel, .chapterPlan(chapter: chapter)).ref }
-  public static func draft(novel: UUID, chapter: Int) throws(NovelForgeKeyError) -> EntityRef { try NovelForgeKey(novel: novel, .draft(chapter: chapter)).ref }
-  public static func finalChapter(novel: UUID, chapter: Int) throws(NovelForgeKeyError) -> EntityRef { try NovelForgeKey(novel: novel, .finalChapter(chapter: chapter)).ref }
+  public static func chapterPlan(novel: UUID, chapter: Int) throws(NovelForgeKeyError) -> EntityRef { try chapterPlanKey(novel: novel, chapter: chapter).ref }
+  public static func draft(novel: UUID, chapter: Int) throws(NovelForgeKeyError) -> EntityRef { try draftKey(novel: novel, chapter: chapter).ref }
+  public static func finalChapter(novel: UUID, chapter: Int) throws(NovelForgeKeyError) -> EntityRef { try finalChapterKey(novel: novel, chapter: chapter).ref }
 
   private static func randomRef(_ kind: NovelForgeKind, _ id: UUID) -> EntityRef {
     EntityRef(kind: kind.entityKind, key: EntityKey(uuid: id))
@@ -186,6 +186,9 @@ extension NovelForgeKey {
   }
   public static func pageKey(novel: UUID, section: BiblePageSection, slug: String) -> NovelForgeKey { NovelForgeKey(unchecked: novel, .page(section: .known(section), slug: slug)) }
   public static func authorNotesKey(novel: UUID) -> NovelForgeKey { NovelForgeKey(unchecked: novel, .authorNotes) }
+  public static func chapterPlanKey(novel: UUID, chapter: Int) throws(NovelForgeKeyError) -> NovelForgeKey { try NovelForgeKey(novel: novel, .chapterPlan(chapter: chapter)) }
+  public static func draftKey(novel: UUID, chapter: Int) throws(NovelForgeKeyError) -> NovelForgeKey { try NovelForgeKey(novel: novel, .draft(chapter: chapter)) }
+  public static func finalChapterKey(novel: UUID, chapter: Int) throws(NovelForgeKeyError) -> NovelForgeKey { try NovelForgeKey(novel: novel, .finalChapter(chapter: chapter)) }
 }
 
 extension NovelForgeKey.Components {

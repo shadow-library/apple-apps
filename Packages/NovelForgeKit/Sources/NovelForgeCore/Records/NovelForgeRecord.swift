@@ -16,6 +16,7 @@ public protocol NovelForgeRecord: Sendable, Equatable {
 
   func create(in transaction: inout WriteTransaction) throws(StoreError) -> ChangeRecord
 
+  static func edit(_ ref: EntityRef, _ edit: RecordFields<Field>, in transaction: inout WriteTransaction) throws(StoreError) -> ChangeRecord
   static func removal(in reader: FieldReader<Field>) throws(UnreadableReason) -> Bool
   static func owner(of ref: EntityRef, in reader: FieldReader<Field>) -> UUID?
   static func isPending(_ state: EntityState) -> Bool

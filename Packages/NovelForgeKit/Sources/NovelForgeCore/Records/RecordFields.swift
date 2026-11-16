@@ -30,21 +30,28 @@ public struct RecordFields<Field: FieldName>: Sendable, Equatable {
 public struct FieldReader<Field: FieldName>: Sendable {
   private let values: [ExactString: JSONValue]
   private let headBody: JSONValue?
+  let revisionsNewestFirst: [(id: String, body: JSONValue)]
 
   init(_ fields: [ExactString: FieldState]) {
     values = fields.mapValues(\.value)
     headBody = nil
+    revisionsNewestFirst = []
   }
 
   init(_ state: RevisionedState) {
     values = state.fields.mapValues(\.value)
     headBody = state.headRevision.flatMap { state.revisions[ExactString($0)]?.body }
+    revisionsNewestFirst = state.revisions.sorted { first, second in
+      guard first.value.generation == second.value.generation else { return first.value.generation > second.value.generation }
+      return second.key.value.utf8.lexicographicallyPrecedes(first.key.value.utf8)
+    }.map { (id: $0.key.value, body: $0.value.body) }
   }
 
   init?(object json: JSONValue) {
     guard let members = json.objectValue else { return nil }
     values = Dictionary(members.map { (ExactString($0.key), $0.value) }) { first, _ in first }
     headBody = nil
+    revisionsNewestFirst = []
   }
 
   var unrecognised: [String: JSONValue] {

@@ -89,16 +89,16 @@ public enum CharacterKnowledgeField: String, CaseIterable {
   case reveal
 }
 
-enum FinalChapterField: String, CaseIterable {
+public enum FinalChapterField: String, CaseIterable, Sendable {
   case canon
   case summary
 }
 
-enum DraftMark: String, CaseIterable {
+public enum DraftMark: String, CaseIterable, Sendable {
   case approved
 }
 
-enum ChapterPlanMark: String, CaseIterable {
+public enum ChapterPlanMark: String, CaseIterable, Sendable {
   case finalized
 }
 
@@ -133,6 +133,7 @@ enum FinalChapterCanonMember: String, CaseIterable {
   case approval
   case title
   case body
+  case summary
   case note
   case generator
   case isolated
@@ -153,7 +154,7 @@ enum CanonLearnMember: String, CaseIterable {
   case fact
 }
 
-enum ApprovalMember: String, CaseIterable {
+public enum ApprovalMember: String, CaseIterable, Sendable {
   case novel
   case chapter
   case kind
@@ -163,12 +164,12 @@ enum ApprovalMember: String, CaseIterable {
   case upstreamDigest = "upstream_digest"
 }
 
-enum ApprovalKind: String, CaseIterable {
+public enum ApprovalKind: String, CaseIterable, Sendable {
   case standard
   case asWritten = "as_written"
 }
 
-enum NotebookEntryMember: String, CaseIterable {
+public enum NotebookEntryMember: String, CaseIterable, Sendable {
   case novel
   case kind
   case topic
@@ -187,7 +188,7 @@ enum NotebookEntryMember: String, CaseIterable {
   case rejectionAnchor = "rejection_anchor"
 }
 
-enum NotebookWithdrawalMember: String, CaseIterable {
+public enum NotebookWithdrawalMember: String, CaseIterable, Sendable {
   case novel
   case entry
   case reason

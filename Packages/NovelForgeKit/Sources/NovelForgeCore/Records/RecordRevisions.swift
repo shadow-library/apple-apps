@@ -84,6 +84,12 @@ extension RevisionedRecord {
     return Revised(record: revised.record, revision: revised.revision)
   }
 
+  static func mark(_ ref: EntityRef, revision: String, as marks: [Mark], in transaction: inout WriteTransaction) throws(StoreError) -> ChangeRecord {
+    guard NovelForgeKind(ref.kind) == kind else { throw .invalidChange("\(ref.kind.rawValue)/\(ref.key.rawValue) is not a \(kind.rawValue) entity") }
+    guard !marks.isEmpty else { throw .invalidChange("marking \(ref.kind.rawValue)/\(ref.key.rawValue) names no mark") }
+    return try transaction.reassert(ref, revision: revision, head: false, marks: marks.map(\.rawValue))
+  }
+
   static func history<Transaction: StateReading & ~Copyable>(of ref: EntityRef, in transaction: borrowing Transaction) throws(StoreError) -> HistoryReading<Body, Mark> {
     history(of: try transaction.state(of: ref, scope: .vault), at: ref)
   }

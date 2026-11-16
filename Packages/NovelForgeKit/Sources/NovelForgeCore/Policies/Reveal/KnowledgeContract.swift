@@ -1,23 +1,33 @@
 import ShadowCore
 
-struct KnowledgeReveal: Sendable, Codable {
-  let entityKey: String
-  let factKey: String
+public struct KnowledgeReveal: Sendable, Codable {
+  public let entityKey: String
+  public let factKey: String
+
+  public init(entityKey: String, factKey: String) {
+    self.entityKey = entityKey
+    self.factKey = factKey
+  }
 }
 
 extension KnowledgeReveal: Equatable {
-  static func == (left: KnowledgeReveal, right: KnowledgeReveal) -> Bool {
+  public static func == (left: KnowledgeReveal, right: KnowledgeReveal) -> Bool {
     left.entityKey.jsEquals(right.entityKey) && left.factKey.jsEquals(right.factKey)
   }
 }
 
-struct KnowledgeContract: Sendable, Codable {
-  let pov: [String]
-  let learns: [KnowledgeReveal]
+public struct KnowledgeContract: Sendable, Codable {
+  public let pov: [String]
+  public let learns: [KnowledgeReveal]
+
+  public init(pov: [String], learns: [KnowledgeReveal]) {
+    self.pov = pov
+    self.learns = learns
+  }
 }
 
 extension KnowledgeContract: Equatable {
-  static func == (left: KnowledgeContract, right: KnowledgeContract) -> Bool {
+  public static func == (left: KnowledgeContract, right: KnowledgeContract) -> Bool {
     left.learns == right.learns && left.pov.count == right.pov.count && zip(left.pov, right.pov).allSatisfy { $0.jsEquals($1) }
   }
 }

@@ -200,7 +200,7 @@ struct RevisionedSyncTests {
   }
 }
 
-private func splitDelivery<R: DocumentRecord>(_ record: R, in orders: [[Int]], as _: R.Type) async throws {
+func splitDelivery<R: DocumentRecord>(_ record: R, in orders: [[Int]], as _: R.Type) async throws {
   for order in orders {
     let devices = try Devices()
     _ = try await devices.first.write { transaction in try record.create(in: &transaction) }
@@ -222,7 +222,7 @@ private func splitDelivery<R: DocumentRecord>(_ record: R, in orders: [[Int]], a
 }
 
 extension Harness {
-  fileprivate static func history<R: RevisionedRecord>(_ ref: EntityRef, as _: R.Type, in store: VaultStore) async throws -> HistoryReading<R.Body, R.Mark> {
+  static func history<R: RevisionedRecord>(_ ref: EntityRef, as _: R.Type, in store: VaultStore) async throws -> HistoryReading<R.Body, R.Mark> {
     try await store.read { transaction in try R.history(of: ref, in: transaction) }
   }
 }

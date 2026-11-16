@@ -1,13 +1,13 @@
-struct BriefScene: Equatable, Sendable, Codable {
-  var summary: String
-  var pov: String?
-  var goal: String?
-  var obstacle: String?
-  var turn: String?
-  var beats: [String]?
-  var estimatedWords: Int?
+public struct BriefScene: Equatable, Sendable, Codable {
+  public var summary: String
+  public var pov: String?
+  public var goal: String?
+  public var obstacle: String?
+  public var turn: String?
+  public var beats: [String]?
+  public var estimatedWords: Int?
 
-  init(summary: String, pov: String? = nil, goal: String? = nil, obstacle: String? = nil, turn: String? = nil, beats: [String]? = nil, estimatedWords: Int? = nil) {
+  public init(summary: String, pov: String? = nil, goal: String? = nil, obstacle: String? = nil, turn: String? = nil, beats: [String]? = nil, estimatedWords: Int? = nil) {
     self.summary = summary
     self.pov = pov
     self.goal = goal
@@ -21,7 +21,7 @@ struct BriefScene: Equatable, Sendable, Codable {
     case summary, pov, goal, obstacle, turn, beats, estimatedWords
   }
 
-  init(from decoder: any Decoder) throws {
+  public init(from decoder: any Decoder) throws {
     let container = try decoder.container(keyedBy: CodingKeys.self)
     summary = try container.decode(String.self, forKey: .summary)
     pov = try container.decodeIfPresent(String.self, forKey: .pov)
@@ -32,7 +32,7 @@ struct BriefScene: Equatable, Sendable, Codable {
     estimatedWords = try container.decodeIfPresent(Int.self, forKey: .estimatedWords)
   }
 
-  func encode(to encoder: any Encoder) throws {
+  public func encode(to encoder: any Encoder) throws {
     var container = encoder.container(keyedBy: CodingKeys.self)
     try container.encode(summary, forKey: .summary)
     try container.encode(pov, forKey: .pov)

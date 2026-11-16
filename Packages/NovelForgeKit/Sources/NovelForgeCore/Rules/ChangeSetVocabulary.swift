@@ -1,5 +1,5 @@
 // apps/novel-forge-server/src/modules/refinement/change-set/op-specs.ts:11
-enum BriefWriteMode: String, CaseIterable, Codable, Sendable {
+public enum BriefWriteMode: String, CaseIterable, Codable, Sendable {
   case standard
   case external
 }
@@ -68,7 +68,7 @@ public enum MysteryStatus: String, CaseIterable, Codable, Sendable {
 }
 
 // apps/novel-forge-server/src/database/schemas/ledger.ts:44
-enum LedgerEntryKind: String, CaseIterable, Codable, Sendable {
+public enum LedgerEntryKind: String, CaseIterable, Codable, Sendable {
   case decision
   case direction
   case rejected
@@ -77,13 +77,13 @@ enum LedgerEntryKind: String, CaseIterable, Codable, Sendable {
 }
 
 // apps/novel-forge-server/src/database/schemas/ledger.ts:45
-enum LedgerDecidedBy: String, CaseIterable, Codable, Sendable {
+public enum LedgerDecidedBy: String, CaseIterable, Codable, Sendable {
   case author
   case system
 }
 
 // apps/novel-forge-server/src/database/schemas/ledger.ts:46
-enum LedgerRejectionScope: String, CaseIterable, Codable, Sendable {
+public enum LedgerRejectionScope: String, CaseIterable, Codable, Sendable {
   case never
   case notNow = "not_now"
   case notThisVersion = "not_this_version"

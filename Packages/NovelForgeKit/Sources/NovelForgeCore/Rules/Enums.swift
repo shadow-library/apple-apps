@@ -1,5 +1,5 @@
 // apps/novel-forge-server/src/modules/ai/schemas/enums.ts:13
-enum HookType: String, CaseIterable, Codable, Sendable {
+public enum HookType: String, CaseIterable, Codable, Sendable {
   case cliffhanger
   case revelation
   case quietDread = "quiet_dread"
