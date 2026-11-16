@@ -37,6 +37,26 @@ extension Sequence<String> {
   }
 }
 
+extension Sequence {
+  /// `new Map(items.map(item => [key(item), item]))` read by key: a repeated key keeps its last element.
+  func jsLastByKey(_ key: (Element) -> String) -> [JSString: Element] {
+    var byKey: [JSString: Element] = [:]
+    for element in self { byKey[JSString(key(element))] = element }
+    return byKey
+  }
+
+  /// `[...new Map(items.map(item => [key(item), item])).values()]`: a repeated key keeps its first position and its last element.
+  func jsMapValues(byKey key: (Element) -> String) -> [Element] {
+    var order: [JSString] = []
+    var byKey: [JSString: Element] = [:]
+    for element in self {
+      let id = JSString(key(element))
+      if byKey.updateValue(element, forKey: id) == nil { order.append(id) }
+    }
+    return order.compactMap { byKey[$0] }
+  }
+}
+
 extension Array {
   func jsSlice(_ start: Int, _ end: Int? = nil) -> [Element] {
     let from = JSText.relativeIndex(start, length: count)

@@ -136,17 +136,11 @@ func learnedFactKeys(_ knowledgeContract: OrderedJSON) -> [String] {
   (parseKnowledgeContract(knowledgeContract)?.learns.map(\.factKey) ?? []).jsUnique()
 }
 
-private func lastByKey<Element>(_ elements: [Element], key: (Element) -> String) -> [JSString: Element] {
-  var byKey: [JSString: Element] = [:]
-  for element in elements { byKey[JSString(key(element))] = element }
-  return byKey
-}
-
 // platform/apps/novel-forge-server/src/common/reveal-rule.ts:108
 func findPlanRevealViolations(_ plan: PlanRow, facts: [RevealFact], world: PlanWorld, context: UnlockContext? = nil) -> [RevealRuleViolation] {
   let learned = learnedFactKeys(plan.knowledgeContract)
   if learned.isEmpty { return [] }
-  let factByKey = lastByKey(facts, key: \.factKey)
+  let factByKey = facts.jsLastByKey(\.factKey)
   let resolved = context ?? planUnlockContext(plan.claims, world)
   return learned.compactMap { factKey in
     let missing = factByKey[JSString(factKey)].map { revealRequirements($0, resolved) } ?? []
@@ -161,7 +155,7 @@ func renderRevealRuleViolations(_ violations: [RevealRuleViolation]) -> String {
 
 // platform/apps/novel-forge-server/src/common/reveal-rule.ts:125
 func findPlanClaimProblems(_ plan: PlanClaims, _ world: PlanWorld) -> [String] {
-  let milestoneByKey = lastByKey(world.milestones, key: \.milestoneKey)
+  let milestoneByKey = world.milestones.jsLastByKey(\.milestoneKey)
   return (plan.claimedMilestones ?? []).flatMap { key -> [String] in
     guard let milestone = milestoneByKey[JSString(key)] else { return ["\(key) is not a milestone of this novel"] }
     if milestone.state == .reached && milestone.reachedChapter != plan.chapter {
@@ -204,7 +198,7 @@ func factPlannedChapters(_ facts: [RevealFact], _ world: PlanWorld, contexts: [P
   for fact in facts where planned.updateValue(FactPlannedChapter(factKey: fact.factKey, chapter: nil), forKey: JSString(fact.factKey)) == nil {
     order.append(JSString(fact.factKey))
   }
-  let factByKey = lastByKey(facts, key: \.factKey)
+  let factByKey = facts.jsLastByKey(\.factKey)
   for entry in contexts ?? planUnlockContexts(world) {
     let plan = world.plans[entry.planIndex]
     for factKey in learnedFactKeys(plan.knowledgeContract) {
