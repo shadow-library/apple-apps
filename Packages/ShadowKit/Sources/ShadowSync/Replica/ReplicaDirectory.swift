@@ -36,21 +36,25 @@ public struct ReplicaDirectory: Sendable, Equatable {
   public let recovery: RecoveryRecipient?
 
   public init(state: VaultState) {
+    self.init(entities: state.refs.compactMap { ref in state.state(of: ref).map { (ref: ref, state: $0) } })
+  }
+
+  init(entities: [(ref: EntityRef, state: EntityState)]) {
     var replicas = [ReplicaEntry]()
     var schemaFloors = [Int]()
     var keyFloors = [KeyID]()
     var recipients = [(recipient: RecoveryRecipient, created: Int64)]()
-    for ref in state.refs {
+    for (ref, state) in entities {
       switch ref.kind {
       case SyncKernelSchema.schemaFloorKind:
         if let version = SyncKernelSchema.schemaFloor(of: ref.key) { schemaFloors.append(version) }
       case SyncKernelSchema.keyFloorKind:
         if let key = SyncKernelSchema.keyFloor(of: ref.key) { keyFloors.append(key) }
       case SyncKernelSchema.replicaKind:
-        guard case .record(let record)? = state.state(of: ref), let entry = ReplicaEntry(key: ref.key, record: record) else { continue }
+        guard case .record(let record) = state, let entry = ReplicaEntry(key: ref.key, record: record) else { continue }
         replicas.append(entry)
       case SyncKernelSchema.recoveryKind:
-        guard case .record(let record)? = state.state(of: ref), let candidate = Self.activeRecipient(ref, record) else { continue }
+        guard case .record(let record) = state, let candidate = Self.activeRecipient(ref, record) else { continue }
         recipients.append(candidate)
       default:
         continue

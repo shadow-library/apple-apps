@@ -139,10 +139,10 @@ public struct ReplicaLifecycle: Sendable {
   }
 
   public func directory() async throws(ReplicaLifecycleError) -> ReplicaDirectory {
-    do {
-      return ReplicaDirectory(state: try await store.loadState(.vault))
-    } catch {
-      throw ReplicaLifecycleError(converting: error)
+    try await read { transaction in
+      var entities: [(ref: EntityRef, state: EntityState)] = []
+      for kind in SyncKernelSchema.kinds { entities += try transaction.states(ofKind: kind) }
+      return ReplicaDirectory(entities: entities)
     }
   }
 

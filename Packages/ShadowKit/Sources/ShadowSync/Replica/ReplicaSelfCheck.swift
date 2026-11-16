@@ -35,6 +35,8 @@ public enum RemintReason: Sendable, Equatable {
   case unknownBase(StreamPoint)
   case unknownObject(ObjectKey)
   case clockCorrected
+  /// A file under `found`'s prefix carries a change stamped with this replica's id, so another writer shares it.
+  case replicaCollision(found: ReplicaID)
 }
 
 public enum ReplicaSelfCheckVerdict: Sendable, Equatable {

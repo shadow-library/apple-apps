@@ -12,6 +12,7 @@ public enum SyncKernelSchema {
   static let schemaFloorKind = kind("_schema_floor")
   static let keyFloorKind = kind("_key_floor")
   static let recoveryKind = kind("_recovery")
+  static let kinds = [replicaKind, schemaFloorKind, keyFloorKind, recoveryKind]
 
   enum Field {
     static let state = "state"

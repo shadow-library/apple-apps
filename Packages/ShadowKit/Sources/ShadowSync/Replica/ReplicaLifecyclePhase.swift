@@ -92,6 +92,7 @@ extension RemintReason {
       case .unknownBase(let point): ["kind": "unknown-base", "last": .int(point.last), "tag": .string(point.tag.description)]
       case .unknownObject(let key): ["kind": "unknown-object", "key": .string(key.rawValue)]
       case .clockCorrected: ["kind": "clock-corrected"]
+      case .replicaCollision(let found): ["kind": "replica-collision", "replica": .string(found.description)]
       }
     return String(decoding: CanonicalJSON.encode(.object(members)), as: UTF8.self)
   }
@@ -106,6 +107,9 @@ extension RemintReason {
     case "marker-other":
       guard let replica = members["replica"]?.stringValue.flatMap(ReplicaID.init) else { return nil }
       self = .markerNamesOther(replica)
+    case "replica-collision":
+      guard let replica = members["replica"]?.stringValue.flatMap(ReplicaID.init) else { return nil }
+      self = .replicaCollision(found: replica)
     case "unknown-segment":
       guard let point else { return nil }
       self = .unknownSegment(point)

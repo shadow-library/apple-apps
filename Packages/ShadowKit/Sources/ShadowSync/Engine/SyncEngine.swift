@@ -18,6 +18,7 @@ struct SyncPendingChange: Sendable {
 
 public actor SyncEngine {
   static let maximumRemintsPerUpload = 3
+  static let highestReplica = ReplicaID(UUID(uuid: (0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF)))
 
   private enum Readiness {
     case notStarted
@@ -34,8 +35,10 @@ public actor SyncEngine {
   private let configuration: SyncConfiguration
   private let wallClock: @Sendable () -> Date
   private let checkpoint: @Sendable (SyncUploadStep) throws(SyncError) -> Void
+  private let downloadCheckpoint: @Sendable (SyncDownloadStep) throws(SyncError) -> Void
   private let publicFloor: @Sendable () async throws(SyncError) -> HLCTimestamp?
   private var readiness = Readiness.notStarted
+  private var unsupportedFiles: [SyncFileID: Int] = [:]
   private var isBusy = false
   private var waiters: [CheckedContinuation<Void, Never>] = []
 
@@ -75,7 +78,8 @@ public actor SyncEngine {
     configuration: SyncConfiguration,
     wallClock: @escaping @Sendable () -> Date,
     publicFloor: @escaping @Sendable () async throws(SyncError) -> HLCTimestamp?,
-    checkpoint: @escaping @Sendable (SyncUploadStep) throws(SyncError) -> Void
+    checkpoint: @escaping @Sendable (SyncUploadStep) throws(SyncError) -> Void,
+    downloadCheckpoint: @escaping @Sendable (SyncDownloadStep) throws(SyncError) -> Void = { _ throws(SyncError) in }
   ) {
     self.store = store
     self.provider = provider
@@ -86,11 +90,12 @@ public actor SyncEngine {
     self.configuration = configuration
     self.wallClock = wallClock
     self.checkpoint = checkpoint
+    self.downloadCheckpoint = downloadCheckpoint
     self.publicFloor = publicFloor
   }
 
   public static var migrations: [StoreMigration] {
-    ReplicaLifecycle.migrations + [SyncEngineSchema.migration]
+    ReplicaLifecycle.migrations + [SyncEngineSchema.migration, SyncEngineSchema.heldMigration]
   }
 
   public static func wallClock(preferring trustedClock: TrustedClock, device: @escaping @Sendable () -> Date = { Date() }) -> @Sendable () -> Date {
@@ -109,22 +114,25 @@ public actor SyncEngine {
   public func upload() async throws(SyncError) -> SyncUploadOutcome {
     await acquire()
     defer { release() }
-    switch readiness {
-    case .notStarted:
-      throw .notStarted
-    case .resumeRequired:
-      do {
-        _ = try await bootstrap()
-      } catch {
-        guard case .lifecycle(.markerUnavailable) = error else { throw error }
-        return .postponed
-      }
-    case .started:
-      break
-    }
-    if let minimum = try await raisedFloors().schema, minimum > store.registry.version {
-      throw .appUpdateRequired(minimumSchema: minimum, current: store.registry.version)
-    }
+    return try await performUpload()
+  }
+
+  public func download() async throws(SyncError) -> SyncDownloadOutcome {
+    await acquire()
+    defer { release() }
+    return try await performDownload()
+  }
+
+  public func sync() async throws(SyncError) -> (download: SyncDownloadOutcome, upload: SyncUploadOutcome) {
+    await acquire()
+    defer { release() }
+    let download = try await performDownload()
+    return (download, try await performUpload())
+  }
+
+  private func performUpload() async throws(SyncError) -> SyncUploadOutcome {
+    guard try await resume() else { return .postponed }
+    try await refuseNewerSchema()
     try await repairDroppedChanges()
     var uploaded = try await finishInFlight().map { [$0] } ?? []
     var remints = 0
@@ -159,6 +167,78 @@ public actor SyncEngine {
   public func appliedPoints() async throws(SyncError) -> [ReplicaID: StreamPoint] {
     let replica = store.replica
     return try await read { try SyncAppliedTable.points(excluding: replica, in: $0.database) }
+  }
+
+  private func performDownload() async throws(SyncError) -> SyncDownloadOutcome {
+    guard try await resume() else { return SyncDownloadOutcome(applied: [], held: [:], missingKeys: [:], reminted: false, postponed: true) }
+    try await refuseNewerSchema()
+    do {
+      try ring.refresh()
+    } catch {
+      throw .keyRing(error)
+    }
+    let previous = try await read { try SyncHeldTable.load($0.database) }
+    let context = SyncDownloadContext(
+      store: store, provider: provider, vault: vault, ring: ring, configuration: configuration, limit: try readerLimit(), wallClock: wallClock, checkpoint: downloadCheckpoint)
+    var session = SyncDownloadSession(context: context, previous: previous, unsupported: unsupportedFiles)
+    defer { unsupportedFiles = session.unsupported }
+    var remints = 0
+    var postponed = false
+    while case .collision(let found) = try await session.run(try await listForeignFiles()) {
+      guard try await remint(reason: .replicaCollision(found: found), mode: .keepState, count: &remints) else {
+        postponed = true
+        break
+      }
+      session.noteRemint()
+    }
+    let rows = session.retainedRows
+    try await write { try SyncHeldTable.replace(with: rows, in: $0.database) }
+    if !postponed { _ = try await raisedFloors() }
+    return session.outcome(postponed: postponed)
+  }
+
+  /// Returns false when an interrupted re-mint cannot resume because the device marker cannot be read.
+  private func resume() async throws(SyncError) -> Bool {
+    switch readiness {
+    case .notStarted:
+      throw .notStarted
+    case .resumeRequired:
+      do {
+        _ = try await bootstrap()
+      } catch {
+        guard case .lifecycle(.markerUnavailable) = error else { throw error }
+        return false
+      }
+      return true
+    case .started:
+      return true
+    }
+  }
+
+  private func refuseNewerSchema() async throws(SyncError) {
+    guard let minimum = try await raisedFloors().schema, minimum > store.registry.version else { return }
+    throw .appUpdateRequired(minimumSchema: minimum, current: store.registry.version)
+  }
+
+  private func listForeignFiles() async throws(SyncError) -> [ReplicaID: SyncListedReplica] {
+    do {
+      return SyncListing.group(try await provider.listAll(prefix: VaultPath.replicasPrefix), excluding: store.replica)
+    } catch {
+      throw .storage(error)
+    }
+  }
+
+  private func readerLimit() throws(SyncError) -> HLCTimestamp {
+    let now: Date
+    if case .estimate(let trusted) = trustedClock.now() {
+      now = trusted
+    } else {
+      now = store.wallClock()
+    }
+    let millis = ((now.timeIntervalSince1970 + configuration.futureLimit.timeInterval) * 1_000).rounded(.down)
+    let clamped = Int64(min(max(millis, 0), Double(HLCTimestamp.maxWallMillis)))
+    guard let limit = HLCTimestamp(wallMillis: clamped, counter: .max, replica: Self.highestReplica) else { throw .corruptState("the reader limit is out of range") }
+    return limit
   }
 
   private func bootstrap() async throws(SyncError) -> ReplicaBootstrap {
@@ -296,7 +376,7 @@ public actor SyncEngine {
   private func sendPending(sealedWith key: VaultKey) async throws(SyncError) -> [StreamPoint] {
     var points: [StreamPoint] = []
     while true {
-      let pending = try await pendingChanges()
+      let pending = try await nextPass()
       guard !pending.isEmpty else { return points }
       try refuseUnstorable(pending)
       for entry in try await sealPass(pending, with: key) {
@@ -378,8 +458,30 @@ public actor SyncEngine {
     }
   }
 
+  /// The store reads pending changes by count only, so the count grows until the byte budget is reached; a strict byte bound needs a store query by size.
+  private func nextPass() async throws(SyncError) -> [SyncPendingChange] {
+    let budget = max(configuration.uploadPassBytes, 1)
+    var limit = 16
+    while true {
+      let logged = try await storeCall { () async throws(StoreError) in try await store.pendingChanges(limit: limit) }
+      var bytes = 0
+      var count = 0
+      for change in logged {
+        let size = change.line.count + 1
+        guard count == 0 || bytes + size <= budget else { break }
+        bytes += size
+        count += 1
+      }
+      if count < logged.count || logged.count < limit { return try decode(logged.prefix(count)) }
+      limit = count * 2
+    }
+  }
+
   private func pendingChanges() async throws(SyncError) -> [SyncPendingChange] {
-    let logged = try await storeCall { () async throws(StoreError) in try await store.pendingChanges(limit: Int.max) }
+    try decode(try await storeCall { () async throws(StoreError) in try await store.pendingChanges(limit: Int.max) })
+  }
+
+  private func decode(_ logged: some Collection<LoggedChange>) throws(SyncError) -> [SyncPendingChange] {
     var changes: [SyncPendingChange] = []
     changes.reserveCapacity(logged.count)
     for change in logged {
