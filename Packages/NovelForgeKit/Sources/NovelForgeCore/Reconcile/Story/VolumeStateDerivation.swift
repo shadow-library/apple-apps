@@ -9,9 +9,9 @@ public struct VolumeStateEntry: Hashable, Sendable, FetchableRecord, Persistable
   public let novel: UUID
   public let volume: String
   public let ordinal: Int
-  public let state: String
+  public let state: VolumeState
 
-  init(key: EntityKey, novel: UUID, volume: String, ordinal: Int, state: String) {
+  init(key: EntityKey, novel: UUID, volume: String, ordinal: Int, state: VolumeState) {
     self.key = key
     self.novel = novel
     self.volume = volume
@@ -21,8 +21,7 @@ public struct VolumeStateEntry: Hashable, Sendable, FetchableRecord, Persistable
 
   public init(row: Row) throws {
     guard let key = EntityKey(try row.decode(String.self, forColumn: "key")) else { throw StoreError.corruptStore("a volume state holds an invalid key") }
-    let state = try row.decode(String.self, forColumn: "state")
-    guard VolumeState(rawValue: state) != nil else { throw StoreError.corruptStore("a volume state holds an unknown state") }
+    guard let state = VolumeState(rawValue: try row.decode(String.self, forColumn: "state")) else { throw StoreError.corruptStore("a volume state holds an unknown state") }
     self.init(
       key: key, novel: try row.decode(UUID.self, forColumn: "novel"), volume: try row.decode(String.self, forColumn: "volume"),
       ordinal: try row.decode(Int.self, forColumn: "ordinal"), state: state)
@@ -35,7 +34,7 @@ public struct VolumeStateEntry: Hashable, Sendable, FetchableRecord, Persistable
     container["novel"] = novel
     container["volume"] = volume
     container["ordinal"] = ordinal
-    container["state"] = state
+    container["state"] = state.rawValue
   }
 }
 
@@ -71,7 +70,7 @@ public struct VolumeStateDerivation: Derivation {
     }
     return volumeStandings(of: volumes).map { standing in
       VolumeStateEntry(
-        key: VolumeRecord.ref(novel: novel, volume: standing.volume).key, novel: novel, volume: standing.volume, ordinal: standing.ordinal, state: standing.state.rawValue)
+        key: VolumeRecord.ref(novel: novel, volume: standing.volume).key, novel: novel, volume: standing.volume, ordinal: standing.ordinal, state: standing.state)
     }
   }
 }

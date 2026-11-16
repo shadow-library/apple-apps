@@ -1,6 +1,6 @@
 import ShadowCore
 
-enum MilestoneState: String, Sendable, Codable {
+public enum MilestoneState: String, CaseIterable, Sendable, Codable {
   case open
   case planned
   case reached

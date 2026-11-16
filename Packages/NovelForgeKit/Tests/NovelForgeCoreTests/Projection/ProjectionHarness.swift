@@ -274,30 +274,38 @@ enum ProjectionOperations {
   }
 }
 
-/// Three replicas, random writes and deliveries in any order: at every step each replica's derived tables equal a rebuild and hold no fault; after
-/// settling every replica holds the same tables, and `settled` checks them against an oracle.
+/// Three replicas, random writes and deliveries in any order: after every step the replica it touched holds derived tables equal to a rebuild and no
+/// fault; after settling every replica does and holds the same tables, and `settled` checks them against an oracle.
 struct ProjectionProperty: Sendable {
+  /// `NOVELFORGE_PROPERTY_SCALE` multiplies every property's iterations, for a longer run in release.
+  static let scale = ProcessInfo.processInfo.environment["NOVELFORGE_PROPERTY_SCALE"].flatMap(Int.init).map { max($0, 1) } ?? 1
+
   var derivations: [any Derivation] = NovelForgeDerivations.standard
   var operations = ProjectionOperations.standard
   var iterations = 10
   var steps = 28
+  /// Off for a property that only explores states for its oracle: the rebuild comparison then runs once, after settling.
+  var checksEveryStep = true
   var settled: @Sendable (NovelForgeReconciler, VaultStore, ProjectionUniverse) async throws -> Void = { _, _, _ in }
 
   func check(order: CausalReplicaOrder, seed: UInt64) async throws {
     let reconciler = try Projection.reconciler(derivations)
-    try await forAll(iterations: iterations, seed: seed) { generator in
+    try await forAll(iterations: iterations * Self.scale, seed: seed) { generator in
       let replicas = try await CausalReplicas(
         CausalReplicaSetup(count: 3, registry: Projection.registry, migrations: reconciler.migrations, order: order, reconciler: { _ in reconciler }, seed: generator.next()))
       let universe = ProjectionUniverse(&generator)
       for _ in 0..<steps {
+        var touched: Int?
         if generator.chance(0.5), let operation = ProjectionOperations.pick(from: operations, &generator) {
           let index = generator.int(in: 0...2)
           await replicas.advanceClock(of: index, by: .milliseconds(generator.int(in: 0...50)))
           try await write(operation.make(&generator, universe), on: index, in: replicas)
+          touched = index
         } else {
-          _ = try await replicas.step(using: &generator)
+          let delivered = await replicas.deliveries().count
+          if try await replicas.step(using: &generator), await replicas.deliveries().count > delivered { touched = await replicas.deliveries().last?.reader }
         }
-        for index in 0..<3 { try await expectConsistent(reconciler, in: await replicas.store(index)) }
+        if checksEveryStep, let touched { try await expectConsistent(reconciler, in: await replicas.store(touched)) }
       }
       try await replicas.settle()
       let first = try await Projection.derived(reconciler, in: await replicas.store(0))

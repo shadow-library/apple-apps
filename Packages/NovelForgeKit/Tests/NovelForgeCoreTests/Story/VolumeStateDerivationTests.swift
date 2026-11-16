@@ -33,7 +33,7 @@ private func expectedStates(_ volumes: [VolumeRecord]) -> [String: String] {
 
 private func table(_ novel: UUID, in store: VaultStore) async throws -> [String: String] {
   let entries = try await Projection.fetch(VolumeStateDerivation.request(for: novel), in: store)
-  return Dictionary(uniqueKeysWithValues: entries.map { ($0.volume, $0.state) })
+  return Dictionary(uniqueKeysWithValues: entries.map { ($0.volume, $0.state.rawValue) })
 }
 
 private func ordinals(_ novel: UUID, in store: VaultStore) async throws -> [String: Int] {

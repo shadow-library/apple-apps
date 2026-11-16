@@ -5,5 +5,6 @@ public enum NovelForgeDerivations {
       ChapterDerivations.all,
       StoryDerivations.all,
       NotebookDerivations.all,
+      PlanWorldDerivations.all,
     ].joined())
 }

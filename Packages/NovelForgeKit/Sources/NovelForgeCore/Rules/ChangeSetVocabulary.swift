@@ -47,7 +47,7 @@ enum ValidationScope: String, CaseIterable, Codable, Sendable {
 }
 
 // apps/novel-forge-server/src/database/schemas/plan.ts:11
-enum VolumeState: String, CaseIterable, Codable, Sendable {
+public enum VolumeState: String, CaseIterable, Codable, Sendable {
   case notStarted = "not_started"
   case active
   case goalMet = "goal_met"
