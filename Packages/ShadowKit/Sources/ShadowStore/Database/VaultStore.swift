@@ -97,6 +97,31 @@ public final class VaultStore: Sendable {
     }
   }
 
+  public func pendingChanges(limit: Int, maximumBytes: Int) async throws(StoreError) -> [LoggedChange] {
+    try await reading { db in
+      guard limit > 0 else { return [] }
+      var changes = [LoggedChange]()
+      var total = 0
+      let rows = try db.storeFetchCursor("SELECT seq, line FROM change_log ORDER BY seq LIMIT ?", [limit])
+      while let row = try rows.next() {
+        let change = LoggedChange(sequence: try row.stored("seq"), line: try row.stored("line"))
+        if !changes.isEmpty, total + change.line.count > maximumBytes { break }
+        total += change.line.count
+        changes.append(change)
+      }
+      return changes
+    }
+  }
+
+  public func pendingClocks() async throws(StoreError) -> [HLCTimestamp] {
+    try await reading { db in
+      var clocks = [HLCTimestamp]()
+      let rows = try db.storeFetchCursor("SELECT line FROM change_log ORDER BY seq", [])
+      while let row = try rows.next() { clocks.append(try Stored.record(row.stored("line")).clock) }
+      return clocks
+    }
+  }
+
   public func dropChanges(through sequence: Int64) async throws(StoreError) {
     try await writing { db in
       let dropped = try db.storeFetchAll("SELECT line FROM change_log WHERE seq <= ?", [sequence]).map { row throws(StoreError) in try Stored.record(row.stored("line")).clock }

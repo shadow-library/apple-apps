@@ -31,6 +31,18 @@ extension VaultStore {
   public func applyRemote(
     _ lines: [Data], notAfter limit: HLCTimestamp? = nil, also body: @Sendable (Database) throws -> Void = { _ in }
   ) async throws(StoreError) -> RemoteApplyResult {
+    try await merge(lines, notAfter: limit, into: [.vault], also: body)
+  }
+
+  public func adoptRemote(
+    _ lines: [Data], notAfter limit: HLCTimestamp? = nil, also body: @Sendable (Database) throws -> Void = { _ in }
+  ) async throws(StoreError) -> RemoteApplyResult {
+    try await merge(lines, notAfter: limit, into: StateScope.allCases, also: body)
+  }
+
+  private func merge(
+    _ lines: [Data], notAfter limit: HLCTimestamp?, into scopes: [StateScope], also body: @Sendable (Database) throws -> Void
+  ) async throws(StoreError) -> RemoteApplyResult {
     let parsed = lines.map(RemoteLine.init)
     let records = parsed.compactMap(\.record)
     let highest = records.map(\.clock).max()
@@ -38,12 +50,16 @@ extension VaultStore {
       let row = try KernelRow.load(db)
       if records.contains(where: { $0.clock.replica == row.replica }) { throw StoreError.replicaCollision(row.replica) }
       if let limit, let highest, highest > limit { throw StoreError.clockAhead(highest) }
-      let merge = MergeRoutine(registry: self.registry)
+      let routine = MergeRoutine(registry: self.registry)
       var touched = TouchedRefs()
       for line in parsed {
         switch line {
-        case .record(let record): if try merge.apply(record, scope: .vault, in: db) { touched.insert(record.ref, scope: .vault) }
-        case .opaque(let bytes): try merge.keepOpaque(bytes, scope: .vault, in: db)
+        case .record(let record):
+          for scope in scopes {
+            if try routine.apply(record, scope: scope, in: db) { touched.insert(record.ref, scope: scope) }
+          }
+        case .opaque(let bytes):
+          for scope in scopes { try routine.keepOpaque(bytes, scope: scope, in: db) }
         }
       }
       if let highest { try KernelRow.observe(highest, ownReplica: row.replica, in: db) }

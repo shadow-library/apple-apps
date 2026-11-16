@@ -33,6 +33,10 @@ public struct WriteTransaction: ~Copyable {
     self.ids = ids
   }
 
+  public var nextSequence: Int64 {
+    get throws(StoreError) { try StoreError.wrapping { try KernelRow.load(database).nextSequence } }
+  }
+
   public func state(of ref: EntityRef, scope: StateScope = .vault) throws(StoreError) -> EntityState? {
     try StateLoader(registry: registry).entity(ref, scope: scope, in: database)
   }

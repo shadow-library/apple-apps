@@ -93,4 +93,8 @@ extension Database {
   func storeFetchAll(_ sql: String, _ arguments: StatementArguments) throws -> [Row] {
     try Row.fetchAll(cachedStatement(sql: sql), arguments: arguments)
   }
+
+  func storeFetchCursor(_ sql: String, _ arguments: StatementArguments) throws -> RowCursor {
+    try Row.fetchCursor(cachedStatement(sql: sql), arguments: arguments)
+  }
 }
