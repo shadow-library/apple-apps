@@ -5,6 +5,8 @@ enum JSOracleArgument {
   case string(String)
   case number(Double)
   case strings([String])
+  case codeUnits([UInt16])
+  case codeUnitLists([[UInt16]])
   case undefined
 
   fileprivate var encoded: String {
@@ -12,6 +14,8 @@ enum JSOracleArgument {
     case .string(let text): "{\"s\":[\(text.utf16.map(String.init).joined(separator: ","))]}"
     case .number(let value): "{\"n\":\"\(JSOracleArgument.numberText(value))\"}"
     case .strings(let texts): "{\"a\":[\(texts.map { JSOracleArgument.string($0).encoded }.joined(separator: ","))]}"
+    case .codeUnits(let units): "{\"s\":[\(units.map(String.init).joined(separator: ","))]}"
+    case .codeUnitLists(let lists): "{\"a\":[\(lists.map { JSOracleArgument.codeUnits($0).encoded }.joined(separator: ","))]}"
     case .undefined: "{\"u\":1}"
     }
   }
