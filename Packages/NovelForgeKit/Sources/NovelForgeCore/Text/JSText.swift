@@ -1,14 +1,21 @@
 enum JSText {
   /// Drops the dangling half wherever JavaScript would produce a lone surrogate, which no Swift string can hold.
-  static func string<Units: Sequence<UInt16>>(fromCodeUnits units: Units) -> String {
-    var scalars = String.UnicodeScalarView()
-    var iterator = units.makeIterator()
-    var decoder = UTF16()
-    while true {
-      switch decoder.decode(&iterator) {
-      case .scalarValue(let scalar): scalars.append(scalar)
-      case .error: continue
-      case .emptyInput: return String(scalars)
+  /// Writes UTF-8 in place: appending to a `UnicodeScalarView` scalar by scalar costs several times as much.
+  static func string<Units: Collection<UInt16>>(fromCodeUnits units: Units) -> String {
+    String(unsafeUninitializedCapacity: 3 * units.count) { buffer in
+      var written = 0
+      var iterator = units.makeIterator()
+      var decoder = UTF16()
+      while true {
+        switch decoder.decode(&iterator) {
+        case .scalarValue(let scalar):
+          UTF8.encode(scalar) { byte in
+            buffer[written] = byte
+            written += 1
+          }
+        case .error: continue
+        case .emptyInput: return written
+        }
       }
     }
   }

@@ -66,15 +66,8 @@ struct JSRegex: Sendable, Hashable, CustomStringConvertible {
     return machine.search(from: start)
   }
 
-  /// Every match from offset 0, an empty match stepping one code unit (one code point with `u`), as `matchAll` and a global `match` or `replace` do.
   func allMatchSlots(in units: [UInt16]) -> [[Int]] {
     var machine = machine(for: units)
-    var matches: [[Int]] = []
-    var lastIndex = 0
-    while let slots = machine.search(from: lastIndex) {
-      matches.append(slots)
-      lastIndex = slots[1] == slots[0] ? machine.advance(slots[1]) : slots[1]
-    }
-    return matches
+    return machine.allMatches()
   }
 }

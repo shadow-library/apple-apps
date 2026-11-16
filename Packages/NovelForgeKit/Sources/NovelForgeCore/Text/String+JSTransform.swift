@@ -21,17 +21,19 @@ extension String {
   }
 
   /// JavaScript applies the Final_Sigma context; Swift's `lowercased()` turns every capital sigma into σ.
+  /// Built with `+=`, as `UnicodeScalarView.append(contentsOf:)` costs time in the length already built and made this quadratic.
   func jsToLowerCase() -> String {
     let scalars = Array(unicodeScalars)
-    var lowered = String.UnicodeScalarView()
+    var lowered = ""
+    lowered.reserveCapacity(utf8.count)
     for (index, scalar) in scalars.enumerated() {
       if scalar.value == 0x03A3 {
-        lowered.append(Self.isFinalSigma(at: index, in: scalars) ? "\u{03C2}" : "\u{03C3}")
+        lowered += Self.isFinalSigma(at: index, in: scalars) ? "\u{03C2}" : "\u{03C3}"
       } else {
-        lowered.append(contentsOf: scalar.properties.lowercaseMapping.unicodeScalars)
+        lowered += scalar.properties.lowercaseMapping
       }
     }
-    return String(lowered)
+    return lowered
   }
 
   func jsNormalize(_ form: JSNormalizationForm = .nfc) -> String {

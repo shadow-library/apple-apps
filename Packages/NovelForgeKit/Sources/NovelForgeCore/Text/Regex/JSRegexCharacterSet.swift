@@ -1,5 +1,5 @@
 /// Scripts.txt of Unicode 17.0 as bun 1.4 reports it; `JSRegexBunFixtureTests` checks every code point against `Fixtures/regex/cases.json`.
-enum JSRegexScript: Sendable {
+enum JSRegexScript: Sendable, Hashable {
   case han
   case hiragana
   case katakana
@@ -41,7 +41,7 @@ enum JSRegexScript: Sendable {
   private static let thaiRanges: [ClosedRange<UInt32>] = [0x0E01...0x0E3A, 0x0E40...0x0E5B]
 }
 
-enum JSRegexProperty: Sendable {
+enum JSRegexProperty: Sendable, Hashable {
   case letter
   case number
   case uppercaseLetter
@@ -83,7 +83,7 @@ enum JSRegexProperty: Sendable {
   }
 }
 
-enum JSRegexClassItem: Sendable {
+enum JSRegexClassItem: Sendable, Hashable {
   case range(UInt32, UInt32)
   case digit(negated: Bool)
   case space(negated: Bool)
@@ -91,7 +91,7 @@ enum JSRegexClassItem: Sendable {
   case property(JSRegexProperty, negated: Bool)
 }
 
-struct JSRegexCharacterSet: Sendable {
+struct JSRegexCharacterSet: Sendable, Hashable {
   var items: [JSRegexClassItem]
   var negated: Bool
 }
@@ -124,8 +124,8 @@ struct JSRegexCompiledSet: Sendable {
   private let items: [JSRegexClassItem]
   private let negated: Bool
   private let mode: JSRegexMode
-  private let asciiLow: UInt64
-  private let asciiHigh: UInt64
+  let asciiLow: UInt64
+  let asciiHigh: UInt64
 
   init(_ set: JSRegexCharacterSet, mode: JSRegexMode) {
     items = set.items

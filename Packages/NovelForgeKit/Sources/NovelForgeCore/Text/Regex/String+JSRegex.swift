@@ -12,11 +12,11 @@ extension String {
   /// `text.replace(re, replacement)`, expanding `$$`, `$&`, `` $` ``, `$'` and `$1`…`$99`; a global `re` replaces every match.
   func jsReplace(_ pattern: JSRegex, _ replacement: String) -> String {
     let template = replacement.jsCodeUnits
-    return Self.replacing(pattern, in: jsCodeUnits) { slots, units in Self.substitute(template, slots: slots, units: units) }
+    return replacing(pattern) { slots, units in Self.substitute(template, slots: slots, units: units) }
   }
 
   func jsReplace(_ pattern: JSRegex, _ replacer: (JSRegexMatch) -> String) -> String {
-    Self.replacing(pattern, in: jsCodeUnits) { slots, units in replacer(JSRegexMatch(slots: slots, units: units)).jsCodeUnits }
+    replacing(pattern) { slots, units in replacer(JSRegexMatch(slots: slots, units: units)).jsCodeUnits }
   }
 
   /// `text.split(re, limit)`; a nil `limit` is `undefined`. JavaScript puts `undefined` where a capturing separator's group did not match; this puts "".
@@ -47,9 +47,10 @@ extension String {
     return pieces
   }
 
-  private static func replacing(_ pattern: JSRegex, in units: [UInt16], _ replacement: ([Int], [UInt16]) -> [UInt16]) -> String {
+  private func replacing(_ pattern: JSRegex, _ replacement: ([Int], [UInt16]) -> [UInt16]) -> String {
+    let units = jsCodeUnits
     let matches = pattern.global ? pattern.allMatchSlots(in: units) : pattern.firstMatchSlots(in: units, from: 0).map { [$0] } ?? []
-    guard !matches.isEmpty else { return JSText.string(fromCodeUnits: units) }
+    guard !matches.isEmpty else { return self }
     var result: [UInt16] = []
     var nextSource = 0
     for slots in matches where slots[0] >= nextSource {
