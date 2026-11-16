@@ -1,3 +1,4 @@
+import Foundation
 import ShadowTestSupport
 import Testing
 
@@ -208,6 +209,29 @@ struct OrderedJSONParsingTests {
     #expect(throws: OrderedJSONParseError.tooDeep(limit: 128)) { try OrderedJSON(parsing: String(repeating: "{\"a\":", count: 100_000)) }
   }
 
+  @Test func shouldParseCompareCopyAndFreeAValueNestedToTheLimitOnAThreadWithASmallStack() throws {
+    let outcome = Locked<Bool?>(nil)
+    let thread = Thread {
+      let text = String(repeating: "[", count: OrderedJSON.maximumParsingDepth) + String(repeating: "]", count: OrderedJSON.maximumParsingDepth)
+      guard let first = try? OrderedJSON(parsing: text), let second = try? OrderedJSON(parsing: text) else {
+        outcome.set(false)
+        return
+      }
+      let copy = first
+      outcome.set(first == second && copy == second)
+    }
+    thread.stackSize = 256 * 1024
+    let finished = DispatchSemaphore(value: 0)
+    let watcher = Thread {
+      while outcome.get() == nil { Thread.sleep(forTimeInterval: 0.005) }
+      finished.signal()
+    }
+    thread.start()
+    watcher.start()
+    #expect(finished.wait(timeout: .now() + 30) == .success)
+    #expect(outcome.get() == true)
+  }
+
   @Test func shouldReportTheByteOfASyntaxError() {
     #expect(throws: OrderedJSONParseError.syntax(offset: 3)) { try OrderedJSON(parsing: "[1,]") }
     #expect(throws: OrderedJSONParseError.syntax(offset: 0)) { try OrderedJSON(parsing: "") }
@@ -259,5 +283,22 @@ struct OrderedJSONTests {
 
     #expect(value.objectValue?.keys == ["__proto__", "constructor"])
     #expect(value.objectValue?["__proto__"] == .int(1))
+  }
+}
+
+private final class Locked<Value: Sendable>: @unchecked Sendable {
+  private let lock = NSLock()
+  private var value: Value
+
+  init(_ value: Value) {
+    self.value = value
+  }
+
+  func get() -> Value {
+    lock.withLock { value }
+  }
+
+  func set(_ newValue: Value) {
+    lock.withLock { value = newValue }
   }
 }

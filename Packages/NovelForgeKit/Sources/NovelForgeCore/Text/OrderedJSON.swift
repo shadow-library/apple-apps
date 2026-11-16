@@ -3,6 +3,7 @@ import ShadowCore
 enum OrderedJSON: Sendable {
   case null
   case bool(Bool)
+  /// Keeps its exact value beyond 2^53, where JavaScript would round it.
   case int(Int64)
   case double(Double)
   case string(String)
@@ -36,6 +37,14 @@ extension OrderedJSON {
   var stringValue: String? {
     guard case .string(let value) = self else { return nil }
     return value
+  }
+
+  var numberValue: Double? {
+    switch self {
+    case .int(let value): Double(value)
+    case .double(let value): value
+    default: nil
+    }
   }
 
   var arrayValue: [OrderedJSON]? {
