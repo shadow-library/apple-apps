@@ -29,8 +29,10 @@ struct WorldChapter: Codable, Equatable, Sendable {
     learns = reading.terms.learns
   }
 
+  var plan: DisclosurePlan { plan(learning: learns) }
+
   // The contract in the shape apps/novel-forge-server/src/common/knowledge-contract.ts:13 parses
-  var plan: DisclosurePlan {
+  func plan(learning learns: [WorldLearn]) -> DisclosurePlan {
     let learned = learns.map { learn in
       OrderedJSON.object(OrderedJSONObject([(key: "entityKey", value: .string(learn.entity)), (key: "factKey", value: .string(learn.fact))]))
     }

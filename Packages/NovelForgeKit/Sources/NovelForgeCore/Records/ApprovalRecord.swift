@@ -53,10 +53,6 @@ public struct ApprovalRecord: AppendedRecord {
     fields.put(.upstreamDigest, upstreamDigest)
     return fields
   }
-
-  public func approves(planRevision plan: String, draftRevision draft: String) -> Bool {
-    planRevision.utf8.elementsEqual(plan.utf8) && draftRevision.utf8.elementsEqual(draft.utf8)
-  }
 }
 
 extension ApprovalRecord {
@@ -67,29 +63,5 @@ extension ApprovalRecord {
       let stored: Int? = try? reader.required(.chapter)
       return stored.map { $0 == chapter } ?? true
     }
-  }
-
-  public static func inForce(
-    among approvals: [AppendedEntry<ApprovalRecord>], novel: UUID, chapter: Int, planRevision: String, draftRevision: String
-  ) -> AppendedEntry<ApprovalRecord>? {
-    approvals.filter { $0.record.novel == novel && $0.record.chapter == chapter && $0.record.approves(planRevision: planRevision, draftRevision: draftRevision) }
-      .max(by: chronologically)
-  }
-
-  public static func inForce<Transaction: StateReading & ~Copyable>(novel: UUID, chapter: Int, in transaction: borrowing Transaction) throws(StoreError)
-    -> AppendedEntry<ApprovalRecord>?
-  {
-    guard let planRef = try? ChapterPlanRecord.ref(novel: novel, chapter: chapter), let draftRef = try? DraftRecord.ref(novel: novel, chapter: chapter) else { return nil }
-    guard let plan = try liveHead(ChapterPlanRecord.self, planRef, in: transaction), let draft = try liveHead(DraftRecord.self, draftRef, in: transaction) else { return nil }
-    let approvals = try listing(novel: novel, chapter: chapter, in: transaction).entries
-    return inForce(among: approvals, novel: novel, chapter: chapter, planRevision: plan, draftRevision: draft)
-  }
-
-  private static func liveHead<Document: DocumentRecord & RemovableRecord, Transaction: StateReading & ~Copyable>(
-    _: Document.Type, _ ref: EntityRef, in transaction: borrowing Transaction
-  ) throws(StoreError) -> String? {
-    let state = try transaction.state(of: ref, scope: .vault)
-    guard let entry = Document.reading(state, of: ref).entry, !entry.isRemoved else { return nil }
-    return Document.history(of: state, at: ref).history?.head
   }
 }

@@ -33,6 +33,7 @@ enum DraftContentMember: String, CaseIterable, FieldName {
   case generator
   case isolated
   case restoredFrom = "restored_from"
+  case upstream
 }
 
 // apps/novel-forge-server/src/database/schemas/ai.ts:267; the review status, stale reason and word count are derived, never stored
@@ -45,10 +46,12 @@ public struct DraftContent: RevisionBody, Sendable {
   public var isolated: Bool
   public var restoredFrom: String?
   public private(set) var unrecognised: [String: JSONValue]
+  /// Kept as stored, so a shape this version cannot read still round-trips and never hides the prose.
+  private var storedUpstream: JSONValue
 
   public init(
     title: String? = nil, body: String, summary: String? = nil, source: StoredEnum<DraftSource>, generator: StoredEnum<ContentGenerator> = .known(.standard),
-    isolated: Bool = false, restoredFrom: String? = nil
+    isolated: Bool = false, restoredFrom: String? = nil, upstream: DraftUpstream? = nil
   ) {
     self.title = title
     self.body = body
@@ -57,7 +60,14 @@ public struct DraftContent: RevisionBody, Sendable {
     self.generator = generator
     self.isolated = isolated
     self.restoredFrom = restoredFrom
+    storedUpstream = upstream.json
     unrecognised = [:]
+  }
+
+  /// What the revision was written against (`ChapterFingerprint` rule 2); nil when it records nothing this version can read, which the lifecycle shows as stale.
+  public var upstream: DraftUpstream? {
+    get { DraftUpstream(json: storedUpstream) }
+    set { storedUpstream = newValue.json }
   }
 
   public init?(json: JSONValue) {
@@ -69,6 +79,8 @@ public struct DraftContent: RevisionBody, Sendable {
     } catch {
       return nil
     }
+    let upstream: JSONValue? = try? reader.optional(.upstream)
+    storedUpstream = upstream ?? .null
     unrecognised = reader.unrecognised
   }
 
@@ -81,6 +93,7 @@ public struct DraftContent: RevisionBody, Sendable {
     fields.put(.generator, generator)
     fields.put(.isolated, isolated)
     fields.put(.restoredFrom, restoredFrom)
+    fields.put(.upstream, storedUpstream)
     return .object(unrecognised.merging(fields.members) { _, known in known })
   }
 }

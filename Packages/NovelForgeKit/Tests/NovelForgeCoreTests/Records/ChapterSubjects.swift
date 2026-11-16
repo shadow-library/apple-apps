@@ -50,7 +50,17 @@ extension Gen {
   static func draftContent(_ generator: inout SeededGenerator) -> DraftContent {
     DraftContent(
       title: optionalText(&generator), body: text(&generator), summary: optionalText(&generator), source: stored(&generator), generator: stored(&generator),
-      isolated: bool(&generator), restoredFrom: generator.chance(0.5) ? nil : revision(&generator))
+      isolated: bool(&generator), restoredFrom: generator.chance(0.5) ? nil : revision(&generator), upstream: generator.chance(0.5) ? nil : upstream(&generator))
+  }
+
+  static func upstream(_ generator: inout SeededGenerator) -> DraftUpstream {
+    let first = generator.int(in: 1...4)
+    let entries = (first..<(first + generator.int(in: 0...3))).map { chapter -> DraftUpstream.Entry in
+      chapter == first && generator.chance(0.4)
+        ? .canon(chapter: chapter, digest: generator.chance(0.2) ? nil : revision(&generator))
+        : .draft(chapter: chapter, revision: generator.chance(0.2) ? nil : revision(&generator), taught: generator.chance(0.5) ? nil : revision(&generator))
+    }
+    return DraftUpstream(entries: entries)
   }
 
   static func canon(_ generator: inout SeededGenerator) -> Canon {

@@ -74,7 +74,7 @@ func unlockHolds(_ fact: DisclosureFact, _ context: UnlockContext) -> Bool {
 }
 
 // apps/novel-forge-server/src/database/schemas/knowledge.ts:43
-enum KnowledgeStatus: String, Sendable {
+public enum KnowledgeStatus: String, CaseIterable, Codable, Sendable {
   case provisional
   case committed
 }

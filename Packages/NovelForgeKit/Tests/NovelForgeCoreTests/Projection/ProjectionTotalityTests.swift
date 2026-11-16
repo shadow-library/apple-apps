@@ -55,7 +55,12 @@ struct ProjectionTotalityTests {
     let store = try Projection.store(reconciler)
     let key = try NovelForgeKey.finalChapterKey(novel: novel, chapter: 1)
     try await Projection.set(key.ref, ["natural_key": key.stored, "canon": .string("garbage")], in: store)
-    #expect(try await Projection.finals(in: store) == [FinalChapterEntry(key: key.ref.key, novel: novel, chapter: 1, isReadable: false)])
+    let finals = try await Projection.finals(in: store)
+    #expect(
+      finals.map { [$0.key.rawValue, "\($0.chapter)", "\($0.isReadable)", $0.canonDigest ?? "-", $0.draftRevision ?? "-"] } == [
+        [key.ref.key.rawValue, "1", "false", FinalChapterRecord.digest(.string("garbage")), "-"]
+      ])
+    #expect(finals.first?.canonClock != nil)
     #expect(try await Projection.cursors(in: store) == [novel: 2])
     #expect(try await Projection.indexed(key.ref, in: store)?.status == .unreadable)
     #expect(try await Projection.indexed(key.ref, in: store)?.novel == novel)

@@ -13,7 +13,8 @@ struct LedgerOutcome: Equatable, Sendable {
 
 extension DisclosureWorld {
   // apps/novel-forge-server/src/common/provisional-knowledge.ts:49 (resolveBriefReveals, which read the chapter's stored plan, its facts and entities)
-  func resolveBriefReveals(chapter: Int) -> ResolvedBriefReveals {
+  /// `contexts`, when given, is `plannedUnlockContexts` of this world computed once by a caller that resolves many chapters.
+  func resolveBriefReveals(chapter: Int, contexts: ((Int) -> UnlockContext)? = nil) -> ResolvedBriefReveals {
     guard let contract = parseKnowledgeContract(storedPlan(for: chapter)?.row.knowledgeContract ?? .null), !contract.learns.isEmpty else {
       return ResolvedBriefReveals(pairs: [], factKeys: [], skipped: [], locked: [])
     }
@@ -21,7 +22,8 @@ extension DisclosureWorld {
     let entityKeys = Set(contract.learns.map { JSString($0.entityKey) })
     let facts = self.facts.filter { factKeys.contains(JSString($0.factKey)) }
     let entities = self.entities.filter { entityKeys.contains(JSString($0.entityKey)) }
-    let context = plannedUnlockContexts(planWorld, conditioned: facts.contains(where: \.hasUnlock))(chapter)
+    let conditioned = facts.contains(where: \.hasUnlock)
+    let context = (conditioned ? contexts : nil)?(chapter) ?? plannedUnlockContexts(planWorld, conditioned: conditioned)(chapter)
     let lockedFacts = facts.filter { !disclosureRequirements($0, context).isEmpty }.jsMapValues(byKey: \.factKey)
     let locked = Set(lockedFacts.map { JSString($0.factKey) })
     let resolvedFacts = facts.filter { !locked.contains(JSString($0.factKey)) }.jsMapValues(byKey: \.factKey)
@@ -78,9 +80,9 @@ extension DisclosureWorld {
 
   // apps/novel-forge-server/src/common/provisional-knowledge.ts:88
   @discardableResult
-  mutating func ledgerBriefReveals(chapter: Int, draftRevision: Int) -> LedgerOutcome {
+  mutating func ledgerBriefReveals(chapter: Int, draftRevision: Int, contexts: ((Int) -> UnlockContext)? = nil) -> LedgerOutcome {
     revokeProvisionalReveals(chapters: [chapter])
-    let resolved = resolveBriefReveals(chapter: chapter)
+    let resolved = resolveBriefReveals(chapter: chapter, contexts: contexts)
     writeBriefReveals(
       resolved.pairs.map {
         KnowledgeRow(factKey: $0.factKey, entityKey: $0.entityKey, learnedInChapter: chapter, source: .brief, status: .provisional, draftRevision: draftRevision)
@@ -100,10 +102,14 @@ extension DisclosureWorld {
 
   // apps/novel-forge-server/src/common/provisional-knowledge.ts:163
   mutating func commitChapterKnowledge(chapter: Int, draftRevision: Int) {
+    commitProvisionalRows(chapter: chapter, draftRevision: draftRevision)
+    discloseChapterReveals(chapter: chapter)
+  }
+
+  mutating func commitProvisionalRows(chapter: Int, draftRevision: Int) {
     let provisional = { (row: KnowledgeRow) in row.source == .brief && row.learnedInChapter == chapter && row.status == .provisional }
     for index in knowledge.indices where provisional(knowledge[index]) && knowledge[index].draftRevision == draftRevision { knowledge[index].status = .committed }
     knowledge.removeAll(where: provisional)
-    discloseChapterReveals(chapter: chapter)
   }
 
   // apps/novel-forge-server/src/common/provisional-knowledge.ts:183 (reledgerRemainingClaims, which read the revoked pairs' facts and entities and the approved or final drafts)

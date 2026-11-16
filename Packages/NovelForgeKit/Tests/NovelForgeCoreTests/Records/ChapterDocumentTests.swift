@@ -15,7 +15,8 @@ private func readBody<R: ChapterDocument>(_ record: R, _ body: JSONValue, in sto
   return try await Harness.read(record.ref, as: R.self, in: store)
 }
 
-private func bodyTotality<S: RemovableSubject>(_: S.Type, required: Set<String>, seed: UInt64) async throws where S.Record: ChapterDocument {
+private func bodyTotality<S: RemovableSubject>(_: S.Type, required: Set<String>, lenient: Set<String> = [], seed: UInt64) async throws
+where S.Record: ChapterDocument {
   let store = try SchemaFixture.store()
   try await forAll(iterations: 4, seed: seed) { generator in
     let record = S.random(&generator, novel: generator.uuid(), key: Gen.key(&generator))
@@ -31,7 +32,12 @@ private func bodyTotality<S: RemovableSubject>(_: S.Type, required: Set<String>,
       }
       var corrupt = body
       corrupt[name] = wrong
-      #expect(try await readBody(record, .object(corrupt), in: store) == .unreadable(.invalid(field: "head")), "wrong type \(name)")
+      let corrupted = try await readBody(record, .object(corrupt), in: store)
+      if lenient.contains(name) {
+        #expect(corrupted.entry?.record.content.json == .object(corrupt), "wrong type \(name)")
+      } else {
+        #expect(corrupted == .unreadable(.invalid(field: "head")), "wrong type \(name)")
+      }
     }
     var newer = body
     newer[Harness.newerMember] = ["nested": [1]]
@@ -65,7 +71,9 @@ struct ChapterDocumentTests {
   @Test func shouldReadAPlanBodyTotally() async throws {
     try await bodyTotality(PlanSubject.self, required: ["body", "contract", "write_mode", "hand_edited", "inserted"], seed: 0x1E1)
   }
-  @Test func shouldReadADraftBodyTotally() async throws { try await bodyTotality(DraftSubject.self, required: ["body", "source", "generator", "isolated"], seed: 0x1E2) }
+  @Test func shouldReadADraftBodyTotally() async throws {
+    try await bodyTotality(DraftSubject.self, required: ["body", "source", "generator", "isolated"], lenient: ["upstream"], seed: 0x1E2)
+  }
 
   @Test func shouldDeriveEachRefFromTheKeyAndRefuseAChapterBelowOne() throws {
     let plan = try ChapterPlanRecord(novel: novel, chapter: 4, content: ChapterPlanContent(body: "b"))
@@ -164,6 +172,22 @@ struct ChapterDocumentTests {
     #expect(canon["contract"]?.objectValue?["learns"] == [learn])
   }
 
+  @Test func shouldKeepADraftReadableAndItsUpstreamAsStoredWhenThisVersionCannotReadTheUpstream() async throws {
+    let store = try SchemaFixture.store()
+    let draft = try DraftRecord(novel: novel, chapter: 5, content: DraftContent(body: "d", source: .known(.generated)))
+    let newer: JSONValue = ["chapters": [["chapter": 1, "inserted": true]]]
+    var body = try #require(draft.content.json.objectValue)
+    body["upstream"] = newer
+    let read = try #require(try await readBody(draft, .object(body), in: store).entry?.record.content)
+    #expect(read.body == "d")
+    #expect(read.upstream == nil)
+    var edited = read
+    edited.body = "edited"
+    #expect(edited.json.objectValue?["upstream"] == newer)
+    edited.upstream = DraftUpstream(entries: [])
+    #expect(edited.json.objectValue?["upstream"] == ["chapters": []])
+  }
+
   @Test func shouldCarryNewerMembersOfADraftThroughARevision() async throws {
     let store = try SchemaFixture.store()
     let draft = try DraftRecord(novel: novel, chapter: 5, content: DraftContent(body: "d", source: .known(.generated)))
@@ -172,6 +196,7 @@ struct ChapterDocumentTests {
     #expect(
       stored == [
         "body": "edited", "source": "x_dictated", "generator": "human", "isolated": true, "rating": ["violence": "mild"], "title": nil, "summary": nil, "restored_from": nil,
+        "upstream": nil,
       ])
   }
 

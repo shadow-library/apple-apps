@@ -133,6 +133,7 @@ private func temporaryStore() -> URL {
 private func withoutDigests(_ reconciler: NovelForgeReconciler, in store: VaultStore) async throws -> DerivedTables {
   var tables = try await Projection.derived(reconciler, in: store)
   tables[IndexedRecord.databaseTableName] = tables[IndexedRecord.databaseTableName]?.map { $0.replacing(#/ digest="[0-9a-f]+"/#, with: "") }
+  tables[FinalChapterEntry.databaseTableName] = tables[FinalChapterEntry.databaseTableName]?.map { $0.replacing(#/ canon_clock="[^"]*"/#, with: "") }
   return tables
 }
 
@@ -388,7 +389,7 @@ struct ProjectionFrameTests {
     try await Projection.createNovel(novel, in: store)
     try await Projection.finalize(novel: novel, chapter: 1, in: store)
     let projected = try await Projection.derived(reconciler, in: store)
-    let populated = reconciler.tables.prefix((ProjectionDerivations.all + ChapterDerivations.all).count)
+    let populated = [IndexedRecord.databaseTableName, FinalChapterEntry.databaseTableName, StoryCursor.databaseTableName]
     #expect(populated.allSatisfy { !(projected[$0] ?? []).isEmpty })
 
     try await store.write { transaction in try reconciler.reset(in: transaction.database) }
