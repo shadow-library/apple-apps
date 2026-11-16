@@ -3,5 +3,6 @@ public enum NovelForgeDerivations {
     [
       ProjectionDerivations.all,
       ChapterDerivations.all,
+      StoryDerivations.all,
     ].joined())
 }

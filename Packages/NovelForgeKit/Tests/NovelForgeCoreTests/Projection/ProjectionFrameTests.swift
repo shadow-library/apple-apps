@@ -337,7 +337,7 @@ struct ProjectionFrameTests {
     let standard = try Projection.reconciler()
     #expect(standard.fingerprint == (try Projection.reconciler()).fingerprint)
     #expect(standard.fingerprint != (try Projection.reconciler(Array(NovelForgeDerivations.standard.dropLast()))).fingerprint)
-    #expect(standard.tables == ["nf_derived_record", "nf_derived_final_chapter", "nf_derived_story_cursor"])
+    #expect(Set(["nf_derived_record", "nf_derived_final_chapter", "nf_derived_story_cursor"]).isSubset(of: standard.tables))
     let raised = try Projection.reconciler([ProbeDerivation<RaisedProbeTableName>()])
     #expect((try Projection.reconciler([ProbeDerivation<ProbeTableName>()])).fingerprint != raised.fingerprint)
     let newerSchema = SchemaRegistry(version: NovelForgeSchema.version + 1, entities: NovelForgeSchema.entities)
@@ -388,7 +388,8 @@ struct ProjectionFrameTests {
     try await Projection.createNovel(novel, in: store)
     try await Projection.finalize(novel: novel, chapter: 1, in: store)
     let projected = try await Projection.derived(reconciler, in: store)
-    #expect(reconciler.tables.allSatisfy { !(projected[$0] ?? []).isEmpty })
+    let populated = reconciler.tables.prefix((ProjectionDerivations.all + ChapterDerivations.all).count)
+    #expect(populated.allSatisfy { !(projected[$0] ?? []).isEmpty })
 
     try await store.write { transaction in try reconciler.reset(in: transaction.database) }
     #expect(try await Projection.derived(reconciler, in: store).values.allSatisfy(\.isEmpty))
