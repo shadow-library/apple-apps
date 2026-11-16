@@ -13,7 +13,7 @@ struct OpenRouterRequestTests {
     _ request: ModelRequest,
     configuration: OpenRouterConfiguration = .init()
   ) async throws -> URLRequest {
-    let transport = OpenRouterTestTransport(sse: success)
+    let transport = StubHTTPExchangeTransport(sse: success)
     let outcome = await OpenRouterFixtures.drain(try OpenRouterFixtures.provider(transport, configuration: configuration).stream(request))
     #expect(outcome.error == nil)
     return try #require(transport.streaming.requests.first)
@@ -128,7 +128,7 @@ struct OpenRouterRequestTests {
   func mapsNoProviderForJSON(status: Int, message: String) async throws {
     var request = OpenRouterFixtures.request
     request.format = .json(name: "answer", schema: ["type": "object"])
-    let transport = OpenRouterTestTransport(status: status, headers: ["Retry-After": "3"], sse: OpenRouterFixtures.errorBody(code: status, message: message))
+    let transport = StubHTTPExchangeTransport(status: status, headers: ["Retry-After": "3"], sse: OpenRouterFixtures.errorBody(code: status, message: message))
 
     let outcome = await OpenRouterFixtures.drain(try OpenRouterFixtures.provider(transport).stream(request))
 
@@ -156,7 +156,7 @@ struct OpenRouterRequestTests {
 
   @Test("should never send the key to an origin it is not bound to")
   func refusesForeignOrigin() async throws {
-    let transport = OpenRouterTestTransport(sse: Self.success)
+    let transport = StubHTTPExchangeTransport(sse: Self.success)
     let provider = try OpenRouterFixtures.provider(transport, origin: "https://gateway.example")
 
     let outcome = await OpenRouterFixtures.drain(provider.stream(OpenRouterFixtures.request))
@@ -167,7 +167,7 @@ struct OpenRouterRequestTests {
 
   @Test("should follow a configured origin when the key is bound to it")
   func followsConfiguredOrigin() async throws {
-    let transport = OpenRouterTestTransport(sse: Self.success)
+    let transport = StubHTTPExchangeTransport(sse: Self.success)
     let origin = try #require(URL(string: "https://eu.openrouter.ai"))
     let provider = try OpenRouterFixtures.provider(transport, origin: "https://eu.openrouter.ai", configuration: OpenRouterConfiguration(origin: origin))
 
@@ -179,7 +179,7 @@ struct OpenRouterRequestTests {
 
   @Test("should reject an invalid request before reading the key or sending anything")
   func validatesFirst() async throws {
-    let transport = OpenRouterTestTransport(sse: Self.success)
+    let transport = StubHTTPExchangeTransport(sse: Self.success)
     let reads = RunCounter()
     let credential = try makeCredential(OpenRouterFixtures.origin)
     let provider = OpenRouterProvider(
@@ -201,7 +201,7 @@ struct OpenRouterRequestTests {
 
   @Test("should do no work until the stream is iterated")
   func isLazy() async throws {
-    let transport = OpenRouterTestTransport(sse: Self.success)
+    let transport = StubHTTPExchangeTransport(sse: Self.success)
     let reads = RunCounter()
     let credential = try makeCredential(OpenRouterFixtures.origin)
     let provider = OpenRouterProvider(
@@ -224,7 +224,7 @@ struct OpenRouterRequestTests {
 
   @Test("should surface a failure to read the key without sending anything")
   func surfacesCredentialFailure() async throws {
-    let transport = OpenRouterTestTransport(sse: Self.success)
+    let transport = StubHTTPExchangeTransport(sse: Self.success)
     let provider = OpenRouterProvider(credential: { () async throws(ModelError) in throw .authentication }, transport: transport)
 
     let outcome = await OpenRouterFixtures.drain(provider.stream(OpenRouterFixtures.request))

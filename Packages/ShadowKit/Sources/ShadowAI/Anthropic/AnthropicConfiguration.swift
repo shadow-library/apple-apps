@@ -24,8 +24,16 @@ public struct AnthropicConfiguration: Sendable, Equatable {
   var messagesURL: URL { origin.appending(path: "v1/messages") }
 
   func modelsURL(limit: Int, after cursor: String?) -> URL {
-    var items = [URLQueryItem(name: "limit", value: String(limit))]
-    if let cursor { items.append(URLQueryItem(name: "after_id", value: cursor)) }
-    return origin.appending(path: "v1/models").appending(queryItems: items)
+    var query = "limit=\(limit)"
+    if let cursor { query += "&after_id=\(Self.percentEncoded(cursor))" }
+    var components = URLComponents(url: origin.appending(path: "v1/models"), resolvingAgainstBaseURL: false)
+    components?.percentEncodedQuery = query
+    return components?.url ?? origin.appending(path: "v1/models")
+  }
+
+  private static let unreserved = CharacterSet(charactersIn: "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~")
+
+  private static func percentEncoded(_ value: String) -> String {
+    value.addingPercentEncoding(withAllowedCharacters: unreserved) ?? ""
   }
 }

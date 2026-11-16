@@ -35,7 +35,12 @@ public enum NetworkError: ShadowError {
   }
 
   public var retryAfter: Duration? {
-    guard case .unacceptableStatus(_, let headers, _) = self, let value = headers["retry-after"]?.trimmingCharacters(in: .whitespaces) else { return nil }
+    guard case .unacceptableStatus(_, let headers, _) = self else { return nil }
+    return Self.retryAfter(in: headers)
+  }
+
+  public static func retryAfter(in headers: [String: String]) -> Duration? {
+    guard let value = headers["retry-after"]?.trimmingCharacters(in: .whitespaces) else { return nil }
     guard !value.isEmpty, value.utf8.allSatisfy({ (0x30...0x39).contains($0) }), let seconds = Int(value) else { return nil }
     return .seconds(seconds)
   }

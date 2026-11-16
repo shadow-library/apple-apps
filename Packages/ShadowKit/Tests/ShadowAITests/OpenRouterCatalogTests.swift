@@ -10,7 +10,7 @@ struct OpenRouterCatalogTests {
   private typealias F = OpenRouterFixtures
 
   private static func provider(_ plain: StubHTTPTransport, trustedClock: TrustedClock? = nil) throws -> OpenRouterProvider {
-    try F.provider(OpenRouterTestTransport(plain: plain), trustedClock: trustedClock)
+    try F.provider(StubHTTPExchangeTransport(plain: plain), trustedClock: trustedClock)
   }
 
   private static func validate(_ plain: StubHTTPTransport) async throws -> CredentialStatus {

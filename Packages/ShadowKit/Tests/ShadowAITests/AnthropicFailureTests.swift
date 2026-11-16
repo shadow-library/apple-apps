@@ -45,7 +45,7 @@ struct AnthropicFailureTests {
     transcript.replacingOccurrences(of: #""type": "%@", "message": "%@""#, with: #""type": "\#(type)", "message": "\#(message)""#)
   }
 
-  private static func run(_ transport: AnthropicTestTransport, trustedClock: TrustedClock? = nil) async throws -> (events: [ModelEvent], error: ModelError?) {
+  private static func run(_ transport: StubHTTPExchangeTransport, trustedClock: TrustedClock? = nil) async throws -> (events: [ModelEvent], error: ModelError?) {
     let provider = AnthropicFixtures.provider(transport, credential: try AnthropicFixtures.credential(), trustedClock: trustedClock)
     return await AnthropicFixtures.drain(provider.stream(AnthropicFixtures.request))
   }
@@ -58,7 +58,7 @@ struct AnthropicFailureTests {
     ]
   )
   func surfacesErrorBeforeText(type: String, message: String, expected: ModelError) async throws {
-    let outcome = try await Self.run(AnthropicTestTransport(transcript: Self.errorEvent(after: Self.startThenError, type: type, message: message)))
+    let outcome = try await Self.run(StubHTTPExchangeTransport(transcript: Self.errorEvent(after: Self.startThenError, type: type, message: message)))
 
     #expect(outcome.events == [.started(requestID: "req_1", generationID: "msg_1")])
     #expect(outcome.error == expected)
@@ -67,14 +67,14 @@ struct AnthropicFailureTests {
 
   @Test("should surface any other error sent before text as a mid-stream error")
   func surfacesOtherErrorBeforeText() async throws {
-    let outcome = try await Self.run(AnthropicTestTransport(transcript: Self.errorEvent(after: Self.startThenError, type: "invalid_request_error", message: "Bad")))
+    let outcome = try await Self.run(StubHTTPExchangeTransport(transcript: Self.errorEvent(after: Self.startThenError, type: "invalid_request_error", message: "Bad")))
 
     #expect(outcome.error == .midStream(code: "invalid_request_error", message: "Bad"))
   }
 
   @Test("should surface an error sent after text as a mid-stream error")
   func surfacesErrorAfterText() async throws {
-    let outcome = try await Self.run(AnthropicTestTransport(transcript: Self.textThenError))
+    let outcome = try await Self.run(StubHTTPExchangeTransport(transcript: Self.textThenError))
 
     #expect(outcome.events == [.started(requestID: "req_1", generationID: "msg_1"), .textDelta("Once upon")])
     #expect(outcome.error == .midStream(code: "overloaded_error", message: "Overloaded"))
@@ -83,7 +83,7 @@ struct AnthropicFailureTests {
 
   @Test("should fail as malformed when an error event cannot be read")
   func failsOnUnreadableErrorEvent() async throws {
-    let outcome = try await Self.run(AnthropicTestTransport(transcript: "event: error\ndata: {\"type\": \"error\"}\n\n"))
+    let outcome = try await Self.run(StubHTTPExchangeTransport(transcript: "event: error\ndata: {\"type\": \"error\"}\n\n"))
 
     #expect(outcome.error == .malformedResponse("The provider sent an unreadable error event."))
   }
@@ -92,7 +92,7 @@ struct AnthropicFailureTests {
   func retriesOverloadThenSucceeds() async throws {
     let calls = RunCounter()
     let overloaded = Self.errorEvent(after: Self.startThenError, type: "overloaded_error", message: "Overloaded")
-    let transport = AnthropicTestTransport(
+    let transport = StubHTTPExchangeTransport(
       streaming: StubHTTPStreamingTransport { request in
         calls.increment()
         let call = calls.value
@@ -133,7 +133,7 @@ struct AnthropicFailureTests {
     ]
   )
   func mapsErrorStatus(status: Int, type: String, message: String, expected: ModelError) async throws {
-    let transport = AnthropicTestTransport(status: status, headers: ["request-id": "req_1"], transcript: errorBody(type: type, message: message))
+    let transport = StubHTTPExchangeTransport(status: status, headers: ["request-id": "req_1"], transcript: errorBody(type: type, message: message))
 
     let outcome = try await Self.run(transport)
 
@@ -151,7 +151,7 @@ struct AnthropicFailureTests {
     ]
   )
   func fallsBackToStatus(status: Int, body: String, expected: ModelError) async throws {
-    let outcome = try await Self.run(AnthropicTestTransport(status: status, transcript: body))
+    let outcome = try await Self.run(StubHTTPExchangeTransport(status: status, transcript: body))
 
     #expect(outcome.error == expected)
   }
@@ -160,7 +160,7 @@ struct AnthropicFailureTests {
   func truncatesMessage() async throws {
     let message = String(repeating: "x", count: 1_000)
 
-    let outcome = try await Self.run(AnthropicTestTransport(status: 400, transcript: errorBody(type: "invalid_request_error", message: message)))
+    let outcome = try await Self.run(StubHTTPExchangeTransport(status: 400, transcript: errorBody(type: "invalid_request_error", message: message)))
 
     #expect(outcome.error == .invalidRequest(String(repeating: "x", count: 300)))
   }
@@ -170,7 +170,7 @@ struct AnthropicFailureTests {
     arguments: [(429, "rate_limit_error", ModelError.rateLimited(retryAfter: .seconds(30))), (529, "overloaded_error", .overloaded(retryAfter: .seconds(30)))]
   )
   func honoursRetryAfter(status: Int, type: String, expected: ModelError) async throws {
-    let transport = AnthropicTestTransport(status: status, headers: ["Retry-After": "30"], transcript: errorBody(type: type, message: "Slow down"))
+    let transport = StubHTTPExchangeTransport(status: status, headers: ["Retry-After": "30"], transcript: errorBody(type: type, message: "Slow down"))
 
     let outcome = try await Self.run(transport)
 
@@ -181,7 +181,7 @@ struct AnthropicFailureTests {
   func feedsTrustedClock(status: Int) async throws {
     let clock = TrustedClock(monotonic: AnthropicFrozenTime())
     let body = status == 200 ? AnthropicFixtures.reply : errorBody(type: "overloaded_error", message: "Overloaded")
-    let transport = AnthropicTestTransport(status: status, headers: ["request-id": "req_1", "Date": "Tue, 10 Nov 2026 12:00:00 GMT"], transcript: body)
+    let transport = StubHTTPExchangeTransport(status: status, headers: ["request-id": "req_1", "Date": "Tue, 10 Nov 2026 12:00:00 GMT"], transcript: body)
 
     _ = try await Self.run(transport, trustedClock: clock)
 
@@ -190,7 +190,7 @@ struct AnthropicFailureTests {
 
   @Test("should do no work until the stream is iterated")
   func isLazy() async throws {
-    let transport = AnthropicTestTransport(transcript: AnthropicFixtures.reply)
+    let transport = StubHTTPExchangeTransport(transcript: AnthropicFixtures.reply)
     let credentialCalls = RunCounter()
     let provider = AnthropicFixtures.provider(transport, credential: try AnthropicFixtures.credential(), credentialCalls: credentialCalls)
 
@@ -208,7 +208,7 @@ struct AnthropicFailureTests {
   func cancelsMidStream() async throws {
     let prefix = try #require(AnthropicFixtures.reply.components(separatedBy: "event: content_block_stop").first)
     let bodyEnded = Signal()
-    let transport = AnthropicTestTransport(
+    let transport = StubHTTPExchangeTransport(
       streaming: StubHTTPStreamingTransport { request in
         let (body, continuation) = AsyncThrowingStream<Data, any Error>.makeStream()
         continuation.onTermination = { _ in bodyEnded.fire() }
@@ -241,5 +241,95 @@ struct AnthropicFailureTests {
     #expect(outcome.events == Array(AnthropicFixtures.replyEvents.prefix(2)))
     #expect(outcome.error == .cancelled)
     await bodyEnded.wait()
+  }
+
+  private static let overflow = Data(repeating: UInt8(ascii: "a"), count: (1 << 20) + 1)
+  private static let oversized = ModelError.malformedResponse("The reply holds a line or event larger than allowed.")
+
+  @Test("should cut a non-2xx body at 64 KiB and still map the error by status")
+  func capsErrorBody() async throws {
+    let chunk = Data(repeating: UInt8(ascii: "x"), count: 40_000)
+    let transport = StubHTTPExchangeTransport(status: 529, headers: ["request-id": "req_1"], steps: [.chunk(chunk), .chunk(chunk), .delay(.seconds(60)), .chunk(chunk)])
+
+    let outcome = try await Self.run(transport)
+
+    #expect(outcome.events.isEmpty)
+    #expect(outcome.error == .overloaded(retryAfter: nil))
+    #expect(transport.cancelledBodies == 1)
+  }
+
+  @Test("should not read the error type from a body cut at 64 KiB")
+  func ignoresCutErrorBody() async throws {
+    let message = String(repeating: "x", count: 70_000)
+    let whole = StubHTTPExchangeTransport(status: 400, transcript: errorBody(type: "invalid_request_error", message: String(repeating: "x", count: 100)))
+    let cut = StubHTTPExchangeTransport(status: 400, transcript: errorBody(type: "invalid_request_error", message: message))
+
+    #expect(try await Self.run(whole).error == .invalidRequest(String(repeating: "x", count: 100)))
+    #expect(try await Self.run(cut).error == .invalidRequest("The provider responded with status 400."))
+  }
+
+  @Test("should still read an error body that is under the cap")
+  func readsBodyUnderCap() async throws {
+    let message = String(repeating: "y", count: 60_000)
+
+    let outcome = try await Self.run(StubHTTPExchangeTransport(status: 403, transcript: errorBody(type: "permission_error", message: message)))
+
+    #expect(outcome.error == .forbidden(String(repeating: "y", count: 300)))
+  }
+
+  @Test("should leave retry-after unset on an error sent in the stream, whether or not the response carried the header")
+  func ignoresRetryAfterInStream() async throws {
+    let transcript = Self.errorEvent(after: Self.startThenError, type: "rate_limit_error", message: "Rate limited")
+
+    for headers in [["request-id": "req_1"], ["request-id": "req_1", "Retry-After": "30"]] {
+      let outcome = try await Self.run(StubHTTPExchangeTransport(headers: headers, transcript: transcript))
+
+      #expect(outcome.error == .rateLimited(retryAfter: nil))
+    }
+  }
+
+  @Test("should fail as malformed and stop reading when one line is larger than the limit")
+  func refusesOversizedLine() async throws {
+    let transport = StubHTTPExchangeTransport(headers: ["request-id": "req_1"], steps: [.chunk(Self.overflow), .delay(.seconds(60))])
+
+    let outcome = try await Self.run(transport)
+
+    #expect(outcome.events.isEmpty)
+    #expect(outcome.error == Self.oversized)
+    #expect(transport.cancelledBodies == 1)
+  }
+
+  @Test("should deliver the text sent before an oversized line, in the same chunk or an earlier one", arguments: [true, false])
+  func deliversTextBeforeOversizedLine(sameChunk: Bool) async throws {
+    let prefix = Data(try #require(AnthropicFixtures.reply.components(separatedBy: "event: content_block_stop").first).utf8)
+    let steps: [StubHTTPStreamingTransport.Step] =
+      sameChunk ? [.chunk(prefix + Self.overflow), .delay(.seconds(60))] : [.chunk(prefix), .chunk(Self.overflow), .delay(.seconds(60))]
+    let transport = StubHTTPExchangeTransport(headers: ["request-id": "req_1"], steps: steps)
+
+    let outcome = try await Self.run(transport)
+
+    #expect(outcome.events == Array(AnthropicFixtures.replyEvents.prefix(2)))
+    #expect(outcome.error == Self.oversized)
+    #expect(transport.cancelledBodies == 1)
+  }
+
+  @Test("should fail as malformed when the data of one event is larger than the limit")
+  func refusesOversizedEvent() async throws {
+    let line = Data(("data: " + String(repeating: "a", count: 500_000) + "\n").utf8)
+    let transport = StubHTTPExchangeTransport(headers: ["request-id": "req_1"], steps: (0..<20).map { _ in .chunk(line) } + [.delay(.seconds(60))])
+
+    let outcome = try await Self.run(transport)
+
+    #expect(outcome.error == Self.oversized)
+    #expect(transport.cancelledBodies == 1)
+  }
+
+  @Test("should never put the oversized payload in the error")
+  func keepsPayloadOutOfError() async throws {
+    let payload = Data(repeating: UInt8(ascii: "s"), count: (1 << 20) + 1)
+
+    let outcome = try await Self.run(StubHTTPExchangeTransport(steps: [.chunk(payload)]))
+
+    #expect(outcome.error?.errorDescription?.contains("sss") == false)
   }
 }

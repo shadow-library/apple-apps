@@ -65,8 +65,8 @@ private let emptyPage = #"{"data": [], "first_id": null, "has_more": false, "las
 
 @Suite("AnthropicProvider models and validation", .timeLimit(.minutes(1)))
 struct AnthropicModelsTests {
-  private static func plain(status: Int = 200, json: String, headers: [String: String] = [:]) -> AnthropicTestTransport {
-    AnthropicTestTransport(
+  private static func plain(status: Int = 200, json: String, headers: [String: String] = [:]) -> StubHTTPExchangeTransport {
+    StubHTTPExchangeTransport(
       plain: StubHTTPTransport { request in try StubHTTPTransport.response(to: request, statusCode: status, data: Data(json.utf8), headers: headers) }
     )
   }
@@ -77,7 +77,7 @@ struct AnthropicModelsTests {
 
   @Test("should follow pagination to the end and map ids, names and capabilities")
   func listsAllPages() async throws {
-    let transport = AnthropicTestTransport(
+    let transport = StubHTTPExchangeTransport(
       plain: StubHTTPTransport { request in
         let after = request.url.flatMap { URLComponents(url: $0, resolvingAgainstBaseURL: false) }?.queryItems?.first { $0.name == "after_id" }?.value
         return try StubHTTPTransport.response(to: request, statusCode: 200, data: Data((after == nil ? firstPage : secondPage).utf8))
@@ -166,7 +166,7 @@ struct AnthropicModelsTests {
 
   @Test("should report a key as unverified when the connection fails")
   func reportsUnverifiedOffline() async throws {
-    let transport = AnthropicTestTransport(plain: StubHTTPTransport(error: URLError(.notConnectedToInternet)))
+    let transport = StubHTTPExchangeTransport(plain: StubHTTPTransport(error: URLError(.notConnectedToInternet)))
     let provider = AnthropicFixtures.provider(transport, credential: try AnthropicFixtures.credential())
 
     #expect(try await provider.validate(try AnthropicFixtures.credential()) == .unverified(.transport(.notConnectedToInternet)))
@@ -192,5 +192,34 @@ struct AnthropicModelsTests {
     _ = try await provider.validate(try AnthropicFixtures.credential())
 
     #expect(clock.now() == .estimate(Date(timeIntervalSince1970: 1_794_312_000)))
+  }
+
+  @Test(
+    "should percent-encode a pagination cursor so it cannot add or alter query parameters",
+    arguments: [
+      ("a&limit=1", "a%26limit%3D1"), ("x+y", "x%2By"), ("k=v", "k%3Dv"), ("frag#ment", "frag%23ment"), ("with space", "with%20space"), ("100%", "100%25"),
+      ("a&b=c+d#e f", "a%26b%3Dc%2Bd%23e%20f"), ("café", "caf%C3%A9"), ("plain-ID_1.2~", "plain-ID_1.2~"),
+    ]
+  )
+  func encodesCursor(cursor: String, encoded: String) async throws {
+    let first = #"{"data": [], "first_id": null, "has_more": true, "last_id": \#(String(decoding: try JSONEncoder().encode(cursor), as: UTF8.self))}"#
+    let calls = RunCounter()
+    let transport = StubHTTPExchangeTransport(
+      plain: StubHTTPTransport { request in
+        calls.increment()
+        return try StubHTTPTransport.response(to: request, statusCode: 200, data: Data((calls.value == 1 ? first : emptyPage).utf8))
+      }
+    )
+    let provider = AnthropicFixtures.provider(transport, credential: try AnthropicFixtures.credential())
+
+    _ = try await provider.models()
+
+    let second = try #require(transport.plain.requests.last?.url)
+    let components = try #require(URLComponents(url: second, resolvingAgainstBaseURL: false))
+    #expect(components.percentEncodedQuery == "limit=1000&after_id=\(encoded)")
+    #expect(components.queryItems?.map(\.name) == ["limit", "after_id"])
+    #expect(components.queryItems?.last?.value == cursor)
+    #expect(components.fragment == nil)
+    #expect(second.path() == "/v1/models")
   }
 }

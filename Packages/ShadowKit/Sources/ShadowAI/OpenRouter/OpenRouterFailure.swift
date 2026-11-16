@@ -64,8 +64,7 @@ enum OpenRouterFailure {
   }
 
   static func retryAfter(_ response: HTTPURLResponse) -> Duration? {
-    guard let value = response.value(forHTTPHeaderField: "Retry-After") else { return nil }
-    return NetworkError.unacceptableStatus(code: response.statusCode, headers: ["retry-after": value], body: Data()).retryAfter
+    NetworkError.retryAfter(in: response.lowercasedHeaderFields)
   }
 
   // OpenRouter documents no code or error_type for a data-policy mismatch, so its message is the only signal.

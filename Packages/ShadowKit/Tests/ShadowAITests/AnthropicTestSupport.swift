@@ -6,31 +6,9 @@ import Testing
 
 @testable import ShadowAI
 
-final class AnthropicTestTransport: HTTPTransport, HTTPStreamingTransport {
-  let streaming: StubHTTPStreamingTransport
-  let plain: StubHTTPTransport
-
-  init(streaming: StubHTTPStreamingTransport = StubHTTPStreamingTransport(steps: []), plain: StubHTTPTransport = StubHTTPTransport()) {
-    self.streaming = streaming
-    self.plain = plain
-  }
-
+extension StubHTTPExchangeTransport {
   convenience init(status: Int = 200, headers: [String: String] = ["request-id": "req_1"], transcript: String) {
-    self.init(streaming: StubHTTPStreamingTransport(status: status, headers: headers, steps: [.text(transcript)]))
-  }
-
-  convenience init(plain: StubHTTPTransport) {
-    self.init(streaming: StubHTTPStreamingTransport(steps: []), plain: plain)
-  }
-
-  var requests: [URLRequest] { streaming.requests + plain.requests }
-
-  func send(_ request: URLRequest) async throws -> (Data, HTTPURLResponse) {
-    try await plain.send(request)
-  }
-
-  func stream(_ request: URLRequest) async throws -> HTTPStreamingResponse {
-    try await streaming.stream(request)
+    self.init(status: status, headers: headers, steps: [.text(transcript)])
   }
 }
 
@@ -72,7 +50,7 @@ enum AnthropicFixtures {
   }
 
   static func provider(
-    _ transport: AnthropicTestTransport,
+    _ transport: StubHTTPExchangeTransport,
     configuration: AnthropicConfiguration = .init(),
     credential: ProviderCredential,
     credentialCalls: RunCounter = RunCounter(),

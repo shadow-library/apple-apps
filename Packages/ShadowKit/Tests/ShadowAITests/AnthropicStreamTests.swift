@@ -9,7 +9,7 @@ import Testing
 @Suite("AnthropicProvider streams", .timeLimit(.minutes(1)))
 struct AnthropicStreamTests {
   private static func run(_ transcript: String, headers: [String: String] = ["request-id": "req_1"]) async throws -> (events: [ModelEvent], error: ModelError?) {
-    let transport = AnthropicTestTransport(headers: headers, transcript: transcript)
+    let transport = StubHTTPExchangeTransport(headers: headers, transcript: transcript)
     return await AnthropicFixtures.drain(AnthropicFixtures.provider(transport, credential: try AnthropicFixtures.credential()).stream(AnthropicFixtures.request))
   }
 
@@ -138,7 +138,7 @@ struct AnthropicStreamTests {
       """#
     let bytes = Array(transcript.utf8)
     let steps = stride(from: 0, to: bytes.count, by: chunkSize).map { StubHTTPStreamingTransport.Step.chunk(Data(bytes[$0..<min($0 + chunkSize, bytes.count)])) }
-    let transport = AnthropicTestTransport(streaming: StubHTTPStreamingTransport(headers: ["request-id": "req_1"], steps: steps))
+    let transport = StubHTTPExchangeTransport(streaming: StubHTTPStreamingTransport(headers: ["request-id": "req_1"], steps: steps))
 
     let outcome = await AnthropicFixtures.drain(AnthropicFixtures.provider(transport, credential: try AnthropicFixtures.credential()).stream(AnthropicFixtures.request))
 
@@ -391,7 +391,7 @@ struct AnthropicStreamTests {
   @Test("should map a transport failure in the middle of the body")
   func mapsBodyTransportFailure() async throws {
     let prefix = try #require(AnthropicFixtures.reply.components(separatedBy: "event: content_block_stop").first)
-    let transport = AnthropicTestTransport(
+    let transport = StubHTTPExchangeTransport(
       streaming: StubHTTPStreamingTransport(headers: ["request-id": "req_1"], steps: [.text(prefix), .failure(URLError(.networkConnectionLost))])
     )
 
@@ -403,11 +403,80 @@ struct AnthropicStreamTests {
 
   @Test("should map a transport failure before any response")
   func mapsConnectionFailure() async throws {
-    let transport = AnthropicTestTransport(streaming: StubHTTPStreamingTransport { _ in throw URLError(.notConnectedToInternet) })
+    let transport = StubHTTPExchangeTransport(streaming: StubHTTPStreamingTransport { _ in throw URLError(.notConnectedToInternet) })
 
     let outcome = await AnthropicFixtures.drain(AnthropicFixtures.provider(transport, credential: try AnthropicFixtures.credential()).stream(AnthropicFixtures.request))
 
     #expect(outcome.events.isEmpty)
     #expect(outcome.error == .transport(.notConnectedToInternet))
+  }
+
+  private static func usageTranscript(start: String?, delta: String?) -> String {
+    let startUsage = start.map { #", "usage": \#($0)"# } ?? ""
+    let deltaUsage = delta.map { #", "usage": \#($0)"# } ?? ""
+    return #"""
+      event: message_start
+      data: {"type": "message_start", "message": {"id": "msg_1", "type": "message", "role": "assistant", "content": [], "model": "claude-opus-5-5"\#(startUsage)}}
+
+      event: message_delta
+      data: {"type": "message_delta", "delta": {"stop_reason": "end_turn", "stop_sequence": null}\#(deltaUsage)}
+
+      event: message_stop
+      data: {"type": "message_stop"}
+
+
+      """#
+  }
+
+  @Test(
+    "should clamp negative token counts to zero",
+    arguments: [
+      (#"{"input_tokens": -4, "output_tokens": -9, "cache_read_input_tokens": -1, "cache_creation_input_tokens": -2}"#, TokenUsage(input: 0, output: 0)),
+      (#"{"input_tokens": 3, "output_tokens": -9, "cache_creation": {"ephemeral_5m_input_tokens": -7, "ephemeral_1h_input_tokens": -8}}"#, TokenUsage(input: 3, output: 0)),
+    ]
+  )
+  func clampsNegativeCounts(usage: String, expected: TokenUsage) async throws {
+    let outcome = try await Self.run(Self.usageTranscript(start: usage, delta: nil))
+
+    #expect(outcome.error == nil)
+    #expect(outcome.events.last == .finished(usage: expected, reportedCost: nil, stop: .endTurn))
+  }
+
+  @Test("should carry a count of the largest representable size")
+  func carriesLargestCount() async throws {
+    let outcome = try await Self.run(Self.usageTranscript(start: #"{"input_tokens": 9223372036854775807, "output_tokens": 1}"#, delta: nil))
+
+    #expect(outcome.error == nil)
+    #expect(outcome.events.last == .finished(usage: TokenUsage(input: Int.max, output: 1), reportedCost: nil, stop: .endTurn))
+  }
+
+  @Test("should fail as malformed on a count beyond 64 bits instead of wrapping it", arguments: ["input_tokens", "output_tokens", "cache_read_input_tokens"])
+  func refusesEnormousCount(field: String) async throws {
+    let outcome = try await Self.run(Self.usageTranscript(start: #"{"\#(field)": 99999999999999999999}"#, delta: nil))
+
+    #expect(outcome.events.isEmpty)
+    #expect(outcome.error == .malformedResponse("The provider sent an unreadable message_start event."))
+  }
+
+  @Test("should fail as malformed on an enormous count in the closing delta")
+  func refusesEnormousClosingCount() async throws {
+    let outcome = try await Self.run(Self.usageTranscript(start: #"{"input_tokens": 5, "output_tokens": 1}"#, delta: #"{"output_tokens": 99999999999999999999}"#))
+
+    #expect(outcome.events == [.started(requestID: "req_1", generationID: "msg_1")])
+    #expect(outcome.error == .malformedResponse("The provider sent an unreadable message_delta event."))
+  }
+
+  @Test(
+    "should report zero for counts the provider never sent",
+    arguments: [
+      (String?.none, String?.none, TokenUsage(input: 0, output: 0)), (nil, #"{"output_tokens": 6}"#, TokenUsage(input: 0, output: 6)),
+      (#"{"input_tokens": 8}"#, nil, TokenUsage(input: 8, output: 0)), (#"{}"#, #"{}"#, TokenUsage(input: 0, output: 0)),
+    ]
+  )
+  func defaultsMissingCounts(start: String?, delta: String?, expected: TokenUsage) async throws {
+    let outcome = try await Self.run(Self.usageTranscript(start: start, delta: delta))
+
+    #expect(outcome.error == nil)
+    #expect(outcome.events.last == .finished(usage: expected, reportedCost: nil, stop: .endTurn))
   }
 }

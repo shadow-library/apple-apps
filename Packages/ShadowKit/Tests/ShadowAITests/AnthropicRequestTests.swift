@@ -1,5 +1,6 @@
 import Foundation
 import ShadowCore
+import ShadowTestSupport
 import Testing
 
 @testable import ShadowAI
@@ -9,7 +10,7 @@ struct AnthropicRequestTests {
   private static let allowedMembers: Set<String> = ["model", "max_tokens", "stream", "system", "messages", "output_config", "cache_control"]
 
   private static func sent(_ request: ModelRequest) async throws -> URLRequest {
-    let transport = AnthropicTestTransport(transcript: AnthropicFixtures.reply)
+    let transport = StubHTTPExchangeTransport(transcript: AnthropicFixtures.reply)
     let provider = AnthropicFixtures.provider(transport, credential: try AnthropicFixtures.credential())
     let outcome = await AnthropicFixtures.drain(provider.stream(request))
     #expect(outcome.error == nil)
@@ -58,7 +59,7 @@ struct AnthropicRequestTests {
     arguments: [(AnthropicConfiguration(), TimeInterval(300)), (AnthropicConfiguration(idleTimeout: .seconds(90)), TimeInterval(90))]
   )
   func setsIdleTimeout(configuration: AnthropicConfiguration, expected: TimeInterval) async throws {
-    let transport = AnthropicTestTransport(transcript: AnthropicFixtures.reply)
+    let transport = StubHTTPExchangeTransport(transcript: AnthropicFixtures.reply)
     let provider = AnthropicFixtures.provider(transport, configuration: configuration, credential: try AnthropicFixtures.credential())
 
     _ = await AnthropicFixtures.drain(provider.stream(AnthropicFixtures.request))
@@ -150,7 +151,7 @@ struct AnthropicRequestTests {
 
   @Test("should send nothing when the credential is for another origin")
   func refusesForeignCredential() async throws {
-    let transport = AnthropicTestTransport(transcript: AnthropicFixtures.reply)
+    let transport = StubHTTPExchangeTransport(transcript: AnthropicFixtures.reply)
     let provider = AnthropicFixtures.provider(transport, credential: try AnthropicFixtures.credential("https://gateway.example"))
 
     let outcome = await AnthropicFixtures.drain(provider.stream(AnthropicFixtures.request))
@@ -165,7 +166,7 @@ struct AnthropicRequestTests {
 
   @Test("should send the key to a configured gateway origin that the credential names")
   func sendsToConfiguredGateway() async throws {
-    let transport = AnthropicTestTransport(transcript: AnthropicFixtures.reply)
+    let transport = StubHTTPExchangeTransport(transcript: AnthropicFixtures.reply)
     let configuration = AnthropicConfiguration(origin: try #require(URL(string: "https://gateway.example")))
     let provider = AnthropicFixtures.provider(transport, configuration: configuration, credential: try AnthropicFixtures.credential("https://gateway.example"))
 
@@ -177,7 +178,7 @@ struct AnthropicRequestTests {
 
   @Test("should reject an invalid request without sending it")
   func rejectsInvalidRequest() async throws {
-    let transport = AnthropicTestTransport(transcript: AnthropicFixtures.reply)
+    let transport = StubHTTPExchangeTransport(transcript: AnthropicFixtures.reply)
     let provider = AnthropicFixtures.provider(transport, credential: try AnthropicFixtures.credential())
     var request = AnthropicFixtures.request
     request.messages = [.assistant("Hi")]

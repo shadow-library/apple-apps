@@ -214,4 +214,29 @@ struct OpenRouterOAuthTests {
     }
     #expect(plain.requests.isEmpty)
   }
+
+  @Test(
+    "should refuse a lookalike of a loopback host",
+    arguments: [
+      "http://localhost.evil.example", "http://localhost.evil.example:8080/cb", "http://127.0.0.1.evil.example/cb", "http://evil-localhost/cb", "http://localhost@evil.example/cb",
+      "http://127.0.0.1@evil.example/cb", "http://127.0.0.2/cb", "http://0.0.0.0/cb", "http://[::2]/cb",
+    ]
+  )
+  func refusesLookalikeHosts(callback: String) throws {
+    let url = try #require(URL(string: callback))
+
+    #expect(throws: ModelError.invalidRequest("The sign-in callback must be https, a loopback address or a registered app scheme.")) {
+      try Self.registered.authorizationURL(callback: url, challenge: OpenRouterOAuth.makeChallenge())
+    }
+  }
+
+  @Test("should refuse the long-hand form of the IPv6 loopback address, which it does not recognise")
+  func refusesLongHandLoopback() throws {
+    let url = try #require(URL(string: "http://[0:0:0:0:0:0:0:1]/cb"))
+
+    #expect(!OpenRouterOAuth.isLoopback(url))
+    #expect(throws: ModelError.invalidRequest("The sign-in callback must be https, a loopback address or a registered app scheme.")) {
+      try Self.registered.authorizationURL(callback: url, challenge: OpenRouterOAuth.makeChallenge())
+    }
+  }
 }

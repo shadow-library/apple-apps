@@ -18,12 +18,12 @@ struct OpenRouterStreamTests {
     """
   private static let expectedUsage = TokenUsage(input: 100, output: 40, cacheRead: 1000, cacheWriteShort: 100)
 
-  private static func run(_ transport: OpenRouterTestTransport, trustedClock: TrustedClock? = nil) async throws -> (events: [ModelEvent], error: ModelError?) {
+  private static func run(_ transport: StubHTTPExchangeTransport, trustedClock: TrustedClock? = nil) async throws -> (events: [ModelEvent], error: ModelError?) {
     await F.drain(try F.provider(transport, trustedClock: trustedClock).stream(F.request))
   }
 
   private static func run(status: Int = 200, headers: [String: String] = [:], _ sse: String) async throws -> (events: [ModelEvent], error: ModelError?) {
-    try await run(OpenRouterTestTransport(status: status, headers: headers, sse: sse))
+    try await run(StubHTTPExchangeTransport(status: status, headers: headers, sse: sse))
   }
 
   @Test("should deliver text, then usage and cost from the last chunk, across keep-alive comments")
@@ -49,7 +49,7 @@ struct OpenRouterStreamTests {
     let sse = F.sse(F.chunk("Café ☕️"), F.chunk(" done", finish: "stop"), F.usageChunk(Self.usage), "[DONE]")
     let bytes = Array(sse.utf8)
     let steps = stride(from: 0, to: bytes.count, by: 7).map { StubHTTPStreamingTransport.Step.chunk(Data(bytes[$0..<min($0 + 7, bytes.count)])) }
-    let transport = OpenRouterTestTransport(streaming: StubHTTPStreamingTransport(steps: steps))
+    let transport = StubHTTPExchangeTransport(streaming: StubHTTPStreamingTransport(steps: steps))
 
     let outcome = try await Self.run(transport)
 
@@ -220,7 +220,7 @@ struct OpenRouterStreamTests {
   @Test("should take the generation id from the response header before any chunk")
   func startsFromHeader() async throws {
     let sse = F.sse(F.errorChunk(code: 429, message: "Slow down", type: "rate_limit_exceeded", id: "gen-x"))
-    let transport = OpenRouterTestTransport(headers: ["X-Generation-Id": "gen-header"], sse: sse)
+    let transport = StubHTTPExchangeTransport(headers: ["X-Generation-Id": "gen-header"], sse: sse)
 
     let outcome = try await Self.run(transport)
 
@@ -318,7 +318,7 @@ struct OpenRouterStreamTests {
   @Test("should feed the response date to the trusted clock")
   func feedsTrustedClock() async throws {
     let clock = TrustedClock(monotonic: OpenRouterFrozenTime())
-    let transport = OpenRouterTestTransport(headers: ["Date": "Thu, 01 Jan 2026 00:00:00 GMT"], sse: F.sse(F.chunk("a", finish: "stop"), "[DONE]"))
+    let transport = StubHTTPExchangeTransport(headers: ["Date": "Thu, 01 Jan 2026 00:00:00 GMT"], sse: F.sse(F.chunk("a", finish: "stop"), "[DONE]"))
 
     _ = try await Self.run(transport, trustedClock: clock)
 
@@ -328,7 +328,7 @@ struct OpenRouterStreamTests {
   @Test("should feed the date of an error response to the trusted clock too")
   func feedsTrustedClockOnError() async throws {
     let clock = TrustedClock(monotonic: OpenRouterFrozenTime())
-    let transport = OpenRouterTestTransport(status: 500, headers: ["Date": "Thu, 01 Jan 2026 00:00:00 GMT"], sse: "")
+    let transport = StubHTTPExchangeTransport(status: 500, headers: ["Date": "Thu, 01 Jan 2026 00:00:00 GMT"], sse: "")
 
     _ = try await Self.run(transport, trustedClock: clock)
 
@@ -337,7 +337,7 @@ struct OpenRouterStreamTests {
 
   @Test("should map a transport failure before the response")
   func mapsTransportFailure() async throws {
-    let transport = OpenRouterTestTransport(streaming: StubHTTPStreamingTransport { _ in throw URLError(.notConnectedToInternet) })
+    let transport = StubHTTPExchangeTransport(streaming: StubHTTPStreamingTransport { _ in throw URLError(.notConnectedToInternet) })
 
     let outcome = try await Self.run(transport)
 
@@ -346,7 +346,7 @@ struct OpenRouterStreamTests {
 
   @Test("should map a connection lost mid-body")
   func mapsBodyFailure() async throws {
-    let transport = OpenRouterTestTransport(streaming: StubHTTPStreamingTransport(steps: [.text(F.sse(F.chunk("a"))), .failure(URLError(.networkConnectionLost))]))
+    let transport = StubHTTPExchangeTransport(streaming: StubHTTPStreamingTransport(steps: [.text(F.sse(F.chunk("a"))), .failure(URLError(.networkConnectionLost))]))
 
     let outcome = try await Self.run(transport)
 
@@ -366,7 +366,7 @@ struct OpenRouterStreamTests {
       }
       return try StubHTTPStreamingTransport.response(to: request, steps: [.text(call == 1 ? limited : success)])
     }
-    let provider = try F.provider(OpenRouterTestTransport(streaming: streaming))
+    let provider = try F.provider(StubHTTPExchangeTransport(streaming: streaming))
     let clock = ManualClock(.advancesOnSleep)
     let retrying = RetryingProvider(provider, policy: RetryPolicy(maxAttempts: 3, baseDelay: .seconds(1)), clock: clock, random: { 0 })
 
@@ -395,7 +395,7 @@ struct OpenRouterStreamTests {
       continuation.yield(Data(F.sse(F.chunk("First")).utf8))
       return HTTPStreamingResponse(response: response, body: body)
     }
-    let provider = try F.provider(OpenRouterTestTransport(streaming: streaming))
+    let provider = try F.provider(StubHTTPExchangeTransport(streaming: streaming))
     let sawText = Signal()
     let consumer = Task { () -> ModelError? in
       do throws(ModelError) {
@@ -411,6 +411,53 @@ struct OpenRouterStreamTests {
 
     #expect(await consumer.value == .cancelled)
     await bodyEnded.wait()
+  }
+
+  private static let oversized = ModelError.malformedResponse("The reply holds a line or event larger than allowed.")
+  private static let overflow = Data(repeating: UInt8(ascii: "a"), count: (1 << 20) + 1)
+
+  @Test("should fail as malformed and stop reading when one line is larger than the limit")
+  func refusesOversizedLine() async throws {
+    let transport = StubHTTPExchangeTransport(streaming: StubHTTPStreamingTransport(steps: [.chunk(Self.overflow), .delay(.seconds(60))]))
+
+    let outcome = try await Self.run(transport)
+
+    #expect(outcome.error == Self.oversized)
+    #expect(transport.cancelledBodies == 1)
+  }
+
+  @Test("should deliver the text sent before an oversized line, in the same chunk or an earlier one", arguments: [true, false])
+  func deliversTextBeforeOversizedLine(sameChunk: Bool) async throws {
+    let prefix = Data(F.sse(F.chunk("a")).utf8)
+    let steps: [StubHTTPStreamingTransport.Step] =
+      sameChunk ? [.chunk(prefix + Self.overflow), .delay(.seconds(60))] : [.chunk(prefix), .chunk(Self.overflow), .delay(.seconds(60))]
+    let transport = StubHTTPExchangeTransport(streaming: StubHTTPStreamingTransport(steps: steps))
+
+    let outcome = try await Self.run(transport)
+
+    #expect(outcome.events == [.started(requestID: nil, generationID: "gen-1"), .textDelta("a")])
+    #expect(outcome.error == Self.oversized)
+    #expect(transport.cancelledBodies == 1)
+  }
+
+  @Test("should fail as malformed when the data of one event is larger than the limit")
+  func refusesOversizedEvent() async throws {
+    let line = Data(("data: " + String(repeating: "a", count: 500_000) + "\n").utf8)
+    let transport = StubHTTPExchangeTransport(streaming: StubHTTPStreamingTransport(steps: (0..<20).map { _ in .chunk(line) } + [.delay(.seconds(60))]))
+
+    let outcome = try await Self.run(transport)
+
+    #expect(outcome.error == Self.oversized)
+    #expect(transport.cancelledBodies == 1)
+  }
+
+  @Test("should not mistake text after a completed stream for an oversized line")
+  func ignoresBytesAfterDone() async throws {
+    let sse = F.sse(F.chunk("a", finish: "stop"), F.usageChunk(Self.usage), "[DONE]")
+
+    let outcome = try await Self.run(StubHTTPExchangeTransport(streaming: StubHTTPStreamingTransport(steps: [.text(sse), .chunk(Self.overflow)])))
+
+    #expect(outcome.error == nil)
   }
 }
 

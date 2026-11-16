@@ -25,8 +25,8 @@ enum AnthropicErrors {
     case "authentication_error": return .authentication
     case "permission_error": return .forbidden(message)
     case "billing_error": return .insufficientCredits
-    case "rate_limit_error": return .rateLimited(retryAfter: network.retryAfter)
-    case "overloaded_error": return .overloaded(retryAfter: network.retryAfter)
+    case "rate_limit_error": return .rateLimited(retryAfter: NetworkError.retryAfter(in: headers))
+    case "overloaded_error": return .overloaded(retryAfter: NetworkError.retryAfter(in: headers))
     case "invalid_request_error", "not_found_error", "request_too_large", "conflict_error": return .invalidRequest(message)
     case "api_error", "timeout_error": return (500...599).contains(status) ? .server(status: status) : ModelError(network)
     default: return ModelError(network)

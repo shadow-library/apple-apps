@@ -6,25 +6,9 @@ import Testing
 
 @testable import ShadowAI
 
-final class OpenRouterTestTransport: HTTPTransport, HTTPStreamingTransport {
-  let plain: StubHTTPTransport
-  let streaming: StubHTTPStreamingTransport
-
-  init(plain: StubHTTPTransport = StubHTTPTransport(error: URLError(.unsupportedURL)), streaming: StubHTTPStreamingTransport = StubHTTPStreamingTransport(steps: [])) {
-    self.plain = plain
-    self.streaming = streaming
-  }
-
+extension StubHTTPExchangeTransport {
   convenience init(status: Int = 200, headers: [String: String] = [:], sse: String) {
-    self.init(streaming: StubHTTPStreamingTransport(status: status, headers: headers, steps: [.text(sse)]))
-  }
-
-  func send(_ request: URLRequest) async throws -> (Data, HTTPURLResponse) {
-    try await plain.send(request)
-  }
-
-  func stream(_ request: URLRequest) async throws -> HTTPStreamingResponse {
-    try await streaming.stream(request)
+    self.init(status: status, headers: headers, steps: [.text(sse)])
   }
 }
 
@@ -34,7 +18,7 @@ enum OpenRouterFixtures {
   static let request = ModelRequest(model: "anthropic/claude-sonnet-5", system: [ContextSegment(text: "Be brief.")], messages: [.user("Hi")], maxOutputTokens: 256)
 
   static func provider(
-    _ transport: OpenRouterTestTransport,
+    _ transport: StubHTTPExchangeTransport,
     origin: String = origin,
     configuration: OpenRouterConfiguration = .init(),
     trustedClock: TrustedClock? = nil

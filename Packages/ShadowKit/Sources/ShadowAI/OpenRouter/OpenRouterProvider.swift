@@ -6,6 +6,7 @@ public struct OpenRouterProvider: ModelProvider {
   public typealias Transport = any HTTPTransport & HTTPStreamingTransport
 
   private static let endOfBody = Data("\n\n".utf8)
+  private static let oversizedReply = ModelError.malformedResponse("The reply holds a line or event larger than allowed.")
 
   private let configuration: OpenRouterConfiguration
   private let credential: @Sendable () async throws(ModelError) -> ProviderCredential
@@ -42,14 +43,14 @@ public struct OpenRouterProvider: ModelProvider {
       var parser = ServerSentEventParser()
       do {
         for try await bytes in response.body {
-          try deliver(parser.consume(bytes), into: &state, continuation: continuation)
+          try deliver(bytes, parsedBy: &parser, into: &state, continuation: continuation)
           if state.isDone { break }
         }
       } catch {
         throw ModelError(converting: error)
       }
       if Task.isCancelled { throw .cancelled }
-      if !state.isDone { try deliver(parser.consume(Self.endOfBody), into: &state, continuation: continuation) }
+      if !state.isDone { try deliver(Self.endOfBody, parsedBy: &parser, into: &state, continuation: continuation) }
       try continuation.yield(try state.finished())
     }
   }
@@ -121,11 +122,20 @@ public struct OpenRouterProvider: ModelProvider {
     request.setValue("Bearer \(credential.secret)", forHTTPHeaderField: "Authorization")
   }
 
-  private func deliver(_ events: [ServerSentEvent], into state: inout OpenRouterStreamState, continuation: ModelStream.Continuation) throws(ModelError) {
+  private func deliver(_ bytes: Data, parsedBy parser: inout ServerSentEventParser, into state: inout OpenRouterStreamState, continuation: ModelStream.Continuation)
+    throws(ModelError)
+  {
+    let events: [ServerSentEvent]
+    do {
+      events = try parser.parse(bytes)
+    } catch {
+      throw Self.oversizedReply
+    }
     for event in events {
       try state.ingest(event.data) { modelEvent throws(ModelError) in try continuation.yield(modelEvent) }
       if state.isDone { return }
     }
+    if parser.failure != nil { throw Self.oversizedReply }
   }
 
   private func record(_ response: HTTPURLResponse) {

@@ -41,6 +41,8 @@ public struct AnthropicProvider: ModelProvider {
           for modelEvent in try decoder.consume(event) { try continuation.yield(modelEvent) }
           if decoder.isComplete { return }
         }
+      } catch is ServerSentEventError {
+        throw .malformedResponse("The reply holds a line or event larger than allowed.")
       } catch {
         throw ModelError(converting: error)
       }
@@ -99,7 +101,7 @@ public struct AnthropicProvider: ModelProvider {
     guard (200..<300).contains(streaming.response.statusCode) else {
       let body = await Self.collect(streaming.body, limit: Self.errorBodyLimit)
       if Task.isCancelled { throw .cancelled }
-      throw AnthropicErrors.http(status: streaming.response.statusCode, headers: Self.headers(of: streaming.response), body: body)
+      throw AnthropicErrors.http(status: streaming.response.statusCode, headers: streaming.response.lowercasedHeaderFields, body: body)
     }
     return streaming
   }
@@ -114,7 +116,7 @@ public struct AnthropicProvider: ModelProvider {
       throw ModelError(converting: error)
     }
     record(response)
-    guard (200..<300).contains(response.statusCode) else { throw AnthropicErrors.http(status: response.statusCode, headers: Self.headers(of: response), body: data) }
+    guard (200..<300).contains(response.statusCode) else { throw AnthropicErrors.http(status: response.statusCode, headers: response.lowercasedHeaderFields, body: data) }
     do {
       return try JSONDecoder().decode(AnthropicModelPage.self, from: data)
     } catch {
@@ -138,14 +140,5 @@ public struct AnthropicProvider: ModelProvider {
       return data
     }
     return data
-  }
-
-  private static func headers(of response: HTTPURLResponse) -> [String: String] {
-    var headers: [String: String] = [:]
-    for (name, value) in response.allHeaderFields {
-      guard let name = name as? String, let value = value as? String else { continue }
-      headers[name.lowercased()] = value
-    }
-    return headers
   }
 }
