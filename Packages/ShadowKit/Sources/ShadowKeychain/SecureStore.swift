@@ -27,7 +27,10 @@ public enum SecureStoreError: ShadowError {
 public protocol SecureStore: Sendable {
   func data(forKey key: String) throws(SecureStoreError) -> Data?
   func setData(_ data: Data, forKey key: String) throws(SecureStoreError)
+  /// Stores the value only when no item exists for the key. Returns false, and changes nothing, when one already exists.
+  func insertData(_ data: Data, forKey key: String) throws(SecureStoreError) -> Bool
   func removeValue(forKey key: String) throws(SecureStoreError)
+  func allKeys() throws(SecureStoreError) -> [String]
 }
 
 extension SecureStore {
@@ -41,6 +44,10 @@ extension SecureStore {
     try setData(Data(string.utf8), forKey: key)
   }
 
+  public func insertString(_ string: String, forKey key: String) throws(SecureStoreError) -> Bool {
+    try insertData(Data(string.utf8), forKey: key)
+  }
+
   public func value<Value: Decodable>(_ type: Value.Type = Value.self, forKey key: String, decoder: JSONDecoder = JSONDecoder()) throws(SecureStoreError) -> Value? {
     guard let data = try data(forKey: key) else { return nil }
     do {
@@ -51,12 +58,18 @@ extension SecureStore {
   }
 
   public func setValue<Value: Encodable>(_ value: Value, forKey key: String, encoder: JSONEncoder = JSONEncoder()) throws(SecureStoreError) {
-    let data: Data
+    try setData(encode(value, with: encoder), forKey: key)
+  }
+
+  public func insertValue<Value: Encodable>(_ value: Value, forKey key: String, encoder: JSONEncoder = JSONEncoder()) throws(SecureStoreError) -> Bool {
+    try insertData(encode(value, with: encoder), forKey: key)
+  }
+
+  private func encode<Value: Encodable>(_ value: Value, with encoder: JSONEncoder) throws(SecureStoreError) -> Data {
     do {
-      data = try encoder.encode(value)
+      return try encoder.encode(value)
     } catch {
       throw .encoding(String(describing: error))
     }
-    try setData(data, forKey: key)
   }
 }

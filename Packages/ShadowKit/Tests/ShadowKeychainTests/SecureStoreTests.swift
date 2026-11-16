@@ -42,4 +42,56 @@ struct SecureStoreTests {
       return
     }
   }
+
+  @Test("should insert once and never overwrite an existing value")
+  func insertsOnce() throws {
+    let store = InMemorySecureStore()
+
+    #expect(try store.insertString("first", forKey: "token"))
+    #expect(try store.insertString("second", forKey: "token") == false)
+    #expect(try store.string(forKey: "token") == "first")
+
+    let credentials = Credentials(accessToken: "access", refreshToken: "refresh")
+    #expect(try store.insertValue(credentials, forKey: "credentials"))
+    #expect(try store.insertValue(Credentials(accessToken: "other", refreshToken: "other"), forKey: "credentials") == false)
+    #expect(try store.value(Credentials.self, forKey: "credentials") == credentials)
+  }
+
+  @Test("should insert again once the value is removed")
+  func insertsAfterRemoval() throws {
+    let store = InMemorySecureStore(["token": Data("first".utf8)])
+
+    try store.removeValue(forKey: "token")
+
+    #expect(try store.insertString("second", forKey: "token"))
+    #expect(try store.string(forKey: "token") == "second")
+  }
+
+  @Test("should list every key and none for an unused store")
+  func listsKeys() throws {
+    let store = InMemorySecureStore()
+    #expect(try store.allKeys().isEmpty)
+
+    try store.setString("a", forKey: "b")
+    #expect(try store.insertString("a", forKey: "a"))
+
+    #expect(try store.allKeys() == ["a", "b"])
+  }
+
+  @Test("should leave exactly one winner when many tasks insert the same key")
+  func insertsConcurrently() async throws {
+    let store = InMemorySecureStore()
+
+    let winners = await withTaskGroup(of: Int?.self) { group in
+      for index in 0..<200 {
+        group.addTask { (try? store.insertString("value-\(index)", forKey: "token")) == true ? index : nil }
+      }
+      return await group.reduce(into: [Int]()) { winners, winner in
+        if let winner { winners.append(winner) }
+      }
+    }
+
+    #expect(winners.count == 1)
+    #expect(try store.string(forKey: "token") == winners.first.map { "value-\($0)" })
+  }
 }
