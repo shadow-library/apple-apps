@@ -89,14 +89,14 @@ private struct DeliveryTable: View {
 
   var body: some View {
     ShadowTable(rows.sorted(using: sortOrder), selection: $selection, sortOrder: $sortOrder, isLoading: isLoading, loadingLabel: "Loading deliveries", compactSort: compactSort) {
-      TableColumn(Text("Template").shadowTableHeader(), value: \.template) { ShadowTableIdentifier($0.template) }
+      TableColumn(Text("Template").shadowTableHeader(), value: \.template) { ShadowTableIdentifier($0.template).shadowTableCell(row: $0) }
         .width(min: 180, ideal: 240)
-      TableColumn(Text("Status").shadowTableHeader(), value: \.status) { $0.status.badge }
+      TableColumn(Text("Status").shadowTableHeader(), value: \.status) { $0.status.badge.shadowTableCell(row: $0) }
         .width(min: 96, ideal: 120)
-      TableColumn(Text("Sent").shadowTableHeader(), value: \.sent) { ShadowTableNumber(Text($0.sent, format: .number)) }
+      TableColumn(Text("Sent").shadowTableHeader(), value: \.sent) { ShadowTableNumber(Text($0.sent, format: .number)).shadowTableCell(row: $0) }
         .width(min: 64, ideal: 88)
         .alignment(.trailing)
-      TableColumn(Text("Time").shadowTableHeader(), value: \.time) { ShadowTableNumber(Text($0.time, format: .dateTime.hour().minute())) }
+      TableColumn(Text("Time").shadowTableHeader(), value: \.time) { ShadowTableNumber(Text($0.time, format: .dateTime.hour().minute())).shadowTableCell(row: $0) }
         .width(min: 56, ideal: 72)
         .alignment(.trailing)
     } compact: { delivery in

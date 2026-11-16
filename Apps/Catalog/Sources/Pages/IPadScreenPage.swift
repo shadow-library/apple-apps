@@ -257,14 +257,14 @@ private struct ForgeChapters: View {
 
   private var table: some View {
     ShadowTable(rows, selection: $selection, sortOrder: $sortOrder) {
-      TableColumn(Text("#").shadowTableHeader(), value: \.id) { ShadowTableNumber(Text($0.id, format: .number.grouping(.never))) }
+      TableColumn(Text("#").shadowTableHeader(), value: \.id) { ShadowTableNumber(Text($0.id, format: .number.grouping(.never))).shadowTableCell(row: $0) }
         .width(min: 36, ideal: 44, max: 64)
-      TableColumn(Text("Title").shadowTableHeader(), value: \.title) { Text(verbatim: $0.title).shadowTableCell() }
+      TableColumn(Text("Title").shadowTableHeader(), value: \.title) { Text(verbatim: $0.title).shadowTableCell(row: $0) }
         .width(min: 120, ideal: 200)
-      TableColumn(Text("Words").shadowTableHeader(), value: \.words) { ShadowTableNumber(Text(verbatim: $0.wordCount)) }
+      TableColumn(Text("Words").shadowTableHeader(), value: \.words) { ShadowTableNumber(Text(verbatim: $0.wordCount)).shadowTableCell(row: $0) }
         .width(min: 56, ideal: 64)
         .alignment(.trailing)
-      TableColumn(Text("Status").shadowTableHeader(), value: \.status) { $0.status.badge }
+      TableColumn(Text("Status").shadowTableHeader(), value: \.status) { $0.status.badge.shadowTableCell(row: $0) }
         .width(112)
     } compact: { chapter in
       ShadowListRow(

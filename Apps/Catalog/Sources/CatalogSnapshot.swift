@@ -24,7 +24,6 @@
     private static let windowSize = CGSize(width: 1280, height: 820)
     private static let settleDelay = Duration.milliseconds(400)
     private static let presentationSettleDelay = Duration.milliseconds(1_800)
-    private static let pollInterval = CatalogLaunchConfiguration.defaultCapturePoll
     private static let maximumPolls = 12
 
     // CGWindowListCreateImage is obsoleted in the SDK, but unlike ScreenCaptureKit it still captures one of the process's own windows
@@ -35,10 +34,10 @@
       unsafeBitCast($0, to: CreateWindowImage.self)
     }
 
-    static func capture(_ window: NSWindow, to url: URL, includesPresentations: Bool) async -> Never {
+    static func capture(_ window: NSWindow, to url: URL, includesPresentations: Bool, poll: Duration) async -> Never {
       place(window)
       do throws(CatalogSnapshotError) {
-        let (image, isStable) = try await stableImage(of: window, includesPresentations: includesPresentations)
+        let (image, isStable) = try await stableImage(of: window, includesPresentations: includesPresentations, poll: poll)
         if !isStable { report("page did not settle after \(maximumPolls) polls; captured the last frame") }
         try write(image, to: url)
         exit(EXIT_SUCCESS)
@@ -72,11 +71,11 @@
       NSApp.activate()
     }
 
-    private static func stableImage(of window: NSWindow, includesPresentations: Bool) async throws(CatalogSnapshotError) -> (CGImage, Bool) {
+    private static func stableImage(of window: NSWindow, includesPresentations: Bool, poll: Duration) async throws(CatalogSnapshotError) -> (CGImage, Bool) {
       try? await Task.sleep(for: includesPresentations ? presentationSettleDelay : settleDelay)
       var previous = try image(of: window, includesPresentations: includesPresentations)
       for _ in 0..<maximumPolls {
-        try? await Task.sleep(for: pollInterval)
+        try? await Task.sleep(for: poll)
         guard isActive else {
           activate(window)
           continue
@@ -143,10 +142,11 @@
   private struct SnapshotWindowReader: NSViewRepresentable {
     let url: URL
     let includesPresentations: Bool
+    let poll: Duration
 
     func makeNSView(context: Context) -> WindowObservingView {
       WindowObservingView { window in
-        Task { await CatalogSnapshot.capture(window, to: url, includesPresentations: includesPresentations) }
+        Task { await CatalogSnapshot.capture(window, to: url, includesPresentations: includesPresentations, poll: poll) }
       }
     }
 
@@ -175,9 +175,9 @@
 
   extension View {
     @ViewBuilder
-    func catalogSnapshot(to url: URL?, includesPresentations: Bool) -> some View {
-      if let url {
-        background(SnapshotWindowReader(url: url, includesPresentations: includesPresentations))
+    func catalogSnapshot(_ launch: CatalogLaunchConfiguration) -> some View {
+      if let url = launch.snapshotURL {
+        background(SnapshotWindowReader(url: url, includesPresentations: launch.presentsSample || launch.screen != nil, poll: launch.capturePoll))
       } else {
         self
       }

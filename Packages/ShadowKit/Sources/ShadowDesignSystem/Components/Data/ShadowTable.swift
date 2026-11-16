@@ -59,6 +59,7 @@ nonisolated public struct ShadowTableCompactSort<Value> {
 /// While `isLoading`, the rows passed in are drawn redacted as placeholders in the table's own columns, so the skeleton follows the
 /// headers; pass placeholder rows for that, or none for generic skeleton bars shaped by `skeletonColumns`.
 /// Mac selection uses the system accent; selection-row applies to custom lists.
+/// Finish each column's cell with `.shadowTableCell(row:)` so every selected row's labels and badges invert on the iPad accent band.
 /// iPhone lists select only in edit mode, so give the screen an `EditButton`.
 /// Apply `.contextMenu(forSelectionType:menu:primaryAction:)` to the table for the context menu and the double-click, Return or tap action.
 public struct ShadowTable<Value: Identifiable, Columns: TableColumnContent, Compact: View, Empty: View>: View
@@ -120,6 +121,7 @@ where Columns.TableRowValue == Value, Columns.TableColumnSortComparator == KeyPa
         .tableStyle(.inset)
         .modifier(ShadowTableBackdrop(isEmpty: rows.isEmpty || isLoading))
         .scrollContentBackground(.hidden)
+        .modifier(ShadowTableSelectionTracking(selection: selection))
         .overlay {
           Group {
             if isLoading && rows.isEmpty {

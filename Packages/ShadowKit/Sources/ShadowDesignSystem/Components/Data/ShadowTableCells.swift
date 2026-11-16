@@ -41,6 +41,11 @@ extension View {
   public func shadowTableCell() -> some View {
     foregroundStyle(ShadowProminenceStyle(.textPrimary))
   }
+
+  /// Styles a ``ShadowTable`` cell and ties it to its row; use it on every column so all selected rows read on the iPad accent band.
+  public func shadowTableCell<Row: Identifiable>(row: Row) -> some View {
+    shadowTableCell().modifier(ShadowTableRowCell(id: row.id))
+  }
 }
 
 extension Text {

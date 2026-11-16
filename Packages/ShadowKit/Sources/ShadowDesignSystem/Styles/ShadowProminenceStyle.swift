@@ -21,7 +21,7 @@ nonisolated struct ShadowProminenceStyle: ShapeStyle {
   }
 
   func resolve(in environment: EnvironmentValues) -> Color {
-    token(for: environment.backgroundProminence).color
+    token(for: environment.shadowSelectionProminence).color
   }
 
   func token(for prominence: BackgroundProminence) -> ShadowColorToken {

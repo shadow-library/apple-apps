@@ -38,7 +38,7 @@ struct CatalogApp: App {
         }
         #if os(macOS)
           .frame(minWidth: 900, minHeight: 600)
-          .catalogSnapshot(to: model.launch.snapshotURL, includesPresentations: model.launch.presentsSample || model.launch.screen != nil)
+          .catalogSnapshot(model.launch)
         #endif
     }
     .defaultSize(width: 1280, height: 820)

@@ -3,11 +3,12 @@ import SwiftUI
 
 struct TokensPage: View {
   private static let swatchRowWidth: CGFloat = 280
+  private static let maxSwatchColumns = 8
 
   var body: some View {
     ComponentPage(id: "tokens") {
       StateSection("Colour", note: "Every semantic token, rendered in light (left) and dark (right).") {
-        LazyVGrid(columns: [GridItem(.adaptive(minimum: Self.swatchRowWidth), spacing: Spacing.space5)], alignment: .leading, spacing: Spacing.space2) {
+        ShadowAdaptiveColumns(maxColumns: Self.maxSwatchColumns, minColumnWidth: Self.swatchRowWidth, spacing: Spacing.space5, rowSpacing: Spacing.space2) {
           ForEach(ShadowColorToken.allCases, id: \.self) { token in
             ColorSwatchRow(token: token)
           }
@@ -22,19 +23,16 @@ struct TokensPage: View {
         }
       }
       StateSection("Radius") {
-        LazyVGrid(columns: [GridItem(.adaptive(minimum: 96), spacing: Spacing.space3)], alignment: .leading, spacing: Spacing.space3) {
+        ShadowAdaptiveColumns(maxColumns: Radius.tokens.count, minColumnWidth: 96, spacing: Spacing.space3) {
           ForEach(Radius.tokens) { token in
             RadiusSwatch(token: token)
           }
         }
       }
       StateSection("Type styles") {
-        LazyVGrid(columns: [GridItem(.adaptive(minimum: Self.swatchRowWidth), spacing: Spacing.space5)], alignment: .leading, spacing: Spacing.space3) {
-          ForEach(ShadowTextStyle.allCases, id: \.self) { style in
-            VStack(alignment: .leading, spacing: Spacing.space05) {
-              Text("The Ninth Archive").shadowFont(style).foregroundStyle(ShadowColor.textPrimary)
-              Text(style.rawValue).shadowFont(.monoBody).foregroundStyle(ShadowColor.textSecondary)
-            }
+        ShadowAdaptiveColumns(maxColumns: TypeStyleFamily.allCases.count, minColumnWidth: Self.swatchRowWidth, spacing: Spacing.space5) {
+          ForEach(TypeStyleFamily.allCases, id: \.self) { family in
+            TypeStyleGroup(family: family)
           }
         }
       }
@@ -70,6 +68,54 @@ private struct ColorSwatchRow: View {
         .background(ShadowColor.surfaceApp, in: .rect(cornerRadius: Radius.lg))
         .environment(\.colorScheme, scheme)
         .accessibilityLabel(scheme == .light ? "Light" : "Dark")
+    }
+  }
+}
+
+private enum TypeStyleFamily: CaseIterable {
+  case touch
+  case mac
+  case mono
+
+  var title: LocalizedStringKey {
+    switch self {
+    case .touch: "iOS and iPadOS"
+    case .mac: "macOS"
+    case .mono: "Mono"
+    }
+  }
+
+  var styles: [ShadowTextStyle] {
+    ShadowTextStyle.allCases.filter { $0.family == self }
+  }
+}
+
+extension ShadowTextStyle {
+  fileprivate var family: TypeStyleFamily {
+    switch self {
+    case .iosLargeTitle, .iosTitle1, .iosTitle2, .iosTitle3, .iosHeadline, .iosBody, .iosCallout, .iosSubheadline, .iosFootnote, .iosCaption, .iosCaption2: .touch
+    case .macLargeTitle, .macTitle1, .macTitle2, .macTitle3, .macHeadline, .macBody, .macCallout, .macSubheadline, .macFootnote, .macCaption: .mac
+    case .monoBody, .monoFigure: .mono
+    }
+  }
+}
+
+private struct TypeStyleGroup: View {
+  let family: TypeStyleFamily
+
+  var body: some View {
+    VStack(alignment: .leading, spacing: Spacing.space3) {
+      Text(family.title)
+        .shadowFont(.subheadline)
+        .fontWeight(.semibold)
+        .foregroundStyle(ShadowColor.textSecondary)
+        .accessibilityAddTraits(.isHeader)
+      ForEach(family.styles, id: \.self) { style in
+        VStack(alignment: .leading, spacing: Spacing.space05) {
+          Text("The Ninth Archive").shadowFont(style).foregroundStyle(ShadowColor.textPrimary)
+          Text(style.rawValue).shadowFont(.monoBody).foregroundStyle(ShadowColor.textSecondary)
+        }
+      }
     }
   }
 }

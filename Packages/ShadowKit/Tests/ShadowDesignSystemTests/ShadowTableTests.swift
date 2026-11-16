@@ -54,3 +54,78 @@ struct ShadowTableTests {
     #expect(!ShadowTableCompactSort<Row>.isActive(KeyPathComparator(\Row.name), in: []))
   }
 }
+
+@Suite("Table selection band")
+struct ShadowTableSelectionBandTests {
+  @Test("should put only the selected rows of a focused, active table on the band")
+  func focusedSelection() {
+    let band = ShadowTableSelectionBand(selection: Set(["chapter-released", "step-up-code"]), isFocused: true, appearsActive: true)
+    #expect(band.isOnBand(row: "chapter-released"))
+    #expect(band.isOnBand(row: "step-up-code"))
+    #expect(!band.isOnBand(row: "welcome-email"))
+  }
+
+  @Test("should keep every row off the band while the table is unfocused or its window is inactive", arguments: [(false, true), (true, false), (false, false)])
+  func greyBand(isFocused: Bool, appearsActive: Bool) {
+    let band = ShadowTableSelectionBand(selection: Set(["step-up-code"]), isFocused: isFocused, appearsActive: appearsActive)
+    #expect(!band.isOnBand(row: "step-up-code"))
+  }
+
+  @Test("should keep every row off the band with an empty selection")
+  func emptySelection() {
+    let band = ShadowTableSelectionBand(selection: Set<Int>(), isFocused: true, appearsActive: true)
+    #expect(!band.isOnBand(row: 1))
+  }
+
+  @Test("should not match a row identifier of another type")
+  func identifierType() {
+    let band = ShadowTableSelectionBand(selection: Set([1]), isFocused: true, appearsActive: true)
+    #expect(band.isOnBand(row: 1))
+    #expect(!band.isOnBand(row: "1"))
+  }
+
+  @Test("should compare equal for the same selection and state")
+  func equality() {
+    let band = ShadowTableSelectionBand(selection: Set([1, 2]), isFocused: true, appearsActive: true)
+    #expect(band == ShadowTableSelectionBand(selection: Set([2, 1]), isFocused: true, appearsActive: true))
+    #expect(band != ShadowTableSelectionBand(selection: Set([1]), isFocused: true, appearsActive: true))
+    #expect(band != ShadowTableSelectionBand(selection: Set([1, 2]), isFocused: true, appearsActive: false))
+  }
+
+  @Test("should report a band row as prominent whatever the platform reports")
+  func selectionProminence() {
+    var environment = EnvironmentValues()
+    environment.backgroundProminence = .standard
+    #expect(environment.shadowSelectionProminence == .standard)
+    environment.shadowTableRowIsOnSelectionBand = true
+    #expect(environment.shadowSelectionProminence == .increased)
+    environment.shadowTableRowIsOnSelectionBand = false
+    environment.backgroundProminence = .increased
+    #expect(environment.shadowSelectionProminence == .increased)
+  }
+
+  @Test("should draw on-accent labels and the outline badge on a band row the platform reports as standard") @MainActor
+  func bandRowStyles() {
+    var environment = EnvironmentValues()
+    environment.colorScheme = .light
+    environment.backgroundProminence = .standard
+    environment.shadowSelectionIsAccentBand = true
+    environment.shadowTableRowIsOnSelectionBand = true
+    let label = ShadowProminenceStyle(.textPrimary)
+    let badge = ShadowBadgeStyle(intent: .danger, role: .foreground)
+    #expect(label.resolve(in: environment).resolve(in: environment) == ShadowColorToken.onAccent.color.resolve(in: environment))
+    #expect(badge.resolve(in: environment).resolve(in: environment) == ShadowColorToken.onAccent.color.resolve(in: environment))
+    #expect(ShadowBadgeStyle(intent: .danger, role: .fill).resolve(in: environment).resolve(in: environment) == Color.clear.resolve(in: environment))
+    environment.shadowTableRowIsOnSelectionBand = false
+    #expect(label.resolve(in: environment).resolve(in: environment) == ShadowColorToken.textPrimary.color.resolve(in: environment))
+    #expect(badge.resolve(in: environment).resolve(in: environment) == ShadowColorToken.dangerTextOnSubtle.color.resolve(in: environment))
+  }
+
+  @Test("should keep touch list badges on their intent colours") @MainActor
+  func touchListBadge() {
+    var environment = EnvironmentValues()
+    environment.shadowSelectionIsAccentBand = false
+    environment.shadowTableRowIsOnSelectionBand = true
+    #expect(ShadowBadgeStyle(intent: .danger, role: .border).resolve(in: environment).resolve(in: environment) == ShadowBadgeIntent.danger.border.color.resolve(in: environment))
+  }
+}

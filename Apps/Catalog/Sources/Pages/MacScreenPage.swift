@@ -263,16 +263,16 @@ private struct PulseOverview: View {
 
   private var deliveries: some View {
     ShadowTable(PulseDelivery.all.sorted(using: sortOrder), selection: $selection, sortOrder: $sortOrder) {
-      TableColumn(Text("Template").shadowTableHeader(), value: \.template) { ShadowTableIdentifier($0.template) }
+      TableColumn(Text("Template").shadowTableHeader(), value: \.template) { ShadowTableIdentifier($0.template).shadowTableCell(row: $0) }
         .width(min: 168, ideal: 240)
-      TableColumn(Text("Channel").shadowTableHeader(), value: \.channel) { Text(verbatim: $0.channel).shadowTableCell() }
+      TableColumn(Text("Channel").shadowTableHeader(), value: \.channel) { Text(verbatim: $0.channel).shadowTableCell(row: $0) }
         .width(min: 72, ideal: 120)
-      TableColumn(Text("Sent").shadowTableHeader(), value: \.sent) { ShadowTableNumber(Text($0.sent, format: .number)) }
+      TableColumn(Text("Sent").shadowTableHeader(), value: \.sent) { ShadowTableNumber(Text($0.sent, format: .number)).shadowTableCell(row: $0) }
         .width(min: 64, ideal: 88)
         .alignment(.trailing)
-      TableColumn(Text("Status").shadowTableHeader(), value: \.status) { $0.status.badge }
+      TableColumn(Text("Status").shadowTableHeader(), value: \.status) { $0.status.badge.shadowTableCell(row: $0) }
         .width(min: 104, ideal: 140)
-      TableColumn(Text("Time").shadowTableHeader(), value: \.time) { ShadowTableNumber(Text($0.time, format: .dateTime.hour().minute())) }
+      TableColumn(Text("Time").shadowTableHeader(), value: \.time) { ShadowTableNumber(Text($0.time, format: .dateTime.hour().minute())).shadowTableCell(row: $0) }
         .width(min: 56, ideal: 72)
         .alignment(.trailing)
     } compact: { delivery in

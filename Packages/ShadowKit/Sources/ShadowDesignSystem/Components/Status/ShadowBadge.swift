@@ -68,7 +68,7 @@ nonisolated struct ShadowBadgeStyle: ShapeStyle {
   }
 
   func resolve(in environment: EnvironmentValues) -> Color {
-    let isOnBand = Self.isOnSelectionBand(prominence: environment.backgroundProminence, selectionIsAccentBand: environment.shadowSelectionIsAccentBand)
+    let isOnBand = Self.isOnSelectionBand(prominence: environment.shadowSelectionProminence, selectionIsAccentBand: environment.shadowSelectionIsAccentBand)
     return token(isOnSelectionBand: isOnBand)?.color ?? .clear
   }
 }

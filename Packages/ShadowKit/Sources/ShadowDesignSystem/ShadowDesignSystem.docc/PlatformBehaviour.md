@@ -12,7 +12,8 @@ Use the system control and tint it. The library decides tint, surfaces, text col
 - Exactly one selection layer is drawn per platform. On a Mac `List(selection:)` and on the iPad sidebar, ``ShadowListRow`` does not draw its own pill.
 - Labels on the focused accent band switch to on-accent, and labels on the unfocused grey band keep their tokens. AppKit does not rerun a row's body when focus changes, so the library resolves the colour at render time. This applies to ``ShadowListRow``, ``ShadowSidebarLabel`` icons and table cells.
 - A label ``ShadowBadge`` on the focused accent band of a Mac list or table row becomes an on-accent outline: no fill, on-accent border, symbol and word, so the status still reads without its colour. Touch list selection is accent-soft, so badges there keep their intent colours.
-- iPad table rows get the same on-accent labels and badges only where iPadOS reports the selection as prominent to the row's content: a row the person selects by touch. A selection set in code after the table appears, and every row of a multiple selection after the first, keep the standard colours on the accent band. iPadOS does not update the cell content's prominence for those rows.
+- iPad table rows get the same on-accent labels and badges on the accent band. iPadOS reports the prominent selection only to the cells of the row that holds keyboard focus, so ``ShadowTable`` tracks its own selection and focus: a cell finished with `.shadowTableCell(row:)` takes on-accent while its row is selected, the table holds keyboard focus and its window is active. The grey band keeps the tokens, including a window that stays visible while another window or app is active.
+- Without keyboard focus, for example on a touch-only iPad with no hardware keyboard or Full Keyboard Access, cells follow what iPadOS reports, as before (not verified on a touch-only device). A column without `.shadowTableCell(row:)` follows iPadOS too, so on rows selected in code and further rows of a multiple selection that column keeps its standard colours while the others invert.
 - Touch lists keep the accent-soft selection with accent text; grouped sections keep their own selection.
 
 ## Mac segmented control
@@ -47,7 +48,7 @@ On Mac these native renderings are the spec; the component guides say so.
 - A ``ShadowListRow`` pads itself only inside ``ShadowGroupedSection``. In a `List` it publishes its insets through `.listRowInsets`. Outside a `List`, wrap it in a grouped section or pad it with `ShadowListMetrics().rowInsets`.
 - ``ShadowTable`` is a native `Table` on Mac and regular width, and a row list with a Sort menu on compact width. The caller sorts the rows. Compact rows wrap long identifiers to two lines unless `.shadowListRowSingleLineTitle(truncationMode:)` is applied.
 - While loading, ``ShadowTable`` keeps the native header and draws the rows passed in redacted, in the table's own columns, so the skeleton follows the headers. Pass placeholder rows; with none it draws generic bars shaped by `skeletonColumns`, which cannot follow native column widths.
-- Table headers are `subheadline` medium in `textSecondary`. Cells are `textPrimary`, because native iPad tables draw later columns secondary.
+- Table headers are `subheadline` medium in `textSecondary`. Cells are `textPrimary`, because native iPad tables draw later columns secondary. Finish every column's cell with `.shadowTableCell(row:)` so selected rows read on the iPad accent band; on Mac and on the compact list it changes nothing.
 
 ## Other decisions
 
