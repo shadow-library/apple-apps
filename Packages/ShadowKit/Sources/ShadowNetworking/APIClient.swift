@@ -24,7 +24,7 @@ public struct APIClient: Sendable {
   public func send<Response>(_ endpoint: Endpoint<Response>) async throws(NetworkError) -> Response {
     let request = try makeRequest(for: endpoint)
     let (data, response) = try await perform(request)
-    guard (200..<300).contains(response.statusCode) else { throw .unacceptableStatus(code: response.statusCode, body: data) }
+    guard (200..<300).contains(response.statusCode) else { throw .unacceptableStatus(code: response.statusCode, headers: response.lowercasedHeaderFields, body: data) }
     if let empty = EmptyResponse() as? Response { return empty }
 
     do {

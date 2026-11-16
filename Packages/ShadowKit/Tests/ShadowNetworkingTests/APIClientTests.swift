@@ -59,7 +59,7 @@ struct APIClientTests {
 
     let error = await #expect(throws: NetworkError.self) { try await client.send(Endpoint(path: "users/9", responseType: User.self)) }
 
-    guard case .unacceptableStatus(let code, _) = error else {
+    guard case .unacceptableStatus(let code, _, _) = error else {
       Issue.record("Unexpected error \(String(describing: error))")
       return
     }

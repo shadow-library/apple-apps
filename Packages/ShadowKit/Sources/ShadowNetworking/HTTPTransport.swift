@@ -11,3 +11,13 @@ extension URLSession: HTTPTransport {
     return (data, httpResponse)
   }
 }
+
+extension HTTPURLResponse {
+  var lowercasedHeaderFields: [String: String] {
+    let fields = allHeaderFields.compactMap { name, value -> (String, String)? in
+      guard let name = name as? String, let value = value as? String else { return nil }
+      return (name.lowercased(), value)
+    }
+    return Dictionary(fields) { first, _ in first }
+  }
+}
