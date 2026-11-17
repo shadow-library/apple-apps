@@ -166,9 +166,10 @@ struct ChatPackPipeline: Codable, Equatable, Sendable {
 
 // apps/novel-forge-server/src/modules/ai/context/context-assembler.service.ts:924
 struct ChatPackChanges: Codable, Equatable, Sendable {
+  /// A volume has no revision counter in the vault, so a native one carries none.
   struct Volume: Codable, Equatable, Sendable {
     var volumeKey: String
-    var revision: String
+    var revision: String?
   }
 
   struct Brief: Codable, Equatable, Sendable {

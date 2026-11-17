@@ -187,7 +187,7 @@ extension ChatPack {
 
   // context-assembler.service.ts:924
   static func changedSinceLines(_ changes: ChatPackChanges) -> [String] {
-    changes.volumes.map { "volume:\($0.volumeKey) is now at revision \($0.revision)" }
+    changes.volumes.map { volume in volume.revision.map { "volume:\(volume.volumeKey) is now at revision \($0)" } ?? "volume:\(volume.volumeKey) has changed" }
       + changes.briefs.map { "chapter:\($0.chapter) brief is now at revision \($0.revision)" }
       + changes.docs.map { "doc:\($0.section)/\($0.slug) is now at revision \($0.revision)" }
   }
