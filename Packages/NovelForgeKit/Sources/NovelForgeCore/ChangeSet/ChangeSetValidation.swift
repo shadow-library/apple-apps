@@ -6,10 +6,31 @@ struct ChangeSetValidationOptions: Sendable {
   }
 }
 
+struct ValidatedOpRecord: Sendable {
+  let record: OrderedJSONObject
+
+  fileprivate init(_ record: OrderedJSONObject) {
+    self.record = record
+  }
+}
+
 struct ChangeSetValidation: Sendable {
   let errors: [String]
   let value: OrderedJSON
+
+  fileprivate init(errors: [String], value: OrderedJSON) {
+    self.errors = errors
+    self.value = value
+  }
+
+  var validatedRecords: [ValidatedOpRecord]? {
+    guard errors.isEmpty, case .array(let items) = value else { return nil }
+    let records = items.compactMap { $0.objectValue.map(ValidatedOpRecord.init) }
+    return records.count == items.count ? records : nil
+  }
 }
+
+private let maximumSafeInteger: Int64 = 9_007_199_254_740_991
 
 // apps/novel-forge-server/src/modules/refinement/change-set/change-set-validation.ts:220
 let pluginAllowedOps: [OpType] = [.entityUpsert, .entityRemove, .factUpsert, .factRemove, .bibleDocumentUpsert, .bibleDocumentRemove, .briefUpdate]
@@ -43,7 +64,7 @@ private func matches(_ value: OrderedJSON?, _ kind: OpFieldKind) -> Bool {
   case .boolean:
     if case .bool = value { return true }
     return false
-  case .integer, .nullableInteger: return value.isJSInteger
+  case .integer, .nullableInteger: return value.isJSSafeInteger
   case .strings, .nullableStrings: return value.arrayValue?.allSatisfy { $0.stringValue != nil } ?? false
   case .objects, .nullableObjects: return value.arrayValue?.allSatisfy { $0.objectValue != nil } ?? false
   case .object, .nullableObject: return value.objectValue != nil
@@ -51,10 +72,10 @@ private func matches(_ value: OrderedJSON?, _ kind: OpFieldKind) -> Bool {
 }
 
 extension OrderedJSON {
-  var isJSInteger: Bool {
+  var isJSSafeInteger: Bool {
     switch self {
-    case .int: true
-    case .double(let number): number.jsIsInteger
+    case .int(let number): number.magnitude <= UInt64(maximumSafeInteger)
+    case .double(let number): number.jsIsInteger && abs(number) <= Double(maximumSafeInteger)
     default: false
     }
   }
@@ -196,7 +217,11 @@ private func briefUpdateErrors(_ record: OrderedJSONObject, path: String) -> [St
   if let contract = record["endingContract"] { errors += endingContractErrors(contract, path: path) }
   if let contract = record["knowledgeContract"], !contract.isNull { errors += knowledgeContractErrors(contract, path: path) }
   if case .string? = record["contentMode"], ContentMode(exactly: record["contentMode"]) == nil { errors.append("\(path): contentMode must be one of \(joined(ContentMode.self))") }
-  if let scenes = record["scenes"], scenes.arrayValue != nil { errors += validateBriefScenes(scenes).map { "\(path): \($0)" } }
+  if let scenes = record["scenes"], scenes.arrayValue != nil {
+    let problems = validateBriefScenes(scenes)
+    errors += problems.map { "\(path): \($0)" }
+    if problems.isEmpty { errors += unsafeSceneWords(scenes).map { "\(path): scenes[\($0)].estimatedWords must be a safe integer" } }
+  }
   if let milestones = record["claimedMilestones"]?.arrayValue, milestones.contains(where: isBlankOrNotString) {
     errors.append("\(path): claimedMilestones must hold non-empty milestone keys")
   }
@@ -213,11 +238,30 @@ private func milestoneErrors(_ record: OrderedJSONObject, op: OpType, path: Stri
   return errors
 }
 
+private func unsafeUnlockChapters(_ unlock: OrderedJSON) -> [Int] {
+  let terms = unlock.objectValue?["all"]?.arrayValue ?? []
+  return terms.enumerated().compactMap { index, term in
+    guard let chapter = term.objectValue?["chapter"], !chapter.isJSSafeInteger else { return nil }
+    return index
+  }
+}
+
+private func unsafeSceneWords(_ scenes: OrderedJSON) -> [Int] {
+  (scenes.arrayValue ?? []).enumerated().compactMap { index, scene in
+    guard let words = scene.objectValue?["estimatedWords"], !words.isJSSafeInteger else { return nil }
+    return index
+  }
+}
+
 private func factUpsertErrors(_ record: OrderedJSONObject, path: String) -> [String] {
   var errors: [String] = []
   if let chapter = record["revealChapter"]?.numberValue, chapter < 1 { errors.append("\(path): revealChapter must be >= 1") }
   if let clues = record["allowedClues"]?.arrayValue, clues.contains(where: isBlankOrNotString) { errors.append("\(path): allowedClues must hold non-empty strings") }
-  if let unlock = record["unlock"], unlock.objectValue != nil { errors += validateUnlockCondition(unlock).map { "\(path): \($0)" } }
+  if let unlock = record["unlock"], unlock.objectValue != nil {
+    let problems = validateUnlockCondition(unlock)
+    errors += problems.map { "\(path): \($0)" }
+    if problems.isEmpty { errors += unsafeUnlockChapters(unlock).map { "\(path): unlock.all[\($0)].chapter must be a safe integer" } }
+  }
   return errors
 }
 

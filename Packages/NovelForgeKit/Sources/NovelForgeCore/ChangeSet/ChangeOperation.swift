@@ -165,8 +165,8 @@ struct ChangeOp: Sendable, Equatable {
     self.metadata = metadata
   }
 
-  init?(validated record: OrderedJSONObject) {
-    let fields = OpFields(record: record)
+  init?(validated validatedRecord: ValidatedOpRecord) {
+    let fields = OpFields(record: validatedRecord.record)
     guard let type = OpType(exactly: fields.string("op") ?? ""), let operation = ChangeOperation(type: type, fields: fields) else { return nil }
     self.operation = operation
     metadata = OpMetadata(fields)

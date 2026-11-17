@@ -36,7 +36,7 @@ let opMetadataFields = ["rationale", "quote", "startedEmpty", "ideaId"]
 
 private let serverMetadataFields = ["startedEmpty", "ideaId"]
 
-struct OpVocabularyOptions: Sendable {
+struct OpVocabularyOptions: Sendable, Equatable {
   var quotes: Bool
 
   init(quotes: Bool = false) {

@@ -16,12 +16,19 @@ struct ChangeSetValidationParityTests {
   @Test func shouldReturnTheReferenceErrorsInTheReferenceOrder() throws {
     let fixture = try ChangeSetValidationFixture.load()
     var mismatches: [String] = []
+    var deviations = 0
     for item in fixture.cases {
       guard let expected = item.errors else { continue }
       let actual = try fixture.run(item).errors
-      if !csSameStrings(actual, expected) { mismatches.append("\(item.text) scope \(item.scope) flag \(item.flag): \(actual) != \(expected)") }
+      if csSameStrings(actual, expected) { continue }
+      if try item.isUnsafeIntegerDeviation(actual: actual) {
+        deviations += 1
+        continue
+      }
+      mismatches.append("\(item.text) scope \(item.scope) flag \(item.flag): \(actual) != \(expected)")
     }
     #expect(mismatches.isEmpty, "\(mismatches.count) differ, first: \(mismatches.prefix(3))")
+    #expect(deviations >= 10, "the fixture should hold cases the reference accepts with an unsafe integer")
   }
 
   @Test func shouldReturnTheRepairedValueTheReferenceLeavesBehind() throws {
@@ -54,6 +61,7 @@ struct ChangeSetValidationParityTests {
       let built = try? parseChangeSet(item.input, allowedOps: allowed, options: options)
       let pluginOnly = item.flag == 2 && !expected.isEmpty && expected.allSatisfy { $0.contains("is not allowed for this scope") && $0.contains("field '") }
       if pluginOnly { continue }
+      if built == nil, try item.isUnsafeIntegerDeviation(actual: fixture.run(item).errors) { continue }
       if (built != nil) != expected.isEmpty { wrong.append(item.text) }
       if let built, case .array(let items) = try item.input, built.count != items.count { wrong.append(item.text) }
     }

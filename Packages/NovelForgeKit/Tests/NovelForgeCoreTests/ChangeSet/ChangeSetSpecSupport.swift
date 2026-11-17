@@ -13,7 +13,7 @@ func csOps(_ json: String, allowed: [OpType]? = nil, options: ChangeSetValidatio
 }
 
 func csOp(_ json: String) throws -> ChangeOp {
-  guard let record = try csParse(json).objectValue, let op = ChangeOp(validated: record) else { throw CSSpecError.notAnOperation(json) }
+  guard let op = try csOps("[\(json)]", options: ChangeSetValidationOptions(entityMaterialization: false)).first else { throw CSSpecError.notAnOperation(json) }
   return op
 }
 

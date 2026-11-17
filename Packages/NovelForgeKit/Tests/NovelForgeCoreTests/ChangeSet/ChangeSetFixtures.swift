@@ -22,6 +22,15 @@ struct ChangeSetValidationCase: Decodable {
     get throws { try OrderedJSON(parsing: text) }
   }
 
+  var carriesUnsafeInteger: Bool {
+    get throws { try input.containsUnsafeInteger }
+  }
+
+  func isUnsafeIntegerDeviation(actual: [String]) throws -> Bool {
+    guard try carriesUnsafeInteger, errors?.isEmpty == true, !actual.isEmpty else { return false }
+    return actual.allSatisfy(csIsIntegerSlotError)
+  }
+
   var expectedValue: OrderedJSON {
     get throws { try OrderedJSON(parsing: repaired ?? text) }
   }
@@ -169,6 +178,28 @@ struct ChangeSetSpecFixture: Decodable {
   static func load() throws -> ChangeSetSpecFixture {
     try ReferenceFixture.decode(ChangeSetSpecFixture.self, from: "change-set/specs.json")
   }
+}
+
+extension OrderedJSON {
+  var containsUnsafeInteger: Bool {
+    switch self {
+    case .int, .double: jsIsIntegerValued && !isJSSafeInteger
+    case .array(let items): items.contains { $0.containsUnsafeInteger }
+    case .object(let record): record.entries.contains { $0.value.containsUnsafeInteger }
+    default: false
+    }
+  }
+
+  private var jsIsIntegerValued: Bool {
+    guard case .double(let number) = self else { return true }
+    return number.jsIsInteger
+  }
+}
+
+func csIsIntegerSlotError(_ message: String) -> Bool {
+  let required = message.contains(": missing or invalid required field '") && message.hasSuffix("' (number)")
+  let optional = message.contains(": invalid field '") && (message.hasSuffix("' (expected number)") || message.hasSuffix("' (expected number|null)"))
+  return required || optional
 }
 
 func csParse(_ text: String) throws -> OrderedJSON {

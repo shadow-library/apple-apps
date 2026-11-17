@@ -8,13 +8,22 @@ enum ChangeSetError: ShadowError, Equatable {
   var errorDescription: String? { "Change-set operation not allowed for this scope" }
 }
 
+struct ValidatedChangeSet: Sendable, Equatable {
+  let ops: [ChangeOp]
+
+  init(_ raw: OrderedJSON, allowedOps: [OpType]? = nil, options: ChangeSetValidationOptions = ChangeSetValidationOptions()) throws(ChangeSetError) {
+    let validation = validateChangeSet(raw, allowedOps: allowedOps, options: options)
+    guard validation.errors.isEmpty else { throw .notAllowedForScope(problems: validation.errors) }
+    guard let records = validation.validatedRecords else { throw .notAllowedForScope(problems: ["a validated operation could not be built"]) }
+    let ops = records.compactMap(ChangeOp.init(validated:))
+    guard ops.count == records.count else { throw .notAllowedForScope(problems: ["a validated operation could not be built"]) }
+    self.ops = ops
+  }
+}
+
 // apps/novel-forge-server/src/modules/refinement/change-set/change-set-validation.ts:208
 func parseChangeSet(_ raw: OrderedJSON, allowedOps: [OpType]? = nil, options: ChangeSetValidationOptions = ChangeSetValidationOptions()) throws(ChangeSetError) -> [ChangeOp] {
-  let validation = validateChangeSet(raw, allowedOps: allowedOps, options: options)
-  guard validation.errors.isEmpty, case .array(let items) = validation.value else { throw .notAllowedForScope(problems: validation.errors) }
-  let ops = items.compactMap { $0.objectValue.flatMap(ChangeOp.init(validated:)) }
-  guard ops.count == items.count else { throw .notAllowedForScope(problems: ["a validated operation could not be built"]) }
-  return ops
+  try ValidatedChangeSet(raw, allowedOps: allowedOps, options: options).ops
 }
 
 // apps/novel-forge-server/src/modules/refinement/change-set/change-set-validation.ts:214
