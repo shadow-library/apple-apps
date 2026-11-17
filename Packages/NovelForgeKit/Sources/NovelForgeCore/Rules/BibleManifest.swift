@@ -1,4 +1,4 @@
-enum BibleStage: String, CaseIterable, Codable, Sendable {
+public enum BibleStage: String, CaseIterable, Codable, Sendable {
   case foundation
   case world
   case power

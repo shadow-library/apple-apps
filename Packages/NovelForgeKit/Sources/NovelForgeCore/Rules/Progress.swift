@@ -1,18 +1,18 @@
 import ShadowCore
 
-enum ProgressOverrideKind: String, CaseIterable, Sendable {
+public enum ProgressOverrideKind: String, CaseIterable, Sendable {
   case undecided
   case dismissed
 }
 
-enum ProgressStatus: String, CaseIterable, Sendable {
+public enum ProgressStatus: String, CaseIterable, Sendable {
   case open
   case answered
   case undecided
   case dismissed
 }
 
-enum ProgressItemKey: String, CaseIterable, Sendable {
+public enum ProgressItemKey: String, CaseIterable, Sendable {
   case premise
   case protagonist
   case opposition
@@ -23,13 +23,13 @@ enum ProgressItemKey: String, CaseIterable, Sendable {
   case nextChapterPlanned = "next_chapter_planned"
 }
 
-struct ProgressOverride: Equatable, Sendable {
+struct ProgressOverride<ID: Hashable & Sendable>: Equatable, Sendable {
   var status: ProgressOverrideKind
-  var entryId: Int64
+  var entryId: ID
 }
 
-struct ProgressOverrideEntry: Equatable, Sendable {
-  var id: Int64
+struct ProgressOverrideEntry<ID: Hashable & Sendable>: Equatable, Sendable {
+  var id: ID
   var kind: String
   var topic: String
   var payload: JSONValue?
@@ -48,12 +48,12 @@ struct ProgressFields: Equatable, Sendable {
   var chapterOneWritten: Bool
 }
 
-struct ProgressItem: Equatable, Sendable {
+struct ProgressItem<ID: Hashable & Sendable>: Equatable, Sendable {
   var key: ProgressItemKey
   var label: String
   var why: String
   var status: ProgressStatus
-  var overrideEntryId: Int64?
+  var overrideEntryId: ID?
 }
 
 struct ProgressProjectFields: Equatable, Sendable {
@@ -89,8 +89,8 @@ private func overrideKind(_ payload: JSONValue?) -> ProgressOverrideKind? {
 }
 
 // apps/novel-forge-server/src/common/progress.ts:30
-func progressOverridesFrom(_ entries: [ProgressOverrideEntry]) -> [JSString: ProgressOverride] {
-  var overrides: [JSString: ProgressOverride] = [:]
+func progressOverridesFrom<ID>(_ entries: [ProgressOverrideEntry<ID>]) -> [JSString: ProgressOverride<ID>] {
+  var overrides: [JSString: ProgressOverride<ID>] = [:]
   for entry in entries {
     guard entry.kind.jsEquals("system"), let key = progressKeyFromTopic(entry.topic), !key.isEmpty, let status = overrideKind(entry.payload) else { continue }
     overrides[JSString(key)] = ProgressOverride(status: status, entryId: entry.id)
@@ -149,7 +149,7 @@ private let progressChecks: [ProgressCheck] = [
 let progressItemKeys: [ProgressItemKey] = progressChecks.map(\.key)
 
 // apps/novel-forge-server/src/common/progress.ts:101
-func computeProgress(_ fields: ProgressFields, overrides: [JSString: ProgressOverride]) -> [ProgressItem] {
+func computeProgress<ID>(_ fields: ProgressFields, overrides: [JSString: ProgressOverride<ID>]) -> [ProgressItem<ID>] {
   progressChecks.filter { $0.appliesWhile(fields) }.map { check in
     if let override = overrides[JSString(check.key.rawValue)] {
       return ProgressItem(key: check.key, label: check.label, why: check.why, status: override.status.progressStatus, overrideEntryId: override.entryId)

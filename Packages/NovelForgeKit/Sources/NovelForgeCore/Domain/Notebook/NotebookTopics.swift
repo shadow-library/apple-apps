@@ -18,7 +18,7 @@ public enum NotebookTopics {
   // ledger.types.ts:6 /^[a-z0-9][a-z0-9_.-]{0,99}$/
   public static func isKey(_ topic: String) -> Bool {
     let bytes = Array(topic.utf8)
-    guard let first = bytes.first, bytes.count <= 100, isLowercaseOrDigit(first) else { return false }
+    guard let first = bytes.first, bytes.count <= NotebookLimits.topic, isLowercaseOrDigit(first) else { return false }
     return bytes.dropFirst().allSatisfy { isLowercaseOrDigit($0) || $0 == UInt8(ascii: "_") || $0 == UInt8(ascii: ".") || $0 == UInt8(ascii: "-") }
   }
 

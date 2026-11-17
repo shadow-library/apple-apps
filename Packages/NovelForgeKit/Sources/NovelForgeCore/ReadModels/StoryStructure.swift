@@ -37,7 +37,11 @@ public struct StoryStructure: ReadModel {
   private static let recordTables = [IndexedRecord.databaseTableName]
 
   public static func load(_ novel: UUID, in transaction: ReadTransaction) throws(StoreError) -> StoryStructure {
-    let report = try ReadFaults(novel: novel, reading: volumeTables + milestoneTables + recordTables, in: transaction)
+    try load(novel, faults: try FaultRows(in: transaction), in: transaction)
+  }
+
+  static func load(_ novel: UUID, faults: FaultRows, in transaction: ReadTransaction) throws(StoreError) -> StoryStructure {
+    let report = ReadFaults(novel: novel, reading: volumeTables + milestoneTables + recordTables, from: faults)
     return StoryStructure(
       volumes: try report.section(volumeTables + recordTables) { () throws(StoreError) in try volumes(of: novel, in: transaction) },
       milestones: try report.section(milestoneTables + recordTables) { () throws(StoreError) in try milestones(of: novel, in: transaction) },
@@ -86,7 +90,7 @@ public struct StoryStructure: ReadModel {
 }
 
 extension StoryPromise {
-  fileprivate var key: JSString {
+  var key: JSString {
     switch self {
     case .thread(let record): JSString(record.thread)
     case .mystery(let record): JSString(record.mystery)

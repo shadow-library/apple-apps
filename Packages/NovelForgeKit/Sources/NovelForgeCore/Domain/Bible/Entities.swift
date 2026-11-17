@@ -2,26 +2,27 @@ import Foundation
 import ShadowCore
 import ShadowStore
 
+// Like EntityEdit: `.keep` leaves a field, `.set(value)` writes it and `.set(nil)` clears it; the initialiser sets what it is given and keeps the rest
 public struct EntityDetails: Sendable, Equatable {
-  public var significance: EntitySignificance?
-  public var status: String?
-  public var origin: EntityOrigin?
-  public var notes: String?
-  public var motivation: String?
-  public var body: String?
-  public var appearance: String?
+  public var significance: FieldChange<StoredEnum<EntitySignificance>?>
+  public var status: FieldChange<String?>
+  public var origin: FieldChange<StoredEnum<EntityOrigin>?>
+  public var notes: FieldChange<String?>
+  public var motivation: FieldChange<String?>
+  public var body: FieldChange<String?>
+  public var appearance: FieldChange<String?>
 
   public init(
     significance: EntitySignificance? = nil, status: String? = nil, origin: EntityOrigin? = nil, notes: String? = nil, motivation: String? = nil, body: String? = nil,
     appearance: String? = nil
   ) {
-    self.significance = significance
-    self.status = status
-    self.origin = origin
-    self.notes = notes
-    self.motivation = motivation
-    self.body = body
-    self.appearance = appearance
+    self.significance = significance.map { .set(.known($0)) } ?? .keep
+    self.status = status.map { .set($0) } ?? .keep
+    self.origin = origin.map { .set(.known($0)) } ?? .keep
+    self.notes = notes.map { .set($0) } ?? .keep
+    self.motivation = motivation.map { .set($0) } ?? .keep
+    self.body = body.map { .set($0) } ?? .keep
+    self.appearance = appearance.map { .set($0) } ?? .keep
   }
 
   var isEmpty: Bool { self == EntityDetails() }
@@ -44,6 +45,18 @@ public enum Entities {
       let record = EntityRecord(novel: novel, entity: entity, type: .known(type), name: name)
       try transaction.create(applying(details, name: name, to: record))
     }
+  }
+
+  // entity.service.ts:46 upserts; the author's create refuses a live key instead of silently editing it, and a removed key is created anew
+  public static func createNew(
+    novel: UUID, entity: String, type: EntityType, name: String, _ details: EntityDetails = EntityDetails(), in transaction: inout WriteTransaction
+  ) throws(DomainError) {
+    try requireKey(entity, field: "entityKey")
+    try requireNonBlank(name, field: "name")
+    try transaction.requireNovel(novel)
+    let ref = EntityRecord.ref(novel: novel, entity: entity)
+    if case .live(let existing) = try transaction.presence(ref, as: EntityRecord.self) { throw .entityExists(existing.entity) }
+    try transaction.create(applying(details, name: name, to: EntityRecord(novel: novel, entity: entity, type: .known(type), name: name)))
   }
 
   // entity.service.ts:119: UpdateEntityBody needs at least one property; a missing or removed entity is ENT_001
@@ -103,26 +116,35 @@ public enum Entities {
   private static func applying(_ details: EntityDetails, name: String, to record: EntityRecord) -> EntityRecord {
     var record = record
     record.name = name
-    if let significance = details.significance { record.significance = .known(significance) }
-    if let status = details.status { record.status = status }
-    if let origin = details.origin { record.origin = .known(origin) }
-    if let notes = details.notes { record.notes = notes }
-    if let motivation = details.motivation { record.motivation = motivation }
-    if let body = details.body { record.body = body }
-    if let appearance = details.appearance { record.appearance = appearance }
+    if case .set(let significance) = details.significance { record.significance = significance }
+    if case .set(let status) = details.status { record.status = status }
+    if case .set(let origin) = details.origin { record.origin = origin }
+    if case .set(let notes) = details.notes { record.notes = notes }
+    if case .set(let motivation) = details.motivation { record.motivation = motivation }
+    if case .set(let body) = details.body { record.body = body }
+    if case .set(let appearance) = details.appearance { record.appearance = appearance }
     return record
   }
 
+  // Byte-exact, as the store compares values: an edit that only changes the normalisation form of a text is still written
   private static func difference(from existing: EntityRecord, to updated: EntityRecord) -> EntityEdit {
     var edit = EntityEdit()
-    if updated.name != existing.name { edit.name = .set(updated.name) }
-    if updated.significance != existing.significance { edit.significance = .set(updated.significance) }
-    if updated.status != existing.status { edit.status = .set(updated.status) }
-    if updated.origin != existing.origin { edit.origin = .set(updated.origin) }
-    if updated.notes != existing.notes { edit.notes = .set(updated.notes) }
-    if updated.motivation != existing.motivation { edit.motivation = .set(updated.motivation) }
-    if updated.body != existing.body { edit.body = .set(updated.body) }
-    if updated.appearance != existing.appearance { edit.appearance = .set(updated.appearance) }
+    if !same(updated.name, existing.name) { edit.name = .set(updated.name) }
+    if !same(updated.significance?.rawValue, existing.significance?.rawValue) { edit.significance = .set(updated.significance) }
+    if !same(updated.status, existing.status) { edit.status = .set(updated.status) }
+    if !same(updated.origin?.rawValue, existing.origin?.rawValue) { edit.origin = .set(updated.origin) }
+    if !same(updated.notes, existing.notes) { edit.notes = .set(updated.notes) }
+    if !same(updated.motivation, existing.motivation) { edit.motivation = .set(updated.motivation) }
+    if !same(updated.body, existing.body) { edit.body = .set(updated.body) }
+    if !same(updated.appearance, existing.appearance) { edit.appearance = .set(updated.appearance) }
     return edit
+  }
+
+  private static func same(_ left: String?, _ right: String?) -> Bool {
+    switch (left, right) {
+    case (nil, nil): true
+    case (let left?, let right?): JSString(left) == JSString(right)
+    default: false
+    }
   }
 }

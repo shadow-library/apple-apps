@@ -22,12 +22,16 @@ public struct PageSummary: Sendable, Equatable {
   public let title: String
   public let wordCount: Int
   public let isEmpty: Bool
+  public let excerpt: String?
   public let writerExcluded: Bool
   public let plannerOnly: Bool
 }
 
 // apps/novel-forge-server/src/modules/bible/document/bible-document.service.ts and refinement/apply/bible-document.handler.ts; the chapter revalidation flag is derived from the page heads, not written
 public enum Pages {
+  // bible-document.service.ts:15
+  private static let listExcerptChars = 140
+
   // bible-document.service.ts:55: the document is created, or gets a new revision when its content differs; a title is folded into the frontmatter
   @discardableResult
   public static func save(
@@ -160,13 +164,15 @@ public enum Pages {
     requiredEntityTypesForSlug(section: section.rawValue, slug: slug)
   }
 
+  // bible-document.service.ts:40: an empty page, or one whose excerpt is blank, has none
   private static func summary(of page: PageRecord) -> PageSummary {
     let access = bibleDocAccess(BibleDocAddress(section: page.section.rawValue, slug: page.slug))
     let body = page.content.body ?? ""
+    let isEmpty = body.jsTrim().isEmpty
+    let excerpt = isEmpty ? "" : bibleDocExcerpt(body: body, maxChars: listExcerptChars)
     return PageSummary(
-      section: page.section, slug: page.slug, title: title(of: page), wordCount: ProseMetrics.countWords(body), isEmpty: body.jsTrim().isEmpty,
-      writerExcluded: access.writerExcluded,
-      plannerOnly: access.plannerOnly)
+      section: page.section, slug: page.slug, title: title(of: page), wordCount: ProseMetrics.countWords(body), isEmpty: isEmpty, excerpt: excerpt.isEmpty ? nil : excerpt,
+      writerExcluded: access.writerExcluded, plannerOnly: access.plannerOnly)
   }
 
   private static func folded(_ content: PageContent, _ frontmatter: [String: JSONValue]?, _ body: String?, slug: String) -> PageContent {

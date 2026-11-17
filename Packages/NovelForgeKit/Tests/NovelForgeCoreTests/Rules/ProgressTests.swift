@@ -19,7 +19,9 @@ private let emptyFields = ProgressFields(
 
 private let emptyProject = ProgressProjectFields(premise: nil, protagonistKey: nil, opposition: nil, theme: nil, readerPromise: nil, endingQuestion: nil, ending: nil)
 
-private func overrideMap(_ entries: [JSONValue]) throws -> [JSString: ProgressOverride] {
+private let noOverrides: [JSString: ProgressOverride<Int64>] = [:]
+
+private func overrideMap(_ entries: [JSONValue]) throws -> [JSString: ProgressOverride<Int64>] {
   Dictionary(
     jsEntries: try entries.map { entry in
       (key: try entry.at(0).string(), value: ProgressOverride(status: try overrideKind(entry.at(1)), entryId: Int64(try entry.at(2).int())))
@@ -31,7 +33,7 @@ private func overrideKind(_ value: JSONValue) throws -> ProgressOverrideKind {
   return ProgressOverrideKind.allCases[try value.int()]
 }
 
-private func status(_ items: [ProgressItem], _ key: ProgressItemKey) -> ProgressItem? {
+private func status<ID>(_ items: [ProgressItem<ID>], _ key: ProgressItemKey) -> ProgressItem<ID>? {
   items.first { $0.key == key }
 }
 
@@ -42,7 +44,7 @@ struct ProgressParityTests {
 
   @Test func shouldMatchTheReferenceChecklistTextsAndKeys() throws {
     let checklist = try RuleFixture.section("progress", "checklist")
-    let items = computeProgress(emptyFields, overrides: [:])
+    let items = computeProgress(emptyFields, overrides: noOverrides)
     #expect(items.map(\.key.rawValue) == (try checklist.map { try $0.at(0).string() }))
     #expect(items.map(\.label) == (try checklist.map { try $0.at(1).string() }))
     #expect(items.map(\.why) == (try checklist.map { try $0.at(2).string() }))
@@ -134,7 +136,7 @@ struct ProgressParityTests {
 
 struct ProgressSpecTests {
   @Test func shouldReportEveryItemOpenForABrandNewProject() {
-    let items = computeProgress(emptyFields, overrides: [:])
+    let items = computeProgress(emptyFields, overrides: noOverrides)
     #expect(items.count == progressItemKeys.count)
     #expect(items.allSatisfy { $0.status == .open })
   }
@@ -144,21 +146,21 @@ struct ProgressSpecTests {
     byQuestion.endingQuestion = "Will Mira pay the tide?"
     var byEnding = emptyFields
     byEnding.ending = "Mira keeps the lamp lit."
-    #expect(status(computeProgress(byQuestion, overrides: [:]), .ending)?.status == .answered)
-    #expect(status(computeProgress(byEnding, overrides: [:]), .ending)?.status == .answered)
+    #expect(status(computeProgress(byQuestion, overrides: noOverrides), .ending)?.status == .answered)
+    #expect(status(computeProgress(byEnding, overrides: noOverrides), .ending)?.status == .answered)
   }
 
   @Test func shouldTreatABlankStringTheSameAsNoAnswer() {
     var fields = emptyFields
     fields.premise = "   "
-    #expect(status(computeProgress(fields, overrides: [:]), .premise)?.status == .open)
+    #expect(status(computeProgress(fields, overrides: noOverrides), .premise)?.status == .open)
   }
 
   @Test func shouldTreatAByteOrderMarkAsBlankButNotAZeroWidthSpace() {
     var fields = emptyFields
     fields.premise = "\u{FEFF}"
     fields.theme = "\u{200B}"
-    let items = computeProgress(fields, overrides: [:])
+    let items = computeProgress(fields, overrides: noOverrides)
     #expect(status(items, .premise)?.status == .open)
     #expect(status(items, .theme)?.status == .answered)
   }
@@ -182,9 +184,9 @@ struct ProgressSpecTests {
   @Test func shouldStopListingTheNextChapterItemOnceChapterOneIsWritten() {
     var written = emptyFields
     written.chapterOneWritten = true
-    #expect(status(computeProgress(emptyFields, overrides: [:]), .nextChapterPlanned) != nil)
-    #expect(status(computeProgress(written, overrides: [:]), .nextChapterPlanned) == nil)
-    #expect(computeProgress(written, overrides: [:]).count == progressItemKeys.count - 1)
+    #expect(status(computeProgress(emptyFields, overrides: noOverrides), .nextChapterPlanned) != nil)
+    #expect(status(computeProgress(written, overrides: noOverrides), .nextChapterPlanned) == nil)
+    #expect(computeProgress(written, overrides: noOverrides).count == progressItemKeys.count - 1)
   }
 
   @Test func shouldIgnoreAnOverrideOfAnItemThatNoLongerApplies() {
@@ -197,7 +199,7 @@ struct ProgressSpecTests {
   @Test func shouldCountTheNextChapterAnsweredOnlyWhenAPlanExists() {
     var fields = emptyFields
     fields.nextChapterPlanned = true
-    #expect(status(computeProgress(fields, overrides: [:]), .nextChapterPlanned)?.status == .answered)
+    #expect(status(computeProgress(fields, overrides: noOverrides), .nextChapterPlanned)?.status == .answered)
   }
 
   @Test func shouldReadAServerOwnedOverrideByItsTopicAndPayload() {
@@ -275,7 +277,7 @@ struct ProgressPropertyTests {
       var fields = emptyFields
       fields.chapterOneWritten = generator.chance(0.5)
       fields.premise = generator.chance(0.5) ? generator.unicodeString(maxLength: 3) : nil
-      let keys = computeProgress(fields, overrides: [:]).map(\.key)
+      let keys = computeProgress(fields, overrides: noOverrides).map(\.key)
       #expect(keys == progressItemKeys.filter { keys.contains($0) })
     }
   }

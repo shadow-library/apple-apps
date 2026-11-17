@@ -26,6 +26,13 @@ public enum Derived<Value: Sendable & Equatable>: Sendable, Equatable {
   }
 
   public var isUnavailable: Bool { value == nil }
+
+  func map<Other: Sendable & Equatable, Failure: Error>(_ transform: (Value) throws(Failure) -> Other) throws(Failure) -> Derived<Other> {
+    switch self {
+    case .available(let value): .available(try transform(value))
+    case .unavailable(let faults): .unavailable(faults)
+    }
+  }
 }
 
 enum DerivedDependencies {

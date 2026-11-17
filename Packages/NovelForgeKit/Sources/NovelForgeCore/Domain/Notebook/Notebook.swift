@@ -4,10 +4,6 @@ import ShadowStore
 
 // apps/novel-forge-server/src/modules/ledger/ledger.service.ts; the guards read the local state, `NotebookResolution` carries the merge across devices
 public enum Notebook {
-  private static let statementLimit = 4000
-  private static let whyLimit = 4000
-  private static let writerLineLimit = 1000
-  private static let alternativesLimit = 20
   private static let stepKeyLimit = 60
   private static let ideaIdLimit = 64
   private static let authorKinds: [LedgerEntryKind] = [.direction, .rejected, .backlog]
@@ -54,8 +50,10 @@ public enum Notebook {
   public static func supersedeByAuthor(_ id: UUID, rewrite: NotebookRewrite, novel: UUID, in transaction: inout WriteTransaction) throws(NotebookError) -> NotebookEntryRecord {
     if let kind = rewrite.kind, !supersedeKinds.contains(kind) { throw .kindNotAllowed(kind.rawValue) }
     try require(statement: rewrite.statement, why: rewrite.why)
-    try require(field: "writerLine", rewrite.writerLine, limit: writerLineLimit)
-    if let alternatives = rewrite.rejectedAlternatives, alternatives.count > alternativesLimit { throw .tooMany(field: "rejectedAlternatives", limit: alternativesLimit) }
+    try require(field: "writerLine", rewrite.writerLine, limit: NotebookLimits.writerLine)
+    if let alternatives = rewrite.rejectedAlternatives, alternatives.count > NotebookLimits.rejectedAlternatives {
+      throw .tooMany(field: "rejectedAlternatives", limit: NotebookLimits.rejectedAlternatives)
+    }
 
     let ledger = try load(novel, in: transaction)
     let previous = try active(id, in: ledger)
@@ -66,7 +64,7 @@ public enum Notebook {
   // ledger.service.ts:146
   @discardableResult
   public static func withdraw(_ id: UUID, reason: String, novel: UUID, in transaction: inout WriteTransaction) throws(NotebookError) -> NotebookWithdrawalRecord {
-    try require(field: "reason", reason, limit: statementLimit)
+    try require(field: "reason", reason, limit: NotebookLimits.reason)
     if reason.jsTrim().isEmpty { throw .blank(field: "reason") }
     try requireNovel(novel, in: transaction)
     _ = try active(id, in: try load(novel, in: transaction))
@@ -148,9 +146,9 @@ public enum Notebook {
   }
 
   private static func require(statement: String, why: String?) throws(NotebookError) {
-    try require(field: "statement", statement, limit: statementLimit)
+    try require(field: "statement", statement, limit: NotebookLimits.statement)
     if statement.jsTrim().isEmpty { throw .blank(field: "statement") }
-    try require(field: "why", why, limit: whyLimit)
+    try require(field: "why", why, limit: NotebookLimits.why)
   }
 
   private static func require(field: String, _ value: String?, limit: Int) throws(NotebookError) {

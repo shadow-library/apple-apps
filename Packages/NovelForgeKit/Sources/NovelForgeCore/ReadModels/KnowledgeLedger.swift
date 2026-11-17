@@ -9,7 +9,11 @@ public struct KnowledgeLedger: ReadModel {
   private static let tables = [CharacterKnowledgeEntry.databaseTableName]
 
   public static func load(_ novel: UUID, in transaction: ReadTransaction) throws(StoreError) -> KnowledgeLedger {
-    let report = try ReadFaults(novel: novel, reading: tables, in: transaction)
+    try load(novel, faults: try FaultRows(in: transaction), in: transaction)
+  }
+
+  static func load(_ novel: UUID, faults: FaultRows, in transaction: ReadTransaction) throws(StoreError) -> KnowledgeLedger {
+    let report = ReadFaults(novel: novel, reading: tables, from: faults)
     return KnowledgeLedger(
       entries: try report.section(tables) { () throws(StoreError) in
         let rows = try transaction.query { database in try CharacterKnowledgeEntry.filter(Column("novel") == novel).fetchAll(database) }

@@ -38,6 +38,7 @@ public enum DomainError: ShadowError, Equatable {
   case promiseExists(PromiseRef)
   case secretNotFound(String)
   case entityNotFound(String)
+  case entityExists(String)
   case documentNotFound(section: String, slug: String)
   case documentExists(section: String, slug: String)
   case revisionNotFound(String)
@@ -98,6 +99,7 @@ public enum DomainError: ShadowError, Equatable {
     case .promiseExists: "PMS_002"
     case .secretNotFound: "FCT_001"
     case .entityNotFound: "ENT_001"
+    case .entityExists: "bible.entity_exists"
     case .documentNotFound: "DOC_001"
     case .documentExists: "bible.document_exists"
     case .revisionNotFound: "bible.revision_not_found"
@@ -160,6 +162,7 @@ public enum DomainError: ShadowError, Equatable {
     case .promiseExists(let promise): "A \(promise.kindName) with the key \(promise.key) already exists in the project"
     case .secretNotFound(let secret): "Canon fact \(secret) not found"
     case .entityNotFound: "Entity not found"
+    case .entityExists(let entity): "An entity with the key \(entity) already exists in the novel"
     case .documentNotFound: "Bible document not found"
     case .documentExists(let section, let slug): "The page \(section)/\(slug) already exists"
     case .revisionNotFound(let revision): "The page has no version \(revision)"

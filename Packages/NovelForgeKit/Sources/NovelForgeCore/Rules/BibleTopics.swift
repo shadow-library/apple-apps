@@ -12,7 +12,7 @@ public enum BibleTopic: String, CaseIterable, Sendable {
   case author
 }
 
-// platform/apps/novel-forge-web/src/lib/bible-topics.ts and story-bible.ts; the manifest-stage step of documentTopic (bible-topics.ts:226) needs the server's bibleRoles, which is not ported
+// platform/apps/novel-forge-web/src/lib/bible-topics.ts and story-bible.ts
 public enum BibleTopics {
   // bible-topics.ts:219
   public static func topic(of entity: EntityRecord) -> BibleTopic {
@@ -27,13 +27,14 @@ public enum BibleTopics {
     }
   }
 
-  // bible-topics.ts:270
-  public static func topic(of page: PageSummary) -> BibleTopic {
+  // bible-topics.ts:270; `stages` are the server's bible roles (bible-overview.service.ts:36) as stagesByDocument files them
+  public static func topic(of page: PageSummary, stages: BibleStages? = nil) -> BibleTopic {
     let label = "\(page.title) \(page.slug.jsReplace(Pattern.separatorRuns, " "))"
     if isAuthorOnly(label) { return .author }
     if page.section == .power { return .power }
     let fallback = sectionTopic(page.section)
-    return byKeywords(label, among: fallback == .core ? [.people, .factions, .places] : BibleTopic.allCases) ?? fallback
+    if let keyword = byKeywords(label, among: fallback == .core ? [.people, .factions, .places] : BibleTopic.allCases) { return keyword }
+    return stages?.stage(of: page).map(stageTopic) ?? fallback
   }
 
   // bible-topics.ts:195
@@ -46,6 +47,17 @@ public enum BibleTopics {
     guard let body = entity.body?.jsTrim(), !body.isEmpty else { return "" }
     let paragraph = plainText(strippingHeading(body, name: entity.name)).jsSplit(Pattern.paragraphBreak, limit: 1).first ?? ""
     return clip(paragraph, limit: limit)
+  }
+
+  // bible-topics.ts:38
+  private static func stageTopic(_ stage: BibleStage) -> BibleTopic {
+    switch stage {
+    case .foundation, .plot, .volumes: .core
+    case .world: .lore
+    case .power: .power
+    case .factionsAndLocations: .factions
+    case .characters: .people
+    }
   }
 
   // bible-topics.ts:48
