@@ -60,16 +60,31 @@ enum DerivedLedger {
   static func rows(
     world: NovelPlanWorld, plans: [DisclosurePlan], entities: [String], manual: [KnowledgeRow], retracted: Set<LedgerPair>, contributors: [KnowledgeContributor]
   ) -> [KnowledgeRow] {
-    var ledger = DisclosureWorld(
-      facts: world.facts.map(\.disclosureFact), entities: entities.map { DisclosureEntity(entityKey: $0, name: "") }, knowledge: manual,
-      plans: NovelPlanWorld.keepingLatestEnding(plans), milestones: world.planWorld.milestones,
-      volumes: world.volumes.map { DisclosureVolume(volumeKey: $0.volume, ordinal: $0.ordinal) }, readerKnowsLabel: false)
+    var ledger = world.disclosureWorld(plans: plans, entities: entities, knowledge: manual)
     let contexts = plannedUnlockContexts(ledger.planWorld, conditioned: true)
     for contributor in contributors.sorted(by: { $0.chapter < $1.chapter }) {
       ledger.ledgerBriefReveals(chapter: contributor.chapter, draftRevision: contributor.chapter, contexts: contexts)
       if contributor.isFinal { ledger.commitProvisionalRows(chapter: contributor.chapter, draftRevision: contributor.chapter) }
     }
     return ledger.ledger.filter { $0.source == .manual || !retracted.contains($0.pair) }
+  }
+}
+
+extension NovelPlanWorld {
+  /// The world as the reference's loaders read it, with `plans` in place of the world's chapters and the latest ending standing.
+  func disclosureWorld(plans: [DisclosurePlan], entities: [String] = [], knowledge: [KnowledgeRow] = []) -> DisclosureWorld {
+    DisclosureWorld(
+      facts: facts.map(\.disclosureFact), entities: entities.map { DisclosureEntity(entityKey: $0, name: "") }, knowledge: knowledge,
+      plans: NovelPlanWorld.keepingLatestEnding(plans), milestones: planWorld.milestones,
+      volumes: volumes.map { DisclosureVolume(volumeKey: $0.volume, ordinal: $0.ordinal) }, readerKnowsLabel: false)
+  }
+}
+
+extension EntityState {
+  /// When the record was first created: its natural key is first-writer-wins, so a later removal and re-creation keeps it, and a merge can only move it earlier.
+  var creationClock: HLCTimestamp? {
+    guard case .record(let record) = self else { return nil }
+    return record[field: CommonField.naturalKey.rawValue]?.clock
   }
 }
 
@@ -82,7 +97,7 @@ extension DisclosureVolume {
 // Committed knowledge from the canon contracts of final chapters and provisional knowledge from approvals in force, over the author's manual reveals; a removed
 // secret or entity hides its rows.
 public struct CharacterKnowledgeDerivation: Derivation {
-  public static let version = 1
+  public static let version = 2
   public static let definition = """
     CREATE TABLE nf_derived_character_knowledge (
       novel BLOB NOT NULL, fact TEXT NOT NULL, entity TEXT NOT NULL, chapter INTEGER NOT NULL, source TEXT NOT NULL, status TEXT NOT NULL, draft TEXT,
@@ -90,7 +105,8 @@ public struct CharacterKnowledgeDerivation: Derivation {
     ) STRICT, WITHOUT ROWID;
     """
 
-  static let recordKinds: [NovelForgeKind] = [.entity, .characterKnowledge]
+  // A secret's creation clock moves earlier when another device's creation of it arrives, leaving the plan world as it was.
+  static let recordKinds: [NovelForgeKind] = [.entity, .secret, .characterKnowledge]
 
   public init() {}
 
@@ -173,10 +189,10 @@ public struct CharacterKnowledgeDerivation: Derivation {
       let state = try context.records.state(of: ref, scope: .vault)
       guard case .readable(let entry) = EntityRecord.reading(state, of: ref), !entry.isRemoved else { continue }
       entities.append(key.value)
-      created[key] = Self.creation(state)
+      created[key] = state?.creationClock
     }
     var factCreated = [JSString: HLCTimestamp]()
-    for key in facts { factCreated[key] = Self.creation(try context.records.state(of: SecretRecord.ref(novel: novel, secret: key.value), scope: .vault)) }
+    for key in facts { factCreated[key] = try context.records.state(of: SecretRecord.ref(novel: novel, secret: key.value), scope: .vault)?.creationClock }
 
     // provisional-knowledge.ts:73 skips a learn whose fact or learner did not exist when the chapter was approved, and finalize commits only what was ledgered.
     let plans = world.chapters.map { chapter -> DisclosurePlan in
@@ -193,11 +209,5 @@ public struct CharacterKnowledgeDerivation: Derivation {
       return CharacterKnowledgeEntry(
         novel: novel, fact: row.factKey, entity: row.entityKey, chapter: row.learnedInChapter, source: row.source ?? .manual, status: row.status, draftRevision: revision)
     }
-  }
-
-  /// When the record was first created: its natural key is first-writer-wins, so a later removal and re-creation keeps it.
-  private static func creation(_ state: EntityState?) -> HLCTimestamp? {
-    guard case .record(let record)? = state else { return nil }
-    return record[field: CommonField.naturalKey.rawValue]?.clock
   }
 }

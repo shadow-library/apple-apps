@@ -121,6 +121,27 @@ struct DerivedRowGuardTests {
     await ghost.expectPlan(.planStateUnavailable(2), 2, PlanEdit(body: "x"))
   }
 
+  @Test func shouldRefuseToFinalizeAPlannedChapterWhileAFaultCanChangeWhatItDiscloses() async throws {
+    let book = try await ChapterBook.make()
+    let novel = book.novel
+    try await book.plan(1, learns: [KnowledgeReveal(entityKey: "mara", factKey: "heir")])
+    try await book.draft(1)
+    try await book.approve(1)
+    try await book.tamper(Self.entityFault(IndexedRecord.databaseTableName, SecretRecord.ref(novel: novel, secret: "heir")))
+    await book.expect(.planStateUnavailable(1)) { try ChapterFinalize.finalize(novel: novel, chapter: 1, in: &$0) }
+    #expect(try await book.final(1) == nil)
+  }
+
+  @Test func shouldFinalizeAChapterWithoutAPlanWhateverThePlanWorld() async throws {
+    let book = try await ChapterBook.make()
+    let novel = book.novel
+    try await book.draft(1)
+    try await book.approve(1)
+    try await book.tamper(Self.entityFault(IndexedRecord.databaseTableName, SecretRecord.ref(novel: novel, secret: "heir")))
+    _ = try await book.store.write { try ChapterFinalize.finalize(novel: novel, chapter: 1, in: &$0) }
+    #expect(try await book.final(1)?.canon.disclosed == [])
+  }
+
   @Test func shouldRefuseAPlanWhileAFaultNamesAWatchedEntityWhoseNovelCannotBeRead() async throws {
     let book = try await ChapterBook.make()
     let broken = SecretRecord.ref(novel: SchemaFixture.otherNovel, secret: "broken")

@@ -66,14 +66,16 @@ enum ChapterWrites {
     _ = try approval.append(in: &transaction)
   }
 
-  /// Finalizes the draft head with the plan head's contract, as finalize copies them, bound to the approval in force as reconciled.
+  /// Finalizes the draft head with the plan head's contract and what it discloses, as finalize records them, bound to the approval in force as reconciled.
   static func finalize(novel: UUID, chapter: Int, in transaction: inout WriteTransaction) throws {
     let head = try head(novel: novel, chapter: chapter, in: transaction)
     let approval = try ChapterLifecycleEntry.read(novel: novel, chapter: chapter, in: transaction.database)?.approval
     let plan = try planContract(novel: novel, chapter: chapter, in: transaction)
     let volume = try ChapterPlanRecord.read(try ChapterPlanRecord.ref(novel: novel, chapter: chapter), in: transaction).entry?.record.content.volume
+    let disclosed = plan == nil ? [] : try ChapterFinalize.disclosed(novel: novel, chapter: chapter, in: transaction)
     let canon = Canon(
-      draftRevision: head, planRevision: "v:plan", approval: approval, body: "Final \(chapter).", volume: volume, contract: plan ?? ChapterContract())
+      draftRevision: head, planRevision: "v:plan", approval: approval, body: "Final \(chapter).", volume: volume, contract: plan ?? ChapterContract(),
+      disclosed: disclosed)
     _ = try FinalChapterRecord(novel: novel, chapter: chapter, canon: canon).finalize(in: &transaction)
   }
 
@@ -136,6 +138,14 @@ enum ChapterTables {
 
   static func approvals(_ novel: UUID, in store: VaultStore) async throws -> [Int: UUID] {
     Dictionary(uniqueKeysWithValues: try await Projection.fetch(ApprovalInForceDerivation.request(for: novel), in: store).map { ($0.chapter, $0.approval) })
+  }
+
+  static func disclosure(_ novel: UUID, in store: VaultStore) async throws -> [String: Int] {
+    Dictionary(uniqueKeysWithValues: try await Projection.fetch(ReaderDisclosureDerivation.request(for: novel), in: store).map { ($0.secret, $0.chapter) })
+  }
+
+  static func recorded(in store: VaultStore) async throws -> [[String]?] {
+    try await Projection.finals(in: store).map { final in try final.disclosed.map(DisclosedColumn.decode) }
   }
 
   static func knowledge(_ novel: UUID, in store: VaultStore) async throws -> Set<LedgerView> {

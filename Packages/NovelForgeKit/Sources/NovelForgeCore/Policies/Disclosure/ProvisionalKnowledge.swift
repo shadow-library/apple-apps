@@ -56,11 +56,17 @@ extension DisclosureWorld {
     return dated.filter { holdsAt($0, chapter) && !holdsAt($0, chapter - 1) }.map(\.factKey)
   }
 
+  // apps/novel-forge-server/src/common/provisional-knowledge.ts:130 without its write: the facts the chapter shows the reader, already disclosed ones included
+  // when its plan has a contract
+  func chapterReveals(chapter: Int) -> [String] {
+    guard let plan = storedPlan(for: chapter) else { return [] }
+    guard parseKnowledgeContract(plan.row.knowledgeContract) != nil else { return datedReveals(chapter: chapter) }
+    return resolveBriefReveals(chapter: chapter).factKeys
+  }
+
   // apps/novel-forge-server/src/common/provisional-knowledge.ts:130
   mutating func discloseChapterReveals(chapter: Int) {
-    guard let plan = storedPlan(for: chapter) else { return }
-    let keys = parseKnowledgeContract(plan.row.knowledgeContract) != nil ? resolveBriefReveals(chapter: chapter).factKeys : datedReveals(chapter: chapter)
-    let disclosed = Set(keys.map { JSString($0) })
+    let disclosed = Set(chapterReveals(chapter: chapter).map { JSString($0) })
     for index in facts.indices where facts[index].disclosedInChapter == nil && disclosed.contains(JSString(facts[index].factKey)) { facts[index].disclosedInChapter = chapter }
   }
 

@@ -5,6 +5,7 @@ import ShadowStore
 public struct StoryScreen: ReadModel {
   public let structure: StoryStructure
   public let knowledge: KnowledgeLedger
+  public let disclosure: ReaderDisclosure
   public let entities: Derived<StructureSection<EntityRecord>>
   public let reveals: PlanRevealReport
   public let next: Derived<Int>
@@ -19,12 +20,13 @@ public struct StoryScreen: ReadModel {
     let stored = try FaultRows(in: transaction)
     let structure = try StoryStructure.load(novel, faults: stored, in: transaction)
     let knowledge = try KnowledgeLedger.load(novel, faults: stored, in: transaction)
+    let disclosure = try ReaderDisclosure.load(novel, faults: stored, in: transaction)
     let reveals = try PlanRevealReport.load(novel, faults: stored, in: transaction)
     let report = ReadFaults(novel: novel, reading: recordTables + cursorTables, from: stored)
     let entities = try report.section(recordTables) { () throws(StoreError) in try StoryBibleContents.entities(of: novel, in: transaction) }
-    let faults = Set(structure.faults + knowledge.faults + reveals.faults + report.relevant)
+    let faults = Set(structure.faults + knowledge.faults + disclosure.faults + reveals.faults + report.relevant)
     return StoryScreen(
-      structure: structure, knowledge: knowledge, entities: entities, reveals: reveals,
+      structure: structure, knowledge: knowledge, disclosure: disclosure, entities: entities, reveals: reveals,
       next: try report.section(cursorTables) { () throws(StoreError) in
         try transaction.query { database in try StoryCursor.filter(Column("novel") == novel).fetchOne(database)?.chapter } ?? 1
       },

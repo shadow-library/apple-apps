@@ -220,6 +220,21 @@ extension ChapterOperations {
   ]
 }
 
+extension ChapterOperations {
+  /// A secret of the first novel removed or restored after a chapter recorded it, so its disclosure waits on when it became live again.
+  static let recreating: [ProjectionOperation] = [
+    ProjectionOperation(name: "remove a secret of the first novel", weight: 3) { generator, universe in
+      let ref = SecretRecord.ref(novel: universe.novels[0], secret: generator.pick(from: factKeys))
+      return { transaction in _ = try SecretRecord.remove(ref, in: &transaction) }
+    },
+    ProjectionOperation(name: "restore a secret of the first novel", weight: 3) { generator, universe in
+      let record = SecretRecord(
+        novel: universe.novels[0], secret: generator.pick(from: factKeys), text: "The ledger is forged.", revealChapter: 1, unlock: nil, source: .known(.manual))
+      return { transaction in _ = try record.restore(in: &transaction) }
+    },
+  ]
+}
+
 private enum OraclePlan {
   case none
   case contract(ChapterContract)
@@ -237,6 +252,8 @@ private struct OracleFinal {
   let draft: String?
   let contract: ChapterContract?
   let clock: HLCTimestamp?
+  let recorded: [String]?
+  let finalized: HLCTimestamp?
 }
 
 private struct OracleNovel {
@@ -257,8 +274,9 @@ private func read(_ novel: UUID, _ universe: ProjectionUniverse, in transaction:
   for chapter in universe.chapters {
     let finalRef = try FinalChapterRecord.ref(novel: novel, chapter: chapter)
     let finalState = try transaction.state(of: finalRef, scope: .vault)
+    let reading = FinalChapterRecord.reading(finalState, of: finalRef)
     let isFinal =
-      switch FinalChapterRecord.reading(finalState, of: finalRef) {
+      switch reading {
       case .absent: false
       case .readable: true
       case .unreadable: attributed(finalRef, finalState)
@@ -277,7 +295,8 @@ private func read(_ novel: UUID, _ universe: ProjectionUniverse, in transaction:
         }
       }
       world.finals[chapter] = OracleFinal(
-        digest: canon.map(FinalChapterRecord.digest), draft: members?["draft_revision"]?.stringValue, contract: contract, clock: clock)
+        digest: canon.map(FinalChapterRecord.digest), draft: members?["draft_revision"]?.stringValue, contract: contract, clock: clock,
+        recorded: reading.entry == nil ? nil : recorded(members?["disclosed"]), finalized: canonClock)
     }
     let draftRef = try DraftRecord.ref(novel: novel, chapter: chapter)
     let draftState = try transaction.state(of: draftRef, scope: .vault)
@@ -388,6 +407,12 @@ private func expectedLifecycle(_ novel: UUID, _ world: OracleNovel) -> [Int: Cha
   return entries
 }
 
+private func recorded(_ value: JSONValue?) -> [String]? {
+  guard case .array(let items)? = value else { return nil }
+  let keys = items.compactMap(\.stringValue)
+  return keys.count == items.count ? keys.map(\.precomposedStringWithCanonicalMapping) : nil
+}
+
 private func created(_ ref: EntityRef, in transaction: ReadTransaction) throws -> HLCTimestamp? {
   guard case .record(let record)? = try transaction.state(of: ref, scope: .vault) else { return nil }
   return record[field: "natural_key"]?.clock
@@ -463,6 +488,35 @@ private func expectedKnowledge(
   return Set(ledger.values.filter { liveFacts.contains($0.fact) && liveEntities.contains($0.entity) })
 }
 
+// provisional-knowledge.ts:141 read per secret from what each canon recorded: the lowest final chapter that recorded it while it was live, a live secret's `removed`
+// clock being its last create or restore.
+private func expectedDisclosure(_ novel: UUID, _ world: OracleNovel, _ universe: ProjectionUniverse, in transaction: ReadTransaction) throws
+  -> (disclosed: [String: Int], seen: Set<String>)
+{
+  var disclosed = [String: Int]()
+  var seen = Set<String>()
+  for chapter in universe.chapters {
+    guard let final = world.finals[chapter] else { continue }
+    guard let keys = final.recorded, let written = final.finalized else {
+      seen.insert("final without a set")
+      continue
+    }
+    for key in keys where disclosed[key] == nil {
+      let ref = SecretRecord.ref(novel: novel, secret: key)
+      let state = try transaction.state(of: ref, scope: .vault)
+      guard case .readable(let entry) = SecretRecord.reading(state, of: ref), !entry.isRemoved, case .record(let record)? = state,
+        let since = record[field: "removed"]?.clock, since <= written
+      else {
+        seen.insert("recorded but not live then")
+        continue
+      }
+      disclosed[key] = chapter
+      seen.insert("disclosed")
+    }
+  }
+  return (disclosed, seen)
+}
+
 final class ChapterCoverage: Sendable {
   let seen = Mutex(Set<String>())
 }
@@ -471,16 +525,21 @@ private func oracle(_ coverage: ChapterCoverage) -> @Sendable (NovelForgeReconci
   { _, store, universe in
     for novel in universe.novels {
       let reveals = try await Projection.fetch(PlanRevealDerivation.request(for: novel), in: store)
-      let (expected, knowledge) = try await store.read { transaction in
+      let (expected, knowledge, disclosure) = try await store.read { transaction in
         let world = try read(novel, universe, in: transaction, reveals: reveals)
         let lifecycle = expectedLifecycle(novel, world)
-        let context = DerivationContext(records: transaction)
-        return (lifecycle, try expectedKnowledge(novel, world, lifecycle, universe, in: transaction, planWorld: try NovelPlanWorld.stored(for: novel, in: context)))
+        let planWorld = try NovelPlanWorld.stored(for: novel, in: DerivationContext(records: transaction))
+        return (
+          lifecycle, try expectedKnowledge(novel, world, lifecycle, universe, in: transaction, planWorld: planWorld),
+          try expectedDisclosure(novel, world, universe, in: transaction)
+        )
       }
       let actual = try await ChapterTables.lifecycle(novel, in: store)
       guard actual == expected else { throw ProjectionPropertyFailure.oracle("lifecycle of \(novel): \(actual) differs from \(expected)") }
       let ledger = try await ChapterTables.knowledge(novel, in: store)
       guard ledger == knowledge else { throw ProjectionPropertyFailure.oracle("knowledge of \(novel): \(ledger) differs from \(knowledge)") }
+      let disclosed = try await ChapterTables.disclosure(novel, in: store)
+      guard disclosed == disclosure.disclosed else { throw ProjectionPropertyFailure.oracle("reader disclosure of \(novel): \(disclosed) differs from \(disclosure)") }
       let approvals = try await ChapterTables.approvals(novel, in: store)
       guard approvals == expected.compactMapValues(\.approval) else { throw ProjectionPropertyFailure.oracle("approvals in force of \(novel) differ") }
 
@@ -490,6 +549,7 @@ private func oracle(_ coverage: ChapterCoverage) -> @Sendable (NovelForgeReconci
       facts.formUnion(actual.values.compactMap { $0.approvalKind.map { "approved \($0.rawValue)" } })
       facts.formUnion(actual.values.compactMap { entry in entry.stale == nil && entry.differences != nil ? "accepted" : nil })
       facts.formUnion(ledger.map { "knowledge \($0.source.rawValue) \($0.status.rawValue)" })
+      facts.formUnion(disclosure.seen)
       coverage.seen.withLock { $0.formUnion(facts) }
     }
   }
@@ -500,7 +560,8 @@ struct ChapterPropertyTests {
   @Test(arguments: [CausalReplicaOrder.causal, .writerOrderOnly])
   func shouldMatchARebuildAtEveryStepAndAgreeWithTheOracleOnEveryReplica(order: CausalReplicaOrder) async throws {
     let property = ProjectionProperty(
-      derivations: chapterAreaDerivations, operations: ChapterOperations.all + ChapterOperations.focused, iterations: 4, steps: 40, settled: oracle(ChapterCoverage()))
+      derivations: chapterAreaDerivations, operations: ChapterOperations.all + ChapterOperations.focused + ChapterOperations.recreating, iterations: 4, steps: 40,
+      settled: oracle(ChapterCoverage()))
     try await property.check(order: order, seed: order == .causal ? 0xD21A : 0xD21B)
   }
 
@@ -509,7 +570,11 @@ struct ChapterPropertyTests {
     let coverage = ChapterCoverage()
     let unfinalized = ChapterOperations.all.filter { !$0.name.hasPrefix("finalize") && !$0.name.hasPrefix("purge") }
     try await withThrowingTaskGroup { group in
-      for (operations, steps, seed) in [(ChapterOperations.all, 24, UInt64(0xD21C)), (unfinalized, 16, 0xD21D), (ChapterOperations.focused, 20, 0xD21E)] {
+      let groups = [
+        (ChapterOperations.all, 24, UInt64(0xD21C)), (unfinalized, 16, 0xD21D), (ChapterOperations.focused, 20, 0xD21E),
+        (ChapterOperations.focused + ChapterOperations.recreating, 28, 0xE01A),
+      ]
+      for (operations, steps, seed) in groups {
         let property = ProjectionProperty(
           derivations: chapterAreaDerivations, operations: operations, iterations: 24, steps: steps, checksEveryStep: false, settled: oracle(coverage))
         group.addTask { try await property.check(order: .causal, seed: seed) }
@@ -519,6 +584,7 @@ struct ChapterPropertyTests {
     let expected: Set<String> = [
       "review needs_review", "review approved", "review final", "stale unrecorded", "stale draft", "stale knowledge", "stale canon", "stale reveal", "plan stale",
       "approved standard", "approved as_written", "accepted", "knowledge manual committed", "knowledge brief committed", "knowledge brief provisional",
+      "disclosed", "recorded but not live then", "final without a set",
     ]
     #expect(expected.subtracting(coverage.seen.withLock { $0 }) == [])
   }
