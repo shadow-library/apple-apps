@@ -25,6 +25,7 @@ let package = Package(
       dependencies: [
         .product(name: "ShadowCore", package: "ShadowKit"),
         .product(name: "ShadowStore", package: "ShadowKit"),
+        .product(name: "ShadowAI", package: "ShadowKit"),
         .product(name: "GRDB", package: "GRDB.swift"),
       ],
       swiftSettings: swiftSettings

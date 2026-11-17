@@ -72,7 +72,7 @@ A product module is added the same way: a library product in the product's packa
 
 ## Novel Forge core
 
-`Packages/NovelForgeKit` holds `NovelForgeCore`: the product's records, rules and derived state on top of `ShadowStore`. It imports no UI framework and depends on `ShadowCore`, `ShadowStore` and GRDB; `ShadowTestSupport` is linked by its tests only.
+`Packages/NovelForgeKit` holds `NovelForgeCore`: the product's records, rules and derived state on top of `ShadowStore`. It imports no UI framework and depends on `ShadowCore`, `ShadowStore`, `ShadowAI` and GRDB; `ShadowTestSupport` is linked by its tests only.
 
 | Folder                   | Contents                                                                                               |
 | ------------------------ | ------------------------------------------------------------------------------------------------------ |
@@ -145,7 +145,7 @@ The archive is written to `.build/docbuild/Build/Products/Debug/ShadowDesignSyst
 
 ## Novel Forge app
 
-`Apps/NovelForge` runs on iPhone, iPad and Mac from one target (`.phoneAndMac`; no visionOS). It depends on `NovelForgeCore`, `ShadowStore` and `ShadowDesignSystem`. At launch it opens the vault, one SQLite database at `<Application Support>/<bundle id>/Vaults/Default/vault.sqlite`, off the main actor; a failure shows an error screen with Try Again instead of crashing. The root is a three-column `NavigationSplitView`: the library, the sections of the selected novel, and the section's screen. Unit tests run against a temporary directory, and the app itself uses an in-memory store when hosted by XCTest. Opening goes through `NovelForgeStore` in `NovelForgeCore`.
+`Apps/NovelForge` runs on iPhone, iPad and Mac from one target (`.phoneAndMac`; no visionOS). It depends on `NovelForgeCore`, `ShadowStore`, `ShadowAI`, `ShadowKeychain`, `ShadowNetworking` and `ShadowDesignSystem`. At launch it opens the vault, one SQLite database at `<Application Support>/<bundle id>/Vaults/Default/vault.sqlite`, off the main actor; a failure shows an error screen with Try Again instead of crashing. The root is a three-column `NavigationSplitView`: the library, the sections of the selected novel, and the section's screen. Unit tests run against a temporary directory, and the app itself uses an in-memory store when hosted by XCTest. Opening goes through `NovelForgeStore` in `NovelForgeCore`.
 
 Each area owns a folder under `Apps/NovelForge/Sources/<Area>/` (`Library`, `Reader`, `Story`, `StoryBible`, `Notebook`) and plugs into the shell through one entry view, `struct <Area>View: View { let context: NovelContext }`, where `NovelContext` holds the `VaultStore` and the novel's id. `Navigation/NovelDetailView.swift` maps a `NovelSection` to that view, so an area replaces only its own folder. The shell keeps one `NovelNavigator` per novel in the environment (`@Environment(NovelNavigator.self)`): `section` is the selected section, `show(_:)` switches to one, `open(_:_:)` replaces that section's own `NavigationStack` path with one `Hashable` route and selects the section (a deep link), and `push(_:)` appends a route within the current section. An area registers `navigationDestination(for:)` for its own route types, and each section's path survives switching sections. A route can outlive its entity (deleted, or removed on another device), so every destination must render a "not found" state rather than assume the entity exists.
 
