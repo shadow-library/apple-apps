@@ -209,7 +209,7 @@ struct NovelPlanWorld: Codable, Equatable, Sendable {
     return { plan, context in Self.revealViolations(of: plan, at: context, factByKey: factByKey, unreadable: unreadable) }
   }
 
-  private static func revealViolations(of plan: PlanRow, at context: UnlockContext, factByKey: [JSString: DisclosureFact], unreadable: Set<JSString>)
+  static func revealViolations(of plan: PlanRow, at context: UnlockContext, factByKey: [JSString: DisclosureFact], unreadable: Set<JSString>)
     -> [PlanRevealViolation]
   {
     learnedFactKeys(plan.knowledgeContract).compactMap { factKey in
