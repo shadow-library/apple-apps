@@ -1,0 +1,1267 @@
+{
+  "world": {
+    "premise": null,
+    "storyCursor": 2,
+    "finalBody": "The tide turns.",
+    "draft": "The salle smelled of chalk. Again, the light came in bars.\n\nCorin flexed his right hand until the knuckles stopped aching.\n\n“Again,” Mara said.\n\nHe was afraid of her, and he knew it.",
+    "entities": [
+      {
+        "entityKey": "mara",
+        "type": "character",
+        "name": "Mara"
+      }
+    ],
+    "milestones": [
+      {
+        "milestoneKey": "rise",
+        "label": "Mara rises in the guild"
+      }
+    ]
+  },
+  "scenarios": [
+    {
+      "name": "direct-quoted-apply",
+      "about": "The author states a fact in auto mode; the quoted change applies in the turn.",
+      "watch": [
+        "entity:mara"
+      ],
+      "steps": [
+        {
+          "turn": {
+            "message": "Mara is a thief who works the Saltgate docks.",
+            "calls": [
+              {
+                "reply": "Noted — Mara works the docks.",
+                "changeSet": [
+                  {
+                    "op": "entity.upsert",
+                    "entityKey": "mara",
+                    "type": "character",
+                    "name": "Mara",
+                    "status": "thief",
+                    "quote": "Mara is a thief who works the Saltgate docks"
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "idea-applies-with-question",
+      "about": "Auto mode applies the model’s own idea as an undoable idea and keeps its question card.",
+      "watch": [
+        "entity:kael"
+      ],
+      "steps": [
+        {
+          "turn": {
+            "message": "Who could help Mara at the docks?",
+            "calls": [
+              {
+                "reply": "Her brother Kael, perhaps.\nOr someone else.",
+                "changeSet": [
+                  {
+                    "op": "entity.upsert",
+                    "entityKey": "kael",
+                    "type": "character",
+                    "name": "Kael",
+                    "body": "Kael is Mara’s brother, a smith at the Saltgate forge."
+                  }
+                ],
+                "question": {
+                  "question": "Who is Kael to Mara?",
+                  "answers": [
+                    {
+                      "title": "Her brother",
+                      "recommended": true
+                    },
+                    {
+                      "title": "Her rival",
+                      "why": "Sharper conflict."
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "manual-mode-card-then-apply",
+      "about": "Manual mode cards even the author’s words; accepting the whole card applies it.",
+      "vault": {
+        "mode": "manual"
+      },
+      "watch": [
+        "entity:mara"
+      ],
+      "steps": [
+        {
+          "turn": {
+            "message": "Mara is a thief who works the Saltgate docks.",
+            "calls": [
+              {
+                "reply": "A card for you.",
+                "changeSet": [
+                  {
+                    "op": "entity.upsert",
+                    "entityKey": "mara",
+                    "type": "character",
+                    "name": "Mara",
+                    "status": "thief",
+                    "quote": "Mara is a thief who works the Saltgate docks"
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "apply": {
+            "proposal": "s0.card"
+          }
+        }
+      ]
+    },
+    {
+      "name": "mixed-split-then-discard",
+      "about": "A quoted change applies while an always-card removal waits; the author discards the card.",
+      "watch": [
+        "entity:mara",
+        "milestone:rise"
+      ],
+      "steps": [
+        {
+          "turn": {
+            "message": "Mara is a thief who works the Saltgate docks. The rise milestone can go.",
+            "calls": [
+              {
+                "reply": "Done, and the removal waits for you.",
+                "changeSet": [
+                  {
+                    "op": "entity.upsert",
+                    "entityKey": "mara",
+                    "type": "character",
+                    "name": "Mara",
+                    "status": "thief",
+                    "quote": "Mara is a thief who works the Saltgate docks"
+                  },
+                  {
+                    "op": "milestone.remove",
+                    "milestoneKey": "rise"
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "discard": {
+            "proposal": "s0.card"
+          }
+        }
+      ]
+    },
+    {
+      "name": "negation-held-for-review",
+      "about": "A removal written as absence survives the one fix round, so the turn is held for review.",
+      "vault": {
+        "entities": [
+          {
+            "entityKey": "mara",
+            "motivation": "She carries a dagger to the tower."
+          }
+        ]
+      },
+      "watch": [
+        "entity:mara"
+      ],
+      "steps": [
+        {
+          "turn": {
+            "message": "Mara should travel light to the tower.",
+            "calls": [
+              {
+                "reply": "Dropped the dagger.",
+                "changeSet": [
+                  {
+                    "op": "entity.upsert",
+                    "entityKey": "mara",
+                    "type": "character",
+                    "name": "Mara",
+                    "motivation": "She carries no dagger to the tower."
+                  }
+                ]
+              },
+              {
+                "reply": "Still dropped.",
+                "changeSet": [
+                  {
+                    "op": "entity.upsert",
+                    "entityKey": "mara",
+                    "type": "character",
+                    "name": "Mara",
+                    "motivation": "She carries no dagger to the tower."
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "negation-fix-round",
+      "about": "The fix round rewrites the absence, and the revised idea applies.",
+      "vault": {
+        "entities": [
+          {
+            "entityKey": "mara",
+            "motivation": "She carries a dagger to the tower."
+          }
+        ]
+      },
+      "watch": [
+        "entity:mara"
+      ],
+      "steps": [
+        {
+          "turn": {
+            "message": "Mara should travel light to the tower.",
+            "calls": [
+              {
+                "reply": "Dropped the dagger.",
+                "changeSet": [
+                  {
+                    "op": "entity.upsert",
+                    "entityKey": "mara",
+                    "type": "character",
+                    "name": "Mara",
+                    "motivation": "She carries no dagger to the tower."
+                  }
+                ]
+              },
+              {
+                "reply": "Rewrote it.",
+                "changeSet": [
+                  {
+                    "op": "entity.upsert",
+                    "entityKey": "mara",
+                    "type": "character",
+                    "name": "Mara",
+                    "motivation": "She travels light to the tower."
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "negation-fix-call-fails",
+      "about": "The fix round’s call fails; the flagged change set is kept and held.",
+      "vault": {
+        "entities": [
+          {
+            "entityKey": "mara",
+            "motivation": "She carries a dagger to the tower."
+          }
+        ]
+      },
+      "watch": [
+        "entity:mara"
+      ],
+      "steps": [
+        {
+          "turn": {
+            "message": "Mara should travel light to the tower.",
+            "calls": [
+              {
+                "reply": "Dropped the dagger.",
+                "changeSet": [
+                  {
+                    "op": "entity.upsert",
+                    "entityKey": "mara",
+                    "type": "character",
+                    "name": "Mara",
+                    "motivation": "She carries no dagger to the tower."
+                  }
+                ]
+              },
+              {
+                "failure": "authentication"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "just-discussing",
+      "about": "Just discussing turns even the author’s words into a card.",
+      "watch": [
+        "entity:mara"
+      ],
+      "steps": [
+        {
+          "turn": {
+            "message": "Mara is a thief who works the Saltgate docks.",
+            "choices": {
+              "justDiscussing": true
+            },
+            "calls": [
+              {
+                "reply": "Something to consider.",
+                "changeSet": [
+                  {
+                    "op": "entity.upsert",
+                    "entityKey": "mara",
+                    "type": "character",
+                    "name": "Mara",
+                    "status": "thief",
+                    "quote": "Mara is a thief who works the Saltgate docks"
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "passage-rewrite-with-dropped",
+      "about": "A rewrite answering the author’s comment is anchored and carded; one whose passage is not in the chapter is left out with a note; an edit elsewhere in the chapter leaves the card applicable.",
+      "watch": [
+        "draft:3"
+      ],
+      "steps": [
+        {
+          "turn": {
+            "message": "",
+            "choices": {
+              "proseEdits": true
+            },
+            "passages": [
+              {
+                "chapter": 3,
+                "quote": "He was afraid of her, and he knew it.",
+                "comment": " Make him braver. "
+              }
+            ],
+            "calls": [
+              {
+                "reply": "Two tightenings.",
+                "changeSet": [
+                  {
+                    "op": "draft.rewrite_passage",
+                    "chapter": 3,
+                    "passage": "He was afraid of her, and he knew it.",
+                    "replacement": "His grip had gone damp inside the glove.",
+                    "contextIndex": 1,
+                    "label": "the fear"
+                  },
+                  {
+                    "op": "draft.rewrite_passage",
+                    "chapter": 3,
+                    "passage": "The lamp guttered.",
+                    "replacement": "The lamp burned low.",
+                    "label": "the lamp"
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "edit": {
+            "draft": {
+              "chapter": 3,
+              "replace": [
+                "The salle smelled of chalk.",
+                "The salle smelled of rosin."
+              ]
+            }
+          }
+        },
+        {
+          "apply": {
+            "proposal": "s0.card"
+          }
+        }
+      ]
+    },
+    {
+      "name": "stale-rewrite-anchor",
+      "about": "The author rewrites one carded passage by hand; the whole card is refused as stale and the other rewrite applies on its own.",
+      "watch": [
+        "draft:3"
+      ],
+      "steps": [
+        {
+          "turn": {
+            "message": "Tighten chapter 3.",
+            "choices": {
+              "proseEdits": true
+            },
+            "calls": [
+              {
+                "reply": "Two rewrites.",
+                "changeSet": [
+                  {
+                    "op": "draft.rewrite_passage",
+                    "chapter": 3,
+                    "passage": "flexed his right hand until the knuckles stopped aching.",
+                    "replacement": "worked his right wrist in slow circles until the old break stopped grinding."
+                  },
+                  {
+                    "op": "draft.rewrite_passage",
+                    "chapter": 3,
+                    "passage": "He was afraid of her, and he knew it.",
+                    "replacement": "His grip had gone damp inside the glove."
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "edit": {
+            "draft": {
+              "chapter": 3,
+              "replace": [
+                "and he knew it.",
+                "and he hid it."
+              ]
+            }
+          }
+        },
+        {
+          "apply": {
+            "proposal": "s0.card"
+          }
+        },
+        {
+          "apply": {
+            "proposal": "s0.card",
+            "selection": [
+              0
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "organise-starts",
+      "about": "Asked to organise long notes in auto mode, the reference accepts the organise card for the author and starts the job.",
+      "vault": {
+        "notes": {
+          "text": "The salt guild keeps its ledgers in the drowned court, and Mara steals one page each winter. ",
+          "times": 40
+        }
+      },
+      "watch": [],
+      "steps": [
+        {
+          "turn": {
+            "message": "Organise my notes, please.",
+            "calls": [
+              {
+                "reply": "Organising them.",
+                "changeSet": [
+                  {
+                    "op": "action.organise_notes"
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "organise-card-manual",
+      "about": "In manual mode the organise action waits on a card.",
+      "vault": {
+        "mode": "manual",
+        "notes": {
+          "text": "The salt guild keeps its ledgers in the drowned court, and Mara steals one page each winter. ",
+          "times": 40
+        }
+      },
+      "watch": [],
+      "steps": [
+        {
+          "turn": {
+            "message": "Organise my notes, please.",
+            "calls": [
+              {
+                "reply": "Here is the step.",
+                "changeSet": [
+                  {
+                    "op": "action.organise_notes"
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "approval-action",
+      "about": "An approval is always a card; a whole-card accept refuses the one-way door, the selected step runs.",
+      "watch": [
+        "draft:3"
+      ],
+      "steps": [
+        {
+          "turn": {
+            "message": "Chapter 3 reads well — approve it.",
+            "calls": [
+              {
+                "reply": "Ready when you are.",
+                "changeSet": [
+                  {
+                    "op": "action.approve_draft",
+                    "chapter": 3
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "apply": {
+            "proposal": "s0.card"
+          }
+        },
+        {
+          "apply": {
+            "proposal": "s0.card",
+            "selection": [
+              0
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "idea-rejection-lapse",
+      "about": "An idea turned down for this version is left out while Kael stays as he was, and comes back once the record changes.",
+      "vault": {
+        "mode": "manual"
+      },
+      "watch": [
+        "entity:kael"
+      ],
+      "steps": [
+        {
+          "turn": {
+            "message": "Who could help Mara at the docks?",
+            "calls": [
+              {
+                "reply": "Kael, perhaps.",
+                "changeSet": [
+                  {
+                    "op": "entity.upsert",
+                    "entityKey": "kael",
+                    "type": "character",
+                    "name": "Kael",
+                    "body": "Kael is Mara’s brother, a smith at the Saltgate forge."
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "reject": {
+            "proposal": "s0.card",
+            "op": 0,
+            "scope": "not_this_version"
+          }
+        },
+        {
+          "turn": {
+            "message": "Who could help Mara at the docks?",
+            "calls": [
+              {
+                "reply": "Kael, again.",
+                "changeSet": [
+                  {
+                    "op": "entity.upsert",
+                    "entityKey": "kael",
+                    "type": "character",
+                    "name": "Kael",
+                    "body": "Kael is Mara’s brother, a smith at the Saltgate forge."
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "edit": {
+            "newEntity": {
+              "entityKey": "kael",
+              "type": "character",
+              "name": "Kael"
+            }
+          }
+        },
+        {
+          "turn": {
+            "message": "Who could help Mara at the docks?",
+            "calls": [
+              {
+                "reply": "Kael, once more.",
+                "changeSet": [
+                  {
+                    "op": "entity.upsert",
+                    "entityKey": "kael",
+                    "type": "character",
+                    "name": "Kael",
+                    "body": "Kael is Mara’s brother, a smith at the Saltgate forge."
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "unrestricted-hard-line",
+      "about": "An unrestricted message over the hard line is refused unsaved; a reply over it fails the turn with nothing kept.",
+      "watch": [
+        "entity:mara"
+      ],
+      "steps": [
+        {
+          "turn": {
+            "message": "the schoolgirl looked sexy in the doorway",
+            "choices": {
+              "contentMode": "unrestricted"
+            },
+            "calls": []
+          }
+        },
+        {
+          "turn": {
+            "message": "Describe the doorway.",
+            "choices": {
+              "contentMode": "unrestricted"
+            },
+            "calls": [
+              {
+                "reply": "She waited. The schoolgirl looked sexy in the doorway.",
+                "changeSet": [
+                  {
+                    "op": "entity.upsert",
+                    "entityKey": "mara",
+                    "type": "character",
+                    "name": "Mara",
+                    "status": "thief",
+                    "quote": "Mara is a thief who works the Saltgate docks"
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "lookup-round",
+      "about": "One lookup round, then the change set applies.",
+      "watch": [
+        "entity:mara"
+      ],
+      "steps": [
+        {
+          "turn": {
+            "message": "Mara is a thief who works the Saltgate docks.",
+            "calls": [
+              {
+                "reply": "Let me check Mara first.",
+                "lookups": [
+                  {
+                    "tool": "get_entity",
+                    "args": {
+                      "entityKey": "mara"
+                    }
+                  }
+                ]
+              },
+              {
+                "reply": "Noted.",
+                "changeSet": [
+                  {
+                    "op": "entity.upsert",
+                    "entityKey": "mara",
+                    "type": "character",
+                    "name": "Mara",
+                    "status": "thief",
+                    "quote": "Mara is a thief who works the Saltgate docks"
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "lookup-budget-exhausted",
+      "about": "A model still asking after three lookup rounds answers with its reply alone.",
+      "watch": [
+        "entity:mara"
+      ],
+      "steps": [
+        {
+          "turn": {
+            "message": "Mara is a thief who works the Saltgate docks.",
+            "calls": [
+              {
+                "reply": "Checking again (1).",
+                "lookups": [
+                  {
+                    "tool": "get_entity",
+                    "args": {
+                      "entityKey": "mara"
+                    }
+                  }
+                ]
+              },
+              {
+                "reply": "Checking again (2).",
+                "lookups": [
+                  {
+                    "tool": "get_entity",
+                    "args": {
+                      "entityKey": "mara"
+                    }
+                  }
+                ]
+              },
+              {
+                "reply": "Checking again (3).",
+                "lookups": [
+                  {
+                    "tool": "get_entity",
+                    "args": {
+                      "entityKey": "mara"
+                    }
+                  }
+                ]
+              },
+              {
+                "reply": "Checking again (4).",
+                "lookups": [
+                  {
+                    "tool": "get_entity",
+                    "args": {
+                      "entityKey": "mara"
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "planner-only-hold",
+      "about": "A turn that read the author’s notes holds what the writer could see for review.",
+      "watch": [
+        "entity:mara",
+        "entity:kael"
+      ],
+      "steps": [
+        {
+          "turn": {
+            "message": "Mara is a thief who works the Saltgate docks.",
+            "calls": [
+              {
+                "reply": "Reading your notes.",
+                "lookups": [
+                  {
+                    "tool": "get_notes",
+                    "args": {}
+                  }
+                ]
+              },
+              {
+                "reply": "From your notes.",
+                "changeSet": [
+                  {
+                    "op": "entity.upsert",
+                    "entityKey": "mara",
+                    "type": "character",
+                    "name": "Mara",
+                    "status": "thief",
+                    "quote": "Mara is a thief who works the Saltgate docks"
+                  },
+                  {
+                    "op": "entity.upsert",
+                    "entityKey": "kael",
+                    "type": "character",
+                    "name": "Kael",
+                    "body": "Kael is Mara’s brother, a smith at the Saltgate forge."
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "supersession",
+      "about": "A newer card on the same record supersedes the older one; a card on another record stands.",
+      "vault": {
+        "mode": "manual"
+      },
+      "watch": [
+        "entity:kael",
+        "milestone:heist"
+      ],
+      "steps": [
+        {
+          "turn": {
+            "message": "Who could help Mara?",
+            "calls": [
+              {
+                "reply": "Kael.",
+                "changeSet": [
+                  {
+                    "op": "entity.upsert",
+                    "entityKey": "kael",
+                    "type": "character",
+                    "name": "Kael",
+                    "body": "Kael is Mara’s brother, a smith at the Saltgate forge."
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "turn": {
+            "message": "What should happen at the court?",
+            "calls": [
+              {
+                "reply": "A heist.",
+                "changeSet": [
+                  {
+                    "op": "milestone.upsert",
+                    "milestoneKey": "heist",
+                    "label": "The heist at the drowned court"
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "turn": {
+            "message": "Make Kael her rival instead.",
+            "calls": [
+              {
+                "reply": "A rival.",
+                "changeSet": [
+                  {
+                    "op": "entity.upsert",
+                    "entityKey": "kael",
+                    "type": "character",
+                    "name": "Kael",
+                    "body": "Kael is Mara’s rival from the tide-courts."
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "conflicted-card",
+      "about": "The record a card changes is edited by hand; accepting the card finds it conflicted.",
+      "vault": {
+        "mode": "manual"
+      },
+      "watch": [
+        "entity:mara"
+      ],
+      "steps": [
+        {
+          "turn": {
+            "message": "Mara is a thief who works the Saltgate docks.",
+            "calls": [
+              {
+                "reply": "A card.",
+                "changeSet": [
+                  {
+                    "op": "entity.upsert",
+                    "entityKey": "mara",
+                    "type": "character",
+                    "name": "Mara",
+                    "status": "thief",
+                    "quote": "Mara is a thief who works the Saltgate docks"
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "edit": {
+            "entity": {
+              "entityKey": "mara",
+              "status": "spy"
+            }
+          }
+        },
+        {
+          "apply": {
+            "proposal": "s0.card"
+          }
+        }
+      ],
+      "differences": [
+        {
+          "step": 2,
+          "path": [
+            "proposals",
+            "s0.card",
+            "decision"
+          ],
+          "reference": "conflicted",
+          "native": "pending",
+          "why": "F16: a conflict is found at read time by a dry run and never stored, so the card stays pending; the reference flips its status to conflicted (proposal-apply.service.ts:154-159). The accept itself is conflicted on both."
+        },
+        {
+          "step": 2,
+          "path": [
+            "decisions"
+          ],
+          "reference": {
+            "conflicted": 1
+          },
+          "native": {
+            "pending": 1
+          },
+          "why": "F16: a conflict is found at read time by a dry run and never stored, so the card stays pending; the reference flips its status to conflicted (proposal-apply.service.ts:154-159). The accept itself is conflicted on both."
+        }
+      ]
+    },
+    {
+      "name": "prose-withheld",
+      "about": "Prose edits are off: the model keeps a rewrite after the one advice round, so the rewrite is withheld with a note and the quoted change applies.",
+      "watch": [
+        "entity:mara",
+        "draft:3"
+      ],
+      "steps": [
+        {
+          "turn": {
+            "message": "Mara is a thief who works the Saltgate docks.",
+            "calls": [
+              {
+                "reply": "Noted, and a tightening.",
+                "changeSet": [
+                  {
+                    "op": "entity.upsert",
+                    "entityKey": "mara",
+                    "type": "character",
+                    "name": "Mara",
+                    "status": "thief",
+                    "quote": "Mara is a thief who works the Saltgate docks"
+                  },
+                  {
+                    "op": "draft.rewrite_passage",
+                    "chapter": 3,
+                    "passage": "He was afraid of her, and he knew it.",
+                    "replacement": "His grip had gone damp inside the glove."
+                  }
+                ]
+              },
+              {
+                "reply": "Noted, and a tightening.",
+                "changeSet": [
+                  {
+                    "op": "entity.upsert",
+                    "entityKey": "mara",
+                    "type": "character",
+                    "name": "Mara",
+                    "status": "thief",
+                    "quote": "Mara is a thief who works the Saltgate docks"
+                  },
+                  {
+                    "op": "draft.rewrite_passage",
+                    "chapter": 3,
+                    "passage": "He was afraid of her, and he knew it.",
+                    "replacement": "His grip had gone damp inside the glove."
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "plans-page-withheld",
+      "about": "A page of later plans the chapter writer would read survives the advice round and is withheld with a note; the rest applies.",
+      "watch": [
+        "entity:mara",
+        "entity:saltgate",
+        "doc:world/future-plans"
+      ],
+      "steps": [
+        {
+          "turn": {
+            "message": "Mara is a thief who works the Saltgate docks.",
+            "calls": [
+              {
+                "reply": "Noted.",
+                "changeSet": [
+                  {
+                    "op": "entity.upsert",
+                    "entityKey": "mara",
+                    "type": "character",
+                    "name": "Mara",
+                    "status": "thief",
+                    "quote": "Mara is a thief who works the Saltgate docks"
+                  },
+                  {
+                    "op": "entity.upsert",
+                    "entityKey": "saltgate",
+                    "type": "location",
+                    "name": "Saltgate",
+                    "body": "A harbour city of drowned courts."
+                  },
+                  {
+                    "op": "bible_document.upsert",
+                    "section": "world",
+                    "slug": "future-plans",
+                    "body": "# Future plans\n\nMara betrays the guild in book two."
+                  }
+                ]
+              },
+              {
+                "reply": "Noted.",
+                "changeSet": [
+                  {
+                    "op": "entity.upsert",
+                    "entityKey": "mara",
+                    "type": "character",
+                    "name": "Mara",
+                    "status": "thief",
+                    "quote": "Mara is a thief who works the Saltgate docks"
+                  },
+                  {
+                    "op": "entity.upsert",
+                    "entityKey": "saltgate",
+                    "type": "location",
+                    "name": "Saltgate",
+                    "body": "A harbour city of drowned courts."
+                  },
+                  {
+                    "op": "bible_document.upsert",
+                    "section": "world",
+                    "slug": "future-plans",
+                    "body": "# Future plans\n\nMara betrays the guild in book two."
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "two-rewrites-whole-apply",
+      "about": "Two rewrites of one chapter accepted whole land as one revision after an edit elsewhere in the chapter.",
+      "watch": [
+        "draft:3"
+      ],
+      "steps": [
+        {
+          "turn": {
+            "message": "Tighten chapter 3.",
+            "choices": {
+              "proseEdits": true
+            },
+            "calls": [
+              {
+                "reply": "Two rewrites.",
+                "changeSet": [
+                  {
+                    "op": "draft.rewrite_passage",
+                    "chapter": 3,
+                    "passage": "flexed his right hand until the knuckles stopped aching.",
+                    "replacement": "worked his wrist."
+                  },
+                  {
+                    "op": "draft.rewrite_passage",
+                    "chapter": 3,
+                    "passage": "He was afraid of her, and he knew it.",
+                    "replacement": "His grip had gone damp inside the glove, and the fear with it."
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "edit": {
+            "draft": {
+              "chapter": 3,
+              "replace": [
+                "The salle smelled of chalk.",
+                "The salle smelled of rosin and old sweat."
+              ]
+            }
+          }
+        },
+        {
+          "apply": {
+            "proposal": "s0.card"
+          }
+        }
+      ]
+    },
+    {
+      "name": "rewrites-dropped-reasons",
+      "about": "Rewrites of a final chapter and of a chapter with no draft are left out with their reasons; the one on the draft stays a card.",
+      "watch": [
+        "draft:3"
+      ],
+      "steps": [
+        {
+          "turn": {
+            "message": "Tighten the prose.",
+            "choices": {
+              "proseEdits": true
+            },
+            "calls": [
+              {
+                "reply": "Three rewrites.",
+                "changeSet": [
+                  {
+                    "op": "draft.rewrite_passage",
+                    "chapter": 1,
+                    "passage": "The tide turns.",
+                    "replacement": "The tide went."
+                  },
+                  {
+                    "op": "draft.rewrite_passage",
+                    "chapter": 9,
+                    "passage": "Nothing here.",
+                    "replacement": "Something.",
+                    "label": "the void"
+                  },
+                  {
+                    "op": "draft.rewrite_passage",
+                    "chapter": 3,
+                    "passage": "He was afraid of her, and he knew it.",
+                    "replacement": "His grip had gone damp."
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "milestone-card-apply",
+      "about": "A card removing one milestone and adding another applies both, the removal last.",
+      "vault": {
+        "mode": "manual"
+      },
+      "watch": [
+        "milestone:rise",
+        "milestone:heist"
+      ],
+      "steps": [
+        {
+          "turn": {
+            "message": "Drop the rise and plan a heist.",
+            "calls": [
+              {
+                "reply": "Two changes.",
+                "changeSet": [
+                  {
+                    "op": "milestone.remove",
+                    "milestoneKey": "rise"
+                  },
+                  {
+                    "op": "milestone.upsert",
+                    "milestoneKey": "heist",
+                    "label": "The heist at the drowned court"
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "apply": {
+            "proposal": "s0.card"
+          }
+        }
+      ]
+    },
+    {
+      "name": "approval-after-edit",
+      "about": "An approval staged before the author edits the chapter is refused for the revision it named.",
+      "watch": [
+        "draft:3"
+      ],
+      "steps": [
+        {
+          "turn": {
+            "message": "Chapter 3 reads well — approve it.",
+            "calls": [
+              {
+                "reply": "Ready when you are.",
+                "changeSet": [
+                  {
+                    "op": "action.approve_draft",
+                    "chapter": 3
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "edit": {
+            "draft": {
+              "chapter": 3,
+              "replace": [
+                "and he knew it.",
+                "and he hid it."
+              ]
+            }
+          }
+        },
+        {
+          "apply": {
+            "proposal": "s0.card",
+            "selection": [
+              0
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}
