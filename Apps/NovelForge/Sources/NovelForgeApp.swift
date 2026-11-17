@@ -5,12 +5,16 @@ import SwiftUI
 
 @main
 struct NovelForgeApp: App {
+  #if os(macOS)
+    @NSApplicationDelegateAdaptor(NovelForgeAppDelegate.self) private var delegate
+  #endif
   @State private var vault = VaultModel(locate: Self.locate)
 
   var body: some Scene {
     WindowGroup {
       RootView(vault: vault)
         .shadowTheme()
+        .flushingUnsavedWork()
         #if os(macOS)
           .frame(minWidth: 900, minHeight: 600)
         #endif

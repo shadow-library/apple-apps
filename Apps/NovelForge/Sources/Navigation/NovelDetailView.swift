@@ -2,6 +2,7 @@ import SwiftUI
 
 struct NovelDetailView: View {
   let navigator: NovelNavigator
+  let readers: NovelReaders
   let section: NovelSection
   let context: NovelContext
 
@@ -17,7 +18,7 @@ struct NovelDetailView: View {
   private var root: some View {
     switch section {
     case .overview: OverviewView(context: context)
-    case .reader: ReaderView(context: context)
+    case .reader: ReaderView(context: context, model: readers.model(for: context))
     case .story: StoryView(context: context)
     case .storyBible: StoryBibleView(context: context)
     case .notebook: NotebookView(context: context)

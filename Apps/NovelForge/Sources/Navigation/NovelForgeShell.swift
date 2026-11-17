@@ -6,6 +6,7 @@ import SwiftUI
 struct NovelForgeShell: View {
   @State private var library: LibraryModel
   @State private var navigators = NovelNavigators()
+  @State private var readers = NovelReaders()
 
   init(store: VaultStore) {
     _library = State(initialValue: LibraryModel(store: store))
@@ -25,7 +26,11 @@ struct NovelForgeShell: View {
     .task(id: library.generation) { await library.observe() }
     .onChange(of: library.state) {
       library.reconcileSelection()
-      if library.state.value != nil { navigators.prune(keeping: library.knownNovels.union(library.selection.map { [$0] } ?? [])) }
+      if library.state.value != nil {
+        let keeping = library.knownNovels.union(library.selection.map { [$0] } ?? [])
+        navigators.prune(keeping: keeping)
+        readers.prune(keeping: keeping)
+      }
     }
     .sheet(item: $library.presenting) { sheet in sheetContent(sheet) }
     .alert(
@@ -55,7 +60,7 @@ struct NovelForgeShell: View {
   @ViewBuilder
   private var detail: some View {
     if let novel = library.selection, let section = navigators.navigator(for: novel).section {
-      NovelDetailView(navigator: navigators.navigator(for: novel), section: section, context: library.context(for: novel))
+      NovelDetailView(navigator: navigators.navigator(for: novel), readers: readers, section: section, context: library.context(for: novel))
         .id(novel)
     } else {
       ShadowContentUnavailable(

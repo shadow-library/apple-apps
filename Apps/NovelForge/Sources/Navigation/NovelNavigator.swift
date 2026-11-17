@@ -22,6 +22,12 @@ final class NovelNavigator {
     paths[section, default: NavigationPath()].append(route)
   }
 
+  func pop(_ section: NovelSection) {
+    guard var path = paths[section], !path.isEmpty else { return }
+    path.removeLast()
+    paths[section] = path
+  }
+
   func path(for section: NovelSection) -> Binding<NavigationPath> {
     Binding(get: { self.paths[section] ?? NavigationPath() }, set: { self.paths[section] = $0 })
   }
