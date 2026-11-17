@@ -13,21 +13,19 @@ nonisolated enum NotebookLookup: Equatable, Sendable {
 }
 
 nonisolated struct NotebookSnapshot: Sendable, Equatable {
-  let contents: NotebookContents
-  let ledger: NotebookLedger
-  let reasons: [UUID: String]
+  private let history: NotebookLedgerHistory?
 
   static func load(novel: UUID, in transaction: ReadTransaction) throws -> NotebookSnapshot {
-    NotebookSnapshot(
-      contents: try NotebookContents.load(NotebookQuery(novel: novel), in: transaction), ledger: try NotebookLedger.load(novel: novel, in: transaction),
-      reasons: try NotebookEntryRecord.withdrawals(novel: novel, in: transaction).mapValues(\.record.reason))
+    NotebookSnapshot(history: try NotebookHistory.load(novel, in: transaction).notebook.value)
   }
 
-  var isAvailable: Bool { contents.notebook.value != nil }
+  var isAvailable: Bool { history != nil }
   var unreadable: Int { ledger.unreadable }
 
+  var ledger: NotebookLedger { history?.ledger ?? NotebookLedger(entries: []) }
+
   func lookup(_ id: UUID) -> NotebookLookup {
-    guard let entry = ledger.entry(id), NotebookTopics.isVisibleInNotebook(entry.record.topic) else { return .missing }
+    guard let entry = history?.entry(id), NotebookTopics.isVisibleInNotebook(entry.record.topic) else { return .missing }
     return .found(entry)
   }
 
@@ -48,11 +46,11 @@ nonisolated struct NotebookSnapshot: Sendable, Equatable {
   }
 
   func successor(of entry: NotebookEntry) -> NotebookEntry? {
-    entry.state.successor.flatMap(ledger.entry)
+    history?.successor(of: entry)
   }
 
   func predecessor(of entry: NotebookEntry) -> NotebookEntry? {
-    entry.record.supersedes.flatMap(ledger.entry)
+    history?.predecessor(of: entry)
   }
 
   func history(of entry: NotebookEntry) -> [NotebookEntry] {
@@ -60,7 +58,7 @@ nonisolated struct NotebookSnapshot: Sendable, Equatable {
   }
 
   func reason(for entry: NotebookEntry) -> String? {
-    reasons[entry.id]
+    history?.reason(for: entry)
   }
 
   private static func newestFirst(_ lhs: NotebookEntry, _ rhs: NotebookEntry) -> Bool {

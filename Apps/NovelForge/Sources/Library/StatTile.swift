@@ -8,15 +8,27 @@ struct StatTile: View {
     case unavailable(String)
   }
 
+  struct Opening {
+    let perform: @MainActor (NovelNavigator) -> Void
+
+    static func section(_ section: NovelSection) -> Opening {
+      Opening { $0.show(section) }
+    }
+
+    static func route(_ section: NovelSection, _ route: some Hashable) -> Opening {
+      Opening { $0.open(section, route) }
+    }
+  }
+
   let title: Text
   let reading: Reading
-  let destination: NovelSection?
+  let opening: Opening?
   @Environment(NovelNavigator.self) private var navigator: NovelNavigator?
 
   var body: some View {
-    if let destination {
+    if let opening {
       Button {
-        navigator?.show(destination)
+        if let navigator { opening.perform(navigator) }
       } label: {
         tile
       }.buttonStyle(.plain)
@@ -42,10 +54,11 @@ struct StatTile: View {
 
 extension StatTile {
   init<Value: Sendable & Equatable>(
-    _ title: Text, _ derived: Derived<Value>, opens destination: NovelSection? = nil, value: (Value) -> Text, caption: (Value) -> Text? = { _ in nil }
+    _ title: Text, _ derived: Derived<Value>, opens section: NovelSection, deepLink: (Value) -> Opening? = { _ in nil }, value: (Value) -> Text,
+    caption: (Value) -> Text? = { _ in nil }
   ) {
     self.title = title
-    self.destination = destination
+    opening = derived.value.flatMap(deepLink) ?? .section(section)
     reading = Reading(derived, value: value, caption: caption)
   }
 }

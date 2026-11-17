@@ -58,6 +58,29 @@
         }
       }
     },
+    "%lld chapter plans reveal this too early": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld chapter plan reveals this too early"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld chapter plans reveal this too early"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "%lld milestones cannot be read by this version": {
       "extractionState": "manual",
       "localizations": {
@@ -382,6 +405,17 @@
         }
       }
     },
+    "Chapter %lld needs %@": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Chapter %lld needs %@"
+          }
+        }
+      }
+    },
     "Chapter numbers start at 1.": {
       "extractionState": "manual",
       "localizations": {
@@ -389,6 +423,17 @@
           "stringUnit": {
             "state": "translated",
             "value": "Chapter numbers start at 1."
+          }
+        }
+      }
+    },
+    "Chapter plans are not up to date on this device yet.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Chapter plans are not up to date on this device yet."
           }
         }
       }
@@ -1229,6 +1274,17 @@
         }
       }
     },
+    "Removed items are not up to date on this device yet.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Removed items are not up to date on this device yet."
+          }
+        }
+      }
+    },
     "Reopen": {
       "extractionState": "manual",
       "localizations": {
@@ -1346,6 +1402,17 @@
           "stringUnit": {
             "state": "translated",
             "value": "Revealed in chapter %lld"
+          }
+        }
+      }
+    },
+    "Revealed too early": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Revealed too early"
           }
         }
       }

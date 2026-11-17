@@ -3,11 +3,11 @@ import ShadowDesignSystem
 import SwiftUI
 
 extension VolumeState {
-  var pill: StatusPill {
+  var pill: ShadowBadge {
     switch self {
-    case .active: StatusPill(title: Text("Active", tableName: "Story"), tone: .accent)
-    case .goalMet: StatusPill(title: Text("Goal met", tableName: "Story"), tone: .success)
-    case .notStarted: StatusPill(title: Text("Not started", tableName: "Story"), tone: .neutral)
+    case .active: ShadowBadge(Text("Active", tableName: "Story"), intent: .accent)
+    case .goalMet: ShadowBadge(Text("Goal met", tableName: "Story"), intent: .success)
+    case .notStarted: ShadowBadge(Text("Not started", tableName: "Story"), intent: .neutral)
     }
   }
 }

@@ -100,14 +100,6 @@ struct StoryBibleCatalogueTests {
     #expect(BibleKey.slug(from: "!!!") == "")
   }
 
-  @Test("should strip links from rendered Markdown and keep emphasis")
-  func markdownIsSafe() {
-    let rendered = BibleMarkdown.render("A **bold** [link](https://example.com) here")
-
-    #expect(rendered.runs.allSatisfy { $0.link == nil })
-    #expect(String(rendered.characters) == "A bold link here")
-  }
-
   @Test("should group inside a topic by record type with the reference headers and put pages under guides")
   func subgroups() async throws {
     let catalogue = BibleCatalogue(

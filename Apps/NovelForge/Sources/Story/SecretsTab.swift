@@ -55,7 +55,7 @@ struct SecretsTab: View {
 
   private func list(_ section: StructureSection<SecretRecord>) -> some View {
     List {
-      if let violated = violatingChapters, !violated.isEmpty {
+      if let violated = model.violatingChapters, !violated.isEmpty {
         ShadowCallout(
           Text("\(violated.count) chapter plans break the reveal rule", tableName: "Story"),
           message: Text(
@@ -76,10 +76,6 @@ struct SecretsTab: View {
     .shadowScreen(.root)
   }
 
-  private var violatingChapters: [Int]? {
-    guard let reveals = model.chapters.value?.reveals.value else { return nil }
-    return reveals.filter { $0.value == .violated }.keys.sorted()
-  }
 }
 
 struct SecretRow: View {
@@ -90,7 +86,35 @@ struct SecretRow: View {
     ShadowListRow(
       title: Text(verbatim: secret.text), subtitle: model.timing(of: secret) ?? Text("No reveal timing set", tableName: "Story"), caption: Text(verbatim: secret.secret),
       leading: { Image(systemName: "lock").foregroundStyle(ShadowColor.textSecondary) },
-      trailing: { EmptyView() })
+      trailing: {
+        if !model.revealViolations(of: secret.secret).isEmpty { ShadowBadge(Text("Revealed too early", tableName: "Story"), intent: .warning) }
+      })
+  }
+}
+
+struct SecretViolationsCallout: View {
+  let model: StoryModel
+  let secret: String
+
+  var body: some View {
+    switch model.violations(of: secret) {
+    case .none: EmptyView()
+    case .unavailable?:
+      ShadowCallout(Text("Unavailable", tableName: "Story"), message: Text("Chapter plans are not up to date on this device yet.", tableName: "Story"), intent: .warning)
+    case .available(let violations)?:
+      if !violations.isEmpty { callout(violations) }
+    }
+  }
+
+  private func callout(_ violations: [SecretRevealViolation]) -> some View {
+    ShadowCallout(
+      Text("\(violations.count) chapter plans reveal this too early", tableName: "Story"),
+      message: Text(verbatim: violations.map(line).joined(separator: "\n")), intent: .warning, systemImage: "exclamationmark.triangle")
+  }
+
+  private func line(_ violation: SecretRevealViolation) -> String {
+    let needs = violation.missing.formatted(.list(type: .and))
+    return String(localized: "Chapter \(violation.chapter) needs \(needs)", table: "Story")
   }
 }
 
@@ -144,6 +168,7 @@ struct SecretDetailView: View {
         Text(verbatim: secret.text).shadowFont(.title).foregroundStyle(ShadowColor.textPrimary).textSelection(.enabled)
         Text(verbatim: secret.secret).shadowFont(.footnote).foregroundStyle(ShadowColor.textTertiary).textSelection(.enabled)
         (model.timing(of: secret) ?? Text("No reveal timing set", tableName: "Story")).shadowFont(.body).foregroundStyle(ShadowColor.textSecondary)
+        SecretViolationsCallout(model: model, secret: secret.secret)
         note(Text("Writer's note", tableName: "Story"), secret.writerNote)
         note(Text("Constraint", tableName: "Story"), secret.constraintNote)
         knowers(of: secret)
@@ -209,8 +234,8 @@ struct SecretDetailView: View {
             Text("From chapter \(entry.chapter)", tableName: "Story").shadowFont(.footnote).foregroundStyle(ShadowColor.textSecondary)
           }
           Spacer()
-          if entry.status == .provisional { StatusPill(title: Text("Provisional", tableName: "Story"), tone: .warning) }
-          StatusPill(title: entry.source == .manual ? Text("Revealed by you", tableName: "Story") : Text("From plans", tableName: "Story"), tone: .neutral)
+          if entry.status == .provisional { ShadowBadge(Text("Provisional", tableName: "Story"), intent: .warning) }
+          ShadowBadge(entry.source == .manual ? Text("Revealed by you", tableName: "Story") : Text("From plans", tableName: "Story"), intent: .neutral)
           if entry.source == .manual {
             Button(role: .destructive) {
               Task { await model.retract(secret: secret, from: entry.entity) }
@@ -234,7 +259,7 @@ struct RevealSheet: View {
   init(model: StoryModel, secret: String) {
     self.model = model
     self.secret = secret
-    _chapter = State(initialValue: model.chapters.value?.next.value ?? 1)
+    _chapter = State(initialValue: model.nextChapter)
   }
 
   var body: some View {
@@ -292,8 +317,8 @@ struct SecretFormSheet: View {
     _writerNote = State(initialValue: editing?.writerNote ?? "")
     _constraintNote = State(initialValue: editing?.constraintNote ?? "")
     _fixedChapter = State(initialValue: editing?.revealChapter != nil)
-    _chapter = State(initialValue: editing?.revealChapter ?? model.chapters.value?.next.value ?? 1)
-    _termChapter = State(initialValue: model.chapters.value?.next.value ?? 1)
+    _chapter = State(initialValue: editing?.revealChapter ?? model.nextChapter)
+    _termChapter = State(initialValue: model.nextChapter)
     _terms = State(initialValue: parsed ?? [])
   }
 

@@ -22,27 +22,12 @@ extension LedgerEntryStatus {
     }
   }
 
-  var intent: ShadowIntent {
+  var intent: ShadowBadgeIntent {
     switch self {
     case .active: .success
     case .superseded: .neutral
     case .withdrawn: .warning
     }
-  }
-}
-
-struct NotebookBadge: View {
-  let title: Text
-  let intent: ShadowIntent
-
-  var body: some View {
-    title
-      .shadowFont(.caption)
-      .foregroundStyle(intent.foreground)
-      .padding(.horizontal, Spacing.space2)
-      .padding(.vertical, Spacing.space05)
-      .background(intent == .neutral ? ShadowColor.surfaceWell : intent.background, in: Capsule())
-      .overlay { if intent == .neutral { Capsule().strokeBorder(ShadowColor.borderDefault) } }
   }
 }
 

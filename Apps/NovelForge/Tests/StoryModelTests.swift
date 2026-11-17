@@ -23,7 +23,7 @@ struct StoryModelTests {
     let model = StoryModel(context: NovelContext(store: store, novel: novel))
     let task = Task { await model.observe() }
     let fixture = Fixture(model: model, store: store, novel: novel, task: task)
-    try await waitUntil { model.structure.value != nil && model.ledger.value != nil && model.bible.value != nil }
+    try await waitUntil { model.screen.value != nil }
     return fixture
   }
 
@@ -453,7 +453,42 @@ struct StoryModelTests {
 
     try await fixture.model.saveSecret(key: "heir", text: "The orphan is the heir", writerNote: "", constraintNote: "", revealChapter: 9, unlock: .keep)
 
-    try await waitUntil { fixture.model.chapters.value?.reveals.value?[1] == .violated }
+    try await waitUntil { fixture.model.violatingChapters == [1] }
+    let violations = try #require(fixture.model.violations(of: "heir")?.value)
+    #expect(violations.map(\.chapter) == [1])
+    #expect(violations.first?.missing.isEmpty == false)
+    #expect(fixture.model.revealViolations(of: "heir").count == 1)
+    #expect(fixture.model.revealViolations(of: "other").isEmpty)
+    #expect(fixture.model.violations(of: "other")?.value?.isEmpty == true)
+  }
+
+  @Test("should keep removed items restorable after the screen is reopened")
+  func removedSurviveRelaunch() async throws {
+    let fixture = try await makeFixture()
+    defer { fixture.task.cancel() }
+    try await addVolumes(["a", "b"], to: fixture.model)
+    try await fixture.model.createMilestone(key: "crowned", label: "Crowned", subject: nil, kind: .event)
+    try await fixture.model.createPromise(.mystery("who"), label: "Who is she?")
+    try await fixture.model.saveSecret(key: "heir", text: "The orphan is the heir", writerNote: "", constraintNote: "", revealChapter: nil, unlock: .keep)
+    try await waitUntil { fixture.model.structure.value?.secret("heir") != nil && fixture.model.structure.value?.milestone("crowned") != nil }
+    try await waitUntil { fixture.model.structure.value?.promise(.mystery("who")) != nil }
+
+    await fixture.model.removeVolume(try #require(fixture.model.structure.value?.volume("a")))
+    await fixture.model.removeMilestone(try #require(fixture.model.structure.value?.milestone("crowned")))
+    await fixture.model.removePromise(try #require(fixture.model.structure.value?.promise(.mystery("who"))))
+    await fixture.model.removeSecret(try #require(fixture.model.structure.value?.secret("heir")))
+    try await waitUntil { fixture.model.restorable.count == 4 }
+
+    let reopened = StoryModel(context: NovelContext(store: fixture.store, novel: fixture.novel))
+    let observing = Task { await reopened.observe() }
+    defer { observing.cancel() }
+    try await waitUntil { reopened.restorable.count == 4 }
+
+    #expect(
+      Set(reopened.restorable.map(\.id)) == ["volume-a", "milestone-crowned", "promise-mystery-who", "secret-heir"])
+    #expect(reopened.restorable.first { $0.id == "volume-a" }?.name == "A")
+    await reopened.restore(try #require(reopened.restorable.first { $0.id == "secret-heir" }))
+    try await waitUntil { reopened.restorable.count == 3 && reopened.structure.value?.secret("heir") != nil }
   }
 
   @Test("should count a record this version cannot read instead of listing it")

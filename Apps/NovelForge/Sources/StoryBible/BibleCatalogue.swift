@@ -100,9 +100,11 @@ struct BibleCatalogue: Equatable {
   let entries: [BibleEntry]
   let emptyPages: [PageSummary]
 
-  init(pages: [PageSummary], entities: [EntityRecord]) {
+  init(pages: [PageSummary], entities: [EntityRecord], stages: BibleStages? = nil) {
     let records = entities.map { BibleEntry(content: .entity($0), topic: BibleTopics.topic(of: $0), name: $0.name, summary: BibleTopics.excerpt(of: $0)) }
-    let guides = pages.filter { !$0.isEmpty }.map { BibleEntry(content: .page($0), topic: BibleTopics.topic(of: $0), name: $0.title, summary: "") }
+    let guides = pages.filter { !$0.isEmpty }.map {
+      BibleEntry(content: .page($0), topic: BibleTopics.topic(of: $0, stages: stages), name: $0.title, summary: $0.excerpt ?? "")
+    }
     entries = records + guides
     emptyPages = pages.filter(\.isEmpty)
   }

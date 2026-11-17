@@ -2,45 +2,6 @@ import NovelForgeCore
 import ShadowDesignSystem
 import SwiftUI
 
-struct StatusPill: View {
-  enum Tone {
-    case neutral
-    case accent
-    case success
-    case warning
-  }
-
-  let title: Text
-  let tone: Tone
-
-  var body: some View {
-    title
-      .shadowFont(.footnote)
-      .foregroundStyle(foreground)
-      .padding(.horizontal, Spacing.space2)
-      .padding(.vertical, Spacing.space05)
-      .background(background, in: Capsule())
-  }
-
-  private var foreground: Color {
-    switch tone {
-    case .neutral: ShadowColor.neutralTextOnSubtle
-    case .accent: ShadowColor.accentText
-    case .success: ShadowColor.successTextOnSubtle
-    case .warning: ShadowColor.warningTextOnSubtle
-    }
-  }
-
-  private var background: Color {
-    switch tone {
-    case .neutral: ShadowColor.neutralBgSubtle
-    case .accent: ShadowColor.accentSoft
-    case .success: ShadowColor.successBgSubtle
-    case .warning: ShadowColor.warningBgSubtle
-    }
-  }
-}
-
 struct StoryLoaded<Content: View>: View {
   let model: StoryModel
   @ViewBuilder let content: (StoryStructure) -> Content
@@ -95,7 +56,14 @@ struct RemovedItemsSection: View {
   let items: [RemovedStoryItem]
 
   var body: some View {
-    if !items.isEmpty {
+    if model.removedIsUnavailable {
+      Section {
+        Label(title: { Text("Removed items are not up to date on this device yet.", tableName: "Story") }, icon: { Image(systemName: "exclamationmark.triangle") })
+          .shadowFont(.footnote).foregroundStyle(ShadowColor.warningText)
+      } header: {
+        ShadowSectionHeader(Text("Recently removed", tableName: "Story"))
+      }
+    } else if !items.isEmpty {
       Section {
         ForEach(items) { item in
           ShadowListRow(

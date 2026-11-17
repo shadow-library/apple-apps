@@ -17,12 +17,12 @@ extension StoryPromise {
     }
   }
 
-  var pill: StatusPill {
+  var pill: ShadowBadge {
     switch standing {
-    case .open: isDormant ? StatusPill(title: Text("Dormant", tableName: "Story"), tone: .neutral) : StatusPill(title: Text("Open", tableName: "Story"), tone: .accent)
-    case .settled: StatusPill(title: settledTitle, tone: .success)
-    case .dropped: StatusPill(title: Text("Dropped", tableName: "Story"), tone: .neutral)
-    case .unrecognised: StatusPill(title: Text("Unknown", tableName: "Story"), tone: .warning)
+    case .open: isDormant ? ShadowBadge(Text("Dormant", tableName: "Story"), intent: .neutral) : ShadowBadge(Text("Open", tableName: "Story"), intent: .accent)
+    case .settled: ShadowBadge(settledTitle, intent: .success)
+    case .dropped: ShadowBadge(Text("Dropped", tableName: "Story"), intent: .neutral)
+    case .unrecognised: ShadowBadge(Text("Unknown", tableName: "Story"), intent: .warning)
     }
   }
 

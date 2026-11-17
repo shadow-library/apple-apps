@@ -106,8 +106,8 @@ struct StoryBibleView: View {
     let catalogue = model.catalogue
     let groups = catalogue.groups(kind: model.kind, query: model.query)
     let emptyPages = catalogue.matchingEmptyPages(kind: model.kind, query: model.query)
+    let removed = model.removedEntries(kind: model.kind, query: model.query)
     return List {
-      if let removed = model.removed { Section { removedBanner(removed) } }
       if contents.pages.isUnavailable { Section { unavailableNote(Text("Pages are not up to date on this device.", tableName: "StoryBible")) } }
       if contents.entities.isUnavailable { Section { unavailableNote(Text("Entities are not up to date on this device.", tableName: "StoryBible")) } }
       ForEach(groups) { group in
@@ -128,13 +128,14 @@ struct StoryBibleView: View {
         }
       }
       unreadableNote(contents)
+      removedSection(removed)
     }
-    .overlay { emptyOverlay(catalogue, groups: groups, emptyPages: emptyPages) }
+    .overlay { emptyOverlay(catalogue, groups: groups, emptyPages: emptyPages, removed: removed) }
   }
 
   @ViewBuilder
-  private func emptyOverlay(_ catalogue: BibleCatalogue, groups: [BibleGroup], emptyPages: [PageSummary]) -> some View {
-    if catalogue.isEmpty && model.state.value?.pages.isUnavailable == false && model.state.value?.entities.isUnavailable == false {
+  private func emptyOverlay(_ catalogue: BibleCatalogue, groups: [BibleGroup], emptyPages: [PageSummary], removed: [RemovedEntry]) -> some View {
+    if catalogue.isEmpty && model.removed.isEmpty && model.state.value?.pages.isUnavailable == false && model.state.value?.entities.isUnavailable == false {
       ShadowContentUnavailable(
         Text("The Story Bible is empty", tableName: "StoryBible"), systemImage: "books.vertical",
         message: Text("Add pages and entries for your world, cast and rules.", tableName: "StoryBible")
@@ -150,7 +151,7 @@ struct StoryBibleView: View {
           Text("New Entity…", tableName: "StoryBible")
         }
       }
-    } else if !catalogue.isEmpty && groups.isEmpty && emptyPages.isEmpty {
+    } else if !(catalogue.isEmpty && model.removed.isEmpty) && groups.isEmpty && emptyPages.isEmpty && removed.isEmpty {
       ShadowContentUnavailable(
         Text("Nothing matches", tableName: "StoryBible"), systemImage: "magnifyingglass", message: Text("Try another search or show all kinds.", tableName: "StoryBible"))
     }
@@ -184,15 +185,24 @@ struct StoryBibleView: View {
     }
   }
 
-  private func removedBanner(_ removed: RemovedEntry) -> some View {
-    ShadowCallout(
-      Text("Removed “\(removed.name)”", tableName: "StoryBible"), intent: .info, systemImage: "trash",
-      dismiss: ShadowCalloutDismiss(Text("Dismiss", tableName: "StoryBible")) { model.dismissRemoved() }
-    ) {
-      Button {
-        Task { await model.undoRemoval() }
-      } label: {
-        Text("Undo", tableName: "StoryBible")
+  @ViewBuilder
+  private func removedSection(_ removed: [RemovedEntry]) -> some View {
+    if !removed.isEmpty {
+      Section {
+        ForEach(removed) { entry in
+          ShadowListRow(
+            title: Text(verbatim: entry.name), caption: Text("Removed", tableName: "StoryBible"),
+            leading: { Image(systemName: "trash").foregroundStyle(ShadowColor.textTertiary) },
+            trailing: {
+              Button {
+                Task { await model.restore(entry) }
+              } label: {
+                Text("Restore", tableName: "StoryBible")
+              }
+            })
+        }
+      } header: {
+        ShadowSidebarHeader(Text("Recently removed", tableName: "StoryBible"))
       }
     }
   }

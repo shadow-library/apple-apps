@@ -56,11 +56,11 @@ struct NotebookEntryScreen: View {
     VStack(alignment: .leading, spacing: Spacing.space2) {
       HStack(spacing: Spacing.space2) {
         if let kind = found.record.entryKind.known {
-          NotebookBadge(title: Text(kind.notebookTitle), intent: .info)
+          ShadowBadge(Text(kind.notebookTitle), intent: .info)
         } else {
-          NotebookBadge(title: Text("Unknown kind", tableName: "Notebook"), intent: .warning)
+          ShadowBadge(Text("Unknown kind", tableName: "Notebook"), intent: .warning)
         }
-        NotebookBadge(title: Text(found.status.notebookTitle), intent: found.status.intent)
+        ShadowBadge(Text(found.status.notebookTitle), intent: found.status.intent)
       }
       Text(verbatim: found.record.statement).shadowFont(.title3).foregroundStyle(ShadowColor.textPrimary).textSelection(.enabled)
       Text(verbatim: found.record.topic).shadowFont(.footnote).foregroundStyle(ShadowColor.textSecondary)
@@ -128,7 +128,7 @@ struct NotebookEntryScreen: View {
 
   private func historyRow(_ item: NotebookEntry, current: Bool) -> some View {
     HStack(alignment: .firstTextBaseline, spacing: Spacing.space2) {
-      NotebookBadge(title: Text(item.status.notebookTitle), intent: item.status.intent)
+      ShadowBadge(Text(item.status.notebookTitle), intent: item.status.intent)
       Text(verbatim: item.record.statement).shadowFont(.subheadline).foregroundStyle(current ? ShadowColor.textPrimary : ShadowColor.textSecondary).lineLimit(2)
     }
   }

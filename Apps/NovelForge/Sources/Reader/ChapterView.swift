@@ -11,6 +11,7 @@ struct ChapterView: View {
   @State private var editing = false
   @State private var importing = false
   @State private var openedEmptyDraft = false
+  @State private var listing = ReadObserver<ChapterList>()
 
   var body: some View {
     content
@@ -19,6 +20,12 @@ struct ChapterView: View {
         let store = context.store
         let locator = ChapterLocator(novel: context.novel, chapter: chapter)
         await observer.run { store.observe(ChapterContent.self, locator) }
+      }
+      .task(id: isMissing) {
+        guard isMissing else { return }
+        let store = context.store
+        let novel = context.novel
+        await listing.run { store.observe(ChapterList.self, novel) }
       }
       .onChange(of: observer.state) {
         sync()
@@ -37,6 +44,19 @@ struct ChapterView: View {
           Text("OK", tableName: "Reader")
         }
       }
+  }
+
+  private var isMissing: Bool {
+    guard case .loaded(let loaded) = observer.state, case .missing = loaded.body else { return false }
+    return true
+  }
+
+  private var chapterListing: ChapterListing {
+    switch listing.state {
+    case .loading: .pending
+    case .failed: .unavailable
+    case .loaded(let list): list.rows.value.map { .ready(nextWritable: ChapterOutline.nextWritable(in: $0)) } ?? .unavailable
+    }
   }
 
   @ViewBuilder
@@ -88,12 +108,7 @@ struct ChapterView: View {
   private func missingPage(_ loaded: ChapterContent) -> some View {
     ScrollView {
       VStack(spacing: Spacing.space6) {
-        ShadowContentUnavailable(
-          Text("Chapter not found", tableName: "Reader"), systemImage: "text.book.closed",
-          message: loaded.row == nil
-            ? Text("It may have been removed on another device.", tableName: "Reader")
-            : Text("It has no draft yet. Start the next chapter from the chapter list.", tableName: "Reader")
-        )
+        missingNotice(MissingChapter(row: loaded.row, chapter: chapter, listing: chapterListing))
         keptCallout(loaded)
       }
       .padding(Spacing.space6)
@@ -101,6 +116,34 @@ struct ChapterView: View {
       .frame(maxWidth: .infinity)
     }
     .shadowScreen(.pushed)
+  }
+
+  @ViewBuilder
+  private func missingNotice(_ kind: MissingChapter) -> some View {
+    switch kind {
+    case .pending:
+      ProgressView().frame(maxWidth: .infinity, minHeight: 160)
+    case .undetermined:
+      ShadowContentUnavailable(
+        Text("This chapter has no draft on this device", tableName: "Reader"), systemImage: "text.book.closed",
+        message: Text("Chapters are not up to date on this device yet. Try again after syncing.", tableName: "Reader"))
+    case .unstarted:
+      ShadowContentUnavailable(Text("Chapter \(chapter) has not been started", tableName: "Reader"), systemImage: "square.and.pencil") {
+        Button {
+          Task { _ = await model.startNext() }
+        } label: {
+          Text("Start Chapter \(chapter)", tableName: "Reader")
+        }
+        .disabled(model.isStarting)
+      }
+    case .awaitingDraft:
+      ShadowContentUnavailable(
+        Text("Chapter not found", tableName: "Reader"), systemImage: "text.book.closed",
+        message: Text("It has no draft yet. Start the next chapter from the chapter list.", tableName: "Reader"))
+    case .removed:
+      ShadowContentUnavailable(
+        Text("Chapter not found", tableName: "Reader"), systemImage: "text.book.closed", message: Text("It may have been removed on another device.", tableName: "Reader"))
+    }
   }
 
   @ViewBuilder

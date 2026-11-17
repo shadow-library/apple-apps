@@ -8,7 +8,7 @@ public struct ShadowTag: View {
     case removable(isSelected: Bool, select: (() -> Void)?, remove: () -> Void, removeLabel: Text)
   }
 
-  private let title: Text
+  let title: Text
   private let systemImage: String?
   private let mode: Mode
 
@@ -26,6 +26,22 @@ public struct ShadowTag: View {
 
   public init(_ titleKey: LocalizedStringKey, systemImage: String? = nil, removeLabel: LocalizedStringKey, remove: @escaping () -> Void) {
     self.init(title: Text(titleKey), systemImage: systemImage, mode: .removable(isSelected: false, select: nil, remove: remove, removeLabel: Text(removeLabel)))
+  }
+
+  public init(_ title: Text, systemImage: String? = nil) {
+    self.init(title: title, systemImage: systemImage, mode: .plain)
+  }
+
+  public init(_ title: Text, systemImage: String? = nil, isSelected: Binding<Bool>) {
+    self.init(title: title, systemImage: systemImage, mode: .filter(isSelected))
+  }
+
+  public init(_ title: Text, systemImage: String? = nil, action: @escaping () -> Void) {
+    self.init(title: title, systemImage: systemImage, mode: .action(action))
+  }
+
+  public init(_ title: Text, systemImage: String? = nil, removeLabel: Text, remove: @escaping () -> Void) {
+    self.init(title: title, systemImage: systemImage, mode: .removable(isSelected: false, select: nil, remove: remove, removeLabel: removeLabel))
   }
 
   init(verbatim title: String, isSelected: Bool, removeLabel: Text, select: @escaping () -> Void, remove: @escaping () -> Void) {

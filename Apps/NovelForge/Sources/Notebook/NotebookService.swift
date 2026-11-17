@@ -21,6 +21,16 @@ nonisolated struct NotebookService: Sendable {
     try await write { transaction throws(NotebookError) in _ = try Notebook.withdraw(id, reason: reason, novel: novel, in: &transaction) }
   }
 
+  func override(_ key: ProgressItemKey, as status: ProgressOverrideKind) async throws(NotebookError) {
+    let novel = novel
+    try await write { transaction throws(NotebookError) in _ = try ChecklistOverrides.set(key, to: status, novel: novel, in: &transaction) }
+  }
+
+  func clearOverride(_ key: ProgressItemKey) async throws(NotebookError) {
+    let novel = novel
+    try await write { transaction throws(NotebookError) in try ChecklistOverrides.clear(key, novel: novel, in: &transaction) }
+  }
+
   private func write<T: Sendable>(_ body: @Sendable (inout WriteTransaction) throws(NotebookError) -> T) async throws(NotebookError) -> T {
     do {
       return try await store.write { transaction in try body(&transaction) }

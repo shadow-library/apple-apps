@@ -106,15 +106,6 @@ nonisolated extension StoryStructure {
   func secret(_ key: String) -> SecretRecord? {
     secrets.value?.items.first { $0.secret == key }
   }
-
-  func isLive(_ item: RemovedStoryItem) -> Bool {
-    switch item {
-    case .volume(let key, _): volume(key) != nil
-    case .milestone(let key, _): milestone(key) != nil
-    case .promise(let ref, _): promise(ref) != nil
-    case .secret(let key, _): secret(key) != nil
-    }
-  }
 }
 
 nonisolated enum UnlockTerm: Hashable {

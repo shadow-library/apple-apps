@@ -64,4 +64,17 @@ struct ShadowTextOverloadTests {
     #expect(fromText.title == table)
     #expect(fromText.message == verbatim)
   }
+
+  @Test("should keep the title of a badge and a tag as given")
+  func badgeAndTag() {
+    #expect(ShadowBadge("Draft").title == Text("Draft"))
+    #expect(ShadowBadge(table, intent: .info).title == table)
+    #expect(ShadowBadge(verbatim).title == verbatim)
+    #expect(ShadowBadge(count: 3).title == nil)
+    #expect(ShadowTag("Fantasy").title == Text("Fantasy"))
+    #expect(ShadowTag(table).title == table)
+    #expect(ShadowTag(verbatim, systemImage: "plus") {}.title == verbatim)
+    #expect(ShadowTag(table, isSelected: .constant(true)).title == table)
+    #expect(ShadowTag(verbatim, removeLabel: table) {}.title == verbatim)
+  }
 }

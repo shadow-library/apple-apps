@@ -5,7 +5,6 @@ enum StoryBibleErrors {
   static func presented(_ error: any Error) -> PresentedError {
     guard let issue = error as? BibleWriteIssue else { return PresentedError(error, known: headline) }
     switch issue {
-    case .entityKeyTaken: return PresentedError(headline: String(localized: "An entry with this key already exists. Choose another key.", table: "StoryBible"), detail: nil)
     case .pageChanged:
       return PresentedError(
         headline: String(
@@ -16,6 +15,7 @@ enum StoryBibleErrors {
 
   static func headline(for error: DomainError) -> String? {
     switch error {
+    case .entityExists: String(localized: "An entry with this key already exists. Choose another key.", table: "StoryBible")
     case .entityNotFound: String(localized: "This entry could not be found. It may have been removed.", table: "StoryBible")
     case .documentNotFound: String(localized: "This page could not be found. It may have been removed.", table: "StoryBible")
     case .documentExists: String(localized: "A page with this address already exists in that section.", table: "StoryBible")

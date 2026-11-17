@@ -129,7 +129,7 @@ struct StoryBibleModelTests {
     #expect(record.content.body == "Salt and ash.")
   }
 
-  @Test("should remove a page, offer undo and restore it")
+  @Test("should remove a page, list it as removed and restore it")
   func removeAndRestorePage() async throws {
     let world = try await makeWorld()
     let task = Task { await world.model.observe() }
@@ -139,15 +139,51 @@ struct StoryBibleModelTests {
 
     await world.model.removePage(address, title: "Moon")
 
-    try await waitUntil("the removal") { pages(world.model)?.isEmpty == true }
-    #expect(world.model.removed == .page(address, title: "Moon"))
+    try await waitUntil("the removal") { pages(world.model)?.isEmpty == true && world.model.removed == [.page(address, title: "Moon")] }
     #expect(try await page(world, address).presence == .removed(title: "Moon"))
 
-    await world.model.undoRemoval()
+    await world.model.restore(try #require(world.model.removed.first))
 
-    try await waitUntil("the restore") { pages(world.model) == ["moon"] }
-    #expect(world.model.removed == nil)
+    try await waitUntil("the restore") { pages(world.model) == ["moon"] && world.model.removed.isEmpty }
     #expect(world.model.failure == nil)
+  }
+
+  @Test("should keep removed pages and entities restorable after the screen is reopened")
+  func removedSurviveRelaunch() async throws {
+    let world = try await makeWorld()
+    let address = try await world.model.createPage(section: .lore, title: "Moon", slug: "moon", body: "Pale.")
+    _ = try await world.model.createEntity(key: "mara", type: .character, name: "Mara", details: EntityDetails())
+    await world.model.removePage(address, title: "Moon")
+    await world.model.removeEntity("mara", name: "Mara")
+
+    let reopened = StoryBibleModel(context: NovelContext(store: world.store, novel: world.novel))
+    let task = Task { await reopened.observe() }
+    defer { task.cancel() }
+    try await waitUntil("the removed records") { reopened.removed.count == 2 }
+
+    #expect(Set(reopened.removed.map(\.name)) == ["Moon", "Mara"])
+    #expect(reopened.removedEntries(kind: .records, query: "").map(\.name) == ["Mara"])
+    #expect(reopened.removedEntries(kind: .guides, query: "").map(\.name) == ["Moon"])
+    #expect(reopened.removedEntries(kind: .all, query: "mo").map(\.name) == ["Moon"])
+    for entry in reopened.removed { await reopened.restore(entry) }
+    try await waitUntil("the restores") { reopened.removed.isEmpty && pages(reopened) == ["moon"] && entities(reopened) == ["mara"] }
+  }
+
+  @Test("should file a page under the topic of the role it covers and search its excerpt")
+  func stagesAndExcerpts() async throws {
+    let world = try await makeWorld()
+    let task = Task { await world.model.observe() }
+    defer { task.cancel() }
+    _ = try await world.model.createEntity(key: "guild", type: .faction, name: "The Guild", details: EntityDetails())
+    _ = try await world.model.createPage(section: .world, title: "Territory", slug: "territory", body: "Borders along the amber river.")
+
+    try await waitUntil("the catalogue") { world.model.catalogue.entries.contains { $0.isPage } }
+
+    let guide = try #require(world.model.catalogue.entries.first { $0.isPage })
+    #expect(guide.topic == .factions)
+    #expect(guide.summary == "Borders along the amber river.")
+    #expect(world.model.catalogue.groups(kind: .all, query: "amber").flatMap(\.entries).map(\.name) == ["Territory"])
+    #expect(world.model.catalogue.groups(kind: .all, query: "granite").isEmpty)
   }
 
   @Test("should restore an older page version as a new head")
@@ -204,7 +240,7 @@ struct StoryBibleModelTests {
     try await waitUntil("the restore") { entities(world.model) == ["mara"] }
   }
 
-  @Test("should clear an entity field by sending an empty string")
+  @Test("should clear an entity field")
   func clearsEntityField() async throws {
     let world = try await makeWorld()
     _ = try await world.model.createEntity(key: "keep", type: .location, name: "The Keep", details: EntityDetails(status: "ruined"))
@@ -216,7 +252,7 @@ struct StoryBibleModelTests {
 
     #expect(saved == "keep")
     let edited = try await liveEntity(world, "keep")
-    #expect(edited.status?.isEmpty == true)
+    #expect(edited.status == nil)
   }
 
   @Test("should refuse to create an entity over a live key")
@@ -230,7 +266,8 @@ struct StoryBibleModelTests {
     let saved = await form.submit(using: world.model)
 
     #expect(saved == nil)
-    #expect(form.failure?.headline == StoryBibleErrors.presented(BibleWriteIssue.entityKeyTaken("mara")).headline)
+    #expect(form.failure?.headline == StoryBibleErrors.headline(for: .entityExists("mara")))
+    #expect(form.failure?.detail == "bible.entity_exists")
     let record = try await liveEntity(world, "mara")
     #expect(record.name == "Mara")
     #expect(record.type == .known(.character))

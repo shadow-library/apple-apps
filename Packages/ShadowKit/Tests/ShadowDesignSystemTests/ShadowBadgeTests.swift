@@ -125,3 +125,23 @@ struct ShadowBadgeStyleTests {
     #expect(style.resolve(in: environment).resolve(in: environment) == ShadowColorToken.dangerTextOnSubtle.color.resolve(in: environment))
   }
 }
+
+@Suite("Neutral badge")
+struct ShadowNeutralBadgeTests {
+  @Test("should differ from the app surface in fill and border in both themes", arguments: ColorScheme.allCases)
+  func standsOffTheAppSurface(scheme: ColorScheme) {
+    let app = ShadowColorToken.surfaceApp.rgba(for: scheme)
+    let fill = ShadowBadgeIntent.neutral.fill.rgba(for: scheme)
+    let border = ShadowBadgeIntent.neutral.border.rgba(for: scheme)
+    #expect(fill != app)
+    #expect(border != app)
+    #expect(fill.contrastRatio(against: app) > 1.05 || border.contrastRatio(against: app) > 1.3)
+  }
+
+  @Test("should reach 4.5:1 for its text on its fill", arguments: ColorScheme.allCases)
+  func textContrast(scheme: ColorScheme) {
+    let fill = ShadowBadgeIntent.neutral.fill.rgba(for: scheme).composited(over: ShadowColorToken.surfaceApp.rgba(for: scheme))
+    let text = ShadowBadgeIntent.neutral.foreground.rgba(for: scheme)
+    #expect(text.contrastRatio(against: fill) >= 4.5)
+  }
+}

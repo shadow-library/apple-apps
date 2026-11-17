@@ -6,7 +6,13 @@ struct OverviewView: View {
   let context: NovelContext
   @Environment(LibraryModel.self) private var library
   @State private var observer = ReadObserver<NovelOverview>()
+  @State private var checklist: ChecklistModel
   @State private var generation = 0
+
+  init(context: NovelContext) {
+    self.context = context
+    _checklist = State(initialValue: ChecklistModel(context: context))
+  }
 
   var body: some View {
     content
@@ -16,6 +22,7 @@ struct OverviewView: View {
         let novel = context.novel
         await observer.run { store.observe(NovelOverview.self, novel) }
       }
+      .task(id: checklist.generation) { await checklist.observe() }
   }
 
   @ViewBuilder
@@ -61,6 +68,7 @@ struct OverviewView: View {
       VStack(alignment: .leading, spacing: Spacing.space6) {
         header(novel)
         if novel.archived { archivedBanner(novel) }
+        ChecklistCardView(model: checklist)
         chapterStats(overview.chapters)
         storyStats(overview)
       }
@@ -109,7 +117,7 @@ struct OverviewView: View {
         Text("Stale", tableName: "Library"), chapters, opens: .reader, value: { Text(verbatim: "\($0.stale)") },
         caption: { $0.stale > 0 ? Text("Need attention", tableName: "Library") : Text("All up to date", tableName: "Library") })
       StatTile(
-        Text("Next chapter", tableName: "Library"), chapters, opens: .reader, value: { Text(verbatim: "\($0.next)") },
+        Text("Next chapter", tableName: "Library"), chapters, opens: .reader, deepLink: { .route(.reader, ReaderRoute.chapter($0.next)) }, value: { Text(verbatim: "\($0.next)") },
         caption: { _ in Text("To write next", tableName: "Library") })
     }
   }
@@ -118,6 +126,7 @@ struct OverviewView: View {
     section(Text("Story", tableName: "Library")) {
       StatTile(
         Text("Active volume", tableName: "Library"), overview.activeVolume, opens: .story,
+        deepLink: { $0.map { .route(.story, StoryRoute.volume($0.volume)) } },
         value: { $0.map { Text(verbatim: $0.title ?? $0.volume) } ?? Text("None", tableName: "Library") },
         caption: { $0 == nil ? Text("No volume is active", tableName: "Library") : Text("In progress", tableName: "Library") })
       StatTile(

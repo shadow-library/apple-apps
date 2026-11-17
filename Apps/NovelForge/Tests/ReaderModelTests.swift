@@ -227,6 +227,40 @@ struct ReaderModelTests {
 
     #expect(!outline.presence.isPresent)
   }
+
+  @Test("should tell an unstarted next chapter from a removed one and from one awaiting its draft")
+  func missingChapterKinds() async throws {
+    let fixture = try await makeFixture()
+    try await finalize(1, body: "Final prose.", in: fixture)
+    let list = try await fixture.store.load(ChapterList.self, fixture.novel)
+    let rows = try #require(list.rows.value)
+    let next = ChapterOutline.nextWritable(in: rows)
+    let ready = ChapterListing.ready(nextWritable: next)
+
+    #expect(next == 2)
+    #expect(MissingChapter(row: nil, chapter: 2, listing: ready) == .unstarted)
+    #expect(MissingChapter(row: nil, chapter: 7, listing: ready) == .removed)
+    #expect(MissingChapter(row: nil, chapter: 2, listing: .pending) == .pending)
+    #expect(MissingChapter(row: nil, chapter: 2, listing: .unavailable) == .undetermined)
+    #expect(MissingChapter(row: rows.first, chapter: 1, listing: ready) == .awaitingDraft)
+    #expect(MissingChapter(row: rows.first, chapter: 1, listing: .pending) == .awaitingDraft)
+  }
+
+  @Test("should start the unstarted chapter the missing page offers")
+  func startsTheUnstartedChapter() async throws {
+    let fixture = try await makeFixture()
+    let model = ReaderModel(context: fixture.context)
+    let loaded = try await content(1, in: fixture)
+    guard case .missing = loaded.body else {
+      Issue.record("expected a missing chapter")
+      return
+    }
+
+    let started = await model.startNext()
+
+    #expect(started == 1)
+    _ = try await draft(1, in: fixture)
+  }
 }
 
 extension NovelPresence {

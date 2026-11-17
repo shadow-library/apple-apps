@@ -87,11 +87,11 @@ struct EntityView: View {
       Text(verbatim: entity.name).shadowFont(.largeTitle).foregroundStyle(ShadowColor.textPrimary).textSelection(.enabled)
       HStack(spacing: Spacing.space2) {
         switch entity.type {
-        case .known(let type): BibleChip(text: Text(type.label))
-        case .unknown(let raw): BibleChip(text: Text(verbatim: raw))
+        case .known(let type): ShadowBadge(Text(type.label))
+        case .unknown(let raw): ShadowBadge(Text(verbatim: raw))
         }
-        if let significance = entity.significance?.knownSignificance { BibleChip(text: Text(significance.label)) }
-        if let status = entity.status, !status.isEmpty { BibleChip(text: Text(verbatim: status)) }
+        if let significance = entity.significance?.knownSignificance { ShadowBadge(Text(significance.label)) }
+        if let status = entity.status, !status.isEmpty { ShadowBadge(Text(verbatim: status)) }
       }
     }
   }
@@ -101,7 +101,7 @@ struct EntityView: View {
     if let value, !value.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
       VStack(alignment: .leading, spacing: Spacing.space2) {
         title.shadowFont(.headline).foregroundStyle(ShadowColor.textPrimary).accessibilityAddTraits(.isHeader)
-        Text(BibleMarkdown.render(value)).shadowFont(.body).foregroundStyle(ShadowColor.textPrimary).textSelection(.enabled)
+        ProseView(markdown: value)
       }
     }
   }
@@ -136,8 +136,8 @@ private struct KnowledgeSection: View {
     VStack(alignment: .leading, spacing: Spacing.space1) {
       Text(verbatim: item.text ?? item.fact).shadowFont(.body).foregroundStyle(ShadowColor.textPrimary).textSelection(.enabled)
       HStack(spacing: Spacing.space2) {
-        BibleChip(text: Text("Chapter \(item.chapter)", tableName: "StoryBible"))
-        if item.status == .provisional { BibleChip(text: Text("Pending finalize", tableName: "StoryBible"), tone: .warning) }
+        ShadowBadge(Text("Chapter \(item.chapter)", tableName: "StoryBible"))
+        if item.status == .provisional { ShadowBadge(Text("Pending finalize", tableName: "StoryBible"), intent: .warning) }
       }
     }
     .accessibilityElement(children: .combine)

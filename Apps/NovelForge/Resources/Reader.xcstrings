@@ -167,6 +167,17 @@
         }
       }
     },
+    "Chapter %lld has not been started": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Chapter %lld has not been started"
+          }
+        }
+      }
+    },
     "Chapter %lld is next": {
       "extractionState": "manual",
       "localizations": {
@@ -240,6 +251,17 @@
           "stringUnit": {
             "state": "translated",
             "value": "Chapters are listed without their volumes."
+          }
+        }
+      }
+    },
+    "Chapters are not up to date on this device yet. Try again after syncing.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Chapters are not up to date on this device yet. Try again after syncing."
           }
         }
       }
@@ -1010,6 +1032,17 @@
           "stringUnit": {
             "state": "translated",
             "value": "This chapter could not be read"
+          }
+        }
+      }
+    },
+    "This chapter has no draft on this device": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This chapter has no draft on this device"
           }
         }
       }

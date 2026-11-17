@@ -109,10 +109,14 @@ final class EntityForm {
   }
 
   private func details(against entity: EntityRecord) -> EntityDetails {
-    EntityDetails(
-      significance: significance == entity.significance?.knownSignificance ?? .minor ? nil : significance, status: Self.changed(status, from: entity.status),
-      notes: Self.changed(notes, from: entity.notes), motivation: Self.changed(motivation, from: entity.motivation), body: Self.changed(body, from: entity.body),
-      appearance: Self.changed(appearance, from: entity.appearance))
+    var details = EntityDetails()
+    if significance != entity.significance?.knownSignificance ?? .minor { details.significance = .set(.known(significance)) }
+    details.status = Self.change(status, from: entity.status)
+    details.notes = Self.change(notes, from: entity.notes)
+    details.motivation = Self.change(motivation, from: entity.motivation)
+    details.body = Self.change(body, from: entity.body)
+    details.appearance = Self.change(appearance, from: entity.appearance)
+    return details
   }
 
   private static func nonEmpty(_ text: String) -> String? {
@@ -120,9 +124,9 @@ final class EntityForm {
     return trimmed.isEmpty ? nil : trimmed
   }
 
-  private static func changed(_ text: String, from stored: String?) -> String? {
+  private static func change(_ text: String, from stored: String?) -> FieldChange<String?> {
     let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
-    guard trimmed != (stored ?? "").trimmingCharacters(in: .whitespacesAndNewlines) else { return nil }
-    return trimmed
+    guard trimmed != (stored ?? "").trimmingCharacters(in: .whitespacesAndNewlines) else { return .keep }
+    return .set(trimmed.isEmpty ? nil : trimmed)
   }
 }

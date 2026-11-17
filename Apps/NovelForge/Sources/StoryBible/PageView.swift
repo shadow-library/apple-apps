@@ -101,9 +101,9 @@ struct PageView: View {
 
   private func chips(_ page: PageRecord) -> some View {
     HStack(spacing: Spacing.space2) {
-      BibleChip(text: Text(page.section.label))
+      ShadowBadge(Text(page.section.label))
       if let summary = model.summary(of: address) {
-        BibleChip(text: Text("\(summary.wordCount) words", tableName: "StoryBible"))
+        ShadowBadge(Text("\(summary.wordCount) words", tableName: "StoryBible"))
         PageAccessChips(page: summary)
       }
     }
@@ -114,7 +114,7 @@ struct PageView: View {
     if text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
       Text("This page has no text yet.", tableName: "StoryBible").shadowFont(.body).foregroundStyle(ShadowColor.textSecondary)
     } else {
-      Text(BibleMarkdown.render(text)).shadowFont(.body).foregroundStyle(ShadowColor.textPrimary).textSelection(.enabled)
+      ProseView(markdown: text)
     }
   }
 

@@ -50,8 +50,7 @@ nonisolated struct StoryBibleService: Sendable {
   func createEntity(key: String, type: EntityType, name: String, details: EntityDetails) async throws -> String {
     let novel = novel
     try await write { transaction in
-      if try Entities.get(novel: novel, entity: key, in: transaction) != nil { throw BibleWriteIssue.entityKeyTaken(key) }
-      try Entities.create(novel: novel, entity: key, type: type, name: name, details, in: &transaction)
+      try Entities.createNew(novel: novel, entity: key, type: type, name: name, details, in: &transaction)
     }
     return key.precomposedStringWithCanonicalMapping
   }

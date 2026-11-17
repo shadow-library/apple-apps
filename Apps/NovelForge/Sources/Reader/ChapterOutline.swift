@@ -30,8 +30,11 @@ nonisolated struct ChapterOutline: ReadModel {
   }
 
   var nextWritable: Int? {
-    guard let rows = rows.value else { return nil }
-    return ChapterSequence.nextWritable(
+    rows.value.map { Self.nextWritable(in: $0) }
+  }
+
+  static func nextWritable(in rows: [ChapterRow]) -> Int {
+    ChapterSequence.nextWritable(
       draftChapters: rows.filter { $0.stage == .drafted || $0.stage == .approved }.map(\.chapter), finalizedChapters: rows.filter { $0.stage == .final }.map(\.chapter))
   }
 
@@ -54,6 +57,29 @@ nonisolated struct ChapterOutline: ReadModel {
             key: item.record.volume, ordinal: item.record.ordinal, title: item.record.title, objective: item.record.objective, state: item.state, planFirst: claimed.min(),
             planLast: claimed.max())
         })
+    }
+  }
+}
+
+nonisolated enum ChapterListing: Equatable {
+  case pending
+  case unavailable
+  case ready(nextWritable: Int)
+}
+
+nonisolated enum MissingChapter: Equatable {
+  case pending
+  case undetermined
+  case unstarted
+  case awaitingDraft
+  case removed
+
+  init(row: ChapterRow?, chapter: Int, listing: ChapterListing) {
+    switch (row, listing) {
+    case (.some, _): self = .awaitingDraft
+    case (nil, .pending): self = .pending
+    case (nil, .unavailable): self = .undetermined
+    case (nil, .ready(let next)): self = next == chapter ? .unstarted : .removed
     }
   }
 }

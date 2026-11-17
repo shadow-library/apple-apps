@@ -63,9 +63,9 @@ struct PageAccessChips: View {
 
   var body: some View {
     if page.plannerOnly {
-      BibleChip(text: Text("Planner only", tableName: "StoryBible"), tone: .warning)
+      ShadowBadge(Text("Planner only", tableName: "StoryBible"), intent: .warning)
     } else if page.writerExcluded {
-      BibleChip(text: Text("Hidden from the writer", tableName: "StoryBible"), tone: .warning)
+      ShadowBadge(Text("Hidden from the writer", tableName: "StoryBible"), intent: .warning)
     }
   }
 }

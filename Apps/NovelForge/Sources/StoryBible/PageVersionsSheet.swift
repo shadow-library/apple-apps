@@ -41,7 +41,7 @@ struct PageVersionsSheet: View {
     VStack(alignment: .leading, spacing: Spacing.space2) {
       HStack(spacing: Spacing.space2) {
         Text(version.date, format: .dateTime.day().month().year().hour().minute()).shadowFont(.body).foregroundStyle(ShadowColor.textPrimary)
-        if version.isHead { BibleChip(text: Text("Current", tableName: "StoryBible")) }
+        if version.isHead { ShadowBadge(Text("Current", tableName: "StoryBible")) }
         Spacer(minLength: Spacing.space3)
         if !version.isHead {
           Button {

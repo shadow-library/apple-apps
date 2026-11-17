@@ -3,11 +3,11 @@ import ShadowDesignSystem
 import SwiftUI
 
 extension MilestoneState {
-  var pill: StatusPill {
+  var pill: ShadowBadge {
     switch self {
-    case .reached: StatusPill(title: Text("Reached", tableName: "Story"), tone: .success)
-    case .planned: StatusPill(title: Text("Planned", tableName: "Story"), tone: .accent)
-    case .open: StatusPill(title: Text("Open", tableName: "Story"), tone: .neutral)
+    case .reached: ShadowBadge(Text("Reached", tableName: "Story"), intent: .success)
+    case .planned: ShadowBadge(Text("Planned", tableName: "Story"), intent: .accent)
+    case .open: ShadowBadge(Text("Open", tableName: "Story"), intent: .neutral)
     }
   }
 }
@@ -91,7 +91,7 @@ struct MilestoneRow: View {
       leading: { Image(systemName: "flag").foregroundStyle(ShadowColor.textSecondary) },
       trailing: {
         HStack(spacing: Spacing.space2) {
-          if item.duplicateNote != nil { StatusPill(title: Text("Duplicate claim", tableName: "Story"), tone: .warning) }
+          if item.duplicateNote != nil { ShadowBadge(Text("Duplicate claim", tableName: "Story"), intent: .warning) }
           item.state.pill
         }
       })
@@ -227,7 +227,7 @@ struct MilestoneFormSheet: View {
     }
   }
 
-  private var entities: [EntityRecord] { model.bible.value?.entities.value?.items ?? [] }
+  private var entities: [EntityRecord] { model.entities }
 
   private var hasChanges: Bool {
     guard let editing else { return !label.isEmpty || !key.isEmpty }

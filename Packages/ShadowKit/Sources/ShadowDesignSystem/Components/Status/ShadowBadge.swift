@@ -36,8 +36,16 @@ nonisolated public enum ShadowBadgeIntent: Hashable, Sendable, CaseIterable {
     }
   }
 
-  var fill: ShadowColorToken { intent?.backgroundToken ?? .accent }
-  var border: ShadowColorToken { intent?.borderToken ?? .accent }
+  var fill: ShadowColorToken {
+    guard self != .neutral else { return .bgHover }
+    return intent?.backgroundToken ?? .accent
+  }
+
+  var border: ShadowColorToken {
+    guard self != .neutral else { return .borderStrong }
+    return intent?.borderToken ?? .accent
+  }
+
   var foreground: ShadowColorToken { intent?.foregroundToken ?? .onAccent }
 }
 
@@ -91,8 +99,17 @@ public struct ShadowBadge: View {
 
   private let content: Content
 
+  var title: Text? {
+    guard case .label(let title, _, _) = content else { return nil }
+    return title
+  }
+
   public init(_ titleKey: LocalizedStringKey, intent: ShadowBadgeIntent = .neutral, systemImage: String? = nil) {
     content = .label(Text(titleKey), intent, systemImage ?? intent.defaultSystemImage)
+  }
+
+  public init(_ title: Text, intent: ShadowBadgeIntent = .neutral, systemImage: String? = nil) {
+    content = .label(title, intent, systemImage ?? intent.defaultSystemImage)
   }
 
   public init(count: Int, maximum: Int = ShadowBadgeCount.defaultMaximum) {

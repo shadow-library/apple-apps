@@ -67,49 +67,23 @@ final class StoryModel {
   var confirmingDrop: PromiseRef?
   var advance: GoalAdvanceNotice?
   private(set) var generation = 0
-  private(set) var removed: [RemovedStoryItem] = []
   private let service: StoryService
-  private let structureObserver = ReadObserver<StoryStructure>()
-  private let ledgerObserver = ReadObserver<KnowledgeLedger>()
-  private let bibleObserver = ReadObserver<StoryBibleContents>()
-  private let chaptersObserver = ReadObserver<ChapterList>()
+  private let observer = ReadObserver<StoryScreen>()
 
   init(context: NovelContext) {
     self.context = context
     service = StoryService(store: context.store, novel: context.novel)
   }
 
-  var structure: Loadable<StoryStructure> { structureObserver.state }
-  var ledger: Loadable<KnowledgeLedger> { ledgerObserver.state }
-  var bible: Loadable<StoryBibleContents> { bibleObserver.state }
-  var chapters: Loadable<ChapterList> { chaptersObserver.state }
+  var screen: Loadable<StoryScreen> { observer.state }
+  var structure: Loadable<StoryStructure> { screen.map(\.structure) }
+  var ledger: Loadable<KnowledgeLedger> { screen.map(\.knowledge) }
+  var nextChapter: Int { screen.value?.next.value ?? 1 }
+  var entities: [EntityRecord] { screen.value?.entities.value?.items ?? [] }
 
   func observe() async {
-    async let structure: Void = observeStructure()
-    async let ledger: Void = observeLedger()
-    async let bible: Void = observeBible()
-    async let chapters: Void = observeChapters()
-    _ = await (structure, ledger, bible, chapters)
-  }
-
-  private func observeStructure() async {
     let (store, novel) = (context.store, context.novel)
-    await structureObserver.run { store.observe(StoryStructure.self, novel) }
-  }
-
-  private func observeLedger() async {
-    let (store, novel) = (context.store, context.novel)
-    await ledgerObserver.run { store.observe(KnowledgeLedger.self, novel) }
-  }
-
-  private func observeBible() async {
-    let (store, novel) = (context.store, context.novel)
-    await bibleObserver.run { store.observe(StoryBibleContents.self, novel) }
-  }
-
-  private func observeChapters() async {
-    let (store, novel) = (context.store, context.novel)
-    await chaptersObserver.run { store.observe(ChapterList.self, novel) }
+    await observer.run { store.observe(StoryScreen.self, novel) }
   }
 
   func retry() {
@@ -122,18 +96,36 @@ final class StoryModel {
   }
 
   var restorable: [RemovedStoryItem] {
-    guard let structure = structure.value else { return removed }
-    return removed.filter { !structure.isLive($0) }
+    guard let removed = screen.value?.removed.value else { return [] }
+    let volumes = removed.volumes.items.map { RemovedStoryItem.volume(key: $0.volume, name: $0.title?.storyNonBlank ?? $0.volume) }
+    let milestones = removed.milestones.items.map { RemovedStoryItem.milestone(key: $0.milestone, name: $0.label) }
+    let promises = removed.promises.items.map { RemovedStoryItem.promise($0.ref, name: $0.label) }
+    let secrets = removed.secrets.items.map { RemovedStoryItem.secret(key: $0.secret, name: $0.text) }
+    return volumes + milestones + promises + secrets
+  }
+
+  var removedIsUnavailable: Bool {
+    screen.value?.removed.isUnavailable == true
+  }
+
+  var violatingChapters: [Int]? {
+    screen.value?.reveals.violatedChapters.value
+  }
+
+  func violations(of secret: String) -> Derived<[SecretRevealViolation]>? {
+    screen.value?.reveals.violations(of: secret)
+  }
+
+  func revealViolations(of secret: String) -> [SecretRevealViolation] {
+    violations(of: secret)?.value ?? []
   }
 
   func characters() -> [EntityRecord] {
-    guard let entities = bible.value?.entities.value?.items else { return [] }
-    return entities.filter { $0.type.known == .character }
+    entities.filter { $0.type.known == .character }
   }
 
   func entityName(_ key: String) -> String {
-    guard let entities = bible.value?.entities.value?.items, let entity = entities.first(where: { $0.entity == key }) else { return key }
-    return entity.name
+    screen.value?.entityName(key) ?? key
   }
 
   func createVolume(key: String, title: String, objective: String, body: String) async throws(DomainError) {
@@ -146,8 +138,7 @@ final class StoryModel {
   }
 
   func removeVolume(_ item: VolumeItem) async {
-    guard await attempt({ () async throws(DomainError) in try await self.service.removeVolume(key: item.record.volume) }) != nil else { return }
-    remember(.volume(key: item.record.volume, name: item.displayName))
+    _ = await attempt { () async throws(DomainError) in try await self.service.removeVolume(key: item.record.volume) }
   }
 
   func markGoalMet(_ key: String) async {
@@ -191,8 +182,7 @@ final class StoryModel {
   }
 
   func removeMilestone(_ item: MilestoneItem) async {
-    guard await attempt({ () async throws(DomainError) in try await self.service.removeMilestone(key: item.record.milestone) }) != nil else { return }
-    remember(.milestone(key: item.record.milestone, name: item.record.label))
+    _ = await attempt { () async throws(DomainError) in try await self.service.removeMilestone(key: item.record.milestone) }
   }
 
   func createPromise(_ promise: PromiseRef, label: String) async throws(DomainError) {
@@ -212,8 +202,7 @@ final class StoryModel {
   }
 
   func removePromise(_ item: StoryPromise) async {
-    guard await attempt({ () async throws(DomainError) in try await self.service.removePromise(item.ref) }) != nil else { return }
-    remember(.promise(item.ref, name: item.label))
+    _ = await attempt { () async throws(DomainError) in try await self.service.removePromise(item.ref) }
   }
 
   func saveSecret(key: String, text: String, writerNote: String, constraintNote: String, revealChapter: Int?, unlock: UnlockChange) async throws(DomainError) {
@@ -223,8 +212,7 @@ final class StoryModel {
   }
 
   func removeSecret(_ secret: SecretRecord) async {
-    guard await attempt({ () async throws(DomainError) in try await self.service.removeSecret(key: secret.secret) }) != nil else { return }
-    remember(.secret(key: secret.secret, name: secret.text))
+    _ = await attempt { () async throws(DomainError) in try await self.service.removeSecret(key: secret.secret) }
   }
 
   func reveal(secret: String, to entity: String, chapter: Int, note: String) async throws(DomainError) {
@@ -236,7 +224,7 @@ final class StoryModel {
   }
 
   func restore(_ item: RemovedStoryItem) async {
-    let restored: Void? = await attempt { () async throws(DomainError) in
+    _ = await attempt { () async throws(DomainError) in
       switch item {
       case .volume(let key, _): try await self.service.restoreVolume(key: key)
       case .milestone(let key, _): try await self.service.restoreMilestone(key: key)
@@ -244,13 +232,6 @@ final class StoryModel {
       case .secret(let key, _): try await self.service.restoreSecret(key: key)
       }
     }
-    guard restored != nil else { return }
-    removed.removeAll { $0 == item }
-  }
-
-  private func remember(_ item: RemovedStoryItem) {
-    removed.removeAll { $0.id == item.id }
-    removed.append(item)
   }
 
   private func attempt<Value: Sendable>(_ work: () async throws(DomainError) -> Value) async -> Value? {

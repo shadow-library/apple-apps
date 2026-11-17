@@ -7,13 +7,6 @@ enum NotebookFormMode: Equatable {
   case rewrite(NotebookEntry)
 }
 
-enum NotebookLimits {
-  static let statement = 4000
-  static let why = 4000
-  static let writerLine = 1000
-  static let reason = 4000
-}
-
 extension String {
   fileprivate var trimmed: String { trimmingCharacters(in: .whitespacesAndNewlines) }
   fileprivate var length: Int { utf16.count }

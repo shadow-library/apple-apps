@@ -1,6 +1,29 @@
 {
   "sourceLanguage": "en",
   "strings": {
+    "%lld dismissed · Bring back": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld dismissed · Bring back"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld dismissed · Bring back"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "%lld entities": {
       "extractionState": "manual",
       "localizations": {
@@ -126,6 +149,17 @@
         }
       }
     },
+    "%lld%% settled": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld%% settled"
+          }
+        }
+      }
+    },
     "A novel with this identifier already exists.": {
       "extractionState": "manual",
       "localizations": {
@@ -133,6 +167,28 @@
           "stringUnit": {
             "state": "translated",
             "value": "A novel with this identifier already exists."
+          }
+        }
+      }
+    },
+    "A short plan for the next chapter, agreed with the chat before it is written.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A short plan for the next chapter, agreed with the chat before it is written."
+          }
+        }
+      }
+    },
+    "Actions for %@": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Actions for %@"
           }
         }
       }
@@ -203,6 +259,17 @@
         }
       }
     },
+    "Bring back %@": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bring back %@"
+          }
+        }
+      }
+    },
     "Cancel": {
       "extractionState": "manual",
       "localizations": {
@@ -265,6 +332,17 @@
           "stringUnit": {
             "state": "translated",
             "value": "Characters, the world, the first scene, the ending, books you love. Anything. Nothing you write here is changed; it stays as your source."
+          }
+        }
+      }
+    },
+    "Clear": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Clear"
           }
         }
       }
@@ -346,6 +424,28 @@
         }
       }
     },
+    "Dismiss": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dismiss"
+          }
+        }
+      }
+    },
+    "Dismissed": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dismissed"
+          }
+        }
+      }
+    },
     "Drafted": {
       "extractionState": "manual",
       "localizations": {
@@ -379,6 +479,17 @@
         }
       }
     },
+    "Ending": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ending"
+          }
+        }
+      }
+    },
     "Final of those planned or written": {
       "extractionState": "manual",
       "localizations": {
@@ -386,6 +497,50 @@
           "stringUnit": {
             "state": "translated",
             "value": "Final of those planned or written"
+          }
+        }
+      }
+    },
+    "First volume goal": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "First volume goal"
+          }
+        }
+      }
+    },
+    "Getting started": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Getting started"
+          }
+        }
+      }
+    },
+    "Getting started could not be read": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Getting started could not be read"
+          }
+        }
+      }
+    },
+    "Getting started is unavailable": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Getting started is unavailable"
           }
         }
       }
@@ -412,6 +567,17 @@
         }
       }
     },
+    "How the book ends. Planner-only, never shown to the reader early, and fine to leave undecided for now.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "How the book ends. Planner-only, never shown to the reader early, and fine to leave undecided for now."
+          }
+        }
+      }
+    },
     "In progress": {
       "extractionState": "manual",
       "localizations": {
@@ -419,6 +585,17 @@
           "stringUnit": {
             "state": "translated",
             "value": "In progress"
+          }
+        }
+      }
+    },
+    "It is not up to date on this device yet. Try again after syncing.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "It is not up to date on this device yet. Try again after syncing."
           }
         }
       }
@@ -544,6 +721,17 @@
         }
       }
     },
+    "Next chapter planned": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Next chapter planned"
+          }
+        }
+      }
+    },
     "No active novels": {
       "extractionState": "manual",
       "localizations": {
@@ -643,6 +831,28 @@
         }
       }
     },
+    "Open": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Open"
+          }
+        }
+      }
+    },
+    "Opposition": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Opposition"
+          }
+        }
+      }
+    },
     "Optional": {
       "extractionState": "manual",
       "localizations": {
@@ -665,6 +875,17 @@
         }
       }
     },
+    "Premise": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Premise"
+          }
+        }
+      }
+    },
     "Progress unavailable": {
       "extractionState": "manual",
       "localizations": {
@@ -672,6 +893,28 @@
           "stringUnit": {
             "state": "translated",
             "value": "Progress unavailable"
+          }
+        }
+      }
+    },
+    "Protagonist": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Protagonist"
+          }
+        }
+      }
+    },
+    "Reader promise": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reader promise"
           }
         }
       }
@@ -705,6 +948,17 @@
           "stringUnit": {
             "state": "translated",
             "value": "Save"
+          }
+        }
+      }
+    },
+    "Settled": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Settled"
           }
         }
       }
@@ -808,6 +1062,28 @@
         }
       }
     },
+    "The one- or two-line idea the chat and every later decision build on.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The one- or two-line idea the chat and every later decision build on."
+          }
+        }
+      }
+    },
+    "Theme": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Theme"
+          }
+        }
+      }
+    },
     "This novel cannot be read": {
       "extractionState": "manual",
       "localizations": {
@@ -896,6 +1172,17 @@
         }
       }
     },
+    "Undecided for now": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Undecided for now"
+          }
+        }
+      }
+    },
     "Untitled novel": {
       "extractionState": "manual",
       "localizations": {
@@ -914,6 +1201,61 @@
           "stringUnit": {
             "state": "translated",
             "value": "Up to %lld words"
+          }
+        }
+      }
+    },
+    "What changes by the end of volume one.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "What changes by the end of volume one."
+          }
+        }
+      }
+    },
+    "What or who pushes back, so chapters have something to write against.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "What or who pushes back, so chapters have something to write against."
+          }
+        }
+      }
+    },
+    "What the book is about underneath the plot.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "What the book is about underneath the plot."
+          }
+        }
+      }
+    },
+    "What the reader is waiting for and expects to be paid off.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "What the reader is waiting for and expects to be paid off."
+          }
+        }
+      }
+    },
+    "Who the reader follows; scenes and knowledge are written from their point of view.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Who the reader follows; scenes and knowledge are written from their point of view."
           }
         }
       }

@@ -113,6 +113,17 @@
         }
       }
     },
+    "A newer version of these notes arrived": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A newer version of these notes arrived"
+          }
+        }
+      }
+    },
     "A required field is empty.": {
       "extractionState": "manual",
       "localizations": {
@@ -1062,6 +1073,17 @@
         }
       }
     },
+    "Your notes cannot be read": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your notes cannot be read"
+          }
+        }
+      }
+    },
     "Your notes could not be read": {
       "extractionState": "manual",
       "localizations": {
@@ -1069,6 +1091,17 @@
           "stringUnit": {
             "state": "translated",
             "value": "Your notes could not be read"
+          }
+        }
+      }
+    },
+    "Your unsaved edits are kept. Saving replaces the newer version; Revert discards your edits and shows it.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your unsaved edits are kept. Saving replaces the newer version; Revert discards your edits and shows it."
           }
         }
       }
