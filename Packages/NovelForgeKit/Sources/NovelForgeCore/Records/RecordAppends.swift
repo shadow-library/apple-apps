@@ -109,6 +109,9 @@ extension AppendedRecord {
     for (ref, state) in states {
       let raw = rawReader(of: state)
       let included = raw.map(belongs) ?? true
+      if let owner, let raw, let actual = novel(in: raw), actual != owner || !included { continue }
+      // Applies with owner == nil too: unreadable items of other sessions are then not counted.
+      if raw != nil, !included { continue }
       switch reading(state, of: ref) {
       case .absent:
         continue
