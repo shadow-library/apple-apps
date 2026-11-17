@@ -35,7 +35,7 @@ enum ChatContextAssembler {
     ("chapter_index", [.chapters]),
     ("handoff", [.chapters]),
     ("prev_ending", [.chapters, .latestEnding]),
-    ("pipeline_status", [.chapters]),
+    ("pipeline_status", [.chapters, .proposals]),
     ("changed_since", [.volumes, .chapters, .bible]),
     ("progress", [.progress, .novel]),
   ]

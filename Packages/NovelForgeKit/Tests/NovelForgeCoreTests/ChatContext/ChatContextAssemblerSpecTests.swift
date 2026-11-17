@@ -174,6 +174,25 @@ struct ChatContextAssemblerSpecTests {
     #expect(try await ChatAssemblyWorld.inputs(built).pack.pipeline.pendingProposals == 2)
   }
 
+  @Test func shouldCountAPendingProposalWhoseCardCannotBeRead() async throws {
+    let built = try await ChatAssemblyWorld.build(try Self.spec("pending proposals and changes"))
+    let card: JSONValue = ["novel": ChatAssemblyWorld.novel.json, "change_set": "later"]
+    try await ReadWorld.write(built.store) { transaction in _ = try transaction.set(NovelForgeKey.proposal(UUID()), ["card": card, "decision": "pending"]) }
+    let (inputs, pack) = try await Self.pack(built)
+    #expect(inputs.pack.pipeline.pendingProposals == 3 && inputs.incomplete.isEmpty && pack.partial.isEmpty)
+  }
+
+  @Test func shouldKeepThePipelineStatusMarkedPartialWhenProposalsAreFaulted() async throws {
+    for key in [ProjectionFaults.key(NovelForgeKey.proposal(UUID())), ProjectionFaults.wholeDerivation] {
+      let built = try await ChatAssemblyWorld.build(try Self.spec("pending proposals and changes"), allowingFaults: true)
+      try await ReadWorld.insertFault(ProposalState.databaseTableName, key: key, in: built.store)
+      let (inputs, pack) = try await Self.pack(built)
+      #expect(inputs.unresolved.isEmpty && inputs.incomplete == [.proposals], "\(key)")
+      #expect(pack.partial.map(\.key) == ["pipeline_status"] && pack.sections.contains { $0.key == "pipeline_status" }, "\(key)")
+      #expect(inputs.pack.pipeline.pendingProposals == (key == ProjectionFaults.wholeDerivation ? 0 : 2), "\(key)")
+    }
+  }
+
   @Test func shouldFlagAChangedOrLeftOutSectionAndSayWhatIsGone() throws {
     let section = { (key: String, text: String) in ChatPack.makeSection(key, text, tier: .working) }
     let before = ChatContextPack(

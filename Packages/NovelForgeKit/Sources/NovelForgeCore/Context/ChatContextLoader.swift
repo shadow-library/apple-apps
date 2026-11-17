@@ -16,6 +16,7 @@ enum ChatContextPart: String, CaseIterable, Sendable {
   case chapters
   case latestEnding
   case progress
+  case proposals
 }
 
 struct ChatContextInputs: Equatable, Sendable {
@@ -77,6 +78,9 @@ enum ChatContextLoader {
     if chapters.latestUnreadable { unresolved.insert(.latestEnding) }
     let progress = try ProgressChecklist.load(novel, in: transaction).checklist.value
     if case .present = project, progress?.checklist == nil { unresolved.insert(.progress) }
+    // context-assembler.service.ts:877 counts every pending proposal of the novel, a card this version cannot read included
+    let proposals = try ChatPendingProposals.load(novel, in: transaction)
+    if proposals.count.isUnavailable || !proposals.faults.isEmpty { incomplete.insert(.proposals) }
 
     let story: ChatPackStory?
     if case .present(let record) = project { story = Self.story(record) } else { story = nil }
@@ -101,7 +105,7 @@ enum ChatContextLoader {
       latestDraft: chapters.latestDraft,
       pipeline: ChatPackPipeline(
         storyCurrentChapter: chapters.storyCurrentChapter, drafts: chapters.drafts.map { ChatPackPipeline.Draft(chapter: $0.chapter, review: $0.review) },
-        staleBriefChapters: chapters.staleBriefChapters, pendingProposals: try pendingProposals(of: novel, in: transaction), awaiting: .none),
+        staleBriefChapters: chapters.staleBriefChapters, pendingProposals: proposals.count.value ?? 0, awaiting: .none),
       changes: try since.map { since throws(StoreError) in try changes(since: since, volumes: volumes, plans: chapters.plans, pages: bible.pages, in: transaction) }
         ?? ChatPackChanges(volumes: [], briefs: [], docs: []))
     return ChatContextInputs(pack: inputs, unresolved: unresolved, incomplete: incomplete)
@@ -249,11 +253,6 @@ enum ChatContextLoader {
       },
       claimedMilestones: content.contract.claimedMilestones, contentMode: content.contentMode?.rawValue, isEnding: content.contract.isEnding, guidance: content.guidance,
       revision: plan.revision, staleReason: staleReason, writeMode: content.writeMode.known ?? .standard)
-  }
-
-  // context-assembler.service.ts:890 counts the novel's pending proposals; a vault-wide read until the chat derivations index proposals
-  private static func pendingProposals(of novel: UUID, in transaction: ReadTransaction) throws(StoreError) -> Int {
-    try ProposalRecord.listing(in: transaction).live.count { $0.novel == novel && $0.decision == .known(.pending) }
   }
 
   /// Volumes are field records with no revision counter, so a changed volume carries none.

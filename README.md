@@ -87,7 +87,7 @@ A product module is added the same way: a library product in the product's packa
 | `Policies/*`             | Ported pure policies: `Checks`, `HardLine`, `Ideas`, `Metrics`, `Prose`, `ReplyScanner`, `Reveal`, `WritePolicy` |
 | `ChangeSet`              | The change-set vocabulary (`OpType`, `OpSpecs`), parsing, reference resolution and validation          |
 | `Projection`             | `Derivation`, `NovelForgeReconciler` and the record index: derived tables kept equal to a rebuild        |
-| `Reconcile/*`            | Derivations per area: `Chapters`, `Notebook`, `Story`                                                    |
+| `Reconcile/*`            | Derivations per area: `Chapters`, `Chat`, `Notebook`, `PlanWorld`, `Story`                               |
 | `Domain/*`               | Operations on the records: `Story`, `Notebook`                                                           |
 
 ### Reference fixtures
