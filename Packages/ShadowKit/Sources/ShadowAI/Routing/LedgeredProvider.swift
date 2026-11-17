@@ -4,6 +4,9 @@ import ShadowStore
 import Synchronization
 
 final class CallJournal: Sendable {
+  /// A second journal for the streams one structured call creates, so concurrent calls on one `RoutedCall` each know their own ids.
+  @TaskLocal static var collector: CallJournal?
+
   private struct State {
     var ids: [UUID] = []
     var entries: [ModelCallEntry] = []
@@ -115,10 +118,12 @@ struct LedgeredProvider: ModelProvider {
   let ledger: CallLedger
 
   /// The stream counts as open from its first `next()`, before its task runs, so `RoutedCall.settled()` cannot pass a stream that is about to begin.
+  /// The collector of the task that creates the stream counts it too.
   func stream(_ request: ModelRequest) -> ModelStream {
-    let journal = ledger.journal
-    return ModelStream(onStart: journal.opened) { continuation throws(ModelError) in
-      defer { journal.closed() }
+    let journals = [ledger.journal] + (CallJournal.collector.map { [$0] } ?? [])
+    let opened: @Sendable () -> Void = { for journal in journals { journal.opened() } }
+    return ModelStream(onStart: opened) { continuation throws(ModelError) in
+      defer { for journal in journals { journal.closed() } }
       guard request.model == ledger.route.model else { throw .invalidRequest("The request names a model other than its route's.") }
       let call = ledger.start()
       do throws(StoreError) {
@@ -128,6 +133,7 @@ struct LedgeredProvider: ModelProvider {
         TaskRouter.logger.error("Did not send a call the ledger could not record code=\(error.code, privacy: .public)")
         throw .notRecorded
       }
+      for journal in journals.dropFirst() { journal.began(call.id) }
       var events: [ModelEvent] = []
       var isIdentified = false
       do throws(ModelError) {

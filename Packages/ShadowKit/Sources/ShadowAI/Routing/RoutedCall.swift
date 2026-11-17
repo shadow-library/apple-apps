@@ -1,6 +1,4 @@
 import Foundation
-import OSLog
-import ShadowCore
 
 public struct RoutedCall: Sendable {
   public let route: ModelRoute
@@ -32,18 +30,5 @@ public struct RoutedCall: Sendable {
     ModelRequest(
       model: route.model, system: system, messages: messages, maxOutputTokens: route.maxOutputTokens, effort: route.effort, format: format,
       cachesConversation: cachesConversation)
-  }
-
-  /// Native mode first when the route's model lists it; a native request refused with `noEligibleModel` before any reply is sent again in the prompt form.
-  public func structured(_ request: ModelRequest, name: String, schema: JSONValue) async throws(StructuredError) -> StructuredResult {
-    let triesNative = route.supportsNativeSchema && StructuredSchema.nativeForm(of: schema) != nil
-    do throws(StructuredError) {
-      return try await StructuredCall(provider: provider, supportsNativeSchema: route.supportsNativeSchema).run(request, name: name, schema: schema)
-    } catch {
-      guard triesNative, case .model(.noEligibleModel, let responses) = error, responses.isEmpty else { throw error }
-      TaskRouter.logger.notice(
-        "Native schema mode found no eligible model; retrying in the prompt form provider=\(route.provider.rawValue, privacy: .public) model=\(route.model, privacy: .public)")
-      return try await StructuredCall(provider: provider, supportsNativeSchema: false).run(request, name: name, schema: schema)
-    }
   }
 }

@@ -74,6 +74,9 @@ struct StructuredExtractionTests {
       #expect(StructuredExtraction.json(in: prose) == nil)
       #expect(StructuredExtraction.json(in: braces) == nil)
     }
-    #expect(elapsed < .seconds(2))
+    #expect(StructuredExtraction.scan(Array(prose.utf8)).parses == 1)
+    #expect(StructuredExtraction.scan(Array(braces.utf8)).parses == 1)
+    // A runaway guard only: the parse count above bounds the work, and whole-suite runs on a loaded machine take seconds here.
+    #expect(elapsed < .seconds(20))
   }
 }

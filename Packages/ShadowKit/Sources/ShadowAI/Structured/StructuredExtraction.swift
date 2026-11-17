@@ -18,17 +18,23 @@ public enum StructuredExtraction {
 
   /// Every value `json(in:)` would consider, in the order it considers them, without duplicates. Linear in the length of the text.
   static func candidates(in bytes: [UInt8]) -> [StructuredJSONValue] {
+    scan(bytes).candidates
+  }
+
+  /// `parses` counts the spans handed to the parser, the work that would grow with the text if the scan re-parsed what it has passed.
+  static func scan(_ bytes: [UInt8]) -> (candidates: [StructuredJSONValue], parses: Int) {
     var seen = Set<Range<Int>>()
     var found: [StructuredJSONValue] = []
-    func keep(_ value: StructuredJSONValue) {
-      if seen.insert(value.range).inserted { found.append(value) }
+    var parses = 0
+    func keep(_ value: StructuredJSONValue?) {
+      parses += 1
+      guard let value, seen.insert(value.range).inserted else { return }
+      found.append(value)
     }
-    if let whole = parsed(bytes, trimming: bytes.indices) { keep(whole) }
-    for body in fencedBodies(in: bytes) {
-      if let value = parsed(bytes, trimming: body) { keep(value) }
-    }
+    keep(parsed(bytes, trimming: bytes.indices))
+    for body in fencedBodies(in: bytes) { keep(parsed(bytes, trimming: body)) }
     for value in balancedValues(in: bytes) { keep(value) }
-    return found
+    return (found, parses)
   }
 
   private static func parsed(_ bytes: [UInt8], trimming range: Range<Int>) -> StructuredJSONValue? {
@@ -66,8 +72,8 @@ public enum StructuredExtraction {
   }
 
   /// Quotes outside a value are ignored, as the reference does: prose quotes are not reliably balanced, quotes inside a value are.
-  private static func balancedValues(in bytes: [UInt8]) -> [StructuredJSONValue] {
-    var values: [StructuredJSONValue] = []
+  private static func balancedValues(in bytes: [UInt8]) -> [StructuredJSONValue?] {
+    var values: [StructuredJSONValue?] = []
     var state = ScanState.idle
     var inString = false
     var escaped = false
@@ -106,7 +112,7 @@ public enum StructuredExtraction {
           continue
         }
         state = .idle
-        if let value = try? StructuredJSONParser.parse(bytes, in: start..<index + 1) { values.append(value) }
+        values.append(try? StructuredJSONParser.parse(bytes, in: start..<index + 1))
       case (.skipping(let depth), UInt8(ascii: "{")), (.skipping(let depth), UInt8(ascii: "[")):
         state = .skipping(depth: depth + 1)
       case (.skipping(let depth), UInt8(ascii: "}")), (.skipping(let depth), UInt8(ascii: "]")):
