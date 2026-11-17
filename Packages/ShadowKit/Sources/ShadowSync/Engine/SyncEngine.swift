@@ -59,6 +59,7 @@ public actor SyncEngine {
   private var waiters: [CheckedContinuation<Void, Never>] = []
 
   public private(set) var deviceClock = SyncDeviceClock.unchecked
+  public private(set) var backupExclusionFailure: StoreError?
 
   /// Open `store` with `SyncEngine.wallClock(preferring:device:)` over this `trustedClock`, or uploads stop with `storeClockUntrusted`.
   public init(
@@ -130,6 +131,7 @@ public actor SyncEngine {
   public func start() async throws(SyncError) -> ReplicaBootstrap {
     await acquire()
     defer { release() }
+    backupExclusionFailure = StorageAttachment.attach(store)
     return try await bootstrap()
   }
 

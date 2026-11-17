@@ -60,6 +60,8 @@ let project = Project.app(
 )
 ```
 
+`VaultStore.open` on a file sets file protection `completeUntilFirstUserAuthentication` on the vault directory and on the database, `-wal` and `-shm` files, and fails with `StoreError.fileProtection` if it cannot (macOS has no such protection and skips it; in-memory stores are untouched). `SyncEngine.start()` (or `StorageAttachment.attach(_:)`) flags the vault directory as excluded from device backups, `StorageAttachment.detach(_:)` clears it, and a failure there is reported (`SyncEngine.backupExclusionFailure`, a log entry) without failing the attach (attach is idempotent and re-asserted on every start; clearing the flag is eventually consistent on macOS; a vault directory must hold only the vault's own files or the flag is refused), since the flag is only guidance and the replica self-check carries correctness.
+
 Product cores are depended on the same way, through `ProductModule` (`.product(.novelForgeCore)`), so no dependency is named by a string.
 
 ### Adding a module

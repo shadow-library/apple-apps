@@ -19,6 +19,8 @@ public enum StoreError: ShadowError {
   case replicaCollision(ReplicaID)
   case incompatibleRegistry(String)
   case reconcilerFailed(any Error)
+  case fileProtection(path: String, reason: String)
+  case backupExclusion(path: String, reason: String)
 
   public var code: String {
     switch self {
@@ -37,6 +39,8 @@ public enum StoreError: ShadowError {
     case .replicaCollision: "store.replica_collision"
     case .incompatibleRegistry: "store.incompatible_registry"
     case .reconcilerFailed: "store.reconciler_failed"
+    case .fileProtection: "store.file_protection"
+    case .backupExclusion: "store.backup_exclusion"
     }
   }
 
@@ -57,6 +61,8 @@ public enum StoreError: ShadowError {
     case .replicaCollision(let replica): "A remote change carries this store's replica id \(replica), so another writer is using it."
     case .incompatibleRegistry(let reason): "The registry cannot carry the stored state additively: \(reason)."
     case .reconcilerFailed(let error): "The reconciler failed: \(error.localizedDescription)"
+    case .fileProtection(let path, let reason): "File protection could not be applied to \(path): \(reason)."
+    case .backupExclusion(let path, let reason): "Backup exclusion could not be changed on \(path): \(reason)."
     }
   }
 }
