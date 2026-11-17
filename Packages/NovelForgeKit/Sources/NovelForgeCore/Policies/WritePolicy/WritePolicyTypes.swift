@@ -75,16 +75,23 @@ typealias WritePolicyRecordFields = OrderedJSONObject
 // apps/novel-forge-server/src/modules/refinement/write-policy.ts:58
 struct WritePolicyState: Sendable {
   private let current: [JSString: WritePolicyRecordFields]
+  /// Records that exist but this device cannot read: an op that writes or names one is always held for the author, and never counts as creating it.
+  private let unreadable: Set<JSString>
 
   /// A ref listed twice keeps its last fields, as `new Map(entries)` does.
-  init(current: [(ref: String, fields: WritePolicyRecordFields)] = []) {
+  init(current: [(ref: String, fields: WritePolicyRecordFields)] = [], unreadable: Set<JSString> = []) {
     var records: [JSString: WritePolicyRecordFields] = [:]
     for entry in current { records[JSString(entry.ref)] = entry.fields }
     self.current = records
+    self.unreadable = unreadable
   }
 
   func has(_ ref: String) -> Bool {
-    current[JSString(ref)] != nil
+    current[JSString(ref)] != nil || unreadable.contains(JSString(ref))
+  }
+
+  func touchesUnreadable(_ op: ChangeOp) -> Bool {
+    (changeSetRefs([op]) + opReferences(op)).contains { unreadable.contains(JSString($0)) }
   }
 
   func fields(of ref: String?) -> WritePolicyRecordFields? {

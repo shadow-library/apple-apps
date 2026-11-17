@@ -1,6 +1,8 @@
-// apps/novel-forge-server/src/modules/refinement/passage-rewrite.ts:10; `generating` has no native draft state before the phase 7 pipelines
+// apps/novel-forge-server/src/modules/refinement/passage-rewrite.ts:10; `generating` has no native draft state before the phase 7 pipelines, and
+// `unreadable` is native: a draft this device cannot read refuses any card that rewrites it, so a turn leaves the rewrite out
 enum RewriteDropReason: String, Sendable, Equatable {
   case noDraft = "no_draft"
+  case unreadable
   case locked
   case isolated
   case wholeChapter = "whole_chapter"
@@ -13,6 +15,7 @@ enum RewriteDropReason: String, Sendable, Equatable {
   var why: String {
     switch self {
     case .noDraft: "the chapter has no draft"
+    case .unreadable: "its draft cannot be read on this device"
     case .locked: "the chapter is final, so its prose changes only through Amend"
     case .isolated: "the chapter is isolated, so the chat cannot change its prose — edit it in the chapter editor"
     case .wholeChapter: "this reply already rewrites the whole chapter"

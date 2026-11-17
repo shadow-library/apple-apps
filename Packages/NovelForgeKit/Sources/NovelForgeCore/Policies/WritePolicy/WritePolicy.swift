@@ -171,7 +171,7 @@ struct WritePolicy: Sendable {
   // apps/novel-forge-server/src/modules/refinement/write-policy.ts:474
   private func judge(_ input: WritePolicyInput, _ words: AuthorWords, appliesIdeas: Bool, hold: WriteHold) -> [Judged] {
     var judged = input.ops.enumerated().map { (index: Int, op: ChangeOp) -> Judged in
-      let held = hold == .turn || (hold == .writerRead && !isPlannerSide(op))
+      let held = hold == .turn || (hold == .writerRead && !isPlannerSide(op)) || input.state.touchesUnreadable(op)
       let intrinsic = intrinsicDisposition(op, index, input, words, appliesIdeas: appliesIdeas && !held)
       return held && intrinsic.disposition.side == .direct ? Judged(op: op, disposition: .card(index: index, reason: .heldForReview, rule: nil)) : intrinsic
     }
