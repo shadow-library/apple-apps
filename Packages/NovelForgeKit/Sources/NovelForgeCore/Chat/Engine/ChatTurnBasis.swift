@@ -35,6 +35,8 @@ struct ChatTurnBasis: Equatable, Sendable {
   let exchange: ChatExchangePlan?
   /// The ledger ids of the compaction that ran before the turn.
   let compactionCalls: [UUID]
+  /// The author's message opens the session on this device, so the turn names the session beside its run, and again when it resumes (chat.service.ts:331).
+  let namesSession: Bool
 
   var reply: UUID { turn }
   var authorWords: String { NovelForgeCore.authorWords(content, contexts: contexts) }
@@ -299,7 +301,7 @@ extension ChatTurnBasis {
       "organiseRequest": .bool(organiseRequest), "organise": .string(organise.stored), "content": .string(content), "contexts": .array(contexts.map(\.json)),
       "stableContext": .string(stableContext), "history": messagesJSON(history), "volatileContext": .string(parts.volatileContext),
       "turnRules": .string(parts.turnRules), "renderedMessage": .string(parts.userMessage), "exchange": exchange?.json ?? .null,
-      "compactionCalls": .array(compactionCalls.map { .string($0.uuidString) }),
+      "compactionCalls": .array(compactionCalls.map { .string($0.uuidString) }), "namesSession": .bool(namesSession),
     ])
   }
 
@@ -313,7 +315,8 @@ extension ChatTurnBasis {
       let organise = fields["organise"]?.stringValue.flatMap(OrganiseRouting.init(stored:)), let content = fields["content"]?.stringValue,
       let storedContexts = fields["contexts"]?.arrayValue, let stableContext = fields["stableContext"]?.stringValue, let history = messages(fields["history"]),
       let volatileContext = fields["volatileContext"]?.stringValue, let turnRules = fields["turnRules"]?.stringValue,
-      let rendered = fields["renderedMessage"]?.stringValue, let compactionCalls = uuids(fields["compactionCalls"])
+      let rendered = fields["renderedMessage"]?.stringValue, let compactionCalls = uuids(fields["compactionCalls"]),
+      let namesSession = fields["namesSession"]?.boolValue
     else { return nil }
     let contexts = storedContexts.compactMap(ChatPassageContext.init(json:))
     guard contexts.count == storedContexts.count else { return nil }
@@ -326,7 +329,8 @@ extension ChatTurnBasis {
       turn: turn, novel: novel, session: session, userMessage: userMessage, seen: seen, contentMode: contentMode, costTier: costTier, thinksDeeper: thinksDeeper,
       justDiscussing: justDiscussing, proseEdits: proseEdits, sessionMode: sessionMode, organiseRequest: organiseRequest, organise: organise, content: content,
       contexts: contexts, stableContext: stableContext, history: history,
-      parts: TurnMessageParts(volatileContext: volatileContext, turnRules: turnRules, userMessage: rendered), exchange: exchange, compactionCalls: compactionCalls)
+      parts: TurnMessageParts(volatileContext: volatileContext, turnRules: turnRules, userMessage: rendered), exchange: exchange, compactionCalls: compactionCalls,
+      namesSession: namesSession)
   }
 }
 

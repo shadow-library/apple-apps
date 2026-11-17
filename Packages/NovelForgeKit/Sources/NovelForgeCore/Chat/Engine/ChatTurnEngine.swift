@@ -148,7 +148,8 @@ public final class ChatTurnEngine: Sendable {
     }
     let run = ChatTurnRun(
       engine: self, basis: record.basis, control: control, call: nil, checkpoint: nil, settled: settled, staged: record.staged, after: 0, sources: [])
-    return start(run, opening: [.user(message: local.userMessage)], titled: nil)
+    let router = await router()
+    return start(run, opening: [.user(message: local.userMessage)], titled: record.basis.namesSession ? router : nil)
   }
 
   /// Resumes a pending turn of this device that is not running, as one the system stopped in the background: a reset voids what it had shown, and it asks
@@ -249,7 +250,7 @@ public final class ChatTurnEngine: Sendable {
     }
     let run = ChatTurnRun(
       engine: self, basis: prepared.basis, control: control, call: prepared.call, checkpoint: nil, settled: nil, staged: nil, after: 0, sources: [])
-    return start(run, opening: [.user(message: prepared.basis.userMessage)], titled: prepared.namesSession ? router : nil)
+    return start(run, opening: [.user(message: prepared.basis.userMessage)], titled: prepared.basis.namesSession ? router : nil)
   }
 
   /// chat.service.ts:270-271 for a turn that resumes or is tried again: its chat is still active and its novel still there.
@@ -290,7 +291,9 @@ public final class ChatTurnEngine: Sendable {
     let run = ChatTurnRun(
       engine: self, basis: record.basis, control: control, call: nil, checkpoint: carry == nil ? nil : local.checkpoint, settled: record.settled,
       staged: record.staged, after: local.lastSequence, sources: carry?.sources ?? [])
-    return start(run, opening: [.reset], titled: nil)
+    // the naming that ran beside the turn may have ended with the process; it names nothing once the session has a title
+    let router = await router()
+    return start(run, opening: [.reset], titled: record.basis.namesSession ? router : nil)
   }
 
   private func start(_ run: ChatTurnRun, opening: [TurnStreamEvent], titled router: TaskRouter?) -> ChatTurnHandle {

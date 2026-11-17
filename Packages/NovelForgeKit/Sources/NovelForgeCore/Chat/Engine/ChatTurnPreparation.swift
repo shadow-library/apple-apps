@@ -15,8 +15,6 @@ struct ChatTurnPrepared: Sendable {
   /// The author's message to append with the turn, for a new one.
   let message: ChatMessageRecord?
   let call: RoutedCall
-  /// The message opens the session, so the session is named beside the turn (chat.service.ts:331).
-  let namesSession: Bool
 }
 
 extension CostTier {
@@ -126,12 +124,14 @@ extension ChatTurnEngine {
 
     let userMessage = snapshot.message ?? UUID()
     let seen = history.last?.record.id
+    // Answering a message already sent never names the session again: the device that sent it did (chat.service.ts:331).
+    let opens = snapshot.message == nil && window.summary == nil && !history.contains { $0.role == .user }
     let basis = ChatTurnBasis(
       turn: turn, novel: novel, session: session, userMessage: userMessage, seen: seen, contentMode: selection.contentMode, costTier: selection.costTier,
       thinksDeeper: snapshot.choices.thinksDeeper, justDiscussing: snapshot.choices.justDiscussing, proseEdits: snapshot.choices.proseEdits, sessionMode: sessionMode,
       organiseRequest: organiseRequest, organise: organise, content: snapshot.content, contexts: snapshot.contexts, stableContext: stableContext,
       history: conversation.history, parts: TurnMessageParts(volatileContext: volatile, turnRules: turnRules, userMessage: rendered), exchange: exchange,
-      compactionCalls: compacted.calls)
+      compactionCalls: compacted.calls, namesSession: opens)
     let message: ChatMessageRecord?
     do {
       // chat.service.ts:425-445; the turn's choices are recorded, so a retry or another device answers it the same way
@@ -144,9 +144,7 @@ extension ChatTurnEngine {
     } catch {
       throw .conversationUnavailable(code: error.code, message: error.errorDescription ?? error.code)
     }
-    // Answering a message already sent never names the session again: the device that sent it did (chat.service.ts:331).
-    let opens = snapshot.message == nil && window.summary == nil && !history.contains { $0.role == .user }
-    return ChatTurnPrepared(basis: basis, message: message, call: call, namesSession: opens)
+    return ChatTurnPrepared(basis: basis, message: message, call: call)
   }
 
   // chat.service.ts:282; a compaction that cannot run fails the turn before its message is saved, as the reference's does before its run exists
