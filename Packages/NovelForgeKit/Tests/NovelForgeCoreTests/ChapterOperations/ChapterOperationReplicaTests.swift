@@ -55,6 +55,21 @@ struct ChapterOperationReplicaTests {
     #expect(try await agreed(replicas) == LifecycleView(review: .approved, approval: late))
   }
 
+  @Test func shouldNameTheEndingTheDerivationKeepsWhenARefusalFollowsTwoRivalEndings() async throws {
+    let replicas = try await book(seed: 0xD232)
+    _ = try await replicas.write(1) { try ChapterPlans.write(novel: novel, chapter: 2, ChapterBook.planEdit(ending: true), in: &$0) }
+    _ = try await replicas.write(2) { try ChapterPlans.write(novel: novel, chapter: 3, ChapterBook.planEdit(ending: true), in: &$0) }
+    try await replicas.settle()
+    for index in 0..<replicas.count {
+      do {
+        _ = try await replicas.write(index) { try ChapterPlans.write(novel: novel, chapter: 4, ChapterBook.planEdit(ending: true), in: &$0) }
+        Issue.record("the ending write on replica \(index) was accepted")
+      } catch {
+        #expect(String(describing: error).contains("Chapter 3 is already planned as the ending"))
+      }
+    }
+  }
+
   @Test func shouldKeepTheFirstCanonOfAChapterFinalizedOnTwoDevicesAndHideTheOthersAmendment() async throws {
     let replicas = try await book(seed: 0xD231)
     let (first, second) = (UUID(), UUID())

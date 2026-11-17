@@ -57,7 +57,9 @@ extension NovelPlanWorld {
     let claims = written.plan.claims
     let problems = findPlanClaimProblems(claims, raw)
     if !problems.isEmpty { return .planClaims(chapter: chapter, reason: problems.joined(separator: "; ")) }
-    if let rival = findRivalEnding(claims, raw) { return .endingPlanned(rival) }
+    if claims.isEnding, let rival = Self.keepingLatestEnding(standing.filter { $0.claims.chapter != chapter }).first(where: \.claims.isEnding) {
+      return .endingPlanned(rival.claims.chapter)
+    }
     let judged = PlanWorld(plans: Self.keepingLatestEnding(standing).map(\.row), milestones: base.milestones, volumeOrdinals: base.volumeOrdinals)
     guard let row = judged.plans.first(where: { $0.claims.chapter == chapter }) else { return nil }
     let violations = revealJudge(row, plannedUnlockContexts(judged, conditioned: true)(chapter))
