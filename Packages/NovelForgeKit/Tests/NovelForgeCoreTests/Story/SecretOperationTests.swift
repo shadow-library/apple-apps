@@ -140,6 +140,25 @@ struct SecretOperationTests {
     #expect(try await world.secret("kin") == .absent)
   }
 
+  // fact.service.ts:85: changed clues may not name a give-away term; clues and terms left as they were are not judged again
+  @Test
+  func shouldRefuseChangedCluesThatNameAGiveawayTerm() async throws {
+    let world = try await StoryWorld.make()
+    let novel = world.novel
+    await world.expect(.clueNamesTerm(#""the heir's ring" names "heir""#)) {
+      try Secrets.upsert(novel: novel, secret: "kin", text: "t", SecretChanges(terms: .set(["heir"]), allowedClues: .set(["the heir's ring"])), in: &$0)
+    }
+    #expect(try await world.secret("kin") == .absent)
+    try await world.run { try Secrets.upsert(novel: novel, secret: "kin", text: "t", SecretChanges(terms: .set(["heir"]), allowedClues: .set(["a seal"])), in: &$0) }
+    await world.expect(.clueNamesTerm(#""a seal" names "seal""#)) {
+      try Secrets.upsert(novel: novel, secret: "kin", text: "t", SecretChanges(terms: .set(["heir", "seal"])), in: &$0)
+    }
+    let named = SecretRecord(novel: novel, secret: "old", text: "t", cluesAndTerms: CluesAndTerms(clues: ["the heir's ring"], terms: ["heir"]))
+    try await world.seed(named)
+    try await world.run { try Secrets.upsert(novel: novel, secret: "old", text: "edited", in: &$0) }
+    #expect(live(try await world.secret("old"))?.text == "edited")
+  }
+
   @Test
   func shouldAcceptEveryUnlockTerm() async throws {
     let world = try await StoryWorld.make()

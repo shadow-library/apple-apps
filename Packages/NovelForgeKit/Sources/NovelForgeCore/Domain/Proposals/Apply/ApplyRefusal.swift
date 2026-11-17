@@ -9,6 +9,9 @@ enum ApplyRefusal: ShadowError, Equatable {
   case notAllowed
   case malformedInverse
   case unsettledWorkingCopy(chapter: Int)
+  case lastAdvancedAhead(chapter: Int, latest: Int)
+  case lastAdvancedUntracked
+  case unreadableReferences(kind: String, count: Int)
 
   var code: String {
     switch self {
@@ -19,6 +22,10 @@ enum ApplyRefusal: ShadowError, Equatable {
     case .notAllowed: "RFN_004"
     case .malformedInverse: "refinement.malformed_inverse"
     case .unsettledWorkingCopy: "refinement.unsettled_working_copy"
+    // app-error-code.ts:218
+    case .lastAdvancedAhead: "PMS_003"
+    case .lastAdvancedUntracked: "refinement.last_advanced_untracked"
+    case .unreadableReferences: "refinement.unreadable_references"
     }
   }
 
@@ -31,6 +38,9 @@ enum ApplyRefusal: ShadowError, Equatable {
     case .notAllowed: "Change-set operation not allowed for this scope"
     case .malformedInverse: "The stored undo of this change cannot be read, so it is not undone"
     case .unsettledWorkingCopy(let chapter): "Chapter \(chapter) has unsaved edits on this device — save or close the chapter, then apply the change again"
+    case .lastAdvancedAhead(let chapter, let latest): "lastAdvancedChapter (\(chapter)) cannot be ahead of the latest chapter (\(latest))"
+    case .lastAdvancedUntracked: "This version does not record the chapter a promise last advanced in, so the change is not applied"
+    case .unreadableReferences(let kind, let count): "\(count) \(kind) records cannot be read on this device, so the change is not applied"
     }
   }
 }

@@ -69,13 +69,13 @@ struct ApplyFrameTests {
     let unreadable = try await perform(store, try call(#"{"op":"volume.remove","volumeKey":"broken"}"#))
     #expect(throws: ApplyError.unreadable(ref: "volume:broken")) { try unreadable.get() }
     let readable = try await perform(store, try call(#"{"op":"volume.remove","volumeKey":"kept"}"#))
-    #expect(throws: ApplyError.notYetAvailable(.volumeRemove)) { try readable.get() }
+    #expect(try readable.get().postState[JSString("volume:kept")] == .missing)
   }
 
   @Test func shouldRefuseEveryHandlerFileUntilItsTaskLands() async throws {
     let store = try SchemaFixture.store()
     let calls: [(String, OpType)] = [
-      (#"{"op":"premise.update","premise":"P."}"#, .premiseUpdate), (#"{"op":"entity.upsert","entityKey":"x","type":"character","name":"X"}"#, .entityUpsert),
+      (#"{"op":"entity.upsert","entityKey":"x","type":"character","name":"X"}"#, .entityUpsert),
       (#"{"op":"brief.remove","chapter":2}"#, .briefRemove),
     ]
     for (json, type) in calls {

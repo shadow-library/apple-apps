@@ -25,7 +25,7 @@ public struct SecretChanges: Sendable, Equatable {
   }
 }
 
-// apps/novel-forge-server/src/modules/bible/fact/fact.service.ts; the reveal-term guard on allowed clues (FCT_006) waits for the reveal-term port, and plan state is derived
+// apps/novel-forge-server/src/modules/bible/fact/fact.service.ts; plan state is derived
 public enum Secrets {
   // fact.service.ts:61: creates the secret or merges the changes into it; an omitted field keeps its value, a nil clears it
   public static func upsert(novel: UUID, secret: String, text: String, _ changes: SecretChanges = SecretChanges(), in transaction: inout WriteTransaction) throws(DomainError) {
@@ -40,10 +40,26 @@ public enum Secrets {
     let ref = SecretRecord.ref(novel: novel, secret: secret)
     switch try transaction.presence(ref, as: SecretRecord.self) {
     case .live(let existing):
-      try transaction.edit(SecretRecord.self, ref, difference(from: existing, to: applying(changes, text: text, to: existing)).fields)
+      let updated = applying(changes, text: text, to: existing)
+      try requireNoGiveaways(before: existing, after: updated)
+      try transaction.edit(SecretRecord.self, ref, difference(from: existing, to: updated).fields)
     case .removed, .absent:
-      try transaction.create(applying(changes, text: text, to: SecretRecord(novel: novel, secret: secret, text: text)))
+      let created = applying(changes, text: text, to: SecretRecord(novel: novel, secret: secret, text: text))
+      try requireNoGiveaways(before: nil, after: created)
+      try transaction.create(created)
     }
+  }
+
+  // fact.service.ts:85 over reveal-term.ts:39: changed clues may not name a give-away term of their fact; a new fact has every clue judged
+  static func requireNoGiveaways(before: SecretRecord?, after: SecretRecord) throws(DomainError) {
+    let prior = before.map { ClueTermFields(allowedClues: $0.cluesAndTerms?.clues, terms: $0.cluesAndTerms?.terms) }
+    let giveaways: [String]
+    do throws(DisclosureError) {
+      giveaways = try changedCluesNamingTerms(before: prior, after: ClueTermFields(allowedClues: after.cluesAndTerms?.clues, terms: after.cluesAndTerms?.terms))
+    } catch {
+      throw .cluesUncheckable(error.errorDescription ?? error.code)
+    }
+    guard giveaways.isEmpty else { throw .clueNamesTerm(giveaways.joined(separator: "; ")) }
   }
 
   // fact.service.ts:102: the knowledge rows of a removed secret are hidden by derivation, never deleted

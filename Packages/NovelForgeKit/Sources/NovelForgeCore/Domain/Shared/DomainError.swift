@@ -45,6 +45,8 @@ public enum DomainError: ShadowError, Equatable {
   case revisionUnreadable(String)
   case entityUnknown(String)
   case unlockMalformed(String)
+  case clueNamesTerm(String)
+  case cluesUncheckable(String)
   case invalidKey(field: String)
   case blank(field: String)
   case belowMinimum(field: String, minimum: Int)
@@ -106,6 +108,8 @@ public enum DomainError: ShadowError, Equatable {
     case .revisionUnreadable: "bible.revision_unreadable"
     case .entityUnknown: "FCT_002"
     case .unlockMalformed: "FCT_005"
+    case .clueNamesTerm: "FCT_006"
+    case .cluesUncheckable: "story.clues_uncheckable"
     case .invalidKey: "domain.invalid_key"
     case .blank: "domain.blank"
     case .belowMinimum: "domain.below_minimum"
@@ -169,6 +173,8 @@ public enum DomainError: ShadowError, Equatable {
     case .revisionUnreadable(let revision): "Version \(revision) of the page is stored in a form this version cannot read"
     case .entityUnknown(let entity): "Unknown entity key \(entity) referenced by the knowledge operation"
     case .unlockMalformed(let reason): "Unlock condition is malformed — \(reason)"
+    case .clueNamesTerm(let reason): "An allowed clue names a give-away term of its fact — \(reason)"
+    case .cluesUncheckable(let reason): "The allowed clues could not be checked against the fact's terms — \(reason)"
     case .invalidKey(let field): "\(field) must be a non-empty key"
     case .blank(let field): "\(field) must not be blank"
     case .belowMinimum(let field, let minimum): "\(field) must be at least \(minimum)"
