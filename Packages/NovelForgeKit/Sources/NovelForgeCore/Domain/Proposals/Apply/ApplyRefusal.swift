@@ -15,6 +15,7 @@ enum ApplyRefusal: ShadowError, Equatable {
   case planClosed(chapter: Int)
   case unrestrictedUnavailable
   case unstorable(field: String)
+  case approvalOverMovedDraft(chapter: Int)
 
   var code: String {
     switch self {
@@ -32,6 +33,7 @@ enum ApplyRefusal: ShadowError, Equatable {
     case .planClosed: "RFN_005"
     case .unrestrictedUnavailable: "AI_024"
     case .unstorable: "refinement.unstorable_value"
+    case .approvalOverMovedDraft: "refinement.approval_over_moved_draft"
     }
   }
 
@@ -50,6 +52,8 @@ enum ApplyRefusal: ShadowError, Equatable {
     case .planClosed(let chapter): "Finalized chapters are immutable — the plan for chapter \(chapter) is at or before the story cursor and cannot be modified"
     case .unrestrictedUnavailable: "Unrestricted writing isn't set up in this app"
     case .unstorable(let field): "\(field) holds a fraction, or keys that differ only in their Unicode form, which this app cannot store"
+    case .approvalOverMovedDraft(let chapter):
+      "Chapter \(chapter) has unsaved edits over an earlier version of its draft — save or close the chapter, then ask for the approval again"
     }
   }
 }
