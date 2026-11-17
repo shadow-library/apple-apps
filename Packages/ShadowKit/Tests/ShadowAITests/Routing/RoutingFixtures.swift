@@ -80,11 +80,12 @@ enum RoutingFixture {
 
   static func router(
     _ configuration: TaskRouterConfiguration = configuration(), anthropic: (any ModelProvider)? = nil, openRouter: (any ModelProvider)? = nil,
-    credentials: StaticCredentials = allCredentials, store: VaultStore, clock: LedgerTestClock
+    credentials: StaticCredentials = allCredentials, store: VaultStore, clock: LedgerTestClock,
+    requestGuard: @escaping @Sendable (ModelRoute) -> ModelRequestGuard? = { _ in nil }
   ) -> TaskRouter {
     TaskRouter(
       configuration: configuration, anthropic: anthropic.map { binding(.anthropic, $0) }, openRouter: openRouter.map { binding(.openRouter, $0) }, credentials: credentials,
-      store: store, now: clock.function, calendar: utc)
+      store: store, requestGuard: requestGuard, now: clock.function, calendar: utc)
   }
 
   static func grantConsent(host: String, consent: AIConsentRequirement = consent, in store: VaultStore) async throws {

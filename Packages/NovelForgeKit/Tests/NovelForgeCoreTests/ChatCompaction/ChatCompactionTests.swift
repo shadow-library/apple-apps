@@ -323,6 +323,21 @@ struct ChatCompactionTests {
     #expect(try await exchanges(in: store).count == 1)
   }
 
+  @Test func shouldSkipAnUnrestrictedFoldWhoseRepairTheRouterRefuses() async throws {
+    let (_, store) = try ChatWorld.store()
+    try await World.write(try World.turns(13), in: store)
+    let provider = ScriptedModelProvider(calls: [ScriptedModelProvider.reply("not json: a child and intercourse in one line"), World.reply("Summary.")])
+    let result = try await World.compact(turn: World.turn(.unrestricted), store: store, provider: provider)
+    guard case .refused(let hit, let callIDs) = result.outcome else {
+      Issue.record("expected a refusal, got \(result.outcome)")
+      return
+    }
+    #expect(hit == HardLineHit(rule: .minorWithExplicitAct, source: "The request", sourceRefs: []) && callIDs.count == 1)
+    #expect(provider.requests.count == 1)
+    #expect(provider.requests.first?.system.map(\.text) == [hardLineSystemLine, chatCompactSystem])
+    #expect(try await World.summaries(in: store).isEmpty)
+  }
+
   @Test func shouldNotScreenAStandardFold() async throws {
     let (_, store) = try ChatWorld.store()
     let turns = try [message(1), message(2, role: .assistant, content: "a child and intercourse in one line")] + World.turns(11, from: 3)
@@ -338,7 +353,7 @@ struct ChatCompactionTests {
     let (_, store) = try ChatWorld.store()
     try await World.write(try World.turns(13), in: store)
     let router = TaskRouter(
-      configuration: TaskRouterConfiguration(provider: .anthropic), credentials: StaticNoCredentials(), store: store)
+      configuration: TaskRouterConfiguration(provider: .anthropic), credentials: StaticNoCredentials(), store: store, requestGuard: { _ in nil })
     await #expect(throws: ChatCompactionError.self) {
       try await ChatCompaction.compactIfNeeded(session: ChatWorld.session, turn: World.turn(), store: store, router: router)
     }

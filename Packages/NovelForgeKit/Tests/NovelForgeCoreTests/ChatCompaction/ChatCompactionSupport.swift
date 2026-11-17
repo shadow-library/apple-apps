@@ -38,7 +38,9 @@ enum CompactionWorld {
       }
     }
     let configuration = TaskRouterConfiguration(provider: .anthropic, assignments: OpenRouterAssignments(unrestricted: unrestrictedModel))
-    return TaskRouter(configuration: configuration, anthropic: standard, openRouter: unrestricted, credentials: CompactionCredentials(), store: store)
+    return TaskRouter(
+      configuration: configuration, anthropic: standard, openRouter: unrestricted, credentials: CompactionCredentials(), store: store,
+      requestGuard: { ModelRequestGuard.hardLine(for: $0) })
   }
 
   static func reply(_ summary: String) -> [ScriptedModelProvider.Step] {

@@ -37,6 +37,7 @@ public struct TaskRouter: Sendable {
   private let openRouter: ProviderBinding?
   private let credentials: any ModelCredentialSource
   private let store: VaultStore
+  private let requestGuard: @Sendable (ModelRoute) -> ModelRequestGuard?
   private let now: @Sendable () -> Date
   private let calendar: Calendar
   private let makeID: @Sendable () -> UUID
@@ -47,6 +48,7 @@ public struct TaskRouter: Sendable {
     openRouter: ProviderBinding? = nil,
     credentials: any ModelCredentialSource,
     store: VaultStore,
+    requestGuard: @escaping @Sendable (ModelRoute) -> ModelRequestGuard?,
     now: @escaping @Sendable () -> Date = { Date() },
     calendar: Calendar = .current,
     makeID: @escaping @Sendable () -> UUID = { UUID.v7() }
@@ -56,6 +58,7 @@ public struct TaskRouter: Sendable {
     self.openRouter = openRouter
     self.credentials = credentials
     self.store = store
+    self.requestGuard = requestGuard
     self.now = now
     self.calendar = calendar
     self.makeID = makeID
@@ -70,7 +73,7 @@ public struct TaskRouter: Sendable {
   }
 
   /// Checks the route, key, consent and spend cap once for one product call, so a call kept for later does not see a later revoke or spend; every stream
-  /// of the returned call is ledgered.
+  /// of the returned call passes the route's request guard, then is ledgered.
   public func prepare(_ call: TaskCall) async throws(TaskRouterError) -> RoutedCall {
     do throws(TaskRouterError) {
       let route = try route(task: call.task, pace: call.pace, thinksDeeper: call.thinksDeeper, contentMode: call.contentMode)
@@ -81,7 +84,8 @@ public struct TaskRouter: Sendable {
         "Routed a call task=\(route.task.rawValue, privacy: .public) pace=\(route.pace.rawValue, privacy: .public) deepened=\(route.deepened, privacy: .public) mode=\(route.contentMode.rawValue, privacy: .public) provider=\(route.provider.rawValue, privacy: .public) model=\(route.model, privacy: .public) effort=\(route.effort?.rawValue ?? "none", privacy: .public)"
       )
       let ledger = CallLedger(store: store, catalog: configuration.catalog, host: binding.host, route: route, now: now, makeID: makeID)
-      return RoutedCall(route: route, host: binding.host, provider: LedgeredProvider(base: binding.provider, ledger: ledger), journal: ledger.journal)
+      return RoutedCall(
+        route: route, host: binding.host, ledgered: LedgeredProvider(base: binding.provider, ledger: ledger), requestGuard: requestGuard(route), journal: ledger.journal)
     } catch {
       Self.logger.notice(
         "Refused a call task=\(call.task.rawValue, privacy: .public) pace=\(call.pace.rawValue, privacy: .public) mode=\(call.contentMode.rawValue, privacy: .public) code=\(error.code, privacy: .public)"

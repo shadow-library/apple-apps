@@ -1,4 +1,5 @@
 import Foundation
+import OSLog
 import ShadowCore
 
 public enum StructuredAttemptPurpose: Sendable, Equatable {
@@ -59,21 +60,32 @@ public struct StructuredStreamFailure: ShadowError, Equatable {
 
 /// One structured call's requests, in order, and what the observer has been shown of them.
 struct StructuredAttempts {
+  private static let logger = Logger(category: "ShadowAI.Structured")
+
   private let provider: any ModelProvider
+  private let requestGuard: ModelRequestGuard?
   private(set) var responses: [ModelResponse] = []
   private(set) var partialText = ""
   private(set) var count = 0
   private var shown: Int?
 
-  init(provider: any ModelProvider) {
+  init(provider: any ModelProvider, requestGuard: ModelRequestGuard?) {
     self.provider = provider
+    self.requestGuard = requestGuard
   }
 
-  /// Mirrors `ModelStream.collect()`, keeping the text of a reply that breaks off.
+  /// Mirrors `ModelStream.collect()`, keeping the text of a reply that breaks off. A refused request is not an attempt: it is neither counted nor shown, and
+  /// fails the call with `.model(.requestRefused)`.
   mutating func make(
     _ request: ModelRequest, mode: StructuredMode, purpose: StructuredAttemptPurpose, observer: (StructuredStreamEvent) -> Void
   ) async throws(StructuredError) -> ModelResponse {
     guard !Task.isCancelled else { throw .model(.cancelled, responses: responses) }
+    if let requestGuard, case .refuse(let reason) = requestGuard.screen(request) {
+      let number = count + 1
+      Self.logger.notice("The request guard refused a request before it was sent attempt=\(number, privacy: .public) code=\(reason.code, privacy: .public)")
+      throw .model(.requestRefused(ModelRequestRefusal(reason)), responses: responses)
+    }
+    let request = requestGuard?.framing(request) ?? request
     count += 1
     partialText = ""
     observer(.attemptStarted(StructuredAttempt(number: count, mode: mode, purpose: purpose, request: request)))

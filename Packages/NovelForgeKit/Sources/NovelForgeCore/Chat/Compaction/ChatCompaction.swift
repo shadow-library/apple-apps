@@ -146,8 +146,8 @@ enum ChatCompaction {
   }
 
   /// An unrestricted fold is held to the hard line on its inputs and its output, as the reference's router holds every unrestricted call
-  /// (model-router.service.ts:464, :763); a standard one is not screened (:721-726). The router's request screen (:710-719) finds nothing more here:
-  /// the request is the template's fixed lines around those inputs, and the screen reads each line apart.
+  /// (model-router.service.ts:464, :763); a standard one is not screened (:721-726). The router's request guard (:710-719) screens every request the
+  /// fold sends, its repair re-ask included, and sends the hard line's system line first.
   // chat-compaction.service.ts:145-153
   private static func summarise(_ plan: ChatFoldPlan, mode: ContentMode, turn: ChatCompactionTurn, router: TaskRouter) async throws(ChatCompactionError)
     -> Summarised
@@ -161,13 +161,14 @@ enum ChatCompaction {
     } catch {
       throw .routing(error)
     }
-    let system = (unrestricted ? [hardLineSystemLine] : []) + prompt.filter { $0.role == .system }.map(\.text)
+    let system = prompt.filter { $0.role == .system }.map(\.text)
     let messages = prompt.filter { $0.role != .system }.map { ModelMessage(role: $0.role == .assistant ? .assistant : .user, text: $0.text) }
     let result: StructuredResult
     do throws(StructuredStreamFailure) {
       result = try await call.streamStructured(
         call.request(system: system.map { ContextSegment(text: $0) }, messages: messages), name: schemaName, schema: JSONValue(schema: chatCompactSchema))
     } catch {
+      if let hit = error.error.hardLineHit { return .refused(hit, callIDs: error.callIDs) }
       throw .model(error.error, callIDs: error.callIDs)
     }
     let output: Output

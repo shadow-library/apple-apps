@@ -3,14 +3,18 @@ import Foundation
 public struct RoutedCall: Sendable {
   public let route: ModelRoute
   public let host: String
-  /// Sends only requests for the route's model and records each stream in the ledger.
+  /// Sends only requests for the route's model, screened by the route's guard, and records each sent stream in the ledger.
   public let provider: any ModelProvider
+  public let requestGuard: ModelRequestGuard?
+  let ledgered: any ModelProvider
   private let journal: CallJournal
 
-  init(route: ModelRoute, host: String, provider: any ModelProvider, journal: CallJournal) {
+  init(route: ModelRoute, host: String, ledgered: any ModelProvider, requestGuard: ModelRequestGuard?, journal: CallJournal) {
     self.route = route
     self.host = host
-    self.provider = provider
+    self.provider = requestGuard.map { GuardedProvider(base: ledgered, requestGuard: $0) } ?? ledgered
+    self.requestGuard = requestGuard
+    self.ledgered = ledgered
     self.journal = journal
   }
 

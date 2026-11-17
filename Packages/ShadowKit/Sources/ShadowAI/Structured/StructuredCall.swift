@@ -79,9 +79,11 @@ public struct StructuredCall: Sendable {
   }
 
   /// `stream` without an observer.
-  public func run(_ request: ModelRequest, name: String, schema: JSONValue, review: StructuredReview = .none) async throws(StructuredError) -> StructuredResult {
+  public func run(
+    _ request: ModelRequest, name: String, schema: JSONValue, review: StructuredReview = .none, requestGuard: ModelRequestGuard? = nil
+  ) async throws(StructuredError) -> StructuredResult {
     do throws(StructuredStreamFailure) {
-      return try await stream(request, name: name, schema: schema, review: review)
+      return try await stream(request, name: name, schema: schema, review: review, requestGuard: requestGuard)
     } catch {
       throw error.error
     }
@@ -90,15 +92,17 @@ public struct StructuredCall: Sendable {
   /// Makes at most two model calls in a mode, the request and one repair re-ask, and checks every reply against the full schema, also in native mode.
   /// Native mode first when the provider takes the schema; a native request refused with `noEligibleModel` before any text is sent again in the prompt form.
   public func stream(
-    _ request: ModelRequest, name: String, schema: JSONValue, review: StructuredReview = .none, observer: (StructuredStreamEvent) -> Void = { _ in }
+    _ request: ModelRequest, name: String, schema: JSONValue, review: StructuredReview = .none, requestGuard: ModelRequestGuard? = nil,
+    observer: (StructuredStreamEvent) -> Void = { _ in }
   ) async throws(StructuredStreamFailure) -> StructuredResult {
-    try await stream(request, name: name, schema: schema, review: review, observer: observer, callIDs: { [] })
+    try await stream(request, name: name, schema: schema, review: review, requestGuard: requestGuard, observer: observer, callIDs: { [] })
   }
 
   func stream(
-    _ request: ModelRequest, name: String, schema: JSONValue, review: StructuredReview, observer: (StructuredStreamEvent) -> Void, callIDs: () async -> [UUID]
+    _ request: ModelRequest, name: String, schema: JSONValue, review: StructuredReview, requestGuard: ModelRequestGuard?, observer: (StructuredStreamEvent) -> Void,
+    callIDs: () async -> [UUID]
   ) async throws(StructuredStreamFailure) -> StructuredResult {
-    var attempts = StructuredAttempts(provider: provider)
+    var attempts = StructuredAttempts(provider: provider, requestGuard: requestGuard)
     do throws(StructuredError) {
       let accepted = try await answer(request, name: name, schema: schema, review: review, attempts: &attempts, observer: observer)
       let result = StructuredResult(

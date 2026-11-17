@@ -1,4 +1,5 @@
 import Foundation
+import NovelForgeCore
 import Observation
 import ShadowAI
 import ShadowKeychain
@@ -120,7 +121,8 @@ final class AIServices {
   func router(store: VaultStore) -> TaskRouter {
     let configuration = TaskRouterConfiguration(
       provider: settings.provider, assignments: settings.assignments, openRouterModels: openRouterModels, spendLimits: settings.limits)
-    return TaskRouter(configuration: configuration, anthropic: anthropic, openRouter: openRouter, credentials: keys, store: store)
+    return TaskRouter(
+      configuration: configuration, anthropic: anthropic, openRouter: openRouter, credentials: keys, store: store, requestGuard: { ModelRequestGuard.hardLine(for: $0) })
   }
 
   func update(_ change: (inout AISettings) -> Void) {
