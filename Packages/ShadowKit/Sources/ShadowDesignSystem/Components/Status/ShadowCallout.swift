@@ -1,10 +1,15 @@
 import SwiftUI
 
 public struct ShadowCalloutDismiss {
-  let label: LocalizedStringKey
+  let label: Text
   let action: () -> Void
 
   public init(_ label: LocalizedStringKey, action: @escaping () -> Void) {
+    self.label = Text(label)
+    self.action = action
+  }
+
+  public init(_ label: Text, action: @escaping () -> Void) {
     self.label = label
     self.action = action
   }
@@ -26,8 +31,19 @@ public struct ShadowCallout<Action: View>: View {
     dismiss: ShadowCalloutDismiss? = nil,
     @ViewBuilder action: () -> Action
   ) {
-    title = Text(titleKey)
-    self.message = message.map { Text($0) }
+    self.init(Text(titleKey), message: message.map { Text($0) }, intent: intent, systemImage: systemImage, dismiss: dismiss, action: action)
+  }
+
+  public init(
+    _ title: Text,
+    message: Text? = nil,
+    intent: ShadowIntent = .info,
+    systemImage: String? = nil,
+    dismiss: ShadowCalloutDismiss? = nil,
+    @ViewBuilder action: () -> Action
+  ) {
+    self.title = title
+    self.message = message
     self.intent = intent
     self.systemImage = systemImage ?? intent.systemImage
     self.dismiss = dismiss
@@ -79,7 +95,7 @@ public struct ShadowCallout<Action: View>: View {
         .contentShape(.rect)
     }
     .buttonStyle(.plain)
-    .accessibilityLabel(Text(dismiss.label))
+    .accessibilityLabel(dismiss.label)
     .padding(-(Spacing.space2 + Spacing.space3 / 2))
   }
 }
@@ -90,6 +106,10 @@ extension ShadowCallout where Action == EmptyView {
     dismiss: ShadowCalloutDismiss? = nil
   ) {
     self.init(titleKey, message: message, intent: intent, systemImage: systemImage, dismiss: dismiss) { EmptyView() }
+  }
+
+  public init(_ title: Text, message: Text? = nil, intent: ShadowIntent = .info, systemImage: String? = nil, dismiss: ShadowCalloutDismiss? = nil) {
+    self.init(title, message: message, intent: intent, systemImage: systemImage, dismiss: dismiss) { EmptyView() }
   }
 }
 

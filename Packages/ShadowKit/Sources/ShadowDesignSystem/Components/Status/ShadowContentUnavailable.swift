@@ -17,8 +17,8 @@ nonisolated public enum ShadowContentUnavailableKind: Hashable, Sendable, CaseIt
 }
 
 public struct ShadowContentUnavailable<Actions: View>: View {
-  private let title: Text
-  private let message: Text?
+  let title: Text
+  let message: Text?
   private let systemImage: String
   private let actions: Actions
 
@@ -29,8 +29,12 @@ public struct ShadowContentUnavailable<Actions: View>: View {
     message: LocalizedStringKey? = nil,
     @ViewBuilder actions: () -> Actions
   ) {
-    title = Text(titleKey)
-    self.message = message.map { Text($0) }
+    self.init(Text(titleKey), kind: kind, systemImage: systemImage, message: message.map { Text($0) }, actions: actions)
+  }
+
+  public init(_ title: Text, kind: ShadowContentUnavailableKind = .empty, systemImage: String? = nil, message: Text? = nil, @ViewBuilder actions: () -> Actions) {
+    self.title = title
+    self.message = message
     self.systemImage = systemImage ?? kind.systemImage
     self.actions = actions()
   }
@@ -59,5 +63,9 @@ public struct ShadowContentUnavailable<Actions: View>: View {
 extension ShadowContentUnavailable where Actions == EmptyView {
   public init(_ titleKey: LocalizedStringKey, kind: ShadowContentUnavailableKind = .empty, systemImage: String? = nil, message: LocalizedStringKey? = nil) {
     self.init(titleKey, kind: kind, systemImage: systemImage, message: message) { EmptyView() }
+  }
+
+  public init(_ title: Text, kind: ShadowContentUnavailableKind = .empty, systemImage: String? = nil, message: Text? = nil) {
+    self.init(title, kind: kind, systemImage: systemImage, message: message) { EmptyView() }
   }
 }

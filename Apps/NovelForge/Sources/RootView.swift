@@ -9,27 +9,13 @@ struct RootView: View {
       switch vault.state {
       case .opening:
         ProgressView()
-      case .ready:
-        LibraryPlaceholderView()
+      case .ready(let store):
+        NovelForgeShell(store: store)
       case .failed(let error):
         VaultFailureView(error: error) { Task { await vault.open() } }
       }
     }
     .task { await vault.open() }
-  }
-}
-
-struct LibraryPlaceholderView: View {
-  var body: some View {
-    NavigationSplitView {
-      List {
-        Label("Library", systemImage: "books.vertical")
-      }
-      .navigationTitle("Novel Forge")
-    } detail: {
-      ShadowContentUnavailable("No novels yet", systemImage: "book.closed", message: "Your library will appear here.")
-        .background(ShadowColor.surfaceApp)
-    }
   }
 }
 

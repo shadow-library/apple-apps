@@ -13,15 +13,18 @@ nonisolated public enum ShadowSheetStyle: Hashable, Sendable, CaseIterable {
 nonisolated public struct ShadowDismissGuard: Hashable, Sendable {
   public var hasUnsavedChanges: Bool
   public var isConfirmingDiscard: Bool
+  public var isBusy: Bool
 
-  public init(hasUnsavedChanges: Bool = false) {
+  public init(hasUnsavedChanges: Bool = false, isBusy: Bool = false) {
     self.hasUnsavedChanges = hasUnsavedChanges
     isConfirmingDiscard = false
+    self.isBusy = isBusy
   }
 
-  public var allowsInteractiveDismiss: Bool { !hasUnsavedChanges }
+  public var allowsInteractiveDismiss: Bool { !hasUnsavedChanges && !isBusy }
 
   public mutating func requestDismiss() -> Bool {
+    guard !isBusy else { return false }
     guard hasUnsavedChanges else { return true }
     isConfirmingDiscard = true
     return false
@@ -38,27 +41,42 @@ nonisolated public struct ShadowDismissGuard: Hashable, Sendable {
 }
 
 public struct ShadowSheetCancel {
-  let title: LocalizedStringKey
+  let title: Text
+  let isDisabled: Bool
   let systemImage: String
   let perform: () -> Void
 
-  public init(_ title: LocalizedStringKey, systemImage: String = "xmark", action: @escaping () -> Void) {
+  public init(_ title: LocalizedStringKey, systemImage: String = "xmark", isDisabled: Bool = false, action: @escaping () -> Void) {
+    self.title = Text(title)
+    self.isDisabled = isDisabled
+    self.systemImage = systemImage
+    perform = action
+  }
+
+  public init(_ title: Text, systemImage: String = "xmark", isDisabled: Bool = false, action: @escaping () -> Void) {
     self.title = title
+    self.isDisabled = isDisabled
     self.systemImage = systemImage
     perform = action
   }
 }
 
 public struct ShadowSheetConfirm {
-  let title: LocalizedStringKey
+  let title: Text
   let systemImage: String
   let isDisabled: Bool
+  let submitShortcut: Bool
   let perform: () -> Void
 
-  public init(_ title: LocalizedStringKey, systemImage: String = "checkmark", isDisabled: Bool = false, action: @escaping () -> Void) {
+  public init(_ title: LocalizedStringKey, systemImage: String = "checkmark", isDisabled: Bool = false, submitShortcut: Bool = false, action: @escaping () -> Void) {
+    self.init(Text(title), systemImage: systemImage, isDisabled: isDisabled, submitShortcut: submitShortcut, action: action)
+  }
+
+  public init(_ title: Text, systemImage: String = "checkmark", isDisabled: Bool = false, submitShortcut: Bool = false, action: @escaping () -> Void) {
     self.title = title
     self.systemImage = systemImage
     self.isDisabled = isDisabled
+    self.submitShortcut = submitShortcut
     perform = action
   }
 }
@@ -86,15 +104,32 @@ extension View {
     keepEditingTitle: LocalizedStringKey,
     onDiscard: @escaping () -> Void
   ) -> some View {
+    shadowDismissGuard(guardState, title: title, message: message, discardTitle: Text(discardTitle), keepEditingTitle: Text(keepEditingTitle), onDiscard: onDiscard)
+  }
+
+  public func shadowDismissGuard(
+    _ guardState: Binding<ShadowDismissGuard>,
+    title: Text,
+    message: Text? = nil,
+    discardTitle: Text,
+    keepEditingTitle: Text,
+    onDiscard: @escaping () -> Void
+  ) -> some View {
     interactiveDismissDisabled(!guardState.wrappedValue.allowsInteractiveDismiss)
       .confirmationDialog(title, isPresented: guardState.isConfirmingDiscard, titleVisibility: .visible) {
-        Button(discardTitle, role: .destructive) {
+        Button(role: .destructive) {
           guardState.wrappedValue.discard()
           onDiscard()
+        } label: {
+          discardTitle
         }
         .shadowDestructiveDialogAction()
-        Button(keepEditingTitle, role: .cancel) { guardState.wrappedValue.keepEditing() }
-          .shadowDialogCancelAction()
+        Button(role: .cancel) {
+          guardState.wrappedValue.keepEditing()
+        } label: {
+          keepEditingTitle
+        }
+        .shadowDialogCancelAction()
       } message: {
         if let message { message }
       }
@@ -200,10 +235,12 @@ private struct ShadowSheetHeaderModifier: ViewModifier {
         content
       }
       .padding(Spacing.space5)
+      .background { submitShortcut }
       .toolbar { toolbar }
     #else
       NavigationStack {
         content
+          .background { submitShortcut }
           .navigationTitle(title)
           #if os(iOS)
             .modifier(SubtitleModifier(subtitle: subtitle))
@@ -214,16 +251,31 @@ private struct ShadowSheetHeaderModifier: ViewModifier {
     #endif
   }
 
+  @ViewBuilder
+  private var submitShortcut: some View {
+    if let confirm, confirm.submitShortcut {
+      Button(action: confirm.perform) { confirm.title }
+        .keyboardShortcut(.return, modifiers: .command)
+        .focusable(false)
+        .disabled(confirm.isDisabled)
+        .opacity(0)
+        .accessibilityHidden(true)
+        .allowsHitTesting(false)
+    }
+  }
+
   @ToolbarContentBuilder
   private var toolbar: some ToolbarContent {
     ToolbarItem(placement: .cancellationAction) {
       Button(role: .cancel, action: cancel.perform) { ShadowSheetActionLabel(title: cancel.title, systemImage: cancel.systemImage) }
+        .disabled(cancel.isDisabled)
         .shadowBarItem()
     }
     if let confirm {
       ToolbarItem(placement: .confirmationAction) {
         #if os(macOS)
           Button(action: confirm.perform) { ShadowSheetActionLabel(title: confirm.title, systemImage: confirm.systemImage) }
+            .keyboardShortcut(.defaultAction)
             .disabled(confirm.isDisabled)
         #else
           Button(action: confirm.perform) { ShadowSheetActionLabel(title: confirm.title, systemImage: confirm.systemImage) }
@@ -251,7 +303,7 @@ private struct ShadowSheetHeaderModifier: ViewModifier {
 #endif
 
 private struct ShadowSheetActionLabel: View {
-  let title: LocalizedStringKey
+  let title: Text
   let systemImage: String
 
   private var showsSymbol: Bool {
@@ -264,9 +316,13 @@ private struct ShadowSheetActionLabel: View {
 
   var body: some View {
     if showsSymbol {
-      Label(title, systemImage: systemImage).labelStyle(.iconOnly)
+      Label {
+        title
+      } icon: {
+        Image(systemName: systemImage)
+      }.labelStyle(.iconOnly)
     } else {
-      Text(title)
+      title
     }
   }
 }

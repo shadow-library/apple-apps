@@ -5,13 +5,16 @@ public struct ShadowTextEditor: View {
   private let placeholder: Text
   private let limit: Int?
   private let minHeight: CGFloat?
+  let maxHeight: CGFloat?
   private let counter: (ShadowCharacterCount) -> Text
 
-  public init(text: Binding<String>, placeholder: Text, limit: Int? = nil, minHeight: CGFloat? = nil, counter: @escaping (ShadowCharacterCount) -> Text) {
+  public init(text: Binding<String>, placeholder: Text, limit: Int? = nil, minHeight: CGFloat? = nil, maxHeight: CGFloat? = nil, counter: @escaping (ShadowCharacterCount) -> Text)
+  {
     _text = text
     self.placeholder = placeholder
     self.limit = limit
     self.minHeight = minHeight
+    self.maxHeight = maxHeight
     self.counter = counter
   }
 
@@ -33,13 +36,13 @@ public struct ShadowTextEditor: View {
       .lineSpacing(Spacing.space05)
       .padding(.horizontal, horizontalInset)
       .padding(.vertical, verticalInset)
-      .frame(maxWidth: .infinity, minHeight: minHeight, alignment: .topLeading)
+      .frame(maxWidth: .infinity, minHeight: minHeight, maxHeight: maxHeight, alignment: .topLeading)
       .hidden()
       .accessibilityHidden(true)
       .overlay {
         TextEditor(text: $text)
           .scrollContentBackground(.hidden)
-          .scrollDisabled(true)
+          .scrollDisabled(maxHeight == nil)
           .shadowFont(.body)
           .lineSpacing(Spacing.space05)
           .foregroundStyle(ShadowColor.textPrimary)

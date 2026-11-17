@@ -104,3 +104,19 @@ struct ShadowInputLogicTests {
     #expect(!ShadowTransferState.failed.isActive)
   }
 }
+
+@MainActor
+@Suite("Text editor height")
+struct ShadowTextEditorHeightTests {
+  @Test("should leave the height uncapped by default")
+  func uncapped() {
+    let editor = ShadowTextEditor(text: .constant(""), placeholder: Text(verbatim: "Notes")) { _ in Text(verbatim: "") }
+    #expect(editor.maxHeight == nil)
+  }
+
+  @Test("should keep the cap it is given")
+  func capped() {
+    let editor = ShadowTextEditor(text: .constant(""), placeholder: Text(verbatim: "Notes"), minHeight: 80, maxHeight: 200) { _ in Text(verbatim: "") }
+    #expect(editor.maxHeight == 200)
+  }
+}

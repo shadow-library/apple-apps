@@ -2,10 +2,6 @@ import Foundation
 import ShadowCore
 import ShadowStore
 
-private let titleLimitOnCreate = 255
-private let titleLimitOnEdit = 500
-private let notesCharacterLimit = 100_000
-private let notesWordLimit = 10_000
 private let wordTargetFloor = 500
 private let wordTargetCeiling = 6000
 
@@ -14,10 +10,10 @@ public enum Library {
   // new-novel.service.ts:41: the title is the name; the author's notes are written with the novel. The chat session of the reference belongs to the chat phase
   @discardableResult
   public static func create(_ input: NewNovel, id: UUID = UUID(), in transaction: inout WriteTransaction) throws(DomainError) -> UUID {
-    try requireAtMost(input.title, titleLimitOnCreate, field: "title")
+    try requireAtMost(input.title, LibraryLimits.titleCharactersOnCreate, field: "title")
     let title = input.title.jsTrim()
     try requireNonBlank(title, field: "title")
-    try requireAtMost(input.notes ?? "", notesCharacterLimit, field: "notes")
+    try requireAtMost(input.notes ?? "", LibraryLimits.notesCharacters, field: "notes")
     try requireWordTarget(input.wordTarget)
     let notes = try validNotes(input.notes ?? "")
     guard case .absent = try transaction.presence(NovelForgeKey.novel(id), as: NovelRecord.self) else { throw .novelExists(id) }
@@ -32,7 +28,7 @@ public enum Library {
   // project.service.ts:204: story fields and the title are trimmed and a blank clears them; the word target is checked as on create
   public static func edit(novel: UUID, _ changes: NovelChanges, in transaction: inout WriteTransaction) throws(DomainError) {
     guard !changes.isEmpty else { throw .noChanges }
-    if case .set(let title?) = changes.title { try requireAtMost(title, titleLimitOnEdit, field: "title") }
+    if case .set(let title?) = changes.title { try requireAtMost(title, LibraryLimits.titleCharactersOnEdit, field: "title") }
     if case .set(let target) = changes.wordTarget { try requireWordTarget(target) }
     try transaction.requireNovel(novel)
     var edit = NovelEdit()
@@ -61,7 +57,7 @@ public enum Library {
 
   // notes-store.service.ts:81: trimmed, held to 10,000 words; blank notes clear them. Identical notes write no revision
   public static func replaceNotes(novel: UUID, text: String, in transaction: inout WriteTransaction) throws(DomainError) {
-    try requireAtMost(text, notesCharacterLimit, field: "notes")
+    try requireAtMost(text, LibraryLimits.notesCharacters, field: "notes")
     let notes = try validNotes(text)
     try transaction.requireNovel(novel)
     switch try transaction.presence(AuthorNotesRecord.ref(novel: novel), as: AuthorNotesRecord.self) {
@@ -106,7 +102,7 @@ public enum Library {
   private static func validNotes(_ text: String) throws(DomainError) -> String {
     let notes = text.jsTrim()
     let words = ProseMetrics.countWords(notes)
-    guard words <= notesWordLimit else { throw .notesTooLong(words: words, maximum: notesWordLimit) }
+    guard words <= LibraryLimits.notesWords else { throw .notesTooLong(words: words, maximum: LibraryLimits.notesWords) }
     return notes
   }
 

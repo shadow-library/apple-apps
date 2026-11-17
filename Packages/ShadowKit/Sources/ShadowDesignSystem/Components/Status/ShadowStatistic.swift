@@ -40,14 +40,18 @@ public struct ShadowDeltaBadge: View {
 }
 
 public struct ShadowStatistic<Accessory: View>: View {
-  private let label: Text
+  let label: Text
   private let value: Text
   private let delta: ShadowDeltaBadge?
   private let caption: Text?
   private let accessory: Accessory
 
   public init(_ labelKey: LocalizedStringKey, value: Text, delta: ShadowDeltaBadge? = nil, caption: Text? = nil, @ViewBuilder accessory: () -> Accessory) {
-    label = Text(labelKey)
+    self.init(Text(labelKey), value: value, delta: delta, caption: caption, accessory: accessory)
+  }
+
+  public init(_ label: Text, value: Text, delta: ShadowDeltaBadge? = nil, caption: Text? = nil, @ViewBuilder accessory: () -> Accessory) {
+    self.label = label
     self.value = value
     self.delta = delta
     self.caption = caption
@@ -83,6 +87,10 @@ public struct ShadowStatistic<Accessory: View>: View {
 extension ShadowStatistic where Accessory == EmptyView {
   public init(_ labelKey: LocalizedStringKey, value: Text, delta: ShadowDeltaBadge? = nil, caption: Text? = nil) {
     self.init(labelKey, value: value, delta: delta, caption: caption) { EmptyView() }
+  }
+
+  public init(_ label: Text, value: Text, delta: ShadowDeltaBadge? = nil, caption: Text? = nil) {
+    self.init(label, value: value, delta: delta, caption: caption) { EmptyView() }
   }
 }
 

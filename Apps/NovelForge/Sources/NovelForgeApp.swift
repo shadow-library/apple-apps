@@ -15,6 +15,7 @@ struct NovelForgeApp: App {
           .frame(minWidth: 900, minHeight: 600)
         #endif
     }
+    .commands { NovelForgeCommands() }
   }
 
   private nonisolated static func locate() throws(VaultOpenError) -> StoreLocation {

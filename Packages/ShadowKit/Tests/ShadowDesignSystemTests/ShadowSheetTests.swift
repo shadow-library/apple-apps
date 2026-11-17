@@ -44,6 +44,26 @@ struct ShadowDismissGuardTests {
     #expect(!guardState.allowsInteractiveDismiss)
   }
 
+  @Test("should block every dismissal while busy and not ask to discard")
+  func busy() {
+    var guardState = ShadowDismissGuard(hasUnsavedChanges: true, isBusy: true)
+    #expect(!guardState.allowsInteractiveDismiss)
+    let dismissed = guardState.requestDismiss()
+    #expect(!dismissed)
+    #expect(!guardState.isConfirmingDiscard)
+    guardState.isBusy = false
+    guardState.hasUnsavedChanges = false
+    #expect(guardState.allowsInteractiveDismiss)
+  }
+
+  @Test("should block dismissal while busy even with nothing unsaved")
+  func busyClean() {
+    var guardState = ShadowDismissGuard(isBusy: true)
+    #expect(!guardState.allowsInteractiveDismiss)
+    let dismissed = guardState.requestDismiss()
+    #expect(!dismissed)
+  }
+
   @Test("should allow dismissing once the changes are saved")
   func saved() {
     var guardState = ShadowDismissGuard(hasUnsavedChanges: true)
