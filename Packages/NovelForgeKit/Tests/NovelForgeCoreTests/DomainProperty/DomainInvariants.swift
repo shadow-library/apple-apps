@@ -23,7 +23,7 @@ struct DomainInvariants {
     self.records = records
     self.derived = derived
     let violated = Set(derived.reveals.filter { $0.value.status == .violated }.keys)
-    chapters = ChapterOracle.states(records, violated: violated, acceptedDigests: derived.lifecycle.compactMapValues(\.differences))
+    chapters = ChapterOracle.states(records, violated: violated)
   }
 
   static func check(_ novels: [UUID], in transaction: ReadTransaction) throws -> [String] {
@@ -98,9 +98,11 @@ struct DomainInvariants {
       expect(entry?.resting == oracle.resting, "a chapter rests on its canon's draft revision or its draft head", at)
       expect(entry?.taught == (oracle.isFinal ? nil : oracle.teaches), "an unfinalized chapter teaches its plan's learns only while an approval carries them", at)
       expect(
-        entry?.stale.map(ChapterOracle.Cause.init) == oracle.stale, "a draft's stale mark is the first unaccepted difference from what it recorded",
+        entry?.stale.map(ChapterOracle.Cause.init) == oracle.stale, "a draft's stale mark and what changed is the first unaccepted difference from what it recorded",
         "\(at): \(String(describing: entry?.stale)) vs \(String(describing: oracle.stale))")
-      expect((entry?.differences == nil) == oracle.differences.isEmpty, "a draft records differences exactly when what it was written against changed", at)
+      expect(
+        entry?.differences == oracle.digest, "a draft's differences are the digest of what it was written against and no longer matches",
+        "\(at): \(String(describing: entry?.differences)) vs \(String(describing: oracle.digest))")
       let shown = "\(at): \(String(describing: derived.inForce[chapter]?.approval)) vs \(String(describing: oracle.inForce))"
       expect(derived.inForce[chapter]?.approval == oracle.inForce, "the approval in force names the current heads and matching plan terms", shown)
       expect(entry?.approval == oracle.inForce, "the lifecycle holds the approval in force", shown)
@@ -132,6 +134,9 @@ struct DomainInvariants {
       }
       expect(row.status == status, "a final chapter's knowledge is committed and an approved one's provisional", "\(pair) in chapter \(row.chapter)")
       expect(row.draftRevision == revision, "a contract row names the revision its chapter rests on", pair)
+      if let fact = records.secrets[row.fact] {
+        expect(isRevealed(fact, at: row.chapter), "a ledgered fact is revealed by the chapter that ledgers it", "\(pair) in chapter \(row.chapter)")
+      }
       let taught = contract.pov.contains { !$0.isEmpty } && contract.reveals.contains { $0.factKey == row.fact && $0.entityKey == row.entity }
       expect(taught, "a contract row is taught by its chapter's contract", "\(pair) in chapter \(row.chapter)")
       let fact = records.created[SecretRecord.ref(novel: novel, secret: row.fact)]
@@ -148,15 +153,14 @@ struct DomainInvariants {
   }
 
   /// The rows the ledger must hold: for each final chapter and chapter with an approval in force, ascending, each learn of its POV contract whose fact is
-  /// live, has no unlock condition and is revealed by then, whose learner is live, both created by the cutoff, and not manual, retracted or ledgered earlier.
+  /// live and revealed by then, whose learner is live, both created by the cutoff, and not manual, retracted or ledgered earlier.
   private func requiredKnowledge(manual: Set<String>) -> [String: (Int, KnowledgeStatus)] {
     var required = [String: (Int, KnowledgeStatus)]()
     for chapter in chapters.keys.sorted() {
       guard let (contract, cutoff, _, status) = contributor(of: chapter), let cutoff, contract.pov.contains(where: { !$0.isEmpty }) else { continue }
       for learn in contract.reveals {
         let pair = NovelRecords.pair(learn.factKey, learn.entityKey)
-        guard let fact = records.secrets[learn.factKey], fact.unlock == nil, records.entities.contains(learn.entityKey) else { continue }
-        guard fact.source == .known(.seed) || fact.revealChapter.map({ $0 <= chapter }) == true else { continue }
+        guard let fact = records.secrets[learn.factKey], records.entities.contains(learn.entityKey), isRevealed(fact, at: chapter) else { continue }
         let created = [SecretRecord.ref(novel: novel, secret: learn.factKey), EntityRecord.ref(novel: novel, entity: learn.entityKey)].map { records.created[$0] }
         guard created.allSatisfy({ $0.map { $0 <= cutoff } == true }), !manual.contains(pair), !records.retracted.contains(pair), required[pair] == nil else { continue }
         required[pair] = (chapter, status)
@@ -219,21 +223,38 @@ struct DomainInvariants {
       expect((verdict.status == .settled) == (chapter <= records.frontier), "only a plan after the latest final chapter is judged", "chapter \(chapter)")
       let expected = records.contract(of: chapter)?.isEnding == true && chapter != latest ? latest : nil
       expect(verdict.rivalEnding == expected, "a rival ending is flagged and resolved to the latest", "chapter \(chapter): \(String(describing: verdict.rivalEnding))")
-      guard chapter > records.frontier, let plan = records.plans[chapter], let breaks = breaksRevealRule(plan, at: chapter) else { continue }
-      expect(verdict.status == (breaks ? .violated : .holds), "a plan teaching a fact before its reveal chapter breaks the reveal rule", "chapter \(chapter): \(verdict.status)")
+      guard chapter > records.frontier, let plan = records.plans[chapter] else { continue }
+      let breaks = breaksRevealRule(plan, at: chapter)
+      expect(verdict.status == (breaks ? .violated : .holds), "a plan teaching a fact before it is revealed breaks the reveal rule", "chapter \(chapter): \(verdict.status)")
     }
   }
 
-  /// Whether a plan teaches a live fact before it is revealed; nil when a fact it teaches has an unlock condition, which this oracle does not evaluate.
-  private func breaksRevealRule(_ plan: ChapterContract, at chapter: Int) -> Bool? {
+  private func breaksRevealRule(_ plan: ChapterContract, at chapter: Int) -> Bool {
     guard plan.pov.contains(where: { !$0.isEmpty }) else { return false }
-    var breaks = false
-    for learn in plan.reveals {
-      guard let fact = records.secrets[learn.factKey] else { continue }
-      guard fact.unlock == nil else { return nil }
-      if fact.source != .known(.seed), fact.revealChapter.map({ $0 > chapter }) ?? true { breaks = true }
+    return plan.reveals.contains { learn in records.secrets[learn.factKey].map { !isRevealed($0, at: chapter) } ?? false }
+  }
+
+  /// A fact is revealed at a chapter once its reveal chapter, if any, has come and, if it has an unlock condition, every milestone it names has been claimed by
+  /// a chapter up to that one, a final chapter's canon or a plan, the chapter's own claims included (reveal-rule.ts:66); a seed without a condition always is.
+  private func isRevealed(_ fact: SecretRecord, at chapter: Int) -> Bool {
+    let dated = fact.revealChapter.map { $0 <= chapter }
+    switch fact.unlock {
+    case nil, .null?:
+      return fact.source == .known(.seed) || dated == true
+    case let unlock?:
+      guard let keys = Self.milestones(of: unlock) else {
+        expect(false, "the universe writes only milestone unlock conditions", fact.secret)
+        return false
+      }
+      let reached = Set(records.worldChapters.filter { $0 <= chapter }.flatMap { records.contract(of: $0)?.claimedMilestones ?? [] })
+      return dated != false && keys.allSatisfy(reached.contains)
     }
-    return breaks
+  }
+
+  private static func milestones(of unlock: JSONValue) -> [String]? {
+    guard let terms = unlock.objectValue?["all"]?.arrayValue else { return nil }
+    let keys = terms.compactMap { $0.objectValue?["milestone"]?.stringValue }
+    return keys.count == terms.count ? keys : nil
   }
 
   // The active volume is the first unmet one after the last met one, in (ordinal, key) order; at most one is active.
@@ -264,16 +285,20 @@ struct DomainInvariants {
       guard let latest = group.last else { continue }
       for claimed in [target] + group.dropLast().map(\.record.id) { claimants[claimed, default: []].append(latest) }
     }
-    let withdrawn = Set(records.withdrawals.map(\.record.entry).filter(ids.contains))
+    var withdrawals = [UUID: UUID]()
+    for appended in records.withdrawals where ids.contains(appended.record.entry) && withdrawals[appended.record.entry] == nil {
+      withdrawals[appended.record.entry] = appended.record.id
+    }
     expect(Set(derived.notebook.keys) == ids, "a Notebook state per entry")
     for entry in records.entries {
       let id = entry.record.id
       let successor = claimants[id]?.max { NotebookEntryRecord.chronologically($0, $1) }?.record.id
-      let status: LedgerEntryStatus = withdrawn.contains(id) ? .withdrawn : successor == nil ? .active : .superseded
+      let status: LedgerEntryStatus = withdrawals[id] != nil ? .withdrawn : successor == nil ? .active : .superseded
       let row = derived.notebook[id]
       expect(
         row?.successor == successor && row?.status == status, "the latest of concurrent supersedes succeeds the entry",
         "\(id.uuidString.prefix(8)) \(String(describing: row?.status))")
+      expect(row?.withdrawal == withdrawals[id], "the earliest withdrawal of an entry labels it", "\(id.uuidString.prefix(8)) \(String(describing: row?.withdrawal))")
     }
     for (target, group) in children {
       let active = group.filter { derived.notebook[$0.record.id]?.status == .active }

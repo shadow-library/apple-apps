@@ -11,6 +11,8 @@ struct NovelRecords {
   let exists: Bool
   var finals: [Int: FinalChapterRecord] = [:]
   var heads: [Int: String] = [:]
+  /// The stored source of each live draft's head.
+  var sources: [Int: String] = [:]
   /// What each live draft's head revision records it was written against; nil when it records nothing readable.
   var upstreams: [Int: DraftUpstream?] = [:]
   var plans: [Int: ChapterContract] = [:]
@@ -55,6 +57,7 @@ struct NovelRecords {
       records.note("draft", entry.record.ref, try DraftRecord.ref(novel: novel, chapter: entry.record.chapter), "\(entry.record.chapter)")
       guard !entry.isRemoved, case .revisioned(let state)? = try transaction.state(of: entry.record.ref, scope: .vault), let head = state.headRevision else { continue }
       records.heads[entry.record.chapter] = head
+      records.sources[entry.record.chapter] = entry.record.content.source.rawValue
       records.upstreams[entry.record.chapter] = .some(entry.record.content.upstream)
     }
     for entry in try ChapterPlanRecord.listing(novel: novel, in: transaction).entries {
