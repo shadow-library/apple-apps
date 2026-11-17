@@ -150,7 +150,8 @@ enum CrashWorld {
       anthropic: standard, openRouter: unrestricted, credentials: CrashCredentials(), store: store, requestGuard: { ModelRequestGuard.hardLine(for: $0) })
     let timing = ChatTurnEngine.Timing(flushInterval: flush, monotonic: { ProcessInfo.processInfo.systemUptime * 1000 }, now: { Date() })
     return ChatTurnEngine(
-      store: store, router: { router }, consent: consent, upkeep: upkeep ?? RecordedUpkeep().seam, timing: timing, faults: faults)
+      store: store, router: { router }, consent: consent, upkeep: upkeep ?? RecordedUpkeep().seam, timing: timing, faults: faults,
+      unrestrictedAvailable: true)
   }
 
   /// The session upkeep of the vault, raising `named` once a naming finished.

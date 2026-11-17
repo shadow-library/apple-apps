@@ -1,6 +1,17 @@
 {
   "sourceLanguage": "en",
   "strings": {
+    "Chat": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Chat"
+          }
+        }
+      }
+    },
     "Choose a novel": {
       "extractionState": "manual",
       "localizations": {

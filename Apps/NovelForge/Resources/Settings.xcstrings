@@ -56,6 +56,17 @@
         }
       }
     },
+    "AI Settings": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "AI Settings"
+          }
+        }
+      }
+    },
     "AI provider": {
       "extractionState": "manual",
       "localizations": {
@@ -195,6 +206,17 @@
           "stringUnit": {
             "state": "translated",
             "value": "Don't Allow"
+          }
+        }
+      }
+    },
+    "Done": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Done"
           }
         }
       }
@@ -668,6 +690,17 @@
           "stringUnit": {
             "state": "translated",
             "value": "This request needs a newer version of Novel Forge."
+          }
+        }
+      }
+    },
+    "To answer a request, Novel Forge sends the parts of your novel it needs, such as chapter text, story bible entries and notes, together with your message, the earlier conversation in that chat (your messages, its replies and summaries of older turns) and, when the model asks for them, your AI usage and spending figures, to %@. %@ processes them under its own terms.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "To answer a request, Novel Forge sends the parts of your novel it needs, such as chapter text, story bible entries and notes, together with your message, the earlier conversation in that chat (your messages, its replies and summaries of older turns) and, when the model asks for them, your AI usage and spending figures, to %@. %@ processes them under its own terms."
           }
         }
       }

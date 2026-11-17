@@ -3,8 +3,8 @@ import ShadowCore
 import ShadowStore
 
 /// Whether this build can write unrestricted text: store builds ship without it until App Review accepts it, so no apply raises a plan to unrestricted.
-enum UnrestrictedWriting {
-  static let isAvailable = false
+public enum UnrestrictedWriting {
+  public static let isAvailable = false
 }
 
 // apps/novel-forge-server/src/modules/refinement/proposal-apply.service.ts:36-44

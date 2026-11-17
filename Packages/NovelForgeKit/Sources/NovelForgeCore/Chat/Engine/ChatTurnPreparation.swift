@@ -62,9 +62,11 @@ extension ChatTurnEngine {
     if snapshot.message == nil, snapshot.content.jsTrim().isEmpty, snapshot.contexts.isEmpty { throw .emptyMessage }
 
     let novelMode = snapshot.novel.contentMode.known ?? .unrestricted
-    let selection = chatSelection(
-      ChatSelectionOverride(contentMode: snapshot.choices.contentMode, costTier: snapshot.choices.pace),
-      project: ChatProjectConfig(contentMode: snapshot.novel.contentMode.known, costTier: snapshot.novel.costTier.known))
+    let selection = try available(
+      chatSelection(
+        ChatSelectionOverride(contentMode: snapshot.choices.contentMode, costTier: snapshot.choices.pace),
+        project: ChatProjectConfig(contentMode: snapshot.novel.contentMode.known, costTier: snapshot.novel.costTier.known)),
+      authored: authored, asked: snapshot.choices.contentMode)
     let compacted = try await compact(session, selection: selection, novelMode: novelMode, router: router)
 
     // chat.service.ts:284, :414-423
@@ -147,17 +149,30 @@ extension ChatTurnEngine {
     return ChatTurnPrepared(basis: basis, message: message, call: call)
   }
 
+  /// Orchestrator decision 5, while the build cannot write unrestricted text: a new message that only follows an unrestricted novel is written standard,
+  /// and one that asks for unrestricted writing, or an earlier message whose turn would be unrestricted, is refused as the reference refuses an
+  /// unavailable mode (chat.dto.ts:502, AI_024). Answer, retry and resume start from a basis this check made, so none of them can run unrestricted.
+  private func available(_ selection: ChatSelection, authored: ChatTurnAuthored, asked: ContentMode?) throws(ChatTurnError) -> ChatSelection {
+    guard selection.contentMode == .unrestricted, !unrestrictedAvailable else { return selection }
+    guard case .new = authored, asked != .unrestricted else { throw .unrestrictedUnavailable }
+    return ChatSelection(contentMode: .standard, costTier: selection.costTier)
+  }
+
   // chat.service.ts:282; a compaction that cannot run fails the turn before its message is saved, as the reference's does before its run exists
   private func compact(_ session: UUID, selection: ChatSelection, novelMode: ContentMode, router: TaskRouter) async throws(ChatTurnError)
     -> (window: ChatConversationWindow, calls: [UUID])
   {
-    let turn = ChatCompactionTurn(contentMode: selection.contentMode, novelMode: novelMode, pace: selection.costTier.pace, consent: consent)
+    // decision 5: a novel's unrestricted mode alone never raises a fold here; text the session holds still does, and the fold is then refused
+    let turn = ChatCompactionTurn(
+      contentMode: selection.contentMode, novelMode: unrestrictedAvailable ? novelMode : .standard, pace: selection.costTier.pace, consent: consent,
+      unrestrictedAvailable: unrestrictedAvailable)
     let result: ChatCompactionResult
     do {
       result = try await ChatCompaction.compactIfNeeded(session: session, turn: turn, store: store, router: router)
     } catch {
       if case .routing(let routing) = error { throw .routing(routing) }
       if case .store(let store) = error { throw .store(store) }
+      if case .unrestrictedUnavailable = error { throw .unrestrictedUnavailable }
       throw .conversationUnavailable(code: error.code, message: error.errorDescription ?? error.code)
     }
     switch result.outcome {

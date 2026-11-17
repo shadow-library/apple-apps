@@ -93,11 +93,13 @@ enum EngineWorld {
 
   static func engine(
     _ store: VaultStore, provider: ScriptedModelProvider, upkeep: RecordedUpkeep = RecordedUpkeep(), now: @escaping @Sendable () -> Date = { Date() },
-    faults: ChatTurnEngine.Faults = .none
+    faults: ChatTurnEngine.Faults = .none, unrestrictedAvailable: Bool = true
   ) async throws -> ChatTurnEngine {
     let router = try await CompactionWorld.router(provider, store: store)
     let timing = ChatTurnEngine.Timing(flushInterval: .seconds(3_600), monotonic: { ProcessInfo.processInfo.systemUptime * 1000 }, now: now)
-    return ChatTurnEngine(store: store, router: { router }, consent: CompactionWorld.consent, upkeep: upkeep.seam, timing: timing, faults: faults)
+    return ChatTurnEngine(
+      store: store, router: { router }, consent: CompactionWorld.consent, upkeep: upkeep.seam, timing: timing, faults: faults,
+      unrestrictedAvailable: unrestrictedAvailable)
   }
 
   /// `fault` at `point`, the first `times` times the run reaches it.

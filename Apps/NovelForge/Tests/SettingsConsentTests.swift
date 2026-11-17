@@ -7,7 +7,7 @@ import Testing
 @MainActor
 @Suite("Consent")
 struct SettingsConsentTests {
-  private let request = AIConsentRequest(provider: .anthropic, host: "api.anthropic.com", dataClass: "novel-text", disclosure: "novel-text/v1")
+  private let request = AIConsentRequest(provider: .anthropic, host: "api.anthropic.com", dataClass: "novel-text", disclosure: "novel-text/v2")
 
   @Test("should map a stable disclosure id to localised text naming the provider")
   func shouldMapTheNovelTextDisclosureToItsText() throws {
@@ -16,13 +16,13 @@ struct SettingsConsentTests {
     #expect(disclosure == .novelText)
     #expect(disclosure.explanation(provider: "Anthropic").contains("Anthropic"))
     #expect(!disclosure.title.isEmpty)
-    #expect(disclosure.requirement == AIConsentRequirement(dataClass: "novel-text", disclosure: "novel-text/v1"))
+    #expect(disclosure.requirement == AIConsentRequirement(dataClass: "novel-text", disclosure: "novel-text/v2"))
   }
 
   @Test("should not map an unknown disclosure id or a mismatched data class")
   func shouldNotMapAnUnknownDisclosureOrMismatchedDataClass() {
     #expect(ConsentDisclosure(AIConsentRequest(provider: .anthropic, host: "api.anthropic.com", dataClass: "novel-text", disclosure: "novel-text/v9")) == nil)
-    #expect(ConsentDisclosure(AIConsentRequest(provider: .anthropic, host: "api.anthropic.com", dataClass: "other", disclosure: "novel-text/v1")) == nil)
+    #expect(ConsentDisclosure(AIConsentRequest(provider: .anthropic, host: "api.anthropic.com", dataClass: "other", disclosure: "novel-text/v2")) == nil)
   }
 
   @Test("should record consent, list it, and revoke it")

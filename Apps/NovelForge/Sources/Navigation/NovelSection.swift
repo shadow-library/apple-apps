@@ -6,6 +6,7 @@ enum NovelSection: String, CaseIterable, Hashable, Identifiable {
   case story
   case storyBible
   case notebook
+  case chat
 
   var id: Self { self }
 
@@ -16,6 +17,7 @@ enum NovelSection: String, CaseIterable, Hashable, Identifiable {
     case .story: LocalizedStringResource("Story", table: "Navigation")
     case .storyBible: LocalizedStringResource("Story Bible", table: "Navigation")
     case .notebook: LocalizedStringResource("Notebook", table: "Navigation")
+    case .chat: LocalizedStringResource("Chat", table: "Navigation")
     }
   }
 
@@ -26,6 +28,7 @@ enum NovelSection: String, CaseIterable, Hashable, Identifiable {
     case .story: "list.bullet.rectangle"
     case .storyBible: "books.vertical"
     case .notebook: "note.text"
+    case .chat: "bubble.left.and.text.bubble.right"
     }
   }
 }

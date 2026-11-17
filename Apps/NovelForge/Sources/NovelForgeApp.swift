@@ -10,12 +10,15 @@ struct NovelForgeApp: App {
   #endif
   @State private var vault = VaultModel(locate: Self.locate)
   @State private var ai = AIServices.live()
+  @State private var chats = ChatRuntimes()
 
   var body: some Scene {
     WindowGroup {
       RootView(vault: vault)
         .environment(ai)
+        .environment(chats)
         .task { await ai.loadOpenRouterModelsIfKeyed() }
+        .task(id: vault.store.map(ObjectIdentifier.init)) { await chats.launch(vault.store, services: ai) }
         .shadowTheme()
         .flushingUnsavedWork()
         #if os(macOS)

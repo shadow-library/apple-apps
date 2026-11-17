@@ -1,0 +1,1864 @@
+{
+  "sourceLanguage": "en",
+  "strings": {
+    "%@ page": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ page"
+          }
+        }
+      }
+    },
+    "%@ plot threads": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ plot threads"
+          }
+        }
+      }
+    },
+    "%lld couldn't be read": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld couldn't be read"
+          }
+        }
+      }
+    },
+    "%lld messages cannot be read by this version": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld message cannot be read by this version"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld messages cannot be read by this version"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "A chapter draft": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A chapter draft"
+          }
+        }
+      }
+    },
+    "A chapter plan": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A chapter plan"
+          }
+        }
+      }
+    },
+    "A chat is where you ask Forge to read, plan or rewrite anything in this novel.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A chat is where you ask Forge to read, plan or rewrite anything in this novel."
+          }
+        }
+      }
+    },
+    "A chat title is at most %lld characters.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "A chat title is at most %lld character."
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "A chat title is at most %lld characters."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "A message carries at most %lld passage comments.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "A message carries at most %lld passage comment."
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "A message carries at most %lld passage comments."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "A message is at most %lld characters.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "A message is at most %lld character."
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "A message is at most %lld characters."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "A passage you commented on changed. Select it again.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A passage you commented on changed. Select it again."
+          }
+        }
+      }
+    },
+    "A profile": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A profile"
+          }
+        }
+      }
+    },
+    "A repair request, after an answer that could not be used.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A repair request, after an answer that could not be used."
+          }
+        }
+      }
+    },
+    "A reply is already being written in this chat.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A reply is already being written in this chat."
+          }
+        }
+      }
+    },
+    "A volume plan": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A volume plan"
+          }
+        }
+      }
+    },
+    "AI spending limit reached": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "AI spending limit reached"
+          }
+        }
+      }
+    },
+    "Active %lld": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Active %lld"
+          }
+        }
+      }
+    },
+    "Add credit with the provider, then try again.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Add credit with the provider, then try again."
+          }
+        }
+      }
+    },
+    "Add your key in AI settings, then try again.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Add your key in AI settings, then try again."
+          }
+        }
+      }
+    },
+    "Answer Here": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Answer Here"
+          }
+        }
+      }
+    },
+    "Archive Chat": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Archive Chat"
+          }
+        }
+      }
+    },
+    "Archived %lld": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Archived %lld"
+          }
+        }
+      }
+    },
+    "Archiving a chat takes it off the active list without deleting anything it changed.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Archiving a chat takes it off the active list without deleting anything it changed."
+          }
+        }
+      }
+    },
+    "Attempt": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Attempt"
+          }
+        }
+      }
+    },
+    "Being answered on another device": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Being answered on another device"
+          }
+        }
+      }
+    },
+    "Cached up to here": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cached up to here"
+          }
+        }
+      }
+    },
+    "Cancel": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cancel"
+          }
+        }
+      }
+    },
+    "Canon facts": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Canon facts"
+          }
+        }
+      }
+    },
+    "Changed your story": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Changed your story"
+          }
+        }
+      }
+    },
+    "Chapter %lld draft": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Chapter %lld draft"
+          }
+        }
+      }
+    },
+    "Chapter %lld plan": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Chapter %lld plan"
+          }
+        }
+      }
+    },
+    "Chapter summaries": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Chapter summaries"
+          }
+        }
+      }
+    },
+    "Chat Actions": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Chat Actions"
+          }
+        }
+      }
+    },
+    "Chat status": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Chat status"
+          }
+        }
+      }
+    },
+    "Chat title": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Chat title"
+          }
+        }
+      }
+    },
+    "Chats are unavailable": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Chats are unavailable"
+          }
+        }
+      }
+    },
+    "Check your key in AI settings.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Check your key in AI settings."
+          }
+        }
+      }
+    },
+    "Close": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Close"
+          }
+        }
+      }
+    },
+    "Comments on %lld passages": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Comments on %lld passage"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Comments on %lld passages"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "Couldn't reach the model": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Couldn't reach the model"
+          }
+        }
+      }
+    },
+    "Couldn't read %lld sources": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Couldn't read %lld source"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Couldn't read %lld sources"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "Delete Chat": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Delete Chat"
+          }
+        }
+      }
+    },
+    "Delete Chat…": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Delete Chat…"
+          }
+        }
+      }
+    },
+    "Delete “%@”?": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Delete “%@”?"
+          }
+        }
+      }
+    },
+    "Effort": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Effort"
+          }
+        }
+      }
+    },
+    "Every conversation with Forge about this novel.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Every conversation with Forge about this novel."
+          }
+        }
+      }
+    },
+    "Forge reads every part of “%@”. Clear instructions in your own words apply at once and can be undone; its own ideas wait for your yes.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Forge reads every part of “%@”. Clear instructions in your own words apply at once and can be undone; its own ideas wait for your yes."
+          }
+        }
+      }
+    },
+    "Forge reads every part of “%@”. This chat is manual: every change waits for your yes.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Forge reads every part of “%@”. This chat is manual: every change waits for your yes."
+          }
+        }
+      }
+    },
+    "History": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "History"
+          }
+        }
+      }
+    },
+    "Inspect Request": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Inspect Request"
+          }
+        }
+      }
+    },
+    "It asks for unrestricted writing, which this version cannot do.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "It asks for unrestricted writing, which this version cannot do."
+          }
+        }
+      }
+    },
+    "It crossed a hard line, so nothing it wrote was kept.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "It crossed a hard line, so nothing it wrote was kept."
+          }
+        }
+      }
+    },
+    "It didn't respond. Try again shortly.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "It didn't respond. Try again shortly."
+          }
+        }
+      }
+    },
+    "It replied, but not in a shape that could be used.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "It replied, but not in a shape that could be used."
+          }
+        }
+      }
+    },
+    "It stopped when the app left the screen. Resume it from its last saved step.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "It stopped when the app left the screen. Resume it from its last saved step."
+          }
+        }
+      }
+    },
+    "Its reply appears here when it arrives. Answer here to write a reply on this device as well; both stay in the chat.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Its reply appears here when it arrives. Answer here to write a reply on this device as well; both stay in the chat."
+          }
+        }
+      }
+    },
+    "Leave it empty to use the name Novel Forge gave it.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Leave it empty to use the name Novel Forge gave it."
+          }
+        }
+      }
+    },
+    "Looked something up": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Looked something up"
+          }
+        }
+      }
+    },
+    "Looking something up": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Looking something up"
+          }
+        }
+      }
+    },
+    "Message": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Message"
+          }
+        }
+      }
+    },
+    "Message Forge": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Message Forge"
+          }
+        }
+      }
+    },
+    "Model": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Model"
+          }
+        }
+      }
+    },
+    "Model calls are paused until the limit resets or you raise it.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Model calls are paused until the limit resets or you raise it."
+          }
+        }
+      }
+    },
+    "New Chat": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "New Chat"
+          }
+        }
+      }
+    },
+    "New chat": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "New chat"
+          }
+        }
+      }
+    },
+    "No AI key is set up": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No AI key is set up"
+          }
+        }
+      }
+    },
+    "No archived chats": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No archived chats"
+          }
+        }
+      }
+    },
+    "No chats yet": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No chats yet"
+          }
+        }
+      }
+    },
+    "No model can take this right now": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No model can take this right now"
+          }
+        }
+      }
+    },
+    "No request kept on this device": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No request kept on this device"
+          }
+        }
+      }
+    },
+    "Notes from ¶%lld": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Notes from ¶%lld"
+          }
+        }
+      }
+    },
+    "Notes mentioning %@": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Notes mentioning %@"
+          }
+        }
+      }
+    },
+    "Notes, part %lld": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Notes, part %lld"
+          }
+        }
+      }
+    },
+    "Nothing can serve this call at this novel's pace right now.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nothing can serve this call at this novel's pace right now."
+          }
+        }
+      }
+    },
+    "Nothing was sent to the model.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nothing was sent to the model."
+          }
+        }
+      }
+    },
+    "Novel Forge needs your permission first": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Novel Forge needs your permission first"
+          }
+        }
+      }
+    },
+    "Novel Forge will not send this message: it crosses a hard line.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Novel Forge will not send this message: it crosses a hard line."
+          }
+        }
+      }
+    },
+    "OK": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "OK"
+          }
+        }
+      }
+    },
+    "Only the device that wrote a reply keeps its request, and only for the chat's latest turns.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Only the device that wrote a reply keeps its request, and only for the chat's latest turns."
+          }
+        }
+      }
+    },
+    "Output limit": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Output limit"
+          }
+        }
+      }
+    },
+    "Plot threads": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Plot threads"
+          }
+        }
+      }
+    },
+    "Preparing %lld suggestions": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Preparing %lld suggestion"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Preparing %lld suggestions"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "Profile of %@": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Profile of %@"
+          }
+        }
+      }
+    },
+    "Read %lld sources": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Read %lld source"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Read %lld sources"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "Reading %@": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reading %@"
+          }
+        }
+      }
+    },
+    "Rename": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Rename"
+          }
+        }
+      }
+    },
+    "Rename Chat": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Rename Chat"
+          }
+        }
+      }
+    },
+    "Rename Chat…": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Rename Chat…"
+          }
+        }
+      }
+    },
+    "Request": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Request"
+          }
+        }
+      }
+    },
+    "Resume": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Resume"
+          }
+        }
+      }
+    },
+    "Saving %lld changes to your Story Bible": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Saving %lld change to your Story Bible"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Saving %lld changes to your Story Bible"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "Send": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Send"
+          }
+        }
+      }
+    },
+    "Sent": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sent"
+          }
+        }
+      }
+    },
+    "Show Earlier Messages": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Show Earlier Messages"
+          }
+        }
+      }
+    },
+    "Something went wrong": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Something went wrong"
+          }
+        }
+      }
+    },
+    "Something went wrong.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Something went wrong."
+          }
+        }
+      }
+    },
+    "Start a new chat, or shorten your message and the passages it quotes, then send it again.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Start a new chat, or shorten your message and the passages it quotes, then send it again."
+          }
+        }
+      }
+    },
+    "Stop": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Stop"
+          }
+        }
+      }
+    },
+    "Stopped after %@": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Stopped after %@"
+          }
+        }
+      }
+    },
+    "Story Bible page": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Story Bible page"
+          }
+        }
+      }
+    },
+    "Suggested changes": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Suggested changes"
+          }
+        }
+      }
+    },
+    "Summaries of chapters %lld–%lld": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Summaries of chapters %lld–%lld"
+          }
+        }
+      }
+    },
+    "Summary of chapter %lld": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Summary of chapter %lld"
+          }
+        }
+      }
+    },
+    "Switch to Standard, or send without Unrestricted, to keep writing.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Switch to Standard, or send without Unrestricted, to keep writing."
+          }
+        }
+      }
+    },
+    "System %lld": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "System %lld"
+          }
+        }
+      }
+    },
+    "That chapter is isolated, so its passages cannot be sent to the chat. Remove the comment.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "That chapter is isolated, so its passages cannot be sent to the chat. Remove the comment."
+          }
+        }
+      }
+    },
+    "That turn didn't finish": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "That turn didn't finish"
+          }
+        }
+      }
+    },
+    "The app closed while it was being written.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The app closed while it was being written."
+          }
+        }
+      }
+    },
+    "The conversation and its full history are removed on every device. Changes it already made or suggested are kept.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The conversation and its full history are removed on every device. Changes it already made or suggested are kept."
+          }
+        }
+      }
+    },
+    "The earlier conversation could not be read, so nothing was sent.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The earlier conversation could not be read, so nothing was sent."
+          }
+        }
+      }
+    },
+    "The model's answer came back unreadable": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The model's answer came back unreadable"
+          }
+        }
+      }
+    },
+    "The provider account has run out of credit": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The provider account has run out of credit"
+          }
+        }
+      }
+    },
+    "The provider did not accept your key": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The provider did not accept your key"
+          }
+        }
+      }
+    },
+    "The request could not be read": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The request could not be read"
+          }
+        }
+      }
+    },
+    "They are not up to date on this device yet. Try again after syncing.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "They are not up to date on this device yet. Try again after syncing."
+          }
+        }
+      }
+    },
+    "Thinking": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Thinking"
+          }
+        }
+      }
+    },
+    "This chat cannot be read by this version": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This chat cannot be read by this version"
+          }
+        }
+      }
+    },
+    "This chat could not be found. It may have been deleted on another device.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This chat could not be found. It may have been deleted on another device."
+          }
+        }
+      }
+    },
+    "This chat could not be read": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This chat could not be read"
+          }
+        }
+      }
+    },
+    "This chat could not be saved.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This chat could not be saved."
+          }
+        }
+      }
+    },
+    "This chat is archived.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This chat is archived."
+          }
+        }
+      }
+    },
+    "This chat is archived. Unarchive it to keep chatting.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This chat is archived. Unarchive it to keep chatting."
+          }
+        }
+      }
+    },
+    "This chat is stored in a form this version cannot read, so it cannot be changed here.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This chat is stored in a form this version cannot read, so it cannot be changed here."
+          }
+        }
+      }
+    },
+    "This conversation is too long for one request": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This conversation is too long for one request"
+          }
+        }
+      }
+    },
+    "This message cannot be answered on this device.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This message cannot be answered on this device."
+          }
+        }
+      }
+    },
+    "This message cannot be read by this version.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This message cannot be read by this version."
+          }
+        }
+      }
+    },
+    "This one's taking longer than usual. The model is still answering.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This one's taking longer than usual. The model is still answering."
+          }
+        }
+      }
+    },
+    "This reply can no longer be tried again.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This reply can no longer be tried again."
+          }
+        }
+      }
+    },
+    "This reply was held back": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This reply was held back"
+          }
+        }
+      }
+    },
+    "This reply was interrupted": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This reply was interrupted"
+          }
+        }
+      }
+    },
+    "Too many model calls right now": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Too many model calls right now"
+          }
+        }
+      }
+    },
+    "Try Again": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Try Again"
+          }
+        }
+      }
+    },
+    "Try again to choose whether to send this.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Try again to choose whether to send this."
+          }
+        }
+      }
+    },
+    "Unarchive": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Unarchive"
+          }
+        }
+      }
+    },
+    "Unarchive Chat": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Unarchive Chat"
+          }
+        }
+      }
+    },
+    "Unrestricted": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Unrestricted"
+          }
+        }
+      }
+    },
+    "Unrestricted writing isn't available in this version. Send it as standard writing instead.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Unrestricted writing isn't available in this version. Send it as standard writing instead."
+          }
+        }
+      }
+    },
+    "Unrestricted writing isn't available right now": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Unrestricted writing isn't available right now"
+          }
+        }
+      }
+    },
+    "Usage figures": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Usage figures"
+          }
+        }
+      }
+    },
+    "Volume plan: %@": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Volume plan: %@"
+          }
+        }
+      }
+    },
+    "Wait a moment, then try again.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Wait a moment, then try again."
+          }
+        }
+      }
+    },
+    "What are we working on?": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "What are we working on?"
+          }
+        }
+      }
+    },
+    "What this reply's turn last sent to the model.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "What this reply's turn last sent to the model."
+          }
+        }
+      }
+    },
+    "Worked %@": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Worked %@"
+          }
+        }
+      }
+    },
+    "Write a message before sending.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Write a message before sending."
+          }
+        }
+      }
+    },
+    "Writing": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Writing"
+          }
+        }
+      }
+    },
+    "Your AI spend could not be checked": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your AI spend could not be checked"
+          }
+        }
+      }
+    },
+    "Your chats could not be read": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your chats could not be read"
+          }
+        }
+      }
+    },
+    "Your message is saved.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your message is saved."
+          }
+        }
+      }
+    },
+    "Your notes": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your notes"
+          }
+        }
+      }
+    },
+    "cost pending": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "cost pending"
+          }
+        }
+      }
+    },
+    "couldn't be read": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "couldn't be read"
+          }
+        }
+      }
+    },
+    "manual": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "manual"
+          }
+        }
+      }
+    },
+    "open": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "open"
+          }
+        }
+      }
+    },
+    "read": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "read"
+          }
+        }
+      }
+    },
+    "read %lld sources": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "read %lld source"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "read %lld sources"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "reading": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "reading"
+          }
+        }
+      }
+    },
+    "this novel": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "this novel"
+          }
+        }
+      }
+    }
+  },
+  "version": "1.0"
+}

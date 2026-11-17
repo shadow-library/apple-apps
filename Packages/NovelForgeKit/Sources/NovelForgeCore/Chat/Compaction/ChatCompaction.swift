@@ -4,12 +4,14 @@ import ShadowAI
 import ShadowCore
 import ShadowStore
 
-/// The turn a compaction runs before: its content mode and the novel's raise the fold, its pace routes it.
+/// The turn a compaction runs before: its content mode and the novel's raise the fold, its pace routes it; without unrestricted writing a fold that
+/// would be unrestricted is refused rather than sent.
 struct ChatCompactionTurn: Equatable, Sendable {
   let contentMode: ContentMode
   let novelMode: ContentMode
   let pace: Pace
   let consent: AIConsentRequirement
+  let unrestrictedAvailable: Bool
 }
 
 enum ChatFoldOutcome: Equatable, Sendable {
@@ -32,6 +34,8 @@ enum ChatCompactionError: ShadowError {
   /// `callIDs` are the ledger ids of the requests the failed fold made, so their spend can be attributed.
   case model(StructuredError, callIDs: [UUID])
   case record(ChatRecordError)
+  /// The fold would be unrestricted, which this build cannot write; nothing was sent.
+  case unrestrictedUnavailable
 
   var code: String {
     switch self {
@@ -40,6 +44,7 @@ enum ChatCompactionError: ShadowError {
     case .routing(let error): error.code
     case .model(let error, _): error.code
     case .record(let error): error.code
+    case .unrestrictedUnavailable: "AI_024"
     }
   }
 
@@ -50,6 +55,7 @@ enum ChatCompactionError: ShadowError {
     case .routing(let error): error.errorDescription
     case .model(let error, _): error.errorDescription
     case .record(let error): error.errorDescription
+    case .unrestrictedUnavailable: "Unrestricted writing isn't available in this version."
     }
   }
 }
@@ -86,6 +92,7 @@ enum ChatCompaction {
     let before = try await snapshot(session, in: store)
     guard let plan = before.window.foldPlan() else { return try await kept(before, outcome: .kept, in: store) }
     let mode = before.window.foldMode(plan, turn: turn.contentMode, novel: turn.novelMode)
+    guard mode == .standard || turn.unrestrictedAvailable else { throw .unrestrictedUnavailable }
     switch try await summarise(plan, mode: mode, turn: turn, router: router) {
     case .refused(let hit, let callIDs):
       logger.notice(

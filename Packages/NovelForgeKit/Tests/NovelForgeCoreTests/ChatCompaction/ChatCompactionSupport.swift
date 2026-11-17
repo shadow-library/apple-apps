@@ -24,7 +24,7 @@ enum CompactionWorld {
   }
 
   static func turn(_ mode: ContentMode = .standard, novel: ContentMode = .standard) -> ChatCompactionTurn {
-    ChatCompactionTurn(contentMode: mode, novelMode: novel, pace: .steady, consent: consent)
+    ChatCompactionTurn(contentMode: mode, novelMode: novel, pace: .steady, consent: consent, unrestrictedAvailable: true)
   }
 
   /// Both providers answer from one script; a request for `unrestrictedModel` went the unrestricted route.

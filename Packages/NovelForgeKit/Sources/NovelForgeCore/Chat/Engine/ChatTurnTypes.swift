@@ -94,6 +94,8 @@ public enum ChatTurnError: ShadowError {
   case invalidPassage(index: Int)
   case passage(code: String, chapter: Int)
   case hardLine(code: String, message: String)
+  /// The turn would be written unrestricted, which this build cannot do.
+  case unrestrictedUnavailable
   case messageNotAnswerable
   case turnRunning
   case turnNotRetryable
@@ -112,6 +114,7 @@ public enum ChatTurnError: ShadowError {
     case .invalidPassage: "chat_turn.invalid_passage"
     case .passage(let code, _): code
     case .hardLine(let code, _): code
+    case .unrestrictedUnavailable: "AI_024"
     case .messageNotAnswerable: "chat_turn.message_not_answerable"
     case .turnRunning: "chat_turn.running"
     case .turnNotRetryable: "chat_turn.not_retryable"
@@ -138,6 +141,8 @@ public enum ChatTurnError: ShadowError {
       default: "A passage comment on chapter \(chapter) does not match its quote — select the passage again"
       }
     case .hardLine(_, let message): message
+    // app-error-code.ts:108
+    case .unrestrictedUnavailable: "Unrestricted writing isn't available in this version."
     case .messageNotAnswerable: "That message cannot be answered on this device: it is not an author message this device can read."
     case .turnRunning: "A turn is already running in this chat."
     case .turnNotRetryable: "Only a turn that failed or was stopped can be tried again."

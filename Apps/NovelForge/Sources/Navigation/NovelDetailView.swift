@@ -22,6 +22,7 @@ struct NovelDetailView: View {
     case .story: StoryView(context: context)
     case .storyBible: StoryBibleView(context: context)
     case .notebook: NotebookView(context: context)
+    case .chat: ChatView(context: context)
     }
   }
 }

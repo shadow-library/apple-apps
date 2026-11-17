@@ -81,11 +81,13 @@ public final class ChatTurnEngine: Sendable {
   let grace: any ChatTurnGrace
   let timing: Timing
   let faults: Faults
+  /// Whether a turn may be written unrestricted; the app takes the build's flag (orchestrator decision 5).
+  let unrestrictedAvailable: Bool
   private let running = Mutex<[UUID: Control]>([:])
 
   init(
     store: VaultStore, router: @escaping @Sendable () async -> TaskRouter, consent: AIConsentRequirement, upkeep: ChatSessionUpkeep,
-    grace: any ChatTurnGrace = NoChatTurnGrace(), timing: Timing = .standard, faults: Faults = .none
+    grace: any ChatTurnGrace = NoChatTurnGrace(), timing: Timing = .standard, faults: Faults = .none, unrestrictedAvailable: Bool = UnrestrictedWriting.isAvailable
   ) {
     self.store = store
     self.router = router
@@ -94,6 +96,7 @@ public final class ChatTurnEngine: Sendable {
     self.grace = grace
     self.timing = timing
     self.faults = faults
+    self.unrestrictedAvailable = unrestrictedAvailable
   }
 
   /// `router` builds the router for each turn, so a change to the AI settings holds from the next turn; `consent` is what a chat turn sends.

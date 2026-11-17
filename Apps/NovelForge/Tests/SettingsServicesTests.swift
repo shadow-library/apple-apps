@@ -90,7 +90,7 @@ struct SettingsServicesTests {
     let request = try #require(await consentRequest(router, call))
     #expect(request.provider == .anthropic)
     #expect(request.host == "api.anthropic.com")
-    #expect(request.disclosure == "novel-text/v1")
+    #expect(request.disclosure == "novel-text/v2")
 
     try await world.services.grant(request, in: world.store)
     let routed = try await router().prepare(call)

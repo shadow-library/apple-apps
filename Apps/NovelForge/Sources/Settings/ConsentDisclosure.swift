@@ -2,7 +2,7 @@ import Foundation
 import ShadowAI
 
 nonisolated enum ConsentDisclosure: String, CaseIterable, Sendable {
-  case novelText = "novel-text/v1"
+  case novelText = "novel-text/v2"
 
   init?(_ request: AIConsentRequest) {
     guard let disclosure = Self(rawValue: request.disclosure), disclosure.dataClass == request.dataClass else { return nil }
@@ -30,7 +30,7 @@ nonisolated enum ConsentDisclosure: String, CaseIterable, Sendable {
     case .novelText:
       String(
         localized:
-          "To answer a request, Novel Forge sends the parts of your novel it needs, such as chapter text, story bible entries and notes, together with your message, to \(provider). \(provider) processes them under its own terms.",
+          "To answer a request, Novel Forge sends the parts of your novel it needs, such as chapter text, story bible entries and notes, together with your message, the earlier conversation in that chat (your messages, its replies and summaries of older turns) and, when the model asks for them, your AI usage and spending figures, to \(provider). \(provider) processes them under its own terms.",
         table: "Settings")
     }
   }

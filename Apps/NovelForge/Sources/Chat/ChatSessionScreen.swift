@@ -1,0 +1,112 @@
+import NovelForgeCore
+import ShadowDesignSystem
+import SwiftUI
+
+struct ChatSessionScreen: View {
+  @Bindable var model: ChatSessionModel
+  let chats: ChatNovelModel
+  @Environment(AIServices.self) private var services
+
+  var body: some View {
+    content
+      .background(ShadowColor.surfaceApp)
+      .safeAreaInset(edge: .bottom, spacing: 0) { ChatBottomBar(model: model, chats: chats) }
+      .task(id: model.generation) { await model.observe() }
+      .aiConsentSheet($model.consentRequest, services: services, store: model.context.store) {
+        Task { await model.consentAllowed() }
+      }
+  }
+
+  @ViewBuilder
+  private var content: some View {
+    switch model.state {
+    case .loading:
+      ProgressView().fillingSurface()
+    case .failed(let error):
+      ShadowContentUnavailable(Text("This chat could not be read", tableName: "Chat"), kind: .error, message: error.text) {
+        Button {
+          model.retryReading()
+        } label: {
+          Text("Try Again", tableName: "Chat")
+        }
+      }
+      .fillingSurface()
+    case .loaded:
+      if let page = model.page {
+        transcript(page)
+      } else {
+        ChatUnavailable()
+      }
+    }
+  }
+
+  private func transcript(_ page: ChatTranscriptPage) -> some View {
+    ScrollView {
+      LazyVStack(alignment: .leading, spacing: Spacing.space5) {
+        if page.hasEarlier {
+          Button {
+            model.loadEarlier()
+          } label: {
+            Text("Show Earlier Messages", tableName: "Chat")
+          }
+          .buttonStyle(.borderless)
+          .frame(maxWidth: .infinity)
+        }
+        if model.unreadableMessages > 0 {
+          Text("\(model.unreadableMessages) messages cannot be read by this version", tableName: "Chat")
+            .shadowFont(.footnote).foregroundStyle(ShadowColor.warningText).frame(maxWidth: .infinity)
+        }
+        if page.messages.isEmpty && model.display == .idle {
+          ChatHero(novelTitle: chats.novelTitle, mode: chats.mode(of: model.session))
+            .frame(maxWidth: .infinity)
+        }
+        ForEach(page.messages, id: \.row.key) { message in
+          ChatMessageRow(message: message, cost: message.record.flatMap { model.cost(of: $0.id) }) { reply in
+            chats.presenting = .inspect(reply: reply)
+          }
+        }
+        ChatTurnStatusView(model: model, mode: chats.mode(of: model.session))
+      }
+      .padding(Spacing.space4)
+      .frame(maxWidth: 760)
+      .frame(maxWidth: .infinity)
+    }
+    .defaultScrollAnchor(.bottom)
+    .defaultScrollAnchor(.bottom, for: .sizeChanges)
+  }
+}
+
+/// What sits under the transcript: notices about this chat, then the composer. Waiting on you (F32) joins it above the composer.
+struct ChatBottomBar: View {
+  @Bindable var model: ChatSessionModel
+  let chats: ChatNovelModel
+
+  var body: some View {
+    VStack(alignment: .leading, spacing: Spacing.space2) {
+      if chats.isArchived(model.session) {
+        ShadowCallout(Text("This chat is archived.", tableName: "Chat"), intent: .info, systemImage: "archivebox") {
+          Button {
+            Task { await chats.setArchived(model.session, false) }
+          } label: {
+            Text("Unarchive", tableName: "Chat")
+          }
+        }
+      }
+      if let notice = model.notice {
+        ShadowCallout(Text(verbatim: notice.error.headline), message: notice.error.detail.map { Text(verbatim: $0) }, intent: .warning) {
+          if notice.opensSettings { AISettingsButton(store: model.context.store) }
+        }
+      }
+      ChatComposerPlaceholder(
+        draft: $model.draft, canSend: model.canSendDraft && !chats.isArchived(model.session), isSending: model.isBusy,
+        isLocked: chats.isArchived(model.session), isRunning: model.isTurnActive
+      ) {
+        Task { await model.sendDraft() }
+      } stop: {
+        model.stop()
+      }
+    }
+    .frame(maxWidth: 760)
+    .frame(maxWidth: .infinity)
+  }
+}

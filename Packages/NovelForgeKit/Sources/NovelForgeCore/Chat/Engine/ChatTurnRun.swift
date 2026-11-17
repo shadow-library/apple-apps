@@ -170,6 +170,10 @@ final class ChatTurnRun: Sendable {
   /// A resumed turn routes afresh, so a key, consent or spend cap changed meanwhile holds.
   private func routed() async throws(ChatTurnStop) -> RoutedCall {
     if let call { return call }
+    // decision 5 for a turn that skips preparation, as a settled retry or a resume does
+    guard basis.contentMode == .standard || engine.unrestrictedAvailable else {
+      throw .failed(ChatTurnFailures.failure(ChatTurnError.unrestrictedUnavailable))
+    }
     let router = await engine.router()
     do {
       return try await router.prepare(
@@ -192,7 +196,7 @@ final class ChatTurnRun: Sendable {
       system: parts.system, messages: parts.conversation.map { ModelMessage(role: $0.role == .assistant ? .assistant : .user, text: $0.text) },
       cachesConversation: basis.exchange != nil)
     let review = chatRefineReview(lookupsAllowed: true, proseEdits: basis.proseEdits, organiseNotes: basis.organiseRequest)
-    let (stream, keyed, sent) = (stream, basis.exchange != nil, request.messages.count)
+    let (stream, control, keyed, sent) = (stream, control, basis.exchange != nil, request.messages.count)
     var relay = ReplyStreamRelay(contentMode: basis.contentMode, role: role)
     var repairs = [PromptMessage]()
     let result: StructuredResult
@@ -204,9 +208,10 @@ final class ChatTurnRun: Sendable {
           if keyed, case .repair = attempt.purpose {
             repairs = attempt.request.messages.dropFirst(sent).map { PromptMessage($0.role == .assistant ? .assistant : .user, $0.text) }
           }
-        case .completed(.failed):
+        // a stop ends the call as a failed attempt, and the stopped turn keeps what it wrote (apps/novel-forge-web/src/features/chat/StreamedTurn.tsx:28)
+        case .completed(.failed) where control.stop == nil:
           stream.relay(relay.restart())
-        case .textDelta, .reset, .completed(.succeeded):
+        case .textDelta, .reset, .completed:
           break
         }
         stream.relay(relay.receive(event))
