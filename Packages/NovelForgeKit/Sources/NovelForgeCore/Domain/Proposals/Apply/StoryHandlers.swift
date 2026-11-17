@@ -64,7 +64,7 @@ enum StoryHandlers: ContentOpHandler {
     if let question = update.endingQuestion { edit.endingQuestion = .set(trimmedOrNil(question)) }
     if let ending = update.ending { edit.ending = .set(trimmedOrNil(ending)) }
     let inverse = StoryRestore.premise(update.named.map { ($0, $0.stored(in: record)) })
-    try storyDomain { () throws(DomainError) in try transaction.edit(NovelRecord.self, NovelForgeKey.novel(novel), edit.fields) }
+    try handlerDomain { () throws(DomainError) in try transaction.edit(NovelRecord.self, NovelForgeKey.novel(novel), edit.fields) }
     return HandlerOutcome(inverse: inverse.json)
   }
 
@@ -79,13 +79,16 @@ enum StoryHandlers: ContentOpHandler {
       throw .refused(error)
     }
     let inverse = StoryRestore.premise(fields.map { ($0.field, $0.field.stored(in: record)) })
-    try storyDomain { () throws(DomainError) in try transaction.edit(NovelRecord.self, NovelForgeKey.novel(novel), edit.fields) }
+    try handlerDomain { () throws(DomainError) in try transaction.edit(NovelRecord.self, NovelForgeKey.novel(novel), edit.fields) }
     return HandlerOutcome(inverse: inverse.json)
   }
 
   // premise.handler.ts:14
   private static func liveNovel(_ novel: UUID, in transaction: borrowing WriteTransaction) throws(ApplyError) -> NovelRecord {
-    guard case .live(let record) = try storyDomain({ () throws(DomainError) in try transaction.presence(NovelForgeKey.novel(novel), as: NovelRecord.self) }) else {
+    guard
+      case .live(let record) = try handlerDomain(
+        "premise", NovelForgeKey.novel(novel), { () throws(DomainError) in try transaction.presence(NovelForgeKey.novel(novel), as: NovelRecord.self) })
+    else {
       throw .domain(.novelNotFound(novel))
     }
     return record
@@ -112,24 +115,8 @@ extension PremiseUpdate {
   }
 }
 
-func storyDomain<Value>(_ body: () throws(DomainError) -> Value) throws(ApplyError) -> Value {
-  do throws(DomainError) {
-    return try body()
-  } catch {
-    throw .domain(error)
-  }
-}
-
-func storyStore<Value>(_ body: () throws(StoreError) -> Value) throws(ApplyError) -> Value {
-  do throws(StoreError) {
-    return try body()
-  } catch {
-    throw .store(error)
-  }
-}
-
 /// A rule that reads other records of the novel cannot hold over records this device cannot read, so they refuse the change rather than count as absent.
 func requireStoryReadable<Record: KeyedRecord>(_: Record.Type, novel: UUID, in transaction: borrowing WriteTransaction) throws(ApplyError) {
-  let unreadable = try storyStore { () throws(StoreError) in try Record.listing(novel: novel, in: transaction).unreadable }
+  let unreadable = try handlerStore { () throws(StoreError) in try Record.listing(novel: novel, in: transaction).unreadable }
   guard unreadable == 0 else { throw .refused(.unreadableReferences(kind: Record.kind.rawValue, count: unreadable)) }
 }

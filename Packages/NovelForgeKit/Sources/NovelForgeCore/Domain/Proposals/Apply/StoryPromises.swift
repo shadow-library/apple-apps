@@ -9,7 +9,7 @@ enum StoryPromises {
     let promise = ref(create.kind, create.key)
     if case .live = try presence(of: promise, novel: novel, in: transaction) { throw .domain(.promiseExists(promise)) }
     if create.openedChapter == nil { try requireChaptersReadable(novel: novel, in: transaction) }
-    try storyDomain { () throws(DomainError) in
+    try handlerDomain { () throws(DomainError) in
       try Promises.create(novel: novel, promise, label: create.label, openedChapter: create.openedChapter, in: &transaction)
     }
     return HandlerOutcome(inverse: StoryRestore.promiseDeletion(promise).json)
@@ -26,7 +26,7 @@ enum StoryPromises {
     }
     let settlement = update.status.map { $0 == .paidOff ? PromiseSettlement.payOff : .reopen }
     if settlement == .payOff { try requireChaptersReadable(novel: novel, in: transaction) }
-    try storyDomain { () throws(DomainError) in try Promises.update(novel: novel, promise, label: update.label, settlement: settlement, in: &transaction) }
+    try handlerDomain { () throws(DomainError) in try Promises.update(novel: novel, promise, label: update.label, settlement: settlement, in: &transaction) }
     return HandlerOutcome(inverse: existing.restore.json)
   }
 
@@ -42,7 +42,7 @@ enum StoryPromises {
       payoff.someday == true
       ? .someday(dormant: payoff.dormant)
       : .target(milestone: kept(payoff.payoffMilestoneKey), volume: kept(payoff.payoffVolumeKey), window: kept(payoff.payoffWindow), dormant: payoff.dormant)
-    try storyDomain { () throws(DomainError) in try Promises.setPayoff(novel: novel, promise, change, in: &transaction) }
+    try handlerDomain { () throws(DomainError) in try Promises.setPayoff(novel: novel, promise, change, in: &transaction) }
     return HandlerOutcome(inverse: existing.payoff.json)
   }
 
@@ -50,7 +50,7 @@ enum StoryPromises {
   static func drop(_ drop: PromiseDrop, novel: UUID, in transaction: inout WriteTransaction) throws(ApplyError) -> HandlerOutcome {
     let promise = ref(drop.kind, drop.key)
     let existing = try live(promise, novel: novel, in: transaction)
-    try storyDomain { () throws(DomainError) in try Promises.drop(novel: novel, promise, in: &transaction) }
+    try handlerDomain { () throws(DomainError) in try Promises.drop(novel: novel, promise, in: &transaction) }
     return HandlerOutcome(inverse: existing.restore.json)
   }
 
@@ -63,13 +63,13 @@ enum StoryPromises {
       var edit = ThreadEdit()
       edit.summary = .set(restore.label)
       edit.status = .set(ThreadProgress(state: StoredEnum(rawValue: restore.status), chapter: restore.chapter))
-      try storyDomain { () throws(DomainError) in try transaction.edit(ThreadRecord.self, thread.ref, edit.fields) }
+      try handlerDomain { () throws(DomainError) in try transaction.edit(ThreadRecord.self, thread.ref, edit.fields) }
     case .mystery(let mystery):
       guard let question = restore.label else { throw .refused(.malformedInverse) }
       var edit = MysteryEdit()
       edit.question = .set(question)
       edit.status = .set(MysteryProgress(state: StoredEnum(rawValue: restore.status), chapter: restore.chapter))
-      try storyDomain { () throws(DomainError) in try transaction.edit(MysteryRecord.self, mystery.ref, edit.fields) }
+      try handlerDomain { () throws(DomainError) in try transaction.edit(MysteryRecord.self, mystery.ref, edit.fields) }
     }
     return HandlerOutcome(inverse: existing.restore.json)
   }
@@ -77,14 +77,14 @@ enum StoryPromises {
   static func restorePayoff(_ restore: PayoffRestore, novel: UUID, in transaction: inout WriteTransaction) throws(ApplyError) -> HandlerOutcome {
     let existing = try live(restore.promise, novel: novel, in: transaction)
     let change = PayoffChange.target(milestone: .set(restore.milestone), volume: .set(restore.volume), window: .set(restore.window), dormant: restore.dormant)
-    try storyDomain { () throws(DomainError) in try Promises.setPayoff(novel: novel, restore.promise, change, in: &transaction) }
+    try handlerDomain { () throws(DomainError) in try Promises.setPayoff(novel: novel, restore.promise, change, in: &transaction) }
     return HandlerOutcome(inverse: existing.payoff.json)
   }
 
   // promise.handler.ts:195: the inverse of a create removes the promise it made
   static func delete(_ promise: PromiseRef, novel: UUID, in transaction: inout WriteTransaction) throws(ApplyError) -> HandlerOutcome {
     _ = try live(promise, novel: novel, in: transaction)
-    try storyDomain { () throws(DomainError) in try Promises.remove(novel: novel, promise, in: &transaction) }
+    try handlerDomain { () throws(DomainError) in try Promises.remove(novel: novel, promise, in: &transaction) }
     return HandlerOutcome()
   }
 
@@ -132,13 +132,19 @@ enum StoryPromises {
   private static func presence(of promise: PromiseRef, novel: UUID, in transaction: borrowing WriteTransaction) throws(ApplyError) -> Presence<Existing> {
     switch promise {
     case .thread(let key):
-      switch try storyDomain({ () throws(DomainError) in try transaction.presence(ThreadRecord.ref(novel: novel, thread: key), as: ThreadRecord.self) }) {
+      switch try handlerDomain(
+        "promise:thread:\(key)", ThreadRecord.ref(novel: novel, thread: key),
+        { () throws(DomainError) in try transaction.presence(ThreadRecord.ref(novel: novel, thread: key), as: ThreadRecord.self) })
+      {
       case .live(let record): return .live(.thread(record))
       case .removed(let record): return .removed(.thread(record))
       case .absent: return .absent
       }
     case .mystery(let key):
-      switch try storyDomain({ () throws(DomainError) in try transaction.presence(MysteryRecord.ref(novel: novel, mystery: key), as: MysteryRecord.self) }) {
+      switch try handlerDomain(
+        "promise:mystery:\(key)", MysteryRecord.ref(novel: novel, mystery: key),
+        { () throws(DomainError) in try transaction.presence(MysteryRecord.ref(novel: novel, mystery: key), as: MysteryRecord.self) })
+      {
       case .live(let record): return .live(.mystery(record))
       case .removed(let record): return .removed(.mystery(record))
       case .absent: return .absent
@@ -154,8 +160,8 @@ enum StoryPromises {
 
   // promise.handler.ts:71
   private static func latestChapter(novel: UUID, in transaction: borrowing WriteTransaction) throws(ApplyError) -> Int {
-    let drafted = try storyDomain { () throws(DomainError) in try transaction.listing(DraftRecord.self, novel: novel).map(\.chapter) }
-    let finalized = try storyDomain { () throws(DomainError) in try transaction.listing(FinalChapterRecord.self, novel: novel).map(\.chapter) }
+    let drafted = try handlerDomain { () throws(DomainError) in try transaction.listing(DraftRecord.self, novel: novel).map(\.chapter) }
+    let finalized = try handlerDomain { () throws(DomainError) in try transaction.listing(FinalChapterRecord.self, novel: novel).map(\.chapter) }
     return (drafted + finalized).max() ?? 0
   }
 

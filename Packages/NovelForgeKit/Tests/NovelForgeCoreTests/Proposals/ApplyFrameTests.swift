@@ -72,18 +72,6 @@ struct ApplyFrameTests {
     #expect(try readable.get().postState[JSString("volume:kept")] == .missing)
   }
 
-  @Test func shouldRefuseEveryHandlerFileUntilItsTaskLands() async throws {
-    let store = try SchemaFixture.store()
-    let calls: [(String, OpType)] = [
-      (#"{"op":"entity.upsert","entityKey":"x","type":"character","name":"X"}"#, .entityUpsert),
-      (#"{"op":"brief.remove","chapter":2}"#, .briefRemove),
-    ]
-    for (json, type) in calls {
-      let outcome = try await perform(store, try call(json))
-      #expect(throws: ApplyError.notYetAvailable(type), "\(json)") { try outcome.get() }
-    }
-  }
-
   // content-op-handlers.ts:25
   @Test func shouldApplyAnOrganiseRuleAsNoWrite() async throws {
     let store = try SchemaFixture.store()

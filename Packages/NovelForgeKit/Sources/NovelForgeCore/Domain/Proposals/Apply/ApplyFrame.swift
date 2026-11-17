@@ -60,6 +60,8 @@ struct ApplyContext: Sendable {
   let novel: UUID
   let intent: ApplyIntent
   let now: Date
+  /// apply.types.ts:33 (unrestrictedRaise `allowed`): set on an apply or a redo whose caller found unrestricted writing available, never on an undo.
+  var unrestrictedRaise = false
 }
 
 // apply.types.ts:15; `declined` is never stored (an unselected index has no change record) and `reverted` is written by an undo, not an apply

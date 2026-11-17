@@ -32,10 +32,10 @@ enum PremiseField: String, CaseIterable, Sendable {
 
   func restore(_ value: OrderedJSON, into edit: inout NovelEdit) throws(ApplyRefusal) {
     if self == .themes {
-      edit.themes = .set(try nullable(value, strings))
+      edit.themes = .set(try InverseMembers.nullable(value, inverseStrings))
       return
     }
-    let text = try nullable(value, \.stringValue)
+    let text = try InverseMembers.nullable(value, \.stringValue)
     switch self {
     case .premise: edit.premise = .set(text)
     case .brief: edit.brief = .set(text)
@@ -67,16 +67,17 @@ struct VolumeRestore: Sendable, Equatable {
   }
 
   fileprivate init(_ fields: OrderedJSONObject) throws(ApplyRefusal) {
-    volume = try required(fields, "volumeKey", \.stringValue)
-    ordinal = try required(fields, "ordinal", exactInt)
-    title = try nullable(fields, "title", \.stringValue)
-    objective = try nullable(fields, "objective", \.stringValue)
-    body = try nullable(fields, "body", \.stringValue)
+    let members = InverseMembers(fields)
+    volume = try members.required("volumeKey", \.stringValue)
+    ordinal = try members.required("ordinal", inverseInt)
+    title = try members.nullable("title", \.stringValue)
+    objective = try members.nullable("objective", \.stringValue)
+    body = try members.nullable("body", \.stringValue)
   }
 
   // volume.handler.ts:16
   var json: OrderedJSONObject {
-    inverse(
+    inverseOp(
       .volumeUpsert,
       [
         ("volumeKey", .string(volume)), ("ordinal", optionalNumber(ordinal)), ("title", optionalText(title)), ("objective", optionalText(objective)),
@@ -100,14 +101,15 @@ struct MilestoneRestore: Sendable, Equatable {
   }
 
   fileprivate init(_ fields: OrderedJSONObject) throws(ApplyRefusal) {
-    milestone = try required(fields, "milestoneKey", \.stringValue)
-    label = try required(fields, "label", \.stringValue)
-    subject = try nullable(fields, "subjectEntityKey", \.stringValue)
-    kind = StoredEnum(rawValue: try required(fields, "kind", \.stringValue))
+    let members = InverseMembers(fields)
+    milestone = try members.required("milestoneKey", \.stringValue)
+    label = try members.required("label", \.stringValue)
+    subject = try members.nullable("subjectEntityKey", \.stringValue)
+    kind = StoredEnum(rawValue: try members.required("kind", \.stringValue))
   }
 
   var json: OrderedJSONObject {
-    inverse(.milestoneUpsert, [("milestoneKey", .string(milestone)), ("label", .string(label)), ("subjectEntityKey", optionalText(subject)), ("kind", .string(kind.rawValue))])
+    inverseOp(.milestoneUpsert, [("milestoneKey", .string(milestone)), ("label", .string(label)), ("subjectEntityKey", optionalText(subject)), ("kind", .string(kind.rawValue))])
   }
 }
 
@@ -137,20 +139,21 @@ struct FactRestore: Sendable, Equatable {
   }
 
   fileprivate init(_ fields: OrderedJSONObject) throws(ApplyRefusal) {
-    fact = try required(fields, "factKey", \.stringValue)
-    text = try required(fields, "body", \.stringValue)
-    subjects = try nullable(fields, "subjects", strings)
-    constraintNote = try nullable(fields, "constraintNote", \.stringValue)
-    writerNote = try nullable(fields, "writerNote", \.stringValue)
-    terms = try nullable(fields, "terms", strings)
-    revealChapter = try nullable(fields, "revealChapter", exactInt)
-    unlock = try nullable(fields, "unlock", storyJSONValue)
-    allowedClues = try nullable(fields, "allowedClues", strings)
+    let members = InverseMembers(fields)
+    fact = try members.required("factKey", \.stringValue)
+    text = try members.required("body", \.stringValue)
+    subjects = try members.nullable("subjects", inverseStrings)
+    constraintNote = try members.nullable("constraintNote", \.stringValue)
+    writerNote = try members.nullable("writerNote", \.stringValue)
+    terms = try members.nullable("terms", inverseStrings)
+    revealChapter = try members.nullable("revealChapter", inverseInt)
+    unlock = try members.nullable("unlock", \.storable)
+    allowedClues = try members.nullable("allowedClues", inverseStrings)
   }
 
   // fact.handler.ts:16
   var json: OrderedJSONObject {
-    inverse(
+    inverseOp(
       .factUpsert,
       [
         ("factKey", .string(fact)), ("body", .string(text)), ("subjects", optionalList(subjects)), ("constraintNote", optionalText(constraintNote)),
@@ -182,15 +185,16 @@ struct PromiseRestore: Sendable, Equatable {
   }
 
   fileprivate init(_ promise: PromiseRef, _ fields: OrderedJSONObject) throws(ApplyRefusal) {
+    let members = InverseMembers(fields)
     self.promise = promise
-    label = try nullable(fields, "restoreLabel", \.stringValue)
-    status = try required(fields, "restoreStatus", \.stringValue)
-    chapter = try nullable(fields, "restoreChapterColumn", exactInt)
+    label = try members.nullable("restoreLabel", \.stringValue)
+    status = try members.required("restoreStatus", \.stringValue)
+    chapter = try members.nullable("restoreChapterColumn", inverseInt)
   }
 
   // promise.handler.ts:100
   var json: OrderedJSONObject {
-    inverse(.promiseUpdate, promiseKey(promise) + [("restoreLabel", optionalText(label)), ("restoreStatus", .string(status)), ("restoreChapterColumn", optionalNumber(chapter))])
+    inverseOp(.promiseUpdate, promiseKey(promise) + [("restoreLabel", optionalText(label)), ("restoreStatus", .string(status)), ("restoreChapterColumn", optionalNumber(chapter))])
   }
 }
 
@@ -210,16 +214,17 @@ struct PayoffRestore: Sendable, Equatable {
   }
 
   fileprivate init(_ promise: PromiseRef, _ fields: OrderedJSONObject) throws(ApplyRefusal) {
+    let members = InverseMembers(fields)
     self.promise = promise
-    milestone = try nullable(fields, "payoffMilestoneKey", \.stringValue)
-    volume = try nullable(fields, "payoffVolumeKey", \.stringValue)
-    window = try nullable(fields, "payoffWindow", exactInt)
-    dormant = try required(fields, "dormant", flag)
+    milestone = try members.nullable("payoffMilestoneKey", \.stringValue)
+    volume = try members.nullable("payoffVolumeKey", \.stringValue)
+    window = try members.nullable("payoffWindow", inverseInt)
+    dormant = try members.required("dormant", inverseBool)
   }
 
   // promise.handler.ts:89
   var json: OrderedJSONObject {
-    inverse(
+    inverseOp(
       .promiseSetPayoff,
       promiseKey(promise) + [
         ("payoffMilestoneKey", optionalText(milestone)), ("payoffVolumeKey", optionalText(volume)), ("payoffWindow", optionalNumber(window)), ("dormant", .bool(dormant)),
@@ -253,11 +258,11 @@ enum StoryRestore: Sendable, Equatable {
       for (field, value) in named { try field.restore(value, into: &checked) }
       self = .premise(named)
     case .volumeUpsert: self = .volume(try VolumeRestore(fields))
-    case .volumeRemove: self = .volumeRemoval(try required(fields, "volumeKey", \.stringValue))
+    case .volumeRemove: self = .volumeRemoval(try InverseMembers(fields).required("volumeKey", \.stringValue))
     case .milestoneUpsert: self = .milestone(try MilestoneRestore(fields))
-    case .milestoneRemove: self = .milestoneRemoval(try required(fields, "milestoneKey", \.stringValue))
+    case .milestoneRemove: self = .milestoneRemoval(try InverseMembers(fields).required("milestoneKey", \.stringValue))
     case .factUpsert: self = .fact(try FactRestore(fields))
-    case .factRemove: self = .factRemoval(try required(fields, "factKey", \.stringValue))
+    case .factRemove: self = .factRemoval(try InverseMembers(fields).required("factKey", \.stringValue))
     case .promiseUpdate: self = .promise(try PromiseRestore(try promiseRef(fields), fields))
     case .promiseSetPayoff: self = .payoff(try PayoffRestore(try promiseRef(fields), fields))
     case .promiseDrop:
@@ -269,23 +274,19 @@ enum StoryRestore: Sendable, Equatable {
 
   var json: OrderedJSONObject {
     switch self {
-    case .premise(let fields): inverse(.premiseUpdate, fields.map { ($0.field.rawValue, $0.value) })
+    case .premise(let fields): inverseOp(.premiseUpdate, fields.map { ($0.field.rawValue, $0.value) })
     case .volume(let restore): restore.json
-    case .volumeRemoval(let key): inverse(.volumeRemove, [("volumeKey", .string(key))])
+    case .volumeRemoval(let key): inverseOp(.volumeRemove, [("volumeKey", .string(key))])
     case .milestone(let restore): restore.json
-    case .milestoneRemoval(let key): inverse(.milestoneRemove, [("milestoneKey", .string(key))])
+    case .milestoneRemoval(let key): inverseOp(.milestoneRemove, [("milestoneKey", .string(key))])
     case .fact(let restore): restore.json
-    case .factRemoval(let key): inverse(.factRemove, [("factKey", .string(key))])
+    case .factRemoval(let key): inverseOp(.factRemove, [("factKey", .string(key))])
     case .promise(let restore): restore.json
     case .payoff(let restore): restore.json
     // promise.handler.ts:85: a drop that deletes, since the promise did not exist before the change
-    case .promiseDeletion(let promise): inverse(.promiseDrop, promiseKey(promise) + [("hardDelete", .bool(true))])
+    case .promiseDeletion(let promise): inverseOp(.promiseDrop, promiseKey(promise) + [("hardDelete", .bool(true))])
     }
   }
-}
-
-private func inverse(_ type: OpType, _ pairs: [(String, OrderedJSON)]) -> OrderedJSONObject {
-  jsonRecord([("op", .string(type.rawValue))] + pairs)
 }
 
 private func promiseKey(_ promise: PromiseRef) -> [(String, OrderedJSON)] {
@@ -293,63 +294,10 @@ private func promiseKey(_ promise: PromiseRef) -> [(String, OrderedJSON)] {
 }
 
 private func promiseRef(_ fields: OrderedJSONObject) throws(ApplyRefusal) -> PromiseRef {
-  let key = try required(fields, "key", \.stringValue)
+  let key = try InverseMembers(fields).required("key", \.stringValue)
   switch PromiseKind(exactly: fields["kind"]) {
   case .thread?: return .thread(key)
   case .mystery?: return .mystery(key)
   case nil: throw .malformedInverse
-  }
-}
-
-private func required<Value>(_ fields: OrderedJSONObject, _ key: String, _ convert: (OrderedJSON) -> Value?) throws(ApplyRefusal) -> Value {
-  guard let value = fields[key].flatMap(convert) else { throw .malformedInverse }
-  return value
-}
-
-private func nullable<Value>(_ fields: OrderedJSONObject, _ key: String, _ convert: (OrderedJSON) -> Value?) throws(ApplyRefusal) -> Value? {
-  guard let value = fields[key] else { throw .malformedInverse }
-  return try nullable(value, convert)
-}
-
-private func nullable<Value>(_ value: OrderedJSON, _ convert: (OrderedJSON) -> Value?) throws(ApplyRefusal) -> Value? {
-  if value.isNull { return nil }
-  guard let converted = convert(value) else { throw .malformedInverse }
-  return converted
-}
-
-private func strings(_ value: OrderedJSON) -> [String]? {
-  guard let items = value.arrayValue else { return nil }
-  let texts = items.compactMap(\.stringValue)
-  return texts.count == items.count ? texts : nil
-}
-
-private func exactInt(_ value: OrderedJSON) -> Int? {
-  guard case .int(let number) = value else { return nil }
-  return Int(exactly: number)
-}
-
-private func flag(_ value: OrderedJSON) -> Bool? {
-  guard case .bool(let flag) = value else { return nil }
-  return flag
-}
-
-/// The stored form of a captured JSON value; nil for a fraction, which a store value never holds.
-func storyJSONValue(_ value: OrderedJSON) -> JSONValue? {
-  switch value {
-  case .null: return .null
-  case .bool(let flag): return .bool(flag)
-  case .int(let number): return .int(number)
-  case .double(let number): return Int64(exactly: number).map(JSONValue.int)
-  case .string(let text): return .string(text)
-  case .array(let items):
-    let converted = items.compactMap(storyJSONValue)
-    return converted.count == items.count ? .array(converted) : nil
-  case .object(let record):
-    var members = [String: JSONValue]()
-    for entry in record.entries {
-      guard let member = storyJSONValue(entry.value) else { return nil }
-      members[entry.key] = member
-    }
-    return .object(members)
   }
 }
