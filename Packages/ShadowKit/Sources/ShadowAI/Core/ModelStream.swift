@@ -110,9 +110,11 @@ public struct ModelStream: AsyncSequence, Sendable {
     }
 
     private let state: Mutex<State>
+    private let onStart: @Sendable () -> Void
 
-    init(_ build: @escaping Build) {
+    init(_ build: @escaping Build, onStart: @escaping @Sendable () -> Void) {
       state = Mutex(.idle(build))
+      self.onStart = onStart
     }
 
     func start(_ continuation: AsyncThrowingStream<ModelEvent, any Error>.Continuation) {
@@ -122,6 +124,7 @@ public struct ModelStream: AsyncSequence, Sendable {
         return build
       }
       guard let build else { return }
+      onStart()
       let producer = Task {
         do throws(ModelError) {
           try await build(Continuation(base: continuation))
@@ -164,9 +167,10 @@ public struct ModelStream: AsyncSequence, Sendable {
   }
 
   /// Runs `build` in a task started on the first `next()` and cancelled when the consumer stops, breaks out or is cancelled; returning finishes the stream.
-  public init(_ build: @escaping Build) {
+  /// `onStart` runs synchronously in that first `next()`, only when `build` is then launched, and `build` always runs once launched, even if cancelled.
+  public init(onStart: @escaping @Sendable () -> Void = {}, _ build: @escaping Build) {
     let (events, continuation) = Events.makeStream()
-    let launcher = Launcher(build)
+    let launcher = Launcher(build, onStart: onStart)
     continuation.onTermination = { _ in launcher.end() }
     self.events = events
     self.continuation = continuation

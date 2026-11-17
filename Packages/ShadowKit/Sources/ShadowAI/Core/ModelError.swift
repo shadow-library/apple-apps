@@ -15,6 +15,8 @@ public enum ModelError: ShadowError, Equatable {
   case dataPolicy(String)
   case noEligibleModel
   case malformedResponse(String)
+  /// The cost ledger could not record the call, so it was not sent.
+  case notRecorded
   case cancelled
 
   private static let transientTransportCodes: Set<URLError.Code> = [
@@ -37,6 +39,7 @@ public enum ModelError: ShadowError, Equatable {
     case .dataPolicy: "model.data_policy"
     case .noEligibleModel: "model.no_eligible_model"
     case .malformedResponse: "model.malformed_response"
+    case .notRecorded: "model.not_recorded"
     case .cancelled: "model.cancelled"
     }
   }
@@ -59,6 +62,7 @@ public enum ModelError: ShadowError, Equatable {
     case .dataPolicy(let message): "No model is available under the account's data policy: \(message)"
     case .noEligibleModel: "No model is available for this request."
     case .malformedResponse(let message): "The provider's reply could not be read: \(message)"
+    case .notRecorded: "The request was not sent because its cost could not be recorded on this device."
     case .cancelled: "The request was cancelled."
     }
   }
@@ -68,7 +72,7 @@ public enum ModelError: ShadowError, Equatable {
     case .rateLimited, .overloaded: true
     case .server(let status): (500...599).contains(status) && !Self.permanentServerStatuses.contains(status)
     case .transport(let code): Self.transientTransportCodes.contains(code)
-    case .midStream, .invalidRequest, .authentication, .forbidden, .insufficientCredits, .dataPolicy, .noEligibleModel, .malformedResponse, .cancelled: false
+    case .midStream, .invalidRequest, .authentication, .forbidden, .insufficientCredits, .dataPolicy, .noEligibleModel, .malformedResponse, .notRecorded, .cancelled: false
     }
   }
 

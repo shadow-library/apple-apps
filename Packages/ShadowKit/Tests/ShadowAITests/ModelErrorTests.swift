@@ -11,7 +11,7 @@ struct ModelErrorTests {
     .rateLimited(retryAfter: .seconds(30)), .rateLimited(retryAfter: nil), .overloaded(retryAfter: nil), .overloaded(retryAfter: .seconds(8)), .server(status: 500),
     .transport(.timedOut), .transport(.notConnectedToInternet),
     .transport(.badURL), .midStream(code: "overloaded_error", message: "Overloaded"), .invalidRequest("bad"), .authentication, .forbidden("no"), .insufficientCredits,
-    .dataPolicy("policy"), .noEligibleModel, .malformedResponse("garbled"), .cancelled,
+    .dataPolicy("policy"), .noEligibleModel, .malformedResponse("garbled"), .notRecorded, .cancelled,
   ]
 
   private static func status(_ code: Int, headers: [String: String] = [:]) -> NetworkError {
@@ -26,7 +26,7 @@ struct ModelErrorTests {
       #expect(error.description.hasPrefix(error.code))
     }
     let distinctCases = Self.everyCase.reduce(into: [String: ModelError]()) { $0[$1.code] = $0[$1.code] ?? $1 }
-    #expect(distinctCases.count == 13)
+    #expect(distinctCases.count == 14)
   }
 
   @Test(
@@ -128,6 +128,7 @@ struct ModelErrorTests {
       (.dataPolicy("x"), false),
       (.noEligibleModel, false),
       (.malformedResponse("x"), false),
+      (.notRecorded, false),
       (.cancelled, false),
     ]
   )

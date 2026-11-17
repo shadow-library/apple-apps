@@ -8,7 +8,7 @@ public struct OpenRouterProvider: ModelProvider {
   private static let endOfBody = Data("\n\n".utf8)
   private static let oversizedReply = ModelError.malformedResponse("The reply holds a line or event larger than allowed.")
 
-  private let configuration: OpenRouterConfiguration
+  public let configuration: OpenRouterConfiguration
   private let credential: @Sendable () async throws(ModelError) -> ProviderCredential
   private let transport: Transport
   private let trustedClock: TrustedClock?

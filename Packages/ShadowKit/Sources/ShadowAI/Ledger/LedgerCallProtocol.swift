@@ -32,6 +32,25 @@ extension Ledger {
     return try storedEntries(of: call, in: transaction)
   }
 
+  /// For a call cancelled before it finished: the call stays begun with its cost pending, and each attempt it abandoned is written as `finish` would write it.
+  public static func abandon(_ call: ModelCallStart, events: [ModelEvent], catalog: ModelCatalog?, in transaction: inout WriteTransaction) throws(StoreError) -> [ModelCallEntry] {
+    let begunRef = ref(call.id)
+    guard let state = try transaction.state(of: begunRef), let begun = entry(ref: begunRef, state: state) else {
+      throw .invalidChange("model call \(begunRef.key) is not recorded")
+    }
+    guard begun.outcome == .started else { return try storedEntries(of: call, in: transaction) }
+    let attempts = ModelCallAccounting.attempts(from: events, endedWith: .cancelled)
+    let currentBegan = events.last.map { if case .retrying = $0 { false } else { true } } ?? false
+    if currentBegan, let current = attempts.last {
+      try identify(id: call.id, requestID: current.requestID, generationID: current.generationID, in: &transaction)
+    }
+    for (index, abandoned) in (currentBegan ? attempts.dropLast() : attempts[...]).enumerated() {
+      let priced = ModelCallAccounting.cost(for: abandoned, model: call.model, catalog: catalog)
+      try open(try entry(of: call, id: attemptID(of: call.id, index: index), parent: call.id, attempt: abandoned, priced: priced), in: &transaction)
+    }
+    return try storedEntries(of: call, in: transaction)
+  }
+
   static func attemptID(of call: UUID, index: Int) -> UUID {
     var bytes = Array(SHA256.hash(data: Data("shadow.ai.call-attempt:\(EntityKey(uuid: call).rawValue):\(index)".utf8)).prefix(16))
     bytes[6] = (bytes[6] & 0x0F) | 0x80
