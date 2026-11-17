@@ -17,6 +17,11 @@ public enum NovelForgeKind: String, CaseIterable, Sendable {
   case notebookEntry = "nf_notebook_entry"
   case notebookWithdrawal = "nf_notebook_withdrawal"
   case authorNotes = "nf_author_notes"
+  case chatSession = "nf_chat_session"
+  case chatMessage = "nf_chat_message"
+  case chatSummary = "nf_chat_summary"
+  case proposal = "nf_proposal"
+  case proposalChange = "nf_proposal_change"
 
   public var entityKind: EntityKind {
     guard let kind = EntityKind(rawValue) else { preconditionFailure("\(rawValue) is a valid entity kind") }

@@ -34,6 +34,7 @@ public enum StoredPageSection: Hashable, Sendable {
 
 public enum NovelForgeKeyError: ShadowError, Equatable {
   case chapterOutOfRange(Int)
+  case opIndexOutOfRange(Int)
   case notNaturallyKeyed(String)
   case missingKey(EntityRef)
   case malformedKey(String)
@@ -42,6 +43,7 @@ public enum NovelForgeKeyError: ShadowError, Equatable {
   public var code: String {
     switch self {
     case .chapterOutOfRange: "novel_forge_key.chapter_out_of_range"
+    case .opIndexOutOfRange: "novel_forge_key.op_index_out_of_range"
     case .notNaturallyKeyed: "novel_forge_key.not_naturally_keyed"
     case .missingKey: "novel_forge_key.missing_key"
     case .malformedKey: "novel_forge_key.malformed_key"
@@ -52,6 +54,7 @@ public enum NovelForgeKeyError: ShadowError, Equatable {
   public var errorDescription: String? {
     switch self {
     case .chapterOutOfRange(let chapter): "Chapter \(chapter) is not a chapter number; chapters start at 1."
+    case .opIndexOutOfRange(let index): "\(index) is not an operation index; indexes start at 0."
     case .notNaturallyKeyed(let kind): "Kind \(kind) has random keys, not natural ones."
     case .missingKey(let ref): "\(ref.kind)/\(ref.key) holds no natural key."
     case .malformedKey(let reason): "The stored natural key is malformed: \(reason)."
@@ -74,6 +77,7 @@ public struct NovelForgeKey: Hashable, Sendable {
     case draft(chapter: Int)
     case finalChapter(chapter: Int)
     case authorNotes
+    case proposalChange(proposal: UUID, index: Int)
   }
 
   public let novel: UUID
@@ -81,6 +85,7 @@ public struct NovelForgeKey: Hashable, Sendable {
 
   public init(novel: UUID, _ components: Components) throws(NovelForgeKeyError) {
     for chapter in components.chapters where chapter < 1 { throw .chapterOutOfRange(chapter) }
+    if case .proposalChange(_, let index) = components, index < 0 { throw .opIndexOutOfRange(index) }
     self.novel = novel
     self.components = components.normalised
   }
@@ -109,13 +114,14 @@ public struct NovelForgeKey: Hashable, Sendable {
     case .entity: components = .entity(try reader.text("entity"))
     case .characterKnowledge: components = .characterKnowledge(fact: try reader.text("fact"), entity: try reader.text("entity"))
     case .page: components = .page(section: StoredPageSection(rawValue: try reader.text("section")), slug: try reader.text("slug"))
-    case .chapterPlan: components = .chapterPlan(chapter: try reader.chapter("chapter"))
-    case .draft: components = .draft(chapter: try reader.chapter("chapter"))
-    case .finalChapter: components = .finalChapter(chapter: try reader.chapter("chapter"))
+    case .chapterPlan: components = .chapterPlan(chapter: try reader.integer("chapter"))
+    case .draft: components = .draft(chapter: try reader.integer("chapter"))
+    case .finalChapter: components = .finalChapter(chapter: try reader.integer("chapter"))
     case .authorNotes: components = .authorNotes
-    case .novel, .approval, .notebookEntry, .notebookWithdrawal: throw .notNaturallyKeyed(kind.rawValue)
+    case .proposalChange: components = .proposalChange(proposal: try reader.uuid("proposal"), index: try reader.integer("index"))
+    case .novel, .approval, .notebookEntry, .notebookWithdrawal, .chatSession, .chatMessage, .chatSummary, .proposal: throw .notNaturallyKeyed(kind.rawValue)
     }
-    try self.init(novel: try reader.novel(), components)
+    try self.init(novel: try reader.uuid("novel"), components)
     guard self.ref == ref else { throw .keyMismatch(ref) }
   }
 
@@ -133,6 +139,10 @@ public struct NovelForgeKey: Hashable, Sendable {
   public static func approval(_ id: UUID) -> EntityRef { randomRef(.approval, id) }
   public static func notebookEntry(_ id: UUID) -> EntityRef { randomRef(.notebookEntry, id) }
   public static func notebookWithdrawal(_ id: UUID) -> EntityRef { randomRef(.notebookWithdrawal, id) }
+  public static func chatSession(_ id: UUID) -> EntityRef { randomRef(.chatSession, id) }
+  public static func chatMessage(_ id: UUID) -> EntityRef { randomRef(.chatMessage, id) }
+  public static func chatSummary(_ id: UUID) -> EntityRef { randomRef(.chatSummary, id) }
+  public static func proposal(_ id: UUID) -> EntityRef { randomRef(.proposal, id) }
 
   public static func volume(novel: UUID, key: String) -> EntityRef { volumeKey(novel: novel, volume: key).ref }
   public static func milestone(novel: UUID, key: String) -> EntityRef { milestoneKey(novel: novel, milestone: key).ref }
@@ -147,6 +157,9 @@ public struct NovelForgeKey: Hashable, Sendable {
   public static func chapterPlan(novel: UUID, chapter: Int) throws(NovelForgeKeyError) -> EntityRef { try chapterPlanKey(novel: novel, chapter: chapter).ref }
   public static func draft(novel: UUID, chapter: Int) throws(NovelForgeKeyError) -> EntityRef { try draftKey(novel: novel, chapter: chapter).ref }
   public static func finalChapter(novel: UUID, chapter: Int) throws(NovelForgeKeyError) -> EntityRef { try finalChapterKey(novel: novel, chapter: chapter).ref }
+  public static func proposalChange(novel: UUID, proposal: UUID, index: Int) throws(NovelForgeKeyError) -> EntityRef {
+    try proposalChangeKey(novel: novel, proposal: proposal, index: index).ref
+  }
 
   private static func randomRef(_ kind: NovelForgeKind, _ id: UUID) -> EntityRef {
     EntityRef(kind: kind.entityKind, key: EntityKey(uuid: id))
@@ -169,7 +182,8 @@ public struct NovelForgeKey: Hashable, Sendable {
     case .page: ["section", "slug"]
     case .chapterPlan, .draft, .finalChapter: ["chapter"]
     case .authorNotes: []
-    case .novel, .approval, .notebookEntry, .notebookWithdrawal: nil
+    case .proposalChange: ["proposal", "index"]
+    case .novel, .approval, .notebookEntry, .notebookWithdrawal, .chatSession, .chatMessage, .chatSummary, .proposal: nil
     }
   }
 }
@@ -189,6 +203,9 @@ extension NovelForgeKey {
   public static func chapterPlanKey(novel: UUID, chapter: Int) throws(NovelForgeKeyError) -> NovelForgeKey { try NovelForgeKey(novel: novel, .chapterPlan(chapter: chapter)) }
   public static func draftKey(novel: UUID, chapter: Int) throws(NovelForgeKeyError) -> NovelForgeKey { try NovelForgeKey(novel: novel, .draft(chapter: chapter)) }
   public static func finalChapterKey(novel: UUID, chapter: Int) throws(NovelForgeKeyError) -> NovelForgeKey { try NovelForgeKey(novel: novel, .finalChapter(chapter: chapter)) }
+  public static func proposalChangeKey(novel: UUID, proposal: UUID, index: Int) throws(NovelForgeKeyError) -> NovelForgeKey {
+    try NovelForgeKey(novel: novel, .proposalChange(proposal: proposal, index: index))
+  }
 }
 
 extension NovelForgeKey.Components {
@@ -206,6 +223,7 @@ extension NovelForgeKey.Components {
     case .draft: .draft
     case .finalChapter: .finalChapter
     case .authorNotes: .authorNotes
+    case .proposalChange: .proposalChange
     }
   }
 
@@ -227,7 +245,7 @@ extension NovelForgeKey.Components {
     case .entity(let key): return .entity(nfc(key))
     case .characterKnowledge(let fact, let entity): return .characterKnowledge(fact: nfc(fact), entity: nfc(entity))
     case .page(let section, let slug): return .page(section: StoredPageSection(rawValue: section.rawValue), slug: nfc(slug))
-    case .chapterPlan, .draft, .finalChapter, .authorNotes: return self
+    case .chapterPlan, .draft, .finalChapter, .authorNotes, .proposalChange: return self
     }
   }
 
@@ -238,6 +256,7 @@ extension NovelForgeKey.Components {
     case .page(let section, let slug): [section.rawValue, slug]
     case .chapterPlan(let chapter), .draft(let chapter), .finalChapter(let chapter): [String(chapter)]
     case .authorNotes: []
+    case .proposalChange(let proposal, let index): [proposal.uuidString.lowercased(), String(index)]
     }
   }
 
@@ -253,6 +272,7 @@ extension NovelForgeKey.Components {
     case .page(let section, let slug): ["section": .string(section.rawValue), "slug": .string(slug)]
     case .chapterPlan(let chapter), .draft(let chapter), .finalChapter(let chapter): ["chapter": .int(Int64(chapter))]
     case .authorNotes: [:]
+    case .proposalChange(let proposal, let index): ["proposal": .string(proposal.uuidString.lowercased()), "index": .int(Int64(index))]
     }
   }
 }
@@ -269,9 +289,9 @@ private struct StoredKeyReader {
     self.members = members
   }
 
-  func novel() throws(NovelForgeKeyError) -> UUID {
-    let text = try self.text("novel")
-    guard let id = UUID(uuidString: text), id.uuidString.lowercased().utf8.elementsEqual(text.utf8) else { throw .malformedKey("novel is not a lower-case UUID") }
+  func uuid(_ name: String) throws(NovelForgeKeyError) -> UUID {
+    let text = try self.text(name)
+    guard let id = UUID(uuidString: text), id.uuidString.lowercased().utf8.elementsEqual(text.utf8) else { throw .malformedKey("\(name) is not a lower-case UUID") }
     return id
   }
 
@@ -280,7 +300,7 @@ private struct StoredKeyReader {
     return text
   }
 
-  func chapter(_ name: String) throws(NovelForgeKeyError) -> Int {
+  func integer(_ name: String) throws(NovelForgeKeyError) -> Int {
     guard let number = members[name]?.intValue, let chapter = Int(exactly: number) else { throw .malformedKey("\(name) is not an integer") }
     return chapter
   }

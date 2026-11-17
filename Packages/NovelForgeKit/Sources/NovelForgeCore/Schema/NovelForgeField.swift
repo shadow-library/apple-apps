@@ -139,6 +139,8 @@ enum FinalChapterCanonMember: String, CaseIterable {
   case isolated
   case volume
   case contract
+  // The secret keys this chapter disclosed to readers, frozen at finalize; null when not recorded.
+  case disclosed
 }
 
 // The finalized plan revision's apps/novel-forge-server/src/common/knowledge-contract.ts:7 contract, database/schemas/generation.ts:120 claimed milestones and :121 ending flag.
@@ -192,4 +194,135 @@ public enum NotebookWithdrawalMember: String, CaseIterable, Sendable {
   case novel
   case entry
   case reason
+}
+
+// apps/novel-forge-server/src/database/schemas/refinement.ts:157-187
+public enum ChatSessionField: String, CaseIterable, Sendable {
+  case novel
+  case title
+  // apps/novel-forge-server/src/modules/refinement/chat-session.service.ts:164 titles only a session still untitled, so a generated title never replaces the author's.
+  case autoTitle = "auto_title"
+  case mode
+  case status
+}
+
+// apps/novel-forge-server/src/database/schemas/refinement.ts:153
+public enum ChatSessionMode: String, CaseIterable, Sendable {
+  case manual
+  case auto
+}
+
+// apps/novel-forge-server/src/database/schemas/refinement.ts:151; deleting is `removed`, which an archive never writes.
+public enum ChatSessionStatus: String, CaseIterable, Sendable {
+  case active
+  case archived
+}
+
+// apps/novel-forge-server/src/database/schemas/refinement.ts:152
+public enum ChatRole: String, CaseIterable, Sendable {
+  case user
+  case assistant
+}
+
+// apps/novel-forge-server/src/database/schemas/refinement.ts:189-226, plus the turn's choices that modules/refinement/chat.dto.ts:486-511 never stores.
+public enum ChatMessageMember: String, CaseIterable, Sendable {
+  case novel
+  case session
+  case role
+  case content
+  case contexts
+  // The reply whose question card this message answers.
+  case answers
+  // The newest message of the session the writing device held; it replaces the reference's ordinal (refinement.ts:199).
+  case seen
+  case pace
+  case deeper
+  case contentMode = "content_mode"
+  case justDiscussing = "just_discussing"
+  case proseEdits = "prose_edits"
+  case tokens
+  case question
+  case trace
+  case modelCalls = "model_calls"
+  case appliedProposal = "applied_proposal"
+  case cardProposal = "card_proposal"
+  case applyNote = "apply_note"
+  case held
+}
+
+// apps/novel-forge-server/src/modules/refinement/chat-compaction.service.ts:142 and :168
+public enum ChatSummaryMember: String, CaseIterable, Sendable {
+  case novel
+  case session
+  case covered
+  case text
+  case contentMode = "content_mode"
+}
+
+public enum ProposalField: String, CaseIterable, Sendable {
+  case card
+  case decision
+  case applied
+}
+
+// apps/novel-forge-server/src/database/schemas/refinement.ts:155, ranked so concurrent decisions settle on the one with the most consequence.
+public enum ProposalDecision: String, CaseIterable, Sendable {
+  case pending
+  case superseded
+  case discarded
+  case applied
+}
+
+// Written in one set when the proposal is staged: apps/novel-forge-server/src/modules/refinement/proposal.service.ts:160-175.
+public enum ProposalCardMember: String, CaseIterable, Sendable {
+  case novel
+  case session
+  case message
+  case kind
+  case summary
+  case changeSet = "change_set"
+  case baseline
+  case warnings
+  case diagnostics
+  case supersedes
+  case run
+}
+
+// Written in one set by the first apply: apps/novel-forge-server/src/database/schemas/refinement.ts:246 and :253, modules/refinement/apply/apply.types.ts:20.
+public enum ProposalAppliedMember: String, CaseIterable, Sendable {
+  case postState = "post_state"
+  case sources
+  case automatic
+}
+
+/// An apply writes a change record only for each index it selected; an index of an applied proposal with no record reads as declined, so concurrent applies
+/// of different selections record the union of what was really applied. Undo, redo and revert are guarded by each change's own `undo`, never by the
+/// proposal's `applied`, which is the first applier's provenance only.
+public enum ProposalChangeField: String, CaseIterable, Sendable {
+  case status
+  case undo
+  case undoneState = "undone_state"
+  case result
+}
+
+// apps/novel-forge-server/src/modules/refinement/apply/apply.types.ts:18; `declined` is never stored, it is the absence of a record.
+public enum ProposalChangeStatus: String, CaseIterable, Sendable {
+  case applied
+  case pending
+  case failed
+  case reverted
+}
+
+// apps/novel-forge-server/src/modules/refinement/op-undo.ts:5-8; the post state is the change's share of refinement.ts:253, so each change guards its own undo.
+public enum ProposalChangeUndoMember: String, CaseIterable, Sendable {
+  case inverse
+  case priorState = "prior_state"
+  case postState = "post_state"
+}
+
+// apps/novel-forge-server/src/modules/refinement/apply/apply.types.ts:21-24
+public enum ProposalChangeResultMember: String, CaseIterable, Sendable {
+  case error
+  case note
+  case result
 }

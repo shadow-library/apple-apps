@@ -26,11 +26,13 @@ public struct Canon: Sendable, Equatable {
   public var isolated: Bool
   public var volume: String?
   public var contract: ChapterContract
+  public var disclosed: [String]?
   public private(set) var unrecognised: [String: JSONValue]
 
   public init(
     draftRevision: String? = nil, planRevision: String? = nil, approval: UUID? = nil, title: String? = nil, body: String, summary: String? = nil, note: String? = nil,
-    generator: StoredEnum<ContentGenerator> = .known(.standard), isolated: Bool = false, volume: String? = nil, contract: ChapterContract = ChapterContract()
+    generator: StoredEnum<ContentGenerator> = .known(.standard), isolated: Bool = false, volume: String? = nil, contract: ChapterContract = ChapterContract(),
+    disclosed: [String]? = nil
   ) {
     self.draftRevision = draftRevision
     self.planRevision = planRevision
@@ -43,7 +45,19 @@ public struct Canon: Sendable, Equatable {
     self.isolated = isolated
     self.volume = volume
     self.contract = contract
+    self.disclosed = disclosed
     unrecognised = [:]
+  }
+
+  static func normalisedDisclosure(_ keys: [String]) -> [String] {
+    Set(keys.map(\.precomposedStringWithCanonicalMapping)).sorted { $0.utf16.lexicographicallyPrecedes($1.utf16) }
+  }
+
+  private static func disclosure(in json: JSONValue) -> [String]? {
+    guard case .array(let items) = json else { return nil }
+    let keys = items.compactMap(\.stringValue)
+    guard keys.count == items.count else { return nil }
+    return normalisedDisclosure(keys)
   }
 }
 
@@ -59,6 +73,10 @@ extension Canon: JSONRepresentable {
       return nil
     }
     unrecognised = reader.unrecognised
+    let disclosure = json.objectValue?[FinalChapterCanonMember.disclosed.rawValue]
+    disclosed = disclosure.flatMap(Self.disclosure(in:))
+    // A malformed list reads as not recorded and is kept as found, so the canon still encodes to what was stored.
+    if let disclosure, !disclosure.isNull, disclosed == nil { unrecognised[FinalChapterCanonMember.disclosed.rawValue] = disclosure }
   }
 
   public var json: JSONValue {
@@ -74,6 +92,7 @@ extension Canon: JSONRepresentable {
     fields.put(.isolated, isolated)
     fields.put(.volume, volume)
     fields.put(.contract, contract)
+    if disclosed != nil || unrecognised[FinalChapterCanonMember.disclosed.rawValue] == nil { fields.put(.disclosed, disclosed.map(Self.normalisedDisclosure)) }
     return .object(unrecognised.merging(fields.members) { _, known in known })
   }
 }

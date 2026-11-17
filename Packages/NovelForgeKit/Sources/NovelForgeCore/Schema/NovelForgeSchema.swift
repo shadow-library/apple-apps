@@ -1,7 +1,8 @@
+import ShadowAI
 import ShadowStore
 
 public enum NovelForgeSchema {
-  public static let version = 1
+  public static let version = 2
 
   // apps/novel-forge-server/src/common/draft-history.ts:10
   static let revisionLimit = 50
@@ -23,7 +24,30 @@ public enum NovelForgeSchema {
     appended(.notebookEntry),
     appended(.notebookWithdrawal),
     document(.authorNotes, fields: keyed([:])),
+    record(
+      .chatSession,
+      withRemoved(
+        registers(ChatSessionField.self).merging([ChatSessionField.novel.rawValue: .firstWriterWins, ChatSessionField.autoTitle.rawValue: .firstWriterWins]) { $1 })),
+    appended(.chatMessage),
+    appended(.chatSummary),
+    record(
+      .proposal,
+      [
+        ProposalField.card.rawValue: .firstWriterWins,
+        ProposalField.decision.rawValue: .monotone(order: ProposalDecision.allCases.map(\.rawValue)),
+        ProposalField.applied.rawValue: .firstWriterWins,
+      ]),
+    record(
+      .proposalChange,
+      keyed([
+        ProposalChangeField.status.rawValue: .register,
+        ProposalChangeField.undo.rawValue: .firstWriterWins,
+        ProposalChangeField.undoneState.rawValue: .register,
+        ProposalChangeField.result.rawValue: .firstWriterWins,
+      ])),
   ]
+
+  public static let registry = SchemaRegistry(version: version, entities: entities + LedgerSchema.entities)
 
   private static func registers<Field: RawRepresentable & CaseIterable>(_: Field.Type) -> [String: FieldRule] where Field.RawValue == String {
     Dictionary(uniqueKeysWithValues: Field.allCases.map { ($0.rawValue, FieldRule.register) })
@@ -34,7 +58,11 @@ public enum NovelForgeSchema {
   }
 
   private static func removable(_ fields: [String: FieldRule]) -> [String: FieldRule] {
-    keyed(fields).merging([CommonField.removed.rawValue: .register]) { _, _ in preconditionFailure("removed is declared twice") }
+    withRemoved(keyed(fields))
+  }
+
+  private static func withRemoved(_ fields: [String: FieldRule]) -> [String: FieldRule] {
+    fields.merging([CommonField.removed.rawValue: .register]) { _, _ in preconditionFailure("removed is declared twice") }
   }
 
   private static func record(_ kind: NovelForgeKind, _ fields: [String: FieldRule]) -> EntitySchema {

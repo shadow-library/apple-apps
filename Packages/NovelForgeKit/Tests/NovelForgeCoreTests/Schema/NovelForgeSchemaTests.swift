@@ -1,4 +1,5 @@
 import Foundation
+import ShadowAI
 import ShadowCore
 import ShadowStore
 import Testing
@@ -7,7 +8,7 @@ import Testing
 
 @Suite("NovelForgeSchema")
 struct NovelForgeSchemaTests {
-  private static let frozenVersions = [1]
+  private static let frozenVersions = [1, 2]
 
   private static func frozenPath(_ version: Int) -> String { "schema/registry-v\(version).json" }
 
@@ -41,7 +42,7 @@ struct NovelForgeSchemaTests {
       fields["canon"] = .register
       return EntitySchema(kind: schema.kind, shape: .revisioned(fields: fields, marks: marks, retention: retention), syncClass: schema.syncClass)
     }
-    let problems = SchemaRegistry(version: NovelForgeSchema.version + 1, entities: changed).incompatibilities(with: registry)
+    let problems = SchemaRegistry(version: NovelForgeSchema.version + 1, entities: changed + LedgerSchema.entities).incompatibilities(with: registry)
     #expect(problems == ["field nf_final_chapter.canon changed rule from first writer wins to register"])
   }
 
@@ -58,18 +59,27 @@ struct NovelForgeSchemaTests {
     let novel = NovelForgeKey.novel(SchemaFixture.novel)
     try await SchemaFixture.set(novel, ["name": "The Gate", "archived": false], in: store)
     #expect(try await SchemaFixture.record(novel, in: store)[field: "name"]?.value == "The Gate")
-    let items = [NovelForgeKey.approval(UUID()), NovelForgeKey.notebookEntry(UUID()), NovelForgeKey.notebookWithdrawal(UUID())]
+    let session = NovelForgeKey.chatSession(UUID())
+    try await SchemaFixture.set(session, ["title": "Openings", "auto_title": "Openings", "removed": false], in: store)
+    #expect(try await SchemaFixture.record(session, in: store)[field: "title"]?.value == "Openings")
+    let proposal = NovelForgeKey.proposal(UUID())
+    try await SchemaFixture.set(proposal, ["card": ["kind": "chat"], "decision": "pending"], in: store)
+    #expect(try await SchemaFixture.record(proposal, in: store)[field: "decision"]?.value == "pending")
+    let items = [
+      NovelForgeKey.approval(UUID()), NovelForgeKey.notebookEntry(UUID()), NovelForgeKey.notebookWithdrawal(UUID()), NovelForgeKey.chatMessage(UUID()),
+      NovelForgeKey.chatSummary(UUID()),
+    ]
     for ref in items {
       _ = try await store.write { transaction in try transaction.append(ref, item: ["novel": .string(SchemaFixture.novel.uuidString.lowercased())]) }
       guard case .appended? = try await SchemaFixture.state(ref, in: store) else { throw SchemaFixtureError(description: "\(ref.kind) was not appended") }
     }
-    let written = Set(natural.map(\.kind) + [.novel] + items.compactMap { NovelForgeKind($0.kind) })
+    let written = Set(natural.map(\.kind) + [.novel, .chatSession, .proposal] + items.compactMap { NovelForgeKind($0.kind) })
     #expect(written == Set(NovelForgeKind.allCases))
   }
 
   @Test func shouldRefuseAKindOutsideTheList() async throws {
     let store = try SchemaFixture.store()
-    let outside = try #require(EntityKind(NovelForge.kindPrefix + "chat_session"))
+    let outside = try #require(EntityKind(NovelForge.kindPrefix + "job"))
     let ref = EntityRef(kind: outside, key: EntityKey(uuid: UUID()))
     await #expect(throws: StoreError.self) { try await SchemaFixture.set(ref, ["title": "Chat"], in: store) }
   }

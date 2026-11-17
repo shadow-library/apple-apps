@@ -2,7 +2,7 @@ import Foundation
 import ShadowCore
 import ShadowStore
 
-private let novelForgeRegistry = SchemaRegistry(version: NovelForgeSchema.version, entities: NovelForgeSchema.entities)
+private let novelForgeRegistry = NovelForgeSchema.registry
 
 extension WriteTransaction {
   /// The novel's plan world as reconciled at the transaction's start (D20's stored world); refuses while that world or what it is built from is faulted, or

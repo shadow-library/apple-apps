@@ -2,7 +2,7 @@ import Foundation
 import ShadowStore
 
 public enum NovelForgeStore {
-  public static let registry = SchemaRegistry(version: NovelForgeSchema.version, entities: NovelForgeSchema.entities)
+  public static let registry = NovelForgeSchema.registry
 
   public static func open(at url: URL, wallClock: @escaping @Sendable () -> Date = { Date() }) throws(ProjectionError) -> VaultStore {
     try open(.file(url), wallClock: wallClock)

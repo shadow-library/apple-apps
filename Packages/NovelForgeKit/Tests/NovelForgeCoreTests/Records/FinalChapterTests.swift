@@ -225,7 +225,12 @@ struct FinalChapterTests {
       }
       var corrupt = canon
       corrupt[name] = wrong
-      #expect(try await readCanon(try next(), .object(corrupt), in: store) == .unreadable(.invalid(field: "canon")), "wrong type \(name)")
+      let afterCorruption = try await readCanon(try next(), .object(corrupt), in: store)
+      if name == FinalChapterCanonMember.disclosed.rawValue {
+        #expect(afterCorruption.entry?.record.canon.disclosed == nil, "wrong type \(name)")
+      } else {
+        #expect(afterCorruption == .unreadable(.invalid(field: "canon")), "wrong type \(name)")
+      }
     }
     var newer = canon
     newer["generator"] = "x_collective"
@@ -254,9 +259,52 @@ struct FinalChapterTests {
   @Test func shouldWriteEveryMemberOfACanonAndOnlyTheCanonField() throws {
     let canon = try #require(Canon(body: "b").json.objectValue)
     #expect(Set(canon.keys) == Set(FinalChapterCanonMember.allCases.map(\.rawValue)))
+    #expect(canon["disclosed"] == .null)
     let amendment = try #require(FinalChapterAmendment(canon: "c", text: FinalChapterText(body: "b")).json.objectValue)
     #expect(Set(amendment.keys) == Set(FinalChapterAmendmentMember.allCases.map(\.rawValue)))
     #expect(Set(try finalChapter().fields.members.keys) == ["canon"])
+  }
+
+  @Test func shouldEncodeTheDisclosedSecretsPrecomposedUniqueAndInUTF16Order() throws {
+    let keys = ["b", "Ame\u{301}lie", "Am\u{E9}lie", "a", "b", "\u{FF5E}", "\u{1F600}"]
+    let encoded = Canon(body: "b", disclosed: keys).json.objectValue?["disclosed"]
+    #expect(encoded == .array(["Am\u{E9}lie", "a", "b", "\u{1F600}", "\u{FF5E}"].map(JSONValue.string)))
+    #expect(Canon(body: "b", disclosed: []).json.objectValue?["disclosed"] == .array([]))
+  }
+
+  @Test func shouldRoundTripTheDisclosedSecretsThroughFinalize() async throws {
+    let store = try SchemaFixture.store()
+    var canon = Canon(body: "Salt.", disclosed: ["s:tide", "s:ash", "Ame\u{301}lie"])
+    let record = try FinalChapterRecord(novel: novel, chapter: 9, canon: canon)
+    guard case .finalized = try await finalize(record, in: store) else { throw SchemaFixtureError(description: "the chapter was not finalized") }
+    let stored = try #require(try await read(record.ref, in: store))
+    #expect(stored.canon.disclosed == ["Am\u{E9}lie", "s:ash", "s:tide"])
+    #expect(stored.canonDigest == record.canonDigest)
+    canon.disclosed = []
+    let none = try FinalChapterRecord(novel: novel, chapter: 10, canon: canon)
+    _ = try await finalize(none, in: store)
+    #expect(try await read(none.ref, in: store)?.canon.disclosed == [])
+  }
+
+  @Test func shouldReadAnUnnormalisedDisclosureNormalised() async throws {
+    let store = try SchemaFixture.store()
+    var canon = try #require(Canon(body: "b").json.objectValue)
+    canon["disclosed"] = ["b", "a", "a"]
+    let stored = try #require(try await readCanon(try finalChapter(11), .object(canon), in: store).entry?.record)
+    #expect(stored.canon.disclosed == ["a", "b"])
+  }
+
+  @Test(arguments: [JSONValue.null, "s:ash", 3, true, ["s": "ash"], [1], ["s:ash", .null], [["s:ash"]]])
+  func shouldReadAMalformedDisclosureAsNotRecordedAndKeepTheCanonReadable(_ disclosed: JSONValue) async throws {
+    let store = try SchemaFixture.store()
+    let record = try finalChapter(12)
+    var canon = try #require(record.canon.json.objectValue)
+    canon["disclosed"] = disclosed
+    let stored = try #require(try await readCanon(record, .object(canon), in: store).entry?.record)
+    #expect(stored.canon.disclosed == nil)
+    #expect(stored.canon.body == "Salt.")
+    #expect(stored.canon.json == .object(canon))
+    #expect(stored.canonDigest == FinalChapterRecord.digest(.object(canon)))
   }
 
   @Test func shouldListOnlyTheFinalChaptersOfTheNovel() async throws {
