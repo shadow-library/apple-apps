@@ -105,7 +105,7 @@ enum ProposalApply {
   }
 
   // apply/unrestricted-raise.ts:10
-  private static func raisesToUnrestricted(_ op: ChangeOp) -> Bool {
+  static func raisesToUnrestricted(_ op: ChangeOp) -> Bool {
     guard case .briefUpdate(let update) = op.operation else { return false }
     return update.contentMode == .set(.unrestricted)
   }

@@ -18,6 +18,8 @@ public enum ProposalChangeEntryState: String, Sendable, CaseIterable, DatabaseVa
   case unreadable
   /// Recorded with a status this version does not know.
   case unrecognised
+  /// Never stored: the history's state of a rewrite with no undo that several changes may have carried, standing in a mix of applied and reverted.
+  case uncertain
 }
 
 public struct ProposalEntryRow: Hashable, Sendable, FetchableRecord, PersistableRecord {

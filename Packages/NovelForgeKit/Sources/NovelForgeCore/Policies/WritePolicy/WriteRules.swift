@@ -56,7 +56,7 @@ func isPlannerSide(_ op: ChangeOp) -> Bool {
 }
 
 // apps/novel-forge-server/src/modules/refinement/write-policy.ts:363
-private func asChangeSetRef(_ ref: String) -> String {
+func asChangeSetRef(_ ref: String) -> String {
   let prefix = "bible_doc:"
   return ref.jsStartsWith(prefix) ? "doc:\(ref.jsSlice(prefix.jsLength))" : ref
 }

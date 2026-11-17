@@ -19,9 +19,12 @@ public struct ChatChangeHistoryQuery: Sendable, Equatable {
 /// One index of an applied card as the history reads it.
 public struct ChatChangeEntry: Sendable, Equatable {
   public let row: ProposalEntryRow
-  /// The rewrite whose step applied this one (`CarriedRewrites`): it holds no undo of its own and stands as its leader does.
+  /// The rewrite whose step applied this one (`CarriedRewrites`): it holds no undo of its own and stands as its leader does. nil when several could have.
   public let carriedBy: Int?
-  /// The leader's state for a carried rewrite, the row's own otherwise.
+  /// The rewrites that may have carried this one: its leader alone, or every one holding an undo before it on its chapter when concurrent appliers grouped
+  /// the chapter differently.
+  public let carriers: [Int]
+  /// The leader's state for a carried rewrite (by `CarriedRewrites.standing` when several may have carried it, `uncertain` in a mix), the row's own otherwise.
   public let state: ProposalChangeEntryState
   /// Whether the change, or the leader that carries it, holds an undo.
   public let hasUndo: Bool
@@ -44,13 +47,20 @@ public struct ChatChange: Sendable, Equatable {
     self.state = state
     self.session = session
     self.record = record
-    let leaders = record.map { CarriedRewrites.leaders(of: $0.card.changeSet, selected: $0.application?.selected ?? []) } ?? [:]
+    let recorded = rows.filter { $0.state == .applied || $0.state == .reverted }
+    let carriers =
+      record.map {
+        CarriedRewrites.carriers(of: $0.card.changeSet, recorded: recorded.map(\.index), holdingUndo: Set(recorded.filter(\.hasUndo).map(\.index)))
+      } ?? [:]
     let byIndex = Dictionary(rows.map { ($0.index, $0) }) { first, _ in first }
     entries = rows.map { row in
-      guard let leader = leaders[row.index].flatMap({ byIndex[$0] }), !row.isAction, row.state == .applied, !row.hasUndo else {
-        return ChatChangeEntry(row: row, carriedBy: nil, state: row.state, hasUndo: row.hasUndo)
+      let leaders = carriers[row.index]?.compactMap { byIndex[$0] } ?? []
+      guard !leaders.isEmpty, !row.isAction, row.state == .applied, !row.hasUndo else {
+        return ChatChangeEntry(row: row, carriedBy: nil, carriers: [], state: row.state, hasUndo: row.hasUndo)
       }
-      return ChatChangeEntry(row: row, carriedBy: leader.index, state: leader.state, hasUndo: leader.hasUndo)
+      let state = CarriedRewrites.standing(of: leaders.map(\.state), applied: .applied, reverted: .reverted, uncertain: .uncertain)
+      return ChatChangeEntry(
+        row: row, carriedBy: leaders.count == 1 ? leaders.first?.index : nil, carriers: leaders.map(\.index), state: state, hasUndo: leaders.contains(where: \.hasUndo))
     }
   }
 
@@ -60,10 +70,10 @@ public struct ChatChange: Sendable, Equatable {
   /// proposal.service.ts:297 (status applied with inverse ops): a content change stands applied and holds its undo.
   public var isRevertible: Bool { entries.contains { !$0.isAction && $0.state == .applied && $0.hasUndo } }
 
-  /// The reference's `reverted` status: every content change was reverted and none stands applied, awaiting or unknown.
+  /// The reference's `reverted` status: every content change was reverted and none stands applied, awaiting, unknown or uncertain.
   public var isReverted: Bool {
     let content = entries.filter { !$0.isAction }
-    return content.contains { $0.state == .reverted } && !content.contains { [.applied, .awaiting, .unreadable, .unrecognised].contains($0.state) }
+    return content.contains { $0.state == .reverted } && !content.contains { [.applied, .awaiting, .unreadable, .unrecognised, .uncertain].contains($0.state) }
   }
 }
 
