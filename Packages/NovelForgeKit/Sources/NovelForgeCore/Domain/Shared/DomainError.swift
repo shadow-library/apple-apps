@@ -51,6 +51,31 @@ public enum DomainError: ShadowError, Equatable {
   case tooLong(field: String, limit: Int)
   case unknownKind(String)
   case noChanges
+  case empty(field: String)
+  case chapterNotFound(Int)
+  case chapterNotFinal(Int)
+  case isolatedWithoutSummary(Int)
+  case summaryMissing(Int)
+  case draftNotFound(Int?)
+  case draftFinal(Int)
+  case draftNotApproved(Int)
+  case draftStale(chapter: Int, reason: String)
+  case draftConflict(chapter: Int, head: String?)
+  case draftRevealStale(Int)
+  case notNextChapter(chapter: Int, next: Int)
+  case finalizeOutOfOrder(Int)
+  case planRevealsLocked(chapter: Int, violations: String)
+  case endingPlanned(Int)
+  case planClaims(chapter: Int, reason: String)
+  case planRevealsHeld(chapter: Int, violations: String)
+  case planFinal(Int)
+  case endingIncomplete(fields: String)
+  case scenesMalformed(String)
+  case versionNotFound(chapter: Int, revision: String)
+  case versionFinal(Int)
+  case versionUnreadable(chapter: Int, revision: String)
+  case lifecycleUnavailable(Int?)
+  case planStateUnavailable(Int)
   case unreadable(EntityRef)
   case store(StoreError)
 
@@ -86,6 +111,31 @@ public enum DomainError: ShadowError, Equatable {
     case .tooLong: "domain.too_long"
     case .unknownKind: "domain.unknown_kind"
     case .noChanges: "domain.no_changes"
+    case .empty: "domain.empty"
+    case .chapterNotFound: "CHP_001"
+    case .chapterNotFinal: "CHP_006"
+    case .isolatedWithoutSummary: "CHP_005"
+    case .summaryMissing: "CHP_010"
+    case .draftNotFound: "DRF_001"
+    case .draftFinal: "DRF_002"
+    case .draftNotApproved: "DRF_004"
+    case .draftStale: "DRF_007"
+    case .draftConflict: "DRF_013"
+    case .draftRevealStale: "DRF_017"
+    case .notNextChapter: "DRF_018"
+    case .finalizeOutOfOrder: "FIN_001"
+    case .planRevealsLocked: "PLN_001"
+    case .endingPlanned: "PLN_002"
+    case .planClaims: "PLN_003"
+    case .planRevealsHeld: "PLN_004"
+    case .planFinal: "PLN_005"
+    case .endingIncomplete: "BRF_003"
+    case .scenesMalformed: "BRF_004"
+    case .versionNotFound: "VER_001"
+    case .versionFinal: "VER_002"
+    case .versionUnreadable: "chapters.version_unreadable"
+    case .lifecycleUnavailable: "chapters.lifecycle_unavailable"
+    case .planStateUnavailable: "chapters.plan_state_unavailable"
     case .unreadable: "domain.unreadable"
     case .store(let error): error.code
     }
@@ -123,6 +173,34 @@ public enum DomainError: ShadowError, Equatable {
     case .tooLong(let field, let limit): "\(field) must be at most \(limit) characters"
     case .unknownKind(let kind): "Milestone kind \(kind) is not one of rank, event, learned_from, custom"
     case .noChanges: "At least one field must change"
+    case .empty(let field): "\(field) must not be empty"
+    case .chapterNotFound: "Chapter not found"
+    case .chapterNotFinal: "Chapter is not finalized canon — amend is only available once the chapter is finalized"
+    case .isolatedWithoutSummary: "Isolated chapter has no summary or continuation state — summarize the chapter before finalizing"
+    case .summaryMissing(let chapter): "Chapter \(chapter) has no summary — write one or summarise with AI"
+    case .draftNotFound: "Draft not found"
+    case .draftFinal: "Draft is already finalized"
+    case .draftNotApproved: "Draft is not approved — approve draft before finalizing"
+    case .draftStale: "Draft is stale — something it was written against changed; regenerate or edit it, or approve it as written"
+    case .draftConflict: "This chapter changed while you were working on it. Reload it and try again."
+    case .draftRevealStale: "This draft is stale because a reveal in its plan no longer holds — fix the plan; it cannot be approved as written"
+    case .notNextChapter(let chapter, let next):
+      "Only chapter \(next) can be started now — chapters are written in order, so chapter \(chapter) cannot get a new draft"
+    case .finalizeOutOfOrder: "Chapters must be finalized in order"
+    case .planRevealsLocked(let chapter, let violations): "The plan for chapter \(chapter) reveals facts that are still locked there: \(violations)"
+    case .endingPlanned(let chapter): "Chapter \(chapter) is already planned as the ending — clear its ending flag first"
+    case .planClaims(let chapter, let reason): "The plan for chapter \(chapter) cannot claim these milestones: \(reason)"
+    case .planRevealsHeld(let chapter, let violations):
+      "The plan for chapter \(chapter) reveals facts that are locked there — change the plan before approving or finalizing: \(violations)"
+    case .planFinal(let chapter): "Chapter \(chapter) is finalized — its plan can no longer change"
+    case .endingIncomplete(let fields): "Ending contract is incomplete — \(fields) must not be empty"
+    case .scenesMalformed(let reason): "Chapter plan scenes are malformed — \(reason)"
+    case .versionNotFound(let chapter, let revision): "Chapter \(chapter) has no stored version \(revision)"
+    case .versionFinal(let chapter): "Chapter \(chapter) is final — its prose is locked, so an earlier version cannot be restored; change it through Amend"
+    case .versionUnreadable(let chapter, let revision): "Version \(revision) of chapter \(chapter) is stored in a form this version cannot read"
+    case .lifecycleUnavailable(let chapter?): "The state of chapter \(chapter) is not up to date on this device, so it cannot be written, approved or finalized now"
+    case .lifecycleUnavailable(nil): "The state of this novel's chapters is not up to date on this device, so no chapter can be started now"
+    case .planStateUnavailable(let chapter): "The plans of this novel are not up to date on this device, so the plan for chapter \(chapter) cannot be written now"
     case .unreadable(let ref): "\(ref.kind.rawValue)/\(ref.key.rawValue) is stored in a form this version cannot read"
     case .store(let error): error.errorDescription
     }

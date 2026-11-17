@@ -75,12 +75,14 @@ public protocol RevisionedRecord: KeyedRecord {
 }
 
 extension RevisionedRecord {
-  static func revise(_ ref: EntityRef, body: Body, marks: [Mark] = [], in transaction: inout WriteTransaction) throws(StoreError) -> Revised {
+  static func revise(
+    _ ref: EntityRef, body: Body, parent: RevisionParent = .head, head: Bool = true, marks: [Mark] = [], in transaction: inout WriteTransaction
+  ) throws(StoreError) -> Revised {
     guard NovelForgeKind(ref.kind) == kind else { throw .invalidChange("\(ref.kind.rawValue)/\(ref.key.rawValue) is not a \(kind.rawValue) entity") }
     guard case .revisioned(let state)? = try transaction.state(of: ref, scope: .vault), state[field: CommonField.naturalKey.rawValue] != nil else {
       throw .invalidChange("\(ref.kind.rawValue)/\(ref.key.rawValue) was never created")
     }
-    let revised = try transaction.revise(ref, body: body.json, marks: marks.map(\.rawValue))
+    let revised = try transaction.revise(ref, body: body.json, parent: parent, head: head, marks: marks.map(\.rawValue))
     return Revised(record: revised.record, revision: revised.revision)
   }
 

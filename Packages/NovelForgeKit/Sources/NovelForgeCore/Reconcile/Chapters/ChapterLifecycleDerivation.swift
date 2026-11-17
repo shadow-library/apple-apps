@@ -217,7 +217,7 @@ extension DraftUpstream {
       guard try database.tableExists(ProjectionFaults.table) else { return false }
       return try Bool.fetchOne(
         database, sql: "SELECT EXISTS (SELECT 1 FROM \(ProjectionFaults.table) WHERE derivation = ? AND key IN (?, ?))",
-        arguments: [ChapterLifecycleEntry.databaseTableName, ProjectionFaults.wholeDerivation, String(reflecting: novel)]) ?? false
+        arguments: [ChapterLifecycleEntry.databaseTableName, ProjectionFaults.wholeDerivation, ProjectionFaults.key(novel)]) ?? false
     }
   }
 

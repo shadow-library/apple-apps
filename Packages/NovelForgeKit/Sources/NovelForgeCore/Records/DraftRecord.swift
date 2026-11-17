@@ -130,6 +130,11 @@ extension DraftRecord {
     try revise(ref, body: content, marks: marks, in: &transaction)
   }
 
+  /// A revision beside the head, child of `parent`, that does not become the head.
+  public static func keep(_ ref: EntityRef, _ content: DraftContent, parent: RevisionParent, in transaction: inout WriteTransaction) throws(StoreError) -> Revised {
+    try revise(ref, body: content, parent: parent, head: false, in: &transaction)
+  }
+
   public static func mark(_ ref: EntityRef, revision: String, _ marks: [DraftMark], in transaction: inout WriteTransaction) throws(StoreError) -> ChangeRecord {
     try mark(ref, revision: revision, as: marks, in: &transaction)
   }

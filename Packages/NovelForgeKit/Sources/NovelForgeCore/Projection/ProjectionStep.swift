@@ -25,6 +25,15 @@ enum ProjectionFaults {
     CREATE TABLE nf_derived_fault (derivation TEXT NOT NULL, key TEXT NOT NULL, version INTEGER NOT NULL, message TEXT NOT NULL, PRIMARY KEY (derivation, key)) STRICT, WITHOUT ROWID
     """
   static let logger = Logger(category: "projection")
+
+  /// How a fault row names the key it is about.
+  static func key(_ key: some Hashable & Sendable) -> String { String(reflecting: key) }
+
+  /// The kind of the entity a fault key written for an `EntityRef` names; nil for any other key.
+  static func kind(ofKey key: String) -> EntityKind? {
+    guard let start = key.range(of: "(kind: "), let end = key.range(of: ", key: ", range: start.upperBound..<key.endIndex) else { return nil }
+    return EntityKind(String(key[start.upperBound..<end.lowerBound]))
+  }
 }
 
 struct StandingFaults {
@@ -83,13 +92,13 @@ private struct RegisteredDerivation<Registered: Derivation>: ProjectionStep {
       case .genuine(let failure): throw .store(failure)
       case .fault(let message):
         let withdrawn = withdrawing ? try withdraw(key, in: database) : []
-        try record(String(reflecting: key), message, in: database)
+        try record(ProjectionFaults.key(key), message, in: database)
         return withdrawn
       }
     }
     if clearingFault {
       try writing(database) { database in
-        try database.execute(sql: "DELETE FROM \(ProjectionFaults.table) WHERE derivation = ? AND key = ?", arguments: [table, String(reflecting: key)])
+        try database.execute(sql: "DELETE FROM \(ProjectionFaults.table) WHERE derivation = ? AND key = ?", arguments: [table, ProjectionFaults.key(key)])
       }
     }
     return changed
