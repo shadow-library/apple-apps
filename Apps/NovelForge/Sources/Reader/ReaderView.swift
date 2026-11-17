@@ -110,7 +110,14 @@ struct ReaderView: View {
     let cursor = outline.next.value
     let writable = outline.nextWritable ?? 1
     return List {
-      if outline.volumes.isUnavailable {
+      if outline.headings.isUnavailable {
+        ShadowCallout(
+          Text("Titles and volumes are unavailable", tableName: "Reader"), message: Text("Chapters are listed by number, without their titles or volumes.", tableName: "Reader"),
+          intent: .warning
+        ) {
+          EmptyView()
+        }
+      } else if outline.volumes.isUnavailable {
         ShadowCallout(Text("Volumes are unavailable", tableName: "Reader"), message: Text("Chapters are listed without their volumes.", tableName: "Reader"), intent: .warning) {
           EmptyView()
         }
@@ -131,7 +138,7 @@ struct ReaderView: View {
     Section {
       if !collapsed.contains(group.key) {
         ForEach(group.chapters, id: \.self) { chapter in
-          if let row = rows[chapter] { chapterLink(row, heading: outline.headings[chapter], isCursor: chapter == cursor) }
+          if let row = rows[chapter] { chapterLink(row, heading: outline.headings.value?[chapter], isCursor: chapter == cursor) }
         }
       }
     } header: {

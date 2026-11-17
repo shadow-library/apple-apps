@@ -7,5 +7,7 @@ public enum ChapterDerivations {
     ChapterLifecycleDerivation(),
     ApprovalInForceDerivation(),
     CharacterKnowledgeDerivation(),
+    ChapterHeadingSourceDerivation(),
+    ChapterHeadingDerivation(),
   ]
 }

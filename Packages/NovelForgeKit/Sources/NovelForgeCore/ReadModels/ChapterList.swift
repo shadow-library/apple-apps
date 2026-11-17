@@ -63,31 +63,3 @@ public struct ChapterList: ReadModel {
     return entry.review == .approved ? .approved : .drafted
   }
 }
-
-public enum ChapterHeadings {
-  public static func load(novel: UUID, chapters: [Int], in transaction: ReadTransaction) throws(StoreError) -> [Int: String] {
-    var headings = [Int: String]()
-    for chapter in chapters {
-      guard let ref = try? FinalChapterRecord.ref(novel: novel, chapter: chapter) else { continue }
-      if case .readable(let entry) = try FinalChapterRecord.read(ref, in: transaction), !entry.isRemoved, let title = entry.record.text.title {
-        headings[chapter] = title
-        continue
-      }
-      if let ref = try? DraftRecord.ref(novel: novel, chapter: chapter), let title = try draftTitle(ref, in: transaction) {
-        headings[chapter] = title
-        continue
-      }
-      guard let ref = try? ChapterPlanRecord.ref(novel: novel, chapter: chapter), case .readable(let entry) = try ChapterPlanRecord.readHead(ref, in: transaction),
-        !entry.isRemoved,
-        let title = entry.record.content.title
-      else { continue }
-      headings[chapter] = title
-    }
-    return headings
-  }
-
-  private static func draftTitle(_ ref: EntityRef, in transaction: ReadTransaction) throws(StoreError) -> String? {
-    guard case .readable(let entry) = try DraftRecord.readHead(ref, in: transaction), !entry.isRemoved else { return nil }
-    return entry.record.content.title
-  }
-}

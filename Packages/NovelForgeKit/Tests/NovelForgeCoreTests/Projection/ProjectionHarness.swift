@@ -241,7 +241,7 @@ enum ProjectionOperations {
       return { transaction in
         let ref = try FinalChapterRecord.ref(novel: novel, chapter: chapter)
         guard case .readable = try FinalChapterRecord.read(ref, in: transaction) else { return }
-        _ = try FinalChapterRecord.amend(ref, FinalChapterText(body: text), in: &transaction)
+        _ = try FinalChapterRecord.amend(ref, FinalChapterText(title: text, body: text), in: &transaction)
       }
     },
     ProjectionOperation(name: "purge final chapter", weight: 1) { generator, universe in

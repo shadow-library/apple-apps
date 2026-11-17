@@ -72,7 +72,7 @@ private let models: [(name: String, perRecord: Bool, load: Load)] = [
   ("NotebookContents", true, { _ = try NotebookContents.load(NotebookQuery(novel: readNovel), in: $0) }),
   ("ChapterList", false, { _ = try ChapterList.load(readNovel, in: $0) }),
   ("KnowledgeLedger", false, { _ = try KnowledgeLedger.load(readNovel, in: $0) }),
-  ("ChapterHeadings", true, { _ = try ChapterHeadings.load(novel: readNovel, chapters: [1, 2, 3], in: $0) }),
+  ("ChapterHeadings", false, { _ = try ChapterHeadings.load(readNovel, in: $0) }),
 ]
 
 @Suite("Read model cost", .timeLimit(.minutes(3)))

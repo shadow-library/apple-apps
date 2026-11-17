@@ -222,6 +222,17 @@
         }
       }
     },
+    "Chapters are listed by number, without their titles or volumes.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Chapters are listed by number, without their titles or volumes."
+          }
+        }
+      }
+    },
     "Chapters are listed without their volumes.": {
       "extractionState": "manual",
       "localizations": {
@@ -1153,6 +1164,17 @@
           "stringUnit": {
             "state": "translated",
             "value": "This text is not saved anywhere else and cannot be recovered."
+          }
+        }
+      }
+    },
+    "Titles and volumes are unavailable": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Titles and volumes are unavailable"
           }
         }
       }

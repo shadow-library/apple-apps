@@ -148,8 +148,9 @@ struct ReadModelTests {
       plan.title = "Plan four"
       try PlanWorldWrites.putPlan(novel: readNovel, chapter: 4, plan, in: &transaction)
     }
-    let headings = try await store.read { try ChapterHeadings.load(novel: readNovel, chapters: [1, 4, 9], in: $0) }
-    #expect(headings == [4: "Plan four"])
+    let headings = try #require(try await store.load(ChapterHeadings.self, readNovel).headings.value)
+    #expect(headings.compactMapValues(\.title) == [4: "Plan four"])
+    #expect(headings.compactMapValues(\.volume) == [1: "one", 2: "one", 3: "one", 4: "one"])
   }
 
   @Test func shouldLedgerCharacterKnowledgeInChapterOrder() async throws {
@@ -176,7 +177,7 @@ struct ReadModelTests {
       _ = try FinalChapterRecord.amend(ref, FinalChapterText(title: "Bound", body: "Bound text."), in: &transaction)
       _ = try transaction.revise(ref, body: FinalChapterAmendment(canon: "another canon", text: FinalChapterText(title: "Stray", body: "Stray.")).json)
     }
-    let headings = try await store.read { try ChapterHeadings.load(novel: readNovel, chapters: [1], in: $0) }
-    #expect(headings == [1: "Bound"])
+    let headings = try await store.load(ChapterHeadings.self, readNovel)
+    #expect(headings.headings.value?[1]?.title == "Bound")
   }
 }

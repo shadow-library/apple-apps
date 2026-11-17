@@ -7,15 +7,22 @@ nonisolated struct ChapterOutline: ReadModel {
   let rows: Derived<[ChapterRow]>
   let next: Derived<Int>
   let volumes: Derived<[VolumeSummary]>
-  let headings: [Int: String]
+  let headings: Derived<[Int: String]>
 
   static func load(_ novel: UUID, in transaction: ReadTransaction) throws(StoreError) -> ChapterOutline {
     let presence = try presence(of: novel, in: transaction)
-    guard case .present = presence else { return ChapterOutline(presence: presence, rows: .available([]), next: .available(1), volumes: .available([]), headings: [:]) }
+    guard case .present = presence else { return ChapterOutline(presence: presence, rows: .available([]), next: .available(1), volumes: .available([]), headings: .available([:])) }
     let list = try ChapterList.load(novel, in: transaction)
-    let facts = list.rows.isUnavailable ? ChapterFacts() : try ChapterFacts.load(novel: novel, chapters: list.rows.value?.map(\.chapter) ?? [], in: transaction)
+    let listed = Set(list.rows.value?.map(\.chapter) ?? [])
+    let headings = try ChapterHeadings.load(novel, in: transaction).headings
+    let shown = headings.value?.filter { listed.contains($0.key) } ?? [:]
     let structure = try StoryStructure.load(novel, in: transaction)
-    return ChapterOutline(presence: presence, rows: list.rows, next: list.next, volumes: summaries(structure.volumes, claims: facts.volumes), headings: facts.headings)
+    let (titles, claims): (Derived<[Int: String]>, Derived<[Int: String]>) =
+      switch headings {
+      case .unavailable(let faults): (.unavailable(faults), .unavailable(faults))
+      case .available: (.available(shown.compactMapValues(\.title)), .available(shown.compactMapValues(\.volume)))
+      }
+    return ChapterOutline(presence: presence, rows: list.rows, next: list.next, volumes: summaries(structure.volumes, claims: claims), headings: titles)
   }
 
   var groups: [ChapterGroup] {
@@ -36,10 +43,10 @@ nonisolated struct ChapterOutline: ReadModel {
     }
   }
 
-  private static func summaries(_ volumes: Derived<StructureSection<VolumeItem>>, claims: [Int: String]) -> Derived<[VolumeSummary]> {
-    switch volumes {
-    case .unavailable(let faults): return .unavailable(faults)
-    case .available(let section):
+  private static func summaries(_ volumes: Derived<StructureSection<VolumeItem>>, claims: Derived<[Int: String]>) -> Derived<[VolumeSummary]> {
+    switch (volumes, claims) {
+    case (.unavailable(let faults), _), (_, .unavailable(let faults)): return .unavailable(faults)
+    case (.available(let section), .available(let claims)):
       return .available(
         section.items.map { item in
           let claimed = claims.filter { $0.value == item.record.volume }.keys
@@ -48,36 +55,5 @@ nonisolated struct ChapterOutline: ReadModel {
             planLast: claimed.max())
         })
     }
-  }
-}
-
-nonisolated struct ChapterFacts {
-  var headings: [Int: String] = [:]
-  var volumes: [Int: String] = [:]
-
-  static func load(novel: UUID, chapters: [Int], in transaction: ReadTransaction) throws(StoreError) -> ChapterFacts {
-    var facts = ChapterFacts()
-    for chapter in chapters {
-      var title: String?
-      var volume: String?
-      if let ref = try? FinalChapterRecord.ref(novel: novel, chapter: chapter), case .readable(let entry) = try FinalChapterRecord.read(ref, in: transaction), !entry.isRemoved {
-        title = entry.record.text.title
-        volume = entry.record.canon.volume
-      }
-      if title == nil, let ref = try? DraftRecord.ref(novel: novel, chapter: chapter), case .readable(let entry) = try DraftRecord.readHead(ref, in: transaction), !entry.isRemoved
-      {
-        title = entry.record.content.title
-      }
-      if title == nil || volume == nil, let ref = try? ChapterPlanRecord.ref(novel: novel, chapter: chapter),
-        case .readable(let entry) = try ChapterPlanRecord.readHead(ref, in: transaction),
-        !entry.isRemoved
-      {
-        title = title ?? entry.record.content.title
-        volume = volume ?? entry.record.content.volume
-      }
-      facts.headings[chapter] = title
-      facts.volumes[chapter] = volume
-    }
-    return facts
   }
 }

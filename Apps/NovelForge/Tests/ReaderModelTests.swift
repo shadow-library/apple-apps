@@ -56,6 +56,30 @@ struct ReaderModelTests {
     #expect(outline.groups.map(\.chapters) == [[1, 2]])
   }
 
+  @Test("should head and group the list from the amended final chapter and the plans' volumes")
+  func headsAndGroups() async throws {
+    let fixture = try await makeFixture()
+    let novel = fixture.novel
+    try await fixture.store.writeDomain { transaction throws(DomainError) in
+      try Volumes.create(novel: novel, volume: "ashes", title: "Ashes", in: &transaction)
+      try Volumes.create(novel: novel, volume: "embers", title: "Embers", in: &transaction)
+    }
+    try await fixture.store.write { transaction in
+      _ = try ChapterPlanRecord(novel: novel, chapter: 1, content: ChapterPlanContent(title: "Plan one", body: "Plan.", volume: "embers")).create(in: &transaction)
+      _ = try ChapterPlanRecord(novel: novel, chapter: 2, content: ChapterPlanContent(title: "The Pass", body: "Plan.", volume: "embers")).create(in: &transaction)
+      _ = try FinalChapterRecord(novel: novel, chapter: 1, canon: Canon(title: "Burned", body: "Ash.", volume: "ashes")).create(in: &transaction)
+      _ = try FinalChapterRecord.amend(try FinalChapterRecord.ref(novel: novel, chapter: 1), FinalChapterText(title: "The Burned City", body: "Ash."), in: &transaction)
+    }
+
+    let outline = try await fixture.store.load(ChapterOutline.self, novel)
+
+    #expect(outline.headings == .available([1: "The Burned City", 2: "The Pass"]))
+    #expect(outline.volumes.value?.map(\.key) == ["ashes", "embers"])
+    #expect(outline.volumes.value?.map(\.planFirst) == [1, 2])
+    #expect(outline.volumes.value?.map(\.planLast) == [1, 2])
+    #expect(outline.groups.map(\.chapters) == [[1], [2]])
+  }
+
   @Test("should read a final chapter as its canon")
   func readsFinal() async throws {
     let fixture = try await makeFixture()

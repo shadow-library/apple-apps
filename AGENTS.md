@@ -18,7 +18,7 @@ Read `README.md` first; it covers layout, modules and tasks.
 - `@_spi(Preview)` is for preview and capture hooks (Catalog, screenshots), never for app code.
 - Novel Forge schema v1 is frozen: adding kinds or fields raises `NovelForgeSchema.version` and saves `Fixtures/schema/registry-v<N>.json` beside v1; never reorder or rename hashed key components.
 - Write Novel Forge data through the typed records in `NovelForgeCore/Records` (their create, edit, revise and append writes), never by setting raw JSON fields on a `WriteTransaction`.
-- Derived state lives in a `Derivation` on the `Projection` frame, in `Reconcile/<Area>/`: `.records` inputs map from the `EntityRef` alone, per-novel aggregates over hash-keyed kinds subscribe through `RecordIndexDerivation`, and `key(of:)`, a one-key `request(for:)` and a primary key are mandatory.
+- Derived state lives in a `Derivation` on the `Projection` frame, in `Reconcile/<Area>/`: `.records` inputs map from the `EntityRef` alone, per-novel aggregates over hash-keyed kinds subscribe through `RecordIndexDerivation` (or through `.outputs(of:)` of their own per-ref layer whose rows record the novel and chapter), and `key(of:)`, a one-key `request(for:)` and a primary key are mandatory.
 - Register every derivation in the incremental == rebuild harness (`Tests/NovelForgeCoreTests/Projection/ProjectionHarness.swift`); raise its `version` when `outputs(for:in:)` changes meaning.
 - Fixtures come from `bun` generators that import the reference read-only; they are deterministic and hold no machine paths. Never write inside the reference checkout.
 - Port JavaScript semantics through `Text/` and `Text/Regex`; never use `NSRegularExpression` or Swift `Regex` for a pattern taken from the reference.

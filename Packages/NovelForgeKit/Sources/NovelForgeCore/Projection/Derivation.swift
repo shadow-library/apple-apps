@@ -25,7 +25,8 @@ public struct DerivationInput<Key: Hashable & Sendable>: Sendable {
   let keys: @Sendable (ProjectionChanges) -> [Key]
 
   /// Maps from the ref alone, never from state: a purged or half-delivered entity cannot say where it belonged. A per-novel aggregate over a
-  /// hash-keyed kind subscribes to `RecordIndexDerivation` instead, whose row changes whenever the entity's merged state does.
+  /// hash-keyed kind subscribes to `RecordIndexDerivation` instead, whose row changes whenever the entity's merged state does, or to a per-ref layer of its own
+  /// whose rows record the novel and chapter.
   public static func records(_ kinds: [NovelForgeKind], keys: @escaping @Sendable (EntityRef) -> [Key]) -> DerivationInput {
     let kinds = Set(kinds)
     return DerivationInput(upstream: nil) { changes in
