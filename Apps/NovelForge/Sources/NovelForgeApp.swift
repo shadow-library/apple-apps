@@ -9,10 +9,13 @@ struct NovelForgeApp: App {
     @NSApplicationDelegateAdaptor(NovelForgeAppDelegate.self) private var delegate
   #endif
   @State private var vault = VaultModel(locate: Self.locate)
+  @State private var ai = AIServices.live()
 
   var body: some Scene {
     WindowGroup {
       RootView(vault: vault)
+        .environment(ai)
+        .task { await ai.loadOpenRouterModelsIfKeyed() }
         .shadowTheme()
         .flushingUnsavedWork()
         #if os(macOS)
@@ -20,6 +23,9 @@ struct NovelForgeApp: App {
         #endif
     }
     .commands { NovelForgeCommands() }
+    #if os(macOS)
+      Settings { AISettingsScene(vault: vault, services: ai) }
+    #endif
   }
 
   private nonisolated static func locate() throws(VaultOpenError) -> StoreLocation {
