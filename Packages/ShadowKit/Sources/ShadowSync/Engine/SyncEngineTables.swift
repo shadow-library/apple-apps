@@ -7,7 +7,7 @@ enum SyncEngineSchema {
   static let segment = "segment"
   static let base = "base"
 
-  static let migration = StoreMigration(identifier: "shadow.sync.engine.1") { db in
+  static let migration = StoreMigration(identifier: "com.shadow.library.shadowsync.engine.1") { db in
     try db.execute(
       sql: """
         CREATE TABLE sync_outbox (
@@ -38,7 +38,7 @@ enum SyncEngineSchema {
         """)
   }
 
-  static let heldMigration = StoreMigration(identifier: "shadow.sync.engine.2") { db in
+  static let heldMigration = StoreMigration(identifier: "com.shadow.library.shadowsync.engine.2") { db in
     try db.execute(
       sql: """
         CREATE TABLE sync_held (
@@ -58,7 +58,7 @@ enum SyncEngineSchema {
         """)
   }
 
-  static let compactionMigration = StoreMigration(identifier: "shadow.sync.engine.3") { db in
+  static let compactionMigration = StoreMigration(identifier: "com.shadow.library.shadowsync.engine.3") { db in
     try db.execute(
       sql: """
         CREATE TABLE sync_compaction (

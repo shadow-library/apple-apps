@@ -20,7 +20,7 @@ public enum ReplicaHistory {
   private static let segment = "segment"
   private static let base = "base"
 
-  public static let migration = StoreMigration(identifier: "shadow.sync.history.1") { db in
+  public static let migration = StoreMigration(identifier: "com.shadow.library.shadowsync.history.1") { db in
     try db.execute(
       sql: """
         CREATE TABLE sync_replica_upload (
@@ -39,7 +39,7 @@ public enum ReplicaHistory {
   }
 
   /// A base row records its part count from the moment it is announced; `completed` orders completions, so the current base is the one completed last.
-  public static let completionMigration = StoreMigration(identifier: "shadow.sync.history.2") { db in
+  public static let completionMigration = StoreMigration(identifier: "com.shadow.library.shadowsync.history.2") { db in
     try db.execute(
       sql: """
         ALTER TABLE sync_replica_upload ADD COLUMN completed INTEGER CHECK (completed >= 1);

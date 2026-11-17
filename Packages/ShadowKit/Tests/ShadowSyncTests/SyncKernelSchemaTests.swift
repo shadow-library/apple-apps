@@ -61,7 +61,7 @@ struct SyncKernelSchemaTests {
     #expect(SyncKernelSchema.schemaFloorRef(0).key.rawValue == "v-0")
     let keyID = try #require(KeyID("01936f3e-0000-7000-8000-000000000001"))
     #expect(SyncKernelSchema.keyFloorRef(keyID) == EntityRef(kind: ReplicaFixture.kind("_key_floor"), key: ReplicaFixture.key("01936f3e-0000-7000-8000-000000000001")))
-    let recovery = EntityKey.natural(scope: "shadow.sync", kind: ReplicaFixture.kind("_recovery"), components: ["0123456789abcdef"])
+    let recovery = EntityKey.natural(scope: "com.shadow.library.shadowsync", kind: ReplicaFixture.kind("_recovery"), components: ["0123456789abcdef"])
     #expect(SyncKernelSchema.recoveryRef("0123456789abcdef").key == recovery)
     let replica = ReplicaFixture.replica("01936f3e-1111-7111-8111-111111111111")
     #expect(SyncKernelSchema.replicaRef(replica).key.rawValue == replica.description)

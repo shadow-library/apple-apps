@@ -12,7 +12,7 @@ extension Project {
     infoPlist: [String: Plist.Value] = [:],
     entitlements: Entitlements? = nil
   ) -> Project {
-    let bundleId = "\(Organization.bundleIdPrefix).\(bundleIdSuffix ?? name.lowercased())"
+    let bundleId = "\(Organization.appBundleIdPrefix).\(bundleIdSuffix ?? name.lowercased())"
     let defaultInfoPlist: [String: Plist.Value] = [
       "CFBundleDisplayName": .string(name),
       "CFBundleShortVersionString": "$(MARKETING_VERSION)",

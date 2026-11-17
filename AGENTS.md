@@ -5,7 +5,8 @@ Read `README.md` first; it covers layout, modules and tasks.
 ## Rules
 
 - Never commit or hand-edit `*.xcodeproj`, `*.xcworkspace` or `Derived/`. Change the Swift manifests and run `tuist generate --no-open`.
-- Every app's `Project.swift` goes through `Project.app(...)`. Build settings belong in `Tuist/ProjectDescriptionHelpers/Settings+Shadow.swift`, never per app.
+- Every app's `Project.swift` goes through `Project.app(...)`. Build settings belong in `Tuist/ProjectDescriptionHelpers/Settings+Shadow.swift`, never per app; settings of the package targets (ShadowKit, product kits) live in `Tuist/Package.swift`'s `PackageSettings`.
+- Every identifier is reverse-DNS under its owner: `com.shadow.apps.<app>` for an app (bundle id, keychain services, defaults keys) and `com.shadow.library.<library>` for a shared library (bundle id, migration identifiers, format tags, hash domain separators). A new library target is added to the list in `Tuist/Package.swift`.
 - Depend on shared modules with `.shared(.<module>)`, never `.external(name:)` with a string.
 - Depend on product modules with `.product(.<module>)` (`ProductModule`), never `.external(name:)` with a string.
 - Code reused by a second app belongs in `Packages/ShadowKit`, not copied between apps.

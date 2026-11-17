@@ -18,7 +18,7 @@ private let golden = SchemaRegistry(
   ])
 
 private let goldenDescription =
-  #"{"format":"shadow.schema-registry","format_version":1,"kinds":[{"fields":[],"kind":"log","marks":[],"retention":"all","shape":"revisioned","sync_class":"general"},"#
+  #"{"format":"com.shadow.library.shadowstore.schema-registry","format_version":1,"kinds":[{"fields":[],"kind":"log","marks":[],"retention":"all","shape":"revisioned","sync_class":"general"},"#
   + #"{"kind":"message","shape":"appended","sync_class":"activity"},{"fields":[{"name":"origin","rule":{"kind":"first_writer_wins"}},"#
   + #"{"name":"status","rule":{"kind":"monotone","order":["draft","final"]}},{"name":"title","rule":{"kind":"register"}}],"kind":"note","shape":"record","#
   + #""sync_class":"general"},{"fields":[{"name":"title","rule":{"kind":"register"}}],"kind":"page","marks":["approved","reviewed"],"retention":50,"#
@@ -93,11 +93,11 @@ struct RegistryDescriptionTests {
 
   @Test("should refuse a description that is not canonical, of another format or malformed, without trapping")
   func shouldRefuseMalformedDescriptions() {
-    let header = #"{"format":"shadow.schema-registry","format_version":1,"kinds":["#
+    let header = #"{"format":"com.shadow.library.shadowstore.schema-registry","format_version":1,"kinds":["#
     let kind = { (members: String) in header + "{" + members + #"}],"version":1}"# }
     expectRefused(#"{ "version": 1 }"#, .notCanonical)
     expectRefused(#"{"format":"other","format_version":1,"kinds":[],"version":1}"#, .unsupportedFormat)
-    expectRefused(#"{"format":"shadow.schema-registry","format_version":2,"kinds":[],"version":1}"#, .unsupportedFormat)
+    expectRefused(#"{"format":"com.shadow.library.shadowstore.schema-registry","format_version":2,"kinds":[],"version":1}"#, .unsupportedFormat)
     let malformed = [
       kind(#""kind":"Note","shape":"appended","sync_class":"general""#),
       kind(#""kind":"note","shape":"tree","sync_class":"general""#),

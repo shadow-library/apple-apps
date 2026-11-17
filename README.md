@@ -36,6 +36,8 @@ Tuist/
 Tuist.swift  Workspace.swift  mise.toml  .swift-format
 ```
 
+Bundle identifiers: apps are `com.shadow.apps.<app-name>` (lowercased, test targets add `.tests` / `.uitests`) and shared libraries are `com.shadow.library.<library-name>`.
+
 ## Shared modules
 
 | Module               | Purpose                                                                     | Depends on                       |
@@ -212,7 +214,7 @@ tuist test NovelForge --platform macOS --no-selective-testing
 mise run new-app Memoir --platform multiplatform   # ios | macos | multiplatform | phoneAndMac | watchos | tvos | visionos
 ```
 
-This creates `Apps/Memoir` with app, test target and scheme, bundle ID `com.shadowlibrary.memoir`, and regenerates the workspace.
+This creates `Apps/Memoir` with app, test target and scheme, bundle ID `com.shadow.apps.memoir`, and regenerates the workspace.
 
 ## Tasks
 

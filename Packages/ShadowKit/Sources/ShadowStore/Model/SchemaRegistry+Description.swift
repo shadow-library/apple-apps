@@ -24,7 +24,7 @@ public enum RegistryDescriptionError: ShadowError, Equatable {
 }
 
 extension SchemaRegistry {
-  public static let descriptionFormat = "shadow.schema-registry"
+  public static let descriptionFormat = "com.shadow.library.shadowstore.schema-registry"
   public static let descriptionFormatVersion: Int64 = 1
 
   public func canonicalDescription() -> Data {

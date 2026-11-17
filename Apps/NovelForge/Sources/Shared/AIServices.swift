@@ -16,7 +16,7 @@ nonisolated struct AISettings: Equatable, Codable, Sendable {
 }
 
 nonisolated struct AISettingsStore {
-  private static let key = "novelforge.ai.settings.v1"
+  private static let key = "com.shadow.apps.novelforge.ai.settings.v1"
 
   let defaults: UserDefaults
 
@@ -81,7 +81,7 @@ nonisolated struct GrantedConsent: Equatable, Identifiable, Sendable {
 @Observable
 final class AIServices {
   nonisolated static let openRouterConfiguration = OpenRouterConfiguration(applicationTitle: "Novel Forge")
-  nonisolated static let keychainService = "shadow.novelforge.ai"
+  nonisolated static let keychainService = "com.shadow.apps.novelforge.ai"
 
   private(set) var settings: AISettings
   private(set) var openRouterModels: [RemoteModel] = []

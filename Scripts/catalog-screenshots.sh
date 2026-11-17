@@ -5,7 +5,7 @@ REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 readonly REPO_ROOT
 readonly WORKSPACE="$REPO_ROOT/ShadowLibrary.xcworkspace"
 readonly SCHEME="Catalog"
-readonly BUNDLE_ID="com.shadowlibrary.catalog"
+readonly BUNDLE_ID="com.shadow.apps.catalog"
 readonly DERIVED_DATA="$REPO_ROOT/scratch-pad/derived-data"
 readonly LOG_DIR="$DERIVED_DATA/logs"
 readonly SIM_APP="$DERIVED_DATA/Build/Products/Debug-iphonesimulator/Catalog.app"

@@ -4,7 +4,7 @@ import ShadowCore
 import ShadowStore
 
 extension SyncEngineSchema {
-  static let adoptionMigration = StoreMigration(identifier: "shadow.sync.engine.4") { db in
+  static let adoptionMigration = StoreMigration(identifier: "com.shadow.library.shadowsync.engine.4") { db in
     try db.execute(
       sql: """
         CREATE TABLE sync_adoption (
@@ -43,7 +43,7 @@ extension SyncEngineSchema {
 
 extension SyncEngineSchema {
   /// When a retired prefix was first seen holding only its manifest; a listing that shows anything else forgets it.
-  static let strayMigration = StoreMigration(identifier: "shadow.sync.engine.5") { db in
+  static let strayMigration = StoreMigration(identifier: "com.shadow.library.shadowsync.engine.5") { db in
     try db.execute(
       sql: """
         CREATE TABLE sync_adoption_stray (

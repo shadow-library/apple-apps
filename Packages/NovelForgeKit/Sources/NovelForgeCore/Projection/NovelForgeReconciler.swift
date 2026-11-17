@@ -5,7 +5,7 @@ import ShadowStore
 public struct NovelForgeReconciler: StoreReconciler {
   static let tablePrefix = "nf_derived_"
   static let layoutTable = "nf_derived_layout"
-  static let migrationPrefix = "novelforge.derived."
+  static let migrationPrefix = "com.shadow.library.novelforgekit.derived."
 
   public let registry: SchemaRegistry
   public let fingerprint: String

@@ -17,7 +17,7 @@ private func lines(_ texts: [String]) -> [Data] {
   texts.map { Data($0.utf8) }
 }
 
-private let header = "{\"format\":\"shadow.vault-state\",\"type\":\"header\",\"version\":1}"
+private let header = "{\"format\":\"com.shadow.library.shadowstore.vault-state\",\"type\":\"header\",\"version\":1}"
 private let clockText = "2023-11-14T22:13:20.001Z-0000-00000000-0000-0000-0000-00000000000a"
 
 @Suite("VaultState lines")
@@ -25,7 +25,7 @@ struct VaultStateLinesTests {
   @Test("should encode an empty state as the header alone")
   func shouldEncodeEmptyState() {
     #expect(VaultState().encodedLines() == lines([header]))
-    #expect(VaultState().digest == "302e0a6c41706d30d22733261f8a54996905fcc534acf8f6c189552f4070fbb3")
+    #expect(VaultState().digest == "fc53afe2cb4af9490493ecc47a5e24a972d96c3f276286871e66c5d8a769a25a")
   }
 
   @Test("should write one self-describing line per entity, then one per foreign record")
@@ -65,7 +65,7 @@ struct VaultStateLinesTests {
     #expect(decodeFailure([]) == .missingHeader)
     #expect(decodeFailure(lines(["{\"type\":\"record\"}"])) == .missingHeader)
     #expect(decodeFailure(lines(["{\"format\":\"other\",\"type\":\"header\",\"version\":1}"])) == .malformedLine(line: 0))
-    #expect(decodeFailure(lines(["{\"format\":\"shadow.vault-state\",\"type\":\"header\",\"version\":2}"])) == .unsupportedVersion(2))
+    #expect(decodeFailure(lines(["{\"format\":\"com.shadow.library.shadowstore.vault-state\",\"type\":\"header\",\"version\":2}"])) == .unsupportedVersion(2))
   }
 
   @Test(
@@ -100,7 +100,7 @@ struct VaultStateLinesTests {
   @Test("should reject non-canonical JSON")
   func shouldRejectNonCanonicalJSON() {
     #expect(decodeFailure(lines([header, "{ \"type\": \"foreign\" }"])) == .invalidJSON(line: 1))
-    #expect(decodeFailure(lines(["{\"version\":1,\"type\":\"header\",\"format\":\"shadow.vault-state\"}"])) == .invalidJSON(line: 0))
+    #expect(decodeFailure(lines(["{\"version\":1,\"type\":\"header\",\"format\":\"com.shadow.library.shadowstore.vault-state\"}"])) == .invalidJSON(line: 0))
   }
 
   @Test("should reject duplicated or out-of-order lines")

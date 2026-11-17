@@ -3,7 +3,7 @@ import GRDB
 import ShadowCore
 
 enum KernelSchema {
-  static let migrationIdentifier = "shadow.store.kernel.1"
+  static let migrationIdentifier = "com.shadow.library.shadowstore.kernel.1"
   static let stateTables = ["field_state", "appended_item", "revision", "tombstone", "foreign_record", "opaque_line"]
 
   static func migrator(_ extra: [StoreMigration]) throws(StoreError) -> DatabaseMigrator {

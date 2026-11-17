@@ -4,7 +4,7 @@ import ShadowStore
 
 public enum SyncKernelSchema {
   static let reservedPrefix = "_"
-  static let naturalScope = "shadow.sync"
+  static let naturalScope = "com.shadow.library.shadowsync"
   static let schemaFloorPrefix = "v-"
   static let lifecycleOrder = [ReplicaState.active.rawValue, ReplicaState.retired.rawValue]
 

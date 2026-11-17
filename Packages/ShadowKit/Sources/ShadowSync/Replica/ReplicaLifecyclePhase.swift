@@ -11,7 +11,7 @@ enum ReplicaLifecyclePhase: Sendable, Equatable {
   case preparing(replica: ReplicaID, retiring: ReplicaID, token: ReplicaID, reason: RemintReason)
   case moving(replica: ReplicaID, retiring: ReplicaID, token: ReplicaID, reason: RemintReason)
 
-  static let migration = StoreMigration(identifier: "shadow.sync.lifecycle.1") { db in
+  static let migration = StoreMigration(identifier: "com.shadow.library.shadowsync.lifecycle.1") { db in
     try db.execute(
       sql: """
         CREATE TABLE sync_replica_lifecycle (

@@ -3,7 +3,7 @@ import Foundation
 import ShadowCore
 
 extension VaultState {
-  public static let linesFormat = "shadow.vault-state"
+  public static let linesFormat = "com.shadow.library.shadowstore.vault-state"
   public static let linesVersion: Int64 = 1
 
   private static let hexDigits = Array("0123456789abcdef".utf8)

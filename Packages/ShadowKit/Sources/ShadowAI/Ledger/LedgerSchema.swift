@@ -66,7 +66,7 @@ enum LedgerUsageKey {
 }
 
 enum LedgerProvider {
-  static let consentScope = "shadow.ai.consent"
+  static let consentScope = "com.shadow.library.shadowai.consent"
 
   /// Providers are identified by a bare ASCII host: lower case, trailing dots removed; ports, credentials, paths, spaces and non-ASCII are refused.
   static func normalised(_ host: String) throws(StoreError) -> String {

@@ -56,7 +56,7 @@ struct SettingsServicesTests {
     #expect(restored.assignments.models[.steady] == "vendor/model")
     #expect(restored.limits.daily == Cost(nanoUSD: 2 * Cost.nanoUSDPerUSD))
 
-    world.defaults.set(Data("not json".utf8), forKey: "novelforge.ai.settings.v1")
+    world.defaults.set(Data("not json".utf8), forKey: "com.shadow.apps.novelforge.ai.settings.v1")
     #expect(AISettingsStore(defaults: world.defaults).load() == AISettings())
   }
 

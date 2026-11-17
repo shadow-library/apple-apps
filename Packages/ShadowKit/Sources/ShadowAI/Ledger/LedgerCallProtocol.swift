@@ -52,7 +52,7 @@ extension Ledger {
   }
 
   static func attemptID(of call: UUID, index: Int) -> UUID {
-    var bytes = Array(SHA256.hash(data: Data("shadow.ai.call-attempt:\(EntityKey(uuid: call).rawValue):\(index)".utf8)).prefix(16))
+    var bytes = Array(SHA256.hash(data: Data("com.shadow.library.shadowai.call-attempt:\(EntityKey(uuid: call).rawValue):\(index)".utf8)).prefix(16))
     bytes[6] = (bytes[6] & 0x0F) | 0x80
     bytes[8] = (bytes[8] & 0x3F) | 0x80
     return bytes.withUnsafeBytes { UUID(uuid: $0.load(as: uuid_t.self)) }
