@@ -46,6 +46,8 @@ jobs:
           xcode-version: ${{ env.XCODE_VERSION }}
       - uses: jdx/mise-action@v5
       - run: mise run test:packages
+        env:
+          NOVELFORGE_PROPERTY_SCALE: 1
 
   apps:
     name: Apps (${{ matrix.platform }})

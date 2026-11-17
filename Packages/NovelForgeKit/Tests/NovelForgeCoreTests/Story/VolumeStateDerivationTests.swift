@@ -252,7 +252,7 @@ private func volumeOracle(_ reconciler: NovelForgeReconciler, _ store: VaultStor
 struct VolumeStatePropertyTests {
   @Test(arguments: [CausalReplicaOrder.causal, .writerOrderOnly])
   func shouldMatchARebuildAndTheOracleAcrossReplicas(order: CausalReplicaOrder) async throws {
-    let property = ProjectionProperty(operations: ProjectionOperations.novels + StoryOperations.volumes, iterations: 8, steps: 36, settled: volumeOracle)
+    let property = ProjectionProperty(operations: ProjectionOperations.novels + StoryOperations.volumes, iterations: 8, steps: 36, gated: true, settled: volumeOracle)
     try await property.check(order: order, seed: order == .causal ? 0xD18A1 : 0xD18A2)
   }
 

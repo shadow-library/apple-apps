@@ -116,6 +116,42 @@ public func forAll(iterations: Int = 200, seed: UInt64 = 0x5EED, _ property: (in
   }
 }
 
+public func forAllConcurrently(
+  iterations: Int = 200, seed: UInt64 = 0x5EED, width: Int = ProcessInfo.processInfo.activeProcessorCount,
+  _ property: @escaping @Sendable (inout SeededGenerator) async throws -> Void
+) async throws(PropertyFailure) {
+  let failures = await withTaskGroup(of: PropertyFailure?.self) { group in
+    var failures = [PropertyFailure]()
+    var next = 0
+    let total = max(iterations, 0)
+    func start(_ iteration: Int, in group: inout TaskGroup<PropertyFailure?>) {
+      _ = group.addTaskUnlessCancelled {
+        let derived = caseSeed(base: seed, iteration: iteration)
+        var generator = SeededGenerator(seed: derived)
+        do {
+          try await property(&generator)
+          return nil
+        } catch {
+          return PropertyFailure(seed: derived, iteration: iteration, underlying: String(describing: error))
+        }
+      }
+    }
+    while next < min(max(width, 1), total) {
+      start(next, in: &group)
+      next += 1
+    }
+    for await failure in group {
+      if let failure { failures.append(failure) }
+      if next < total {
+        start(next, in: &group)
+        next += 1
+      }
+    }
+    return failures
+  }
+  if let first = failures.min(by: { $0.iteration < $1.iteration }) { throw first }
+}
+
 public func replay(seed: UInt64, _ property: (inout SeededGenerator) throws -> Void) throws(PropertyFailure) {
   var generator = SeededGenerator(seed: seed)
   do {

@@ -101,4 +101,66 @@ struct PropertyTestingTests {
     }
     #expect(count == 5)
   }
+
+  @Test("should draw the same case seeds concurrently as sequentially and report the lowest failing iteration")
+  func concurrentMatchesSequential() async throws {
+    let sequential = Seeds()
+    try await forAll(iterations: 40, seed: 0xABC) { generator in sequential.record(generator.next()) }
+    let concurrent = Seeds()
+    try await forAllConcurrently(iterations: 40, seed: 0xABC) { generator in concurrent.record(generator.next()) }
+    #expect(concurrent.sorted == sequential.sorted)
+
+    let failure = try await #require(throws: PropertyFailure.self) {
+      try await forAllConcurrently(iterations: 40, seed: 0xABC) { generator in
+        if generator.next() % 2 == 0 { throw Boom(value: 1) }
+      }
+    }
+    let expected = try await #require(throws: PropertyFailure.self) {
+      try await forAll(iterations: 40, seed: 0xABC) { generator in
+        if generator.next() % 2 == 0 { throw Boom(value: 1) }
+      }
+    }
+    #expect(failure.iteration == expected.iteration)
+    #expect(failure.seed == expected.seed)
+  }
+
+  @Test("should never run more iterations at once than the width")
+  func concurrentRespectsWidth() async throws {
+    let gauge = Gauge()
+    try await forAllConcurrently(iterations: 20, seed: 1, width: 3) { _ in
+      gauge.enter()
+      try await Task.sleep(for: .milliseconds(5))
+      gauge.leave()
+    }
+    #expect(gauge.peak <= 3)
+    #expect(gauge.peak >= 2)
+  }
+}
+
+private final class Gauge: @unchecked Sendable {
+  private let lock = NSLock()
+  private var running = 0
+  private(set) var peak = 0
+
+  func enter() {
+    lock.withLock {
+      running += 1
+      peak = max(peak, running)
+    }
+  }
+
+  func leave() {
+    lock.withLock { running -= 1 }
+  }
+}
+
+private final class Seeds: @unchecked Sendable {
+  private let lock = NSLock()
+  private var values = [UInt64]()
+
+  var sorted: [UInt64] { lock.withLock { values.sorted() } }
+
+  func record(_ value: UInt64) {
+    lock.withLock { values.append(value) }
+  }
 }

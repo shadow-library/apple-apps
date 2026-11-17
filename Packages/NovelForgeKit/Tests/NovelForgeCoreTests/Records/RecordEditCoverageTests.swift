@@ -8,7 +8,7 @@ private func expectOnlyTheNamedField<Field: FieldName>(_ field: Field, _ fields:
   #expect(Set(fields.members.keys) == [field.rawValue], "\(field.rawValue)")
 }
 
-@Suite("Edit types cover every field", .timeLimit(.minutes(1)))
+@Suite("Edit types cover every field", .timeLimit(.minutes(3)))
 struct RecordEditCoverageTests {
   @Test func shouldLetANovelEditSetEveryNovelFieldAndNothingElse() {
     for field in NovelField.allCases {

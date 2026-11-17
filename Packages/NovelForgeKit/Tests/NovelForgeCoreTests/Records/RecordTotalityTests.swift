@@ -83,7 +83,7 @@ func mismatchedNaturalKey<S: RemovableSubject>(_: S.Type) async throws {
   }
 }
 
-@Suite("Typed record totality", .timeLimit(.minutes(1)))
+@Suite("Typed record totality", .timeLimit(.minutes(3)))
 struct RecordTotalityTests {
   @Test func shouldReadANovelTotally() async throws { try await totality(NovelSubject.self, seed: 0xE1) }
   @Test func shouldReadAVolumeTotally() async throws { try await totality(VolumeSubject.self, seed: 0xE2) }

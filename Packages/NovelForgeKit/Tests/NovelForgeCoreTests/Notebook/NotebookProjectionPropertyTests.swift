@@ -166,7 +166,7 @@ private func oracle(_ reconciler: NovelForgeReconciler, _ store: VaultStore, _ u
 struct NotebookProjectionPropertyTests {
   @Test(arguments: [CausalReplicaOrder.causal, .writerOrderOnly])
   func shouldMatchARebuildAtEveryStepAndAgreeWithTheOracleOnEveryReplica(order: CausalReplicaOrder) async throws {
-    let property = ProjectionProperty(operations: ProjectionOperations.novels + NotebookOperations.all, iterations: 12, steps: 40, settled: oracle)
+    let property = ProjectionProperty(operations: ProjectionOperations.novels + NotebookOperations.all, iterations: 12, steps: 40, gated: true, settled: oracle)
     try await property.check(order: order, seed: order == .causal ? 0xD17C0 : 0xD17C1)
     #expect(reached.withLock { $0 } == ["superseded", "withdrawn", "withdrawn and superseded", "superseded by a sibling", "concurrent supersedes"])
   }

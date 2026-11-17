@@ -47,7 +47,7 @@ Tuist.swift  Workspace.swift  mise.toml  .swift-format
 | `ShadowSync`         | Vault sync through a `StorageProvider` (`LocalFolderProvider`): `SyncEngine`, replica lifecycle, segment codec, encrypted vault files, key ring, recovery | `ShadowCore`, `ShadowStore`, `ShadowKeychain`, GRDB |
 | `ShadowAI`           | `ModelProvider` with `AnthropicProvider` and `OpenRouterProvider`, `ModelCatalog` (task and pace to a model), `RetryingProvider`, structured calls, `Ledger` of model calls and spend | `ShadowCore`, `ShadowNetworking`, `ShadowStore` |
 | `ShadowDesignSystem` | Tokens, Liquid Glass helpers and native-first SwiftUI components (see below) | —                                |
-| `ShadowTestSupport`  | Test targets only: `StubHTTPTransport` and streaming stubs, `InMemorySecureStore`, `InMemoryKeychain`, `InMemoryStorageProvider`, `FaultInjectingStorageProvider`, `StorageProviderConformance`, `ScriptedModelProvider`, `CausalReplicas`, `forAll`/`replay` with `SeededGenerator` | `ShadowCore`, `ShadowNetworking`, `ShadowKeychain`, `ShadowStore`, `ShadowSync`, `ShadowAI` |
+| `ShadowTestSupport`  | Test targets only: `StubHTTPTransport` and streaming stubs, `InMemorySecureStore`, `InMemoryKeychain`, `InMemoryStorageProvider`, `FaultInjectingStorageProvider`, `StorageProviderConformance`, `ScriptedModelProvider`, `CausalReplicas`, `forAll`/`forAllConcurrently`/`replay` with `SeededGenerator` | `ShadowCore`, `ShadowNetworking`, `ShadowKeychain`, `ShadowStore`, `ShadowSync`, `ShadowAI` |
 
 Apps depend on modules through the typed helper, so a typo fails at manifest compile time:
 
@@ -201,6 +201,7 @@ tuist test NovelForge --platform macOS --no-selective-testing
 ```
 
 - `mise run test:packages` covers `ShadowKit` and `NovelForgeKit`. Property tests print their seed on failure; rerun it with `replay(seed:)` from `ShadowTestSupport`.
+- NovelForgeKit property tests spread their iterations over the cores, at most one per processor (`forAllConcurrently`). Unset, `ProjectionProperty` runs and the record helpers (`ProjectionProperty.iterations(full:)`) run half their iterations; plain `forAll` is never reduced. These keep every iteration at the default because a coverage gate or a kill needs them: the three-replica domain property, the plan-world reach test, the Notebook projection property and the Volume state property. `NOVELFORGE_PROPERTY_SCALE=n` runs `n` times the full iteration count of every property: 1 is full strength and is what CI runs (`.github/workflows/ci.yml` sets it), `NOVELFORGE_PROPERTY_SCALE=4 swift test --package-path Packages/NovelForgeKit` is the deep run for mutation checks, and unset is the local default (half). `NOVELFORGE_DOMAIN_REPLAY=<seed>` replays one domain case.
 - Pass `--no-selective-testing` when verifying a change: Tuist otherwise skips targets it considers unchanged.
 - CI runs `swift test` for the packages, then `tuist test` per platform: iOS with UI tests, macOS with `--skip-ui-tests`, and visionOS with `--skip-ui-tests` on `Catalog` only (the new apps have no visionOS destination).
 - Swift Testing tests that resolve `Color` or `Font` must be `@MainActor`.

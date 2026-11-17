@@ -30,7 +30,9 @@ struct DomainProperty: Sendable {
       if let replaySeed = Self.replaySeed {
         try await replay(seed: replaySeed) { generator in try await run(order: order, reconciler: reconciler, &generator) }
       } else {
-        try await forAll(iterations: iterations * ProjectionProperty.scale, seed: seed) { generator in try await run(order: order, reconciler: reconciler, &generator) }
+        try await forAllConcurrently(iterations: ProjectionProperty.gatedIterations(iterations), seed: seed) { generator in
+          try await run(order: order, reconciler: reconciler, &generator)
+        }
       }
     } catch {
       throw DomainRunFailure.inOrder("\(order)", error.description)

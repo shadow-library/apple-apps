@@ -391,7 +391,7 @@ struct PlanWorldPropertyTests {
     try await withThrowingTaskGroup { group in
       for (operations, seed) in [(PlanWorldOperations.all, UInt64(0xD20C)), (finalizing, 0xD20D)] {
         let property = ProjectionProperty(
-          derivations: areaDerivations, operations: operations, iterations: 16, steps: 40, checksEveryStep: false, settled: oracle(coverage))
+          derivations: areaDerivations, operations: operations, iterations: 16, steps: 40, gated: true, checksEveryStep: false, settled: oracle(coverage))
         group.addTask { try await property.check(order: .causal, seed: seed) }
       }
       try await group.waitForAll()

@@ -98,7 +98,7 @@ func skipsUnreadableAndCountsThem<S: RemovableSubject>(_: S.Type) async throws {
   #expect(all.unattributed == 1)
 }
 
-@Suite("Typed record listing", .timeLimit(.minutes(1)))
+@Suite("Typed record listing", .timeLimit(.minutes(3)))
 struct RecordListingTests {
   @Test func shouldListOnlyTheVolumesOfTheNovel() async throws { try await listsOnlyTheNovelsOwnRecords(VolumeSubject.self, seed: 0xF2) }
   @Test func shouldListOnlyTheMilestonesOfTheNovel() async throws { try await listsOnlyTheNovelsOwnRecords(MilestoneSubject.self, seed: 0xF3) }

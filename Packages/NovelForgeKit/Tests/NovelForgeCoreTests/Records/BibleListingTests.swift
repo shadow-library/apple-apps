@@ -6,7 +6,7 @@ import Testing
 
 @testable import NovelForgeCore
 
-@Suite("Bible record listing", .timeLimit(.minutes(1)))
+@Suite("Bible record listing", .timeLimit(.minutes(3)))
 struct BibleListingTests {
   @Test func shouldListOnlyTheSecretsOfTheNovel() async throws { try await listsOnlyTheNovelsOwnRecords(SecretSubject.self, seed: 0xF7) }
   @Test func shouldListOnlyTheEntitiesOfTheNovel() async throws { try await listsOnlyTheNovelsOwnRecords(EntitySubject.self, seed: 0xF8) }

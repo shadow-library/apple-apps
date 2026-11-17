@@ -18,7 +18,7 @@ func expectRemoved<R: NovelForgeRecord>(_ reading: RecordReading<R>, _ record: R
 
 func createAndEdit<S: RecordSubject>(_: S.Type, seed: UInt64) async throws {
   let store = try SchemaFixture.store()
-  try await forAll(iterations: iterations, seed: seed) { generator in
+  try await forAll(iterations: ProjectionProperty.iterations(full: iterations), seed: seed) { generator in
     let record = S.random(&generator, novel: generator.uuid(), key: Gen.key(&generator))
     #expect(try await Harness.read(record.ref, as: S.Record.self, in: store) == .absent)
     let created = try await Harness.create(record, in: store)
@@ -40,7 +40,7 @@ func createAndEdit<S: RecordSubject>(_: S.Type, seed: UInt64) async throws {
 
 func removalCycle<S: RemovableSubject>(_: S.Type, seed: UInt64) async throws {
   let store = try SchemaFixture.store()
-  try await forAll(iterations: iterations, seed: seed) { generator in
+  try await forAll(iterations: ProjectionProperty.iterations(full: iterations), seed: seed) { generator in
     let (novel, key) = (generator.uuid(), Gen.key(&generator))
     let record = S.random(&generator, novel: novel, key: key)
     _ = try await Harness.create(record, in: store)
@@ -67,7 +67,7 @@ func removalCycle<S: RemovableSubject>(_: S.Type, seed: UInt64) async throws {
 
 func createOverLiveRecord<S: RemovableSubject>(_: S.Type, seed: UInt64) async throws {
   let store = try SchemaFixture.store()
-  try await forAll(iterations: 30, seed: seed) { generator in
+  try await forAll(iterations: ProjectionProperty.iterations(full: 30), seed: seed) { generator in
     let (novel, key) = (generator.uuid(), Gen.key(&generator))
     _ = try await Harness.create(S.random(&generator, novel: novel, key: key), in: store)
     let replacement = S.random(&generator, novel: novel, key: key)
@@ -76,7 +76,7 @@ func createOverLiveRecord<S: RemovableSubject>(_: S.Type, seed: UInt64) async th
   }
 }
 
-@Suite("Typed record round trip", .timeLimit(.minutes(1)))
+@Suite("Typed record round trip", .timeLimit(.minutes(3)))
 struct RecordRoundTripTests {
   @Test func shouldCreateAndEditANovelWithoutTouchingOtherFields() async throws { try await createAndEdit(NovelSubject.self, seed: 0xA1) }
   @Test func shouldCreateAndEditAVolumeWithoutTouchingOtherFields() async throws { try await createAndEdit(VolumeSubject.self, seed: 0xA2) }

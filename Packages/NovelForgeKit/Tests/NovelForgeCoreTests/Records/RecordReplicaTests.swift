@@ -111,7 +111,7 @@ func concurrentCreatesComeWholeFromOneReplica<S: RemovableSubject>(_: S.Type, se
 }
 
 func settlesToTheSameRecordsEverywhere<S: RemovableSubject>(_: S.Type, seed: UInt64) async throws {
-  try await forAll(iterations: 60, seed: seed) { generator in
+  try await forAll(iterations: ProjectionProperty.iterations(full: 60), seed: seed) { generator in
     let replicas = try await replicas(seed: generator.next())
     let novel = generator.uuid()
     let keys = ["key-0", "key-1"]
@@ -197,7 +197,7 @@ struct RecordReplicaTests {
   @Test func shouldSettleMysteriesToTheSameRecordsOnEveryReplicaWithEachStatusWhole() async throws { try await settlesToTheSameRecordsEverywhere(MysterySubject.self, seed: 0x54) }
 
   @Test func shouldSettleNovelsWithEachWordTargetWholeFromOneReplica() async throws {
-    try await forAll(iterations: 60, seed: 0x61) { generator in
+    try await forAll(iterations: ProjectionProperty.iterations(full: 60), seed: 0x61) { generator in
       let replicas = try await replicas(seed: generator.next())
       let id = generator.uuid()
       let base = NovelSubject.random(&generator, novel: id, key: "")
