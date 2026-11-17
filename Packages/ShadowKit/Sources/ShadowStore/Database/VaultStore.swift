@@ -177,6 +177,14 @@ public final class VaultStore: Sendable {
     try await reading { db in try KernelRow.load(db).rebuildFloor }
   }
 
+  func addCommitObserver(_ observer: any TransactionObserver & Sendable) async throws {
+    try await writer.writeWithoutTransaction { database in database.add(transactionObserver: observer, extent: .observerLifetime) }
+  }
+
+  func removeCommitObserver(_ observer: any TransactionObserver & Sendable) {
+    writer.asyncWriteWithoutTransaction { database in database.remove(transactionObserver: observer) }
+  }
+
   func observe(_ remote: HLCTimestamp) {
     clock.withLock { $0 }?.observe(remote)
   }

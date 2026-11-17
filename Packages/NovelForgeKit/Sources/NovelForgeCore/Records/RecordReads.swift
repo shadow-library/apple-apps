@@ -1,4 +1,5 @@
 import Foundation
+import GRDB
 import ShadowCore
 import ShadowStore
 
@@ -68,5 +69,43 @@ extension NovelForgeRecord {
 extension KeyedRecord {
   public static func listing<Transaction: StateReading & ~Copyable>(novel: UUID, in transaction: borrowing Transaction) throws(StoreError) -> RecordListing<Self> {
     collecting(try transaction.states(ofKind: kind.entityKind, scope: .vault), owner: novel)
+  }
+}
+
+/// Kinds that decode from the head and marks alone; a final chapter picks its text from every retained amendment, so it is not one.
+public protocol HeadReadable: KeyedRecord {}
+
+extension PageRecord: HeadReadable {}
+extension DraftRecord: HeadReadable {}
+extension ChapterPlanRecord: HeadReadable {}
+extension AuthorNotesRecord: HeadReadable {}
+extension EntityRecord: HeadReadable {}
+extension VolumeRecord: HeadReadable {}
+extension MilestoneRecord: HeadReadable {}
+extension ThreadRecord: HeadReadable {}
+extension MysteryRecord: HeadReadable {}
+extension SecretRecord: HeadReadable {}
+extension CharacterKnowledgeRecord: HeadReadable {}
+
+extension HeadReadable {
+  public static func readHead(_ ref: EntityRef, in transaction: ReadTransaction) throws(StoreError) -> RecordReading<Self> {
+    reading(try transaction.stateNamingRevisions(of: ref, scope: .vault), of: ref)
+  }
+
+  /// The novel's live records through the record index, reading each one's head only; the index trails a write that is still open, so write paths use `listing(novel:)`.
+  public static func indexedListing(novel: UUID, in transaction: ReadTransaction) throws(StoreError) -> RecordListing<Self> {
+    let rows = try transaction.query { database in
+      try IndexedRecord.filter(Column("novel") == novel && Column("kind") == kind.rawValue && Column("status") != IndexedStatus.removed).fetchAll(database)
+    }
+    var entries = [RecordEntry<Self>]()
+    var unreadable = 0
+    for row in rows {
+      switch try readHead(row.ref, in: transaction) {
+      case .absent, .unreadable(.unknownSection): continue
+      case .unreadable: unreadable += 1
+      case .readable(let entry): if !entry.isRemoved { entries.append(entry) }
+      }
+    }
+    return RecordListing(entries: entries.sorted { $0.record.ref < $1.record.ref }, unreadable: unreadable)
   }
 }

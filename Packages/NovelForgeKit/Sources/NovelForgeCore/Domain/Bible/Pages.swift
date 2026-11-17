@@ -138,9 +138,13 @@ public enum Pages {
     } catch {
       throw .store(error)
     }
+    return summaries(of: listing.live.filter { page in section.map { page.section == $0 } ?? true })
+  }
+
+  static func summaries(of pages: [PageRecord]) -> [PageSummary] {
     let order = BiblePageSection.allCases
-    return listing.live
-      .filter { page in section.map { page.section == $0 } ?? true }
+    return
+      pages
       .sorted { left, right in
         guard left.section == right.section else { return (order.firstIndex(of: left.section) ?? order.count) < (order.firstIndex(of: right.section) ?? order.count) }
         return JSText.codeUnitPrecedes(left.slug, right.slug)

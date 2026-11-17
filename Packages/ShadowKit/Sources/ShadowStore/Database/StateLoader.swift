@@ -49,7 +49,23 @@ struct StateLoader {
     }
   }
 
-  private func parts(_ scope: StateScope, _ selection: Selection, in db: Database) throws -> [EntityRef: Parts] {
+  /// The entity with only the revisions its head and marks name, so reading a head never decodes the retained history.
+  func entityNamingRevisions(_ ref: EntityRef, scope: StateScope, in db: Database) throws(StoreError) -> EntityState? {
+    try StoreError.wrapping {
+      guard var found = try parts(scope, .entity(ref), loadingRevisions: false, in: db)[ref] else { return nil }
+      let named = ([found.head].compactMap(\.self) + Array(found.marks.values)).compactMap(\.value.stringValue)
+      for id in Set(named) {
+        let arguments: StatementArguments = [scope.rawValue, ref.kind.rawValue, ref.key.rawValue, id]
+        guard let row = try db.storeFetchOne("SELECT item FROM revision WHERE scope = ? AND kind = ? AND key = ? AND id = ?", arguments) else { continue }
+        let item = try Stored.revision(row.stored("item"))
+        guard ExactString(item.id) == ExactString(id) else { throw StoreError.corruptStore("a stored revision does not match its id") }
+        found.revisions[ExactString(id)] = item
+      }
+      return try entity(ref, found)
+    }
+  }
+
+  private func parts(_ scope: StateScope, _ selection: Selection, loadingRevisions: Bool = true, in db: Database) throws -> [EntityRef: Parts] {
     let filter: String
     let arguments: StatementArguments
     switch selection {
@@ -67,11 +83,13 @@ struct StateLoader {
     try rows("item, clock", "appended_item") { row, parts in
       parts.appended = AppendedState(item: try Stored.object(row.stored("item")), clock: try Stored.clock(row.stored("clock")))
     }
-    try rows("id, item", "revision") { row, parts in
-      let id = ExactString(try row.stored("id"))
-      let item = try Stored.revision(row.stored("item"))
-      guard ExactString(item.id) == id else { throw StoreError.corruptStore("a stored revision does not match its id") }
-      parts.revisions[id] = item
+    if loadingRevisions {
+      try rows("id, item", "revision") { row, parts in
+        let id = ExactString(try row.stored("id"))
+        let item = try Stored.revision(row.stored("item"))
+        guard ExactString(item.id) == id else { throw StoreError.corruptStore("a stored revision does not match its id") }
+        parts.revisions[id] = item
+      }
     }
     try rows("slot, name, value, clock", "field_state") { row, parts in
       let name = try Stored.name(from: row.stored("name"))

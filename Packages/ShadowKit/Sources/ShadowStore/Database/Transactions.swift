@@ -19,6 +19,11 @@ public struct ReadTransaction {
   public func states(ofKind kind: EntityKind, scope: StateScope = .vault) throws(StoreError) -> [(ref: EntityRef, state: EntityState)] {
     try StateLoader(registry: registry).entities(ofKind: kind, scope: scope, in: database)
   }
+
+  /// A revisioned entity holds only the revisions its head and marks name; fine for reading the head, never for writing against `revisions`.
+  public func stateNamingRevisions(of ref: EntityRef, scope: StateScope = .vault) throws(StoreError) -> EntityState? {
+    try StateLoader(registry: registry).entityNamingRevisions(ref, scope: scope, in: database)
+  }
 }
 
 public struct WriteTransaction: ~Copyable {

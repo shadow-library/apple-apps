@@ -140,7 +140,7 @@ extension DocumentRecord {
 
   public static func isPending(_ state: EntityState) -> Bool {
     guard case .revisioned(let revisioned) = state else { return false }
-    if revisioned.head == nil && revisioned.revisions.isEmpty { return true }
+    if revisioned.head == nil { return true }
     return revisioned[field: CommonField.naturalKey.rawValue] == nil
   }
 }
