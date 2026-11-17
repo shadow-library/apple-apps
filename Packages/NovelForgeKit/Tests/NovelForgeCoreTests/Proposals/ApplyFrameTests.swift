@@ -76,14 +76,12 @@ struct ApplyFrameTests {
     let store = try SchemaFixture.store()
     let calls: [(String, OpType)] = [
       (#"{"op":"premise.update","premise":"P."}"#, .premiseUpdate), (#"{"op":"entity.upsert","entityKey":"x","type":"character","name":"X"}"#, .entityUpsert),
-      (#"{"op":"brief.remove","chapter":2}"#, .briefRemove), (#"{"op":"draft.remove","chapter":2}"#, .draftRemove),
+      (#"{"op":"brief.remove","chapter":2}"#, .briefRemove),
     ]
     for (json, type) in calls {
       let outcome = try await perform(store, try call(json))
       #expect(throws: ApplyError.notYetAvailable(type), "\(json)") { try outcome.get() }
     }
-    let rewrites = try await perform(store, .passageRewrites(chapter: 2, []))
-    #expect(throws: ApplyError.notYetAvailable(.draftRewritePassage)) { try rewrites.get() }
   }
 
   // content-op-handlers.ts:25

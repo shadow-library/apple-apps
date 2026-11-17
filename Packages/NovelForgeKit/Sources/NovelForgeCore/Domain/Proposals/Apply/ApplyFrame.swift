@@ -10,6 +10,8 @@ enum ApplyError: ShadowError, Equatable {
   case unreadable(ref: String)
   /// A handler wrote before it threw: the whole transaction is aborted, never kept with the change recorded as skipped.
   case partialWrite(ref: String)
+  /// A handler refused the op before writing; F16 records it as a failed change with the refusal's code.
+  case refused(ApplyRefusal)
   case domain(DomainError)
   case store(StoreError)
 
@@ -21,6 +23,7 @@ enum ApplyError: ShadowError, Equatable {
     case .notYetAvailable: "refinement.not_yet_available"
     case .unreadable: "refinement.unreadable_record"
     case .partialWrite: "refinement.partial_write"
+    case .refused(let refusal): refusal.code
     case .domain(let error): error.code
     case .store(let error): error.code
     }
@@ -34,6 +37,7 @@ enum ApplyError: ShadowError, Equatable {
     case .notYetAvailable(let type): "Applying \(type.rawValue) is not yet available"
     case .unreadable(let ref): "\(ref) cannot be read on this device, so the change is not applied"
     case .partialWrite(let ref): "A change was refused after it wrote \(ref), so the apply is abandoned"
+    case .refused(let refusal): refusal.errorDescription
     case .domain(let error): error.errorDescription
     case .store(let error): error.errorDescription
     }
