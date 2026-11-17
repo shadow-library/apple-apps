@@ -1,0 +1,143 @@
+// apps/novel-forge-server/src/modules/ai/prompts/authoring-preamble.ts
+let authoringStyle =
+  #"""
+  AUTHORING GUIDELINES:
+  - Write in third-person limited, past tense, from the POV character's perspective.
+  - Show character emotion through action and dialogue — never state it directly.
+  - Vary sentence length to control pace: short sentences for tension, longer for reflection.
+  - Avoid head-hopping, info-dumps, and exposition that the POV character would not naturally observe.
+  - Dialogue must carry purpose: advance plot, reveal character, or raise stakes — never filler.
+  - Ground every scene with concrete sensory detail before moving to action.
+  - Maintain established character voice and speech patterns exactly as recorded in their entity card.
+  - Every chapter must end on a note that compels turning the page. For serialized web-fiction this is often a cut, not a conclusion: ending mid-action, mid-line-of-dialogue, or mid-decision is a stronger hook than a wrapped-up scene followed by a bolted-on tease. Do not manufacture a resolution, summary, or scene break just because the chapter is ending — check the brief for whether this scene is meant to continue before you decide how to end it.
+  - Canon always wins over dramatic convenience — if the brief says the character cannot use this power, they cannot.
+  """#
+
+private let voiceAndCanonRules =
+  #"""
+  - Maintain established character voice and speech patterns exactly as recorded in their entity card.
+  - Canon always wins over dramatic convenience — if the brief says the character cannot use this power, they cannot. Canon is the world's rules and what has already happened; the themes, where the story ends up, and a character's stated ideals are not rules a character must obey in a given scene.
+  """#
+
+// apps/novel-forge-server/src/modules/ai/prompts/authoring-preamble.ts:17
+let authoringStylePlanning = "AUTHORING GUIDELINES:\n- Write in third-person limited, past tense, from the POV character's perspective.\n\(voiceAndCanonRules)"
+
+let editByDeletion =
+  #"EDITING RULE: To remove something, delete it. Never write that it is absent ("no X", "without X", "do not mention X", "X is not ...") unless the text is itself an explicit rule the author asked for."#
+
+let clueDiscipline =
+  ###"Clues are shown, never solved: the POV character may notice, question, misread or suspect — a suspicion stays an open question — but no narration or character confirms, states as fact, or acts decisively on what clues mean unless the brief or "## REVEALED THIS CHAPTER" makes that discovery happen on-page. A character under a behavioral constraint never explains its reason, and no one else names or guesses the reason unless the brief plans it."###
+
+let systemPanels =
+  #"SYSTEM PANELS: Only when canon or the chapter brief establishes an in-world system interface the characters see (status windows, quests, attributes, skills), show each message it gives as a panel: a line ```system <Title>, the message, then a line ```. Inside a panel, stats, skills and inventory go in a GFM table (a header row, then a | --- | divider row); notices are short plain lines. Narration, thoughts and dialogue stay outside panels. Every value continues from the latest one in the continuation state's establishedFacts or the recent summaries and changes only by what this chapter shows happening. Show a panel only where the message changes the scene, keep it to a few lines, and let the prose carry the drama. Never invent a system, stat or skill that canon and the brief lack, never use panels or tables in a story without one, and never fence the chapter as a whole. Panels and tables do not count toward the chapter's length. When the chapter shows stats, establishedFacts keeps one entry per stat sheet with its current values, such as "Kai: Level 3, Strength 14, Agility 12". If canon lets only its holder see the system, no one else reads, quotes or reacts to a panel unless told. Each open quest or task keeps one establishedFacts entry (name, goal, reward, any deadline) until shown completed, failed or abandoned; list stat sheets and open quests first in establishedFacts."#
+
+// apps/novel-forge-server/src/modules/ai/prompts/authoring-preamble.ts:35
+let authoringStyleRepair =
+  "AUTHORING GUIDELINES:\n- Keep the point of view and tense the writing style asks for; when it sets none, write in third-person limited, past tense, from the POV character's perspective.\n\(voiceAndCanonRules)"
+
+let defaultWritingInstructions =
+  #"""
+  DEFAULT WEB-NOVEL ENGLISH
+
+  Write plain, modern English that reads fast on a phone. A reader should never need to reread a sentence to see what happened.
+
+  Clarity
+  - Use common, everyday words: "said", not "offered" or "intoned".
+  - One concrete thing per sentence: an action, a fact, or a line of speech.
+  - Keep most sentences between roughly 6 and 22 words. Split anything longer than 30.
+  - Put the important action or fact early in the sentence.
+  - Use one clear image instead of several decorative comparisons.
+
+  Paragraphs
+  - Keep most paragraphs to one to three sentences.
+  - Start a new paragraph when the speaker, action focus, or thought changes.
+  - Give each line of dialogue its own paragraph.
+  - Avoid walls of exposition.
+  - Avoid making every paragraph a one-line dramatic fragment.
+
+  Scenes
+  - Give the POV character an immediate want.
+  - Introduce resistance quickly.
+  - Let actions cause reactions and consequences.
+  - Make the situation meaningfully different by the end.
+  - Show crucial events on-page instead of reporting them afterward.
+
+  Description
+  - Select details that affect action, mood, judgment, or danger.
+  - Do not inventory every sense.
+  - Use figurative language only when it clarifies. Never use a metaphor for a voice, a feeling, or an idea.
+  - Do not describe ordinary actions as grand or mystical unless the moment earns it.
+
+  Emotion
+  - Use decisions, mistakes, silence, movement, and dialogue.
+  - Carry feeling in action and choices. Name it rarely and plainly, never as a weight sitting in the chest.
+  - Avoid rotating through stock body-language reactions.
+  - Do not explain the emotion again after it has been shown clearly.
+
+  Dialogue
+  - Let people answer directly when they would.
+  - Let them evade, interrupt, refuse, or misunderstand when motivated.
+  - Use contractions unless the character is deliberately formal.
+  - Keep most turns concise.
+  - Avoid information both speakers already know.
+  - Avoid repeated names and ornate dialogue tags.
+  - Give each conversation a goal, pressure point, or change.
+
+  Exposition
+  - Deliver only what the current decision requires.
+  - When a character solves a practical problem, show the steps, quantities and trade-offs, not "a lot" or "enough".
+  - Give backstory in small doses: a line or two where it matters, never a page of memory.
+  - Break explanations with questions, objections, consequences, or action.
+  - Do not repeat lore merely because several chapters have passed.
+  - Never recap earlier chapters; the reader just read them.
+
+  Pacing and endings
+  - Every chapter should deliver a meaningful development.
+  - Not every chapter needs danger or a cliffhanger.
+  - Valid endings include earned closure with a new direction, a decision,
+    revelation, reversal, promise, danger, or continuing action.
+  - Once the ending lands, stop. Never close a scene or the chapter on a reflection that sums it up, or on an extra ominous line.
+
+  Write like this
+  - Not: The silence in the kitchen had a weight to it, the kind that settles over a house after an argument nobody won.
+    But: The kitchen was quiet. Nobody had won the argument.
+  - Not: His voice was gravel dragged over old iron, every word a verdict.
+    But: His voice was rough. "Sit down," he said.
+  - Not: She offered a smile that never reached the careful architecture of her eyes.
+    But: She smiled. Her eyes stayed cold.
+  - Not: The envelope sat on the desk like an accusation, patient and unanswerable.
+    But: The envelope had no return address. She left it on the desk, unopened.
+  - Not: The town had long ago sorted him into the drawer marked harmless.
+    But: People in town thought he was harmless.
+  - Not: The rain turned the high street into a rumour of itself.
+    But: Rain blurred the high street. She could barely see the shops.
+
+  Avoid
+  - Asides that announce something matters instead of showing why.
+  - Abstract nouns doing concrete work: "the architecture of her grief".
+  - Two or more similes or metaphors stacked on one thing.
+  - Reframes that correct themselves for effect: "It was not a door. It was a verdict."
+  - Narrator cleverness: wry labels, "the universe's idea of a joke", knowing asides about the scene.
+  - An elaborate metaphor for a voice, a room, or a silence.
+  - Long passages of the POV character reflecting on the past or on their feelings.
+  - Leaning on one comparison frame ("like a…", "the way…", "the kind of…"): use few similes, and no frame more than twice a chapter.
+  - Echoing a distinctive word or phrase within a page.
+  - Runs of long sentences built the same way, such as a clause trailed by "-ing" phrases.
+
+  Originality
+  - Do not imitate any named novel, author, character, terminology, or scene.
+  - Use web-novel structural strengths—clarity, progression, anticipation,
+    escalation, and payoff—while creating original material.
+
+  Simple does not mean flat. Vary rhythm; let a strong moment land in a longer sentence.
+  """#
+
+let bibleStageOutputShape =
+  #"""
+  Respond with ONLY one valid JSON object — nothing outside the JSON, no markdown fences — using these fields:
+  {"body": "<the full section prose>",
+   "entities": [{"entityKey": "<snake_case id>", "name": "...", "type": "character|faction|location|power_rule|item|concept", "significance": "major|minor", "notes": "...", "body": "<full entity card prose>"}],
+   "facts": [{"factKey": "<snake_case id>", "text": "...", "subjects": ["<entity key>"], "constraintNote": "...", "terms": ["..."], "revealChapter": <chapter number>}],
+   "worldFacts": [{"category": "...", "key": "<snake_case id>", "value": "...", "chapter": <chapter number>}]}
+  Only "body" is always required. Include "entities", "facts", and "worldFacts" whenever the instructions above ask for them AND this section actually establishes that kind of content — omit the field or send [] otherwise. Never drop a field the instructions above asked for.
+  """#
