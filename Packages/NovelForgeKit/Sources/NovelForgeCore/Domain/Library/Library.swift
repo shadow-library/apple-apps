@@ -31,6 +31,7 @@ public enum Library {
     if case .set(let title?) = changes.title { try requireAtMost(title, LibraryLimits.titleCharactersOnEdit, field: "title") }
     if case .set(let target) = changes.wordTarget { try requireWordTarget(target) }
     try transaction.requireNovel(novel)
+    if case .set(let mode) = changes.contentMode { try ChatUnrestrictedSwitch.requireSwitchable(novel: novel, to: mode, in: transaction) }
     var edit = NovelEdit()
     edit.title = changes.title.map(trimmedOrNil)
     edit.contentMode = changes.contentMode

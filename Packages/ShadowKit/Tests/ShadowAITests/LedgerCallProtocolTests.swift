@@ -111,6 +111,13 @@ struct LedgerCallProtocolTests {
     #expect(child.costSource == .pending)
     #expect(child.startedMillis == call.startedMillis)
     #expect(try await LedgerFixture.entries(store).sorted { $0.id.uuidString < $1.id.uuidString } == written.sorted { $0.id.uuidString < $1.id.uuidString })
+    #expect(try await store.read { transaction in try Ledger.entries(ofCall: call.id, in: transaction) } == written)
+  }
+
+  @Test("should read no entries for a call this store has not recorded")
+  func unrecordedCall() async throws {
+    let store = try LedgerFixture.store()
+    #expect(try await store.read { transaction in try Ledger.entries(ofCall: UUID(), in: transaction) }.isEmpty)
   }
 
   @Test("should record the ids of a terminal error after started as a pending failed entry")

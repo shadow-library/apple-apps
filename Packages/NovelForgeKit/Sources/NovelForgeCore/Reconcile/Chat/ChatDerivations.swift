@@ -7,5 +7,6 @@ public enum ChatDerivations {
     ProposalChangeRowDerivation(),
     ProposalChangeEntryDerivation(),
     ProposalStateDerivation(),
+    ProposalHistoryDerivation(),
   ]
 }

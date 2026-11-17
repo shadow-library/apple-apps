@@ -51,6 +51,11 @@ extension Ledger {
     return try storedEntries(of: call, in: transaction)
   }
 
+  /// A call's entry, then one per attempt it abandoned, as `finish` and `abandon` wrote them; empty when the call is not recorded here or cannot be read.
+  public static func entries(ofCall id: UUID, in transaction: ReadTransaction) throws(StoreError) -> [ModelCallEntry] {
+    try entries(ofCall: id) { ref throws(StoreError) in try transaction.state(of: ref) }
+  }
+
   static func attemptID(of call: UUID, index: Int) -> UUID {
     var bytes = Array(SHA256.hash(data: Data("com.shadow.library.shadowai.call-attempt:\(EntityKey(uuid: call).rawValue):\(index)".utf8)).prefix(16))
     bytes[6] = (bytes[6] & 0x0F) | 0x80
@@ -59,13 +64,15 @@ extension Ledger {
   }
 
   private static func storedEntries(of call: ModelCallStart, in transaction: borrowing WriteTransaction) throws(StoreError) -> [ModelCallEntry] {
+    try entries(ofCall: call.id) { ref throws(StoreError) in try transaction.state(of: ref) }
+  }
+
+  private static func entries(ofCall id: UUID, reading state: (EntityRef) throws(StoreError) -> EntityState?) throws(StoreError) -> [ModelCallEntry] {
     var written: [ModelCallEntry] = []
-    var id = call.id
-    while true {
-      let entryRef = ref(id)
-      guard let state = try transaction.state(of: entryRef), let stored = entry(ref: entryRef, state: state) else { break }
+    var next = ref(id)
+    while let found = try state(next), let stored = entry(ref: next, state: found) {
       written.append(stored)
-      id = attemptID(of: call.id, index: written.count - 1)
+      next = ref(attemptID(of: id, index: written.count - 1))
     }
     return written
   }
