@@ -7,6 +7,7 @@ Read `README.md` first; it covers layout, modules and tasks.
 - Never commit or hand-edit `*.xcodeproj`, `*.xcworkspace` or `Derived/`. Change the Swift manifests and run `tuist generate --no-open`.
 - Every app's `Project.swift` goes through `Project.app(...)`. Build settings belong in `Tuist/ProjectDescriptionHelpers/Settings+Shadow.swift`, never per app.
 - Depend on shared modules with `.shared(.<module>)`, never `.external(name:)` with a string.
+- Depend on product modules with `.product(.<module>)` (`ProductModule`), never `.external(name:)` with a string.
 - Code reused by a second app belongs in `Packages/ShadowKit`, not copied between apps.
 - A product's core lives in `Packages/<Product>Kit` (first: `Packages/NovelForgeKit`, module `NovelForgeCore`). It imports no UI framework (SwiftUI, UIKit, AppKit) and reaches ShadowKit through the package's products.
 - `ShadowTestSupport` is for test targets only; never link it into an app target.

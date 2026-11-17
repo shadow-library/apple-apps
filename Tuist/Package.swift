@@ -13,6 +13,7 @@ import PackageDescription
 let package = Package(
   name: "ShadowLibraryDependencies",
   dependencies: [
-    .package(path: "../Packages/ShadowKit")
+    .package(path: "../Packages/ShadowKit"),
+    .package(path: "../Packages/NovelForgeKit"),
   ]
 )

@@ -55,10 +55,13 @@ jobs:
       matrix:
         include:
           - platform: iOS
+            scheme: ""
             testFlags: ""
           - platform: macOS
+            scheme: ""
             testFlags: --skip-ui-tests
           - platform: visionOS
+            scheme: Catalog
             testFlags: --skip-ui-tests
     steps:
       - uses: actions/checkout@v7
@@ -68,4 +71,4 @@ jobs:
       - uses: jdx/mise-action@v5
       - run: tuist install
       - run: mise run lint:graph
-      - run: tuist test --platform ${{ matrix.platform }} ${{ matrix.testFlags }}
+      - run: tuist test ${{ matrix.scheme }} --platform ${{ matrix.platform }} ${{ matrix.testFlags }}

@@ -25,6 +25,7 @@ To sign for devices, export your team before generating: `export TUIST_DEVELOPME
 ```
 Apps/                         one folder per app, each with its own Project.swift
   Catalog/                    design-system gallery; also the pipeline's smoke test
+  NovelForge/                 Novel Forge for iPhone, iPad and Mac (`.phoneAndMac`); vault opening and the library shell
 Packages/
   ShadowKit/                  the shared Swift package (one library product per module)
   NovelForgeKit/              Novel Forge's core (`NovelForgeCore`): domain rules, pipelines, retrieval; no UI
@@ -59,11 +60,15 @@ let project = Project.app(
 )
 ```
 
+Product cores are depended on the same way, through `ProductModule` (`.product(.novelForgeCore)`), so no dependency is named by a string.
+
 ### Adding a module
 
 1. Add a target and a `.library` product to `Packages/ShadowKit/Package.swift`, with sources in `Sources/<Module>` and tests in `Tests/<Module>Tests`.
 2. Add a case to `SharedModule` in `Tuist/ProjectDescriptionHelpers/SharedModule.swift`.
 3. `mise run bootstrap`.
+
+A product module is added the same way: a library product in the product's package, a case in `ProductModule` (`Tuist/ProjectDescriptionHelpers/ProductModule.swift`), and a `.package(path:)` entry in `Tuist/Package.swift` for a new package.
 
 ## Novel Forge core
 
@@ -74,6 +79,7 @@ let project = Project.app(
 | `Text`                   | JavaScript string, number and JSON semantics (UTF-16 indexing, `OrderedJSON` stringify) that policies port exactly |
 | `Text/Regex`             | `JSRegex`: a backtracking engine for JavaScript patterns, with case folding and a follow analysis        |
 | `Schema`                 | `NovelForgeSchema` (`version`), `NovelForgeKind`, `NovelForgeField`, `NovelForgeKey`                    |
+| `Store`                  | `NovelForgeStore`: opens the vault (file or in-memory) with the schema registry and reconciler          |
 | `Records`                | One typed record per kind (`NovelRecord`, `DraftRecord`, `FinalChapterRecord`, ...) with create, edit, revision and append writes and reads |
 | `Rules`                  | Pure rules: content hash, progress, next chapter, batch selection, bible manifest, promises, volume stats |
 | `Policies/*`             | Ported pure policies: `Checks`, `HardLine`, `Ideas`, `Metrics`, `Prose`, `ReplyScanner`, `Reveal`, `WritePolicy` |
@@ -137,6 +143,12 @@ xcodebuild docbuild -scheme ShadowDesignSystem -destination 'generic/platform=ma
 
 The archive is written to `.build/docbuild/Build/Products/Debug/ShadowDesignSystem.doccarchive`; open it in Xcode. `swift package generate-documentation` would need `swift-docc-plugin`, which is not a dependency of this repository.
 
+## Novel Forge app
+
+`Apps/NovelForge` runs on iPhone, iPad and Mac from one target (`.phoneAndMac`; no visionOS). It depends on `NovelForgeCore`, `ShadowStore` and `ShadowDesignSystem`. At launch it opens the vault, one SQLite database at `<Application Support>/<bundle id>/Vaults/Default/vault.sqlite`, off the main actor; a failure shows an error screen with Try Again instead of crashing. The root is a placeholder `NavigationSplitView`; the screens follow. Unit tests run against a temporary directory, and the app itself uses an in-memory store when hosted by XCTest. Opening goes through `NovelForgeStore` in `NovelForgeCore`.
+
+User-facing strings live in `Apps/NovelForge/Resources/Localizable.xcstrings`.
+
 ## Catalog app
 
 `Apps/Catalog` is a gallery of every component and token page in light and dark, with the presentation and device-screen demos. It is also the pipeline's smoke test and the subject of the screenshot harness. Run the `Catalog` scheme from the workspace, or `Catalog -list-components` to print the page ids.
@@ -179,17 +191,18 @@ Simulators and the window server require running outside any command sandbox. In
 mise run test:packages                      # shared packages with SwiftPM; no generation needed
 mise run test:apps                          # tuist test --skip-ui-tests
 tuist test Catalog --platform macOS --no-selective-testing
+tuist test NovelForge --platform macOS --no-selective-testing
 ```
 
 - `mise run test:packages` covers `ShadowKit` and `NovelForgeKit`. Property tests print their seed on failure; rerun it with `replay(seed:)` from `ShadowTestSupport`.
 - Pass `--no-selective-testing` when verifying a change: Tuist otherwise skips targets it considers unchanged.
-- CI runs `swift test` for the packages, then `tuist test` per platform: iOS with UI tests, macOS and visionOS with `--skip-ui-tests`.
+- CI runs `swift test` for the packages, then `tuist test` per platform: iOS with UI tests, macOS with `--skip-ui-tests`, and visionOS with `--skip-ui-tests` on `Catalog` only (the new apps have no visionOS destination).
 - Swift Testing tests that resolve `Color` or `Font` must be `@MainActor`.
 
 ## Adding an app
 
 ```sh
-mise run new-app Memoir --platform multiplatform   # ios | macos | multiplatform | watchos | tvos | visionos
+mise run new-app Memoir --platform multiplatform   # ios | macos | multiplatform | phoneAndMac | watchos | tvos | visionos
 ```
 
 This creates `Apps/Memoir` with app, test target and scheme, bundle ID `com.shadowlibrary.memoir`, and regenerates the workspace.

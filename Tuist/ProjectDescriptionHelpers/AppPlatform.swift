@@ -4,6 +4,7 @@ public enum AppPlatform: String, CaseIterable {
   case ios
   case macos
   case multiplatform
+  case phoneAndMac
   case watchos
   case tvos
   case visionos
@@ -13,6 +14,7 @@ public enum AppPlatform: String, CaseIterable {
     case .ios: [.iPhone, .iPad]
     case .macos: [.mac]
     case .multiplatform: [.iPhone, .iPad, .mac, .appleVision]
+    case .phoneAndMac: [.iPhone, .iPad, .mac]
     case .watchos: [.appleWatch]
     case .tvos: [.appleTv]
     case .visionos: [.appleVision]
