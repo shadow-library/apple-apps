@@ -239,7 +239,7 @@ enum ChatContextLoader {
     guard let ref = try? DraftRecord.ref(novel: novel, chapter: chapter), case .readable(let entry) = try DraftRecord.readHead(ref, in: transaction), !entry.isRemoved else {
       return nil
     }
-    return entry.record.content
+    return try ChatTurnDrafts.readThrough(entry.record.content, novel: novel, chapter: chapter, in: transaction)
   }
 
   // novel-chat-context.ts:59

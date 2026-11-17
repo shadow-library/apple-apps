@@ -166,7 +166,7 @@ struct TurnStoreSteps: TurnStagingSteps {
   let request: TurnStagingRequest
 
   // turn-proposals.ts:141-157 in one transaction: a direct card that cannot stage, raises warnings of its own or does not apply is never written
-  func applyDirect(_ ops: [ChangeOp], sources: [OpSource], entityMaterialization: Bool) async -> TurnDirectOutcome {
+  func applyDirect(_ ops: [ChangeOp], sources: [OpSource], entityMaterialization: Bool, cardsFollow: Bool) async -> TurnDirectOutcome {
     let request = request
     do {
       return try await store.write { transaction in
@@ -186,7 +186,10 @@ struct TurnStoreSteps: TurnStagingSteps {
         }
         switch outcome {
         case .conflicted: throw DirectAbort(outcome: .failed(note: turnApplyConflictNote))
-        case .applied(let changes): return .applied(proposal: staged.proposal.id, changes: changes)
+        case .applied(let changes):
+          let step = TurnStagingStep.applied(proposal: staged.proposal.id, cardsFollow: cardsFollow)
+          try TurnStagingMarks.record(step, reply: request.reply, session: request.session, in: transaction.database)
+          return .applied(proposal: staged.proposal.id, changes: changes)
         }
       }
     } catch {
@@ -205,7 +208,13 @@ struct TurnStoreSteps: TurnStagingSteps {
       let attempt = remaining
       do throws(TurnStagingError) {
         let proposal = try await store.turnWrite { transaction throws(TurnStagingError) in
-          try Self.stage(attempt, warnings: warnings, entityMaterialization: entityMaterialization, request: request, in: &transaction).proposal.id
+          let proposal = try Self.stage(attempt, warnings: warnings, entityMaterialization: entityMaterialization, request: request, in: &transaction).proposal.id
+          do throws(StoreError) {
+            try TurnStagingMarks.record(.cards(proposal: proposal), reply: request.reply, session: request.session, in: transaction.database)
+          } catch {
+            throw .store(error)
+          }
+          return proposal
         }
         return TurnCardStaging(proposal: proposal, replyNotes: notes)
       } catch {
@@ -217,6 +226,13 @@ struct TurnStoreSteps: TurnStagingSteps {
         guard remaining.count < attempt.count else { throw error }
         notes.append(error.errorDescription ?? "")
       }
+    }
+    do {
+      try await store.write { transaction in
+        try TurnStagingMarks.record(.cards(proposal: nil), reply: request.reply, session: request.session, in: transaction.database)
+      }
+    } catch {
+      throw .store(error)
     }
     return TurnCardStaging(proposal: nil, replyNotes: notes)
   }

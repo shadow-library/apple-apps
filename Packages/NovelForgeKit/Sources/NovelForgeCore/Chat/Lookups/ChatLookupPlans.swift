@@ -29,7 +29,7 @@ extension ChatLookupReader {
     let notFound = "Draft not found for chapter \(chapter.jsString)"
     guard let number = Self.chapterNumber(chapter), let ref = try? DraftRecord.ref(novel: novel, chapter: number) else { return notFound }
     guard let (draft, revision) = try head(DraftRecord.self, ref) else { return notFound }
-    let content = draft.content
+    let content = try query { () throws(StoreError) in try ChatTurnDrafts.readThrough(draft.content, novel: novel, chapter: draft.chapter, in: transaction) }
     let row = try query { () throws(StoreError) in try ChapterList.load(novel, in: transaction) }.rows.value?.first { $0.chapter == draft.chapter }
     let status = row.map { $0.stage == .final ? "final" : "draft" } ?? Self.notAvailable
     let review = row?.review?.rawValue ?? Self.notAvailable

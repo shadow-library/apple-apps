@@ -50,7 +50,8 @@ struct TurnCardStaging: Sendable, Equatable {
 
 /// The two steps a turn's split is staged by (turn-proposals.ts:39), each one write transaction.
 protocol TurnStagingSteps {
-  func applyDirect(_ ops: [ChangeOp], sources: [OpSource], entityMaterialization: Bool) async -> TurnDirectOutcome
+  /// `cardsFollow` says whether the split holds cards staged after it, which the applied side records for a turn stopped in between.
+  func applyDirect(_ ops: [ChangeOp], sources: [OpSource], entityMaterialization: Bool, cardsFollow: Bool) async -> TurnDirectOutcome
   func stageCards(_ ops: [ChangeOp], warnings: [String], entityMaterialization: Bool) async throws(TurnStagingError) -> TurnCardStaging
 }
 
@@ -67,7 +68,7 @@ enum TurnStagingFlow {
     }
 
     let half = split.cards.isEmpty
-    switch await steps.applyDirect(split.direct, sources: split.sources, entityMaterialization: half) {
+    switch await steps.applyDirect(split.direct, sources: split.sources, entityMaterialization: half, cardsFollow: !split.cards.isEmpty) {
     case .failed(let note):
       return try await allAsCards(split, warnings: warnings, steps: steps, note: note, held: nil)
     case .warned:

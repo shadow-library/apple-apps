@@ -3,12 +3,13 @@ import GRDB
 import ShadowCore
 import ShadowStore
 
-/// What this device keeps beside the vault about a chat: its turns and their frames (`LocalTurnStore`) and the exchanges a next turn replays
-/// (`ChatContextExchangeLog`). None of it syncs, so a deletion clears it on the deleting device and leaves another device's own rows to that device.
+/// What this device keeps beside the vault about a chat: its turns and their frames (`LocalTurnStore`), the exchanges a next turn replays
+/// (`ChatContextExchangeLog`), the turns' records (`ChatTurnRecords`) and their last requests (`ChatCallInspector`). None of it syncs, so a deletion clears
+/// it on the deleting device and leaves another device's own rows to that device.
 enum ChatLocalCleanup {
   static func forget(session: UUID, in database: Database) throws(StoreError) {
     try forgetTurns(where: "session = ?", [session], in: database)
-    try ChatContextExchangeLog.forget(session: session, in: database)
+    try forgetSessionRows(session, in: database)
   }
 
   /// Every session the novel's derived chats or this device's turns name, a deleted one included.
@@ -21,7 +22,14 @@ enum ChatLocalCleanup {
       return sessions
     }
     try forgetTurns(where: "novel = ?", [novel], in: database)
-    for session in sessions.sorted(by: { $0.uuidString < $1.uuidString }) { try ChatContextExchangeLog.forget(session: session, in: database) }
+    for session in sessions.sorted(by: { $0.uuidString < $1.uuidString }) { try forgetSessionRows(session, in: database) }
+  }
+
+  /// The replayed exchanges, the turn records and the Inspector's requests of one session.
+  private static func forgetSessionRows(_ session: UUID, in database: Database) throws(StoreError) {
+    try ChatContextExchangeLog.forget(session: session, in: database)
+    try ChatTurnRecords.forget(session: session, in: database)
+    try ChatCallInspector.forget(session: session, in: database)
   }
 
   /// Clears what this device kept of every chat that now reads as deleted, as when the deletion was made on another device and arrived by sync; returns those

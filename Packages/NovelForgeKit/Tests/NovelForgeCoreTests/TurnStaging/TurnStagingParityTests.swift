@@ -82,7 +82,7 @@ private final class ScriptedSteps: TurnStagingSteps {
     applyFails = try text(script["applyFails"])
   }
 
-  func applyDirect(_ ops: [ChangeOp], sources: [OpSource], entityMaterialization: Bool) async -> TurnDirectOutcome {
+  func applyDirect(_ ops: [ChangeOp], sources: [OpSource], entityMaterialization: Bool, cardsFollow: Bool) async -> TurnDirectOutcome {
     direct = DirectCall(ops: ops, sources: sources, entityMaterialization: entityMaterialization)
     if stageFails.contains("direct") { return .failed(note: TurnStagingFlow.failureNote(ProposalStagingError.store(.invalidChange("op not allowed")))) }
     if directWarns { return .warned }

@@ -12,7 +12,7 @@ private func changeOps(_ ops: String...) throws -> [ChangeOp] {
 private final class FailingCards: TurnStagingSteps {
   private(set) var calls = 0
 
-  func applyDirect(_ ops: [ChangeOp], sources: [OpSource], entityMaterialization: Bool) async -> TurnDirectOutcome {
+  func applyDirect(_ ops: [ChangeOp], sources: [OpSource], entityMaterialization: Bool, cardsFollow: Bool) async -> TurnDirectOutcome {
     calls += 1
     return .applied(proposal: UUID(), changes: [])
   }
@@ -32,7 +32,7 @@ private final class EmptiedCards: TurnStagingSteps {
     self.failure = failure
   }
 
-  func applyDirect(_ ops: [ChangeOp], sources: [OpSource], entityMaterialization: Bool) async -> TurnDirectOutcome {
+  func applyDirect(_ ops: [ChangeOp], sources: [OpSource], entityMaterialization: Bool, cardsFollow: Bool) async -> TurnDirectOutcome {
     direct ?? .failed(note: applyFailedNote)
   }
 
