@@ -290,6 +290,7 @@ public enum ProposalCardMember: String, CaseIterable, Sendable {
 
 // Written in one set by the first apply: apps/novel-forge-server/src/database/schemas/refinement.ts:246 and :253, modules/refinement/apply/apply.types.ts:20.
 public enum ProposalAppliedMember: String, CaseIterable, Sendable {
+  case selected
   case postState = "post_state"
   case sources
   case automatic
