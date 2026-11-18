@@ -55,6 +55,11 @@ extension AttemptLease {
   }
 
   public func isLive(at now: LeaseInstant) -> Bool {
+    Self.isLive(expires: expires, at: now)
+  }
+
+  /// The one liveness rule, for readers that keep only a lease's expiry.
+  public static func isLive(expires: Int64, at now: LeaseInstant) -> Bool {
     now.millis < expires && expires - now.millis <= (LeaseTerms.duration + LeaseTerms.skew).millis
   }
 }

@@ -7,5 +7,6 @@ public enum NovelForgeDerivations {
       PlanWorldDerivations.all,
       ChapterDerivations.all,
       ChatDerivations.all,
+      JobDerivations.all,
     ].joined())
 }
