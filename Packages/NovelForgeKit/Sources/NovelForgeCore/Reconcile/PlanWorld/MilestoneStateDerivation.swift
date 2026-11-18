@@ -28,10 +28,10 @@ public struct MilestoneStateEntry: Codable, Hashable, Sendable, FetchableRecord,
   }
 }
 
-// Until finalize review exists a milestone is reached only by a final chapter whose canon claims it, as finalizing without a review does
-// (apps/novel-forge-server/src/modules/ai/graphs/chapter-finalization.graph.ts:177); a removed milestone has no state.
+// A milestone is reached by the earliest final chapter that reached it: one finalized without a review by claiming it, one finalized through a review by a kept
+// milestone item (`CanonMilestones.reached`); a removed milestone has no state.
 public struct MilestoneStateDerivation: Derivation {
-  public static let version = 1
+  public static let version = 2
   public static let definition = """
     CREATE TABLE nf_derived_milestone_state (
       novel BLOB NOT NULL, milestone TEXT NOT NULL, state TEXT NOT NULL, planned_chapter INTEGER, reached_chapter INTEGER, PRIMARY KEY (novel, milestone)

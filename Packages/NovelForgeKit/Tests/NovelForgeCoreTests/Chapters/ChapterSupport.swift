@@ -5,7 +5,7 @@ import ShadowStore
 
 @testable import NovelForgeCore
 
-let chapterAreaDerivations = ProjectionDerivations.all + PlanWorldDerivations.all + ChapterDerivations.all
+let chapterAreaDerivations = ProjectionDerivations.all + CanonDerivations.all + PlanWorldDerivations.all + ChapterDerivations.all
 
 enum UpstreamRecording: Sendable {
   case current

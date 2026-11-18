@@ -111,8 +111,7 @@ struct WriterPackMystery: Equatable, Sendable {
 }
 
 /// Everything `forChapter` reads of one novel, as the reference's tables hold it. Facts are in key order (the reference reads them ordered by key where order
-/// matters), entities in key order, world facts in category then key order. The vault keeps no aliases, character states, relationships or world facts yet,
-/// so a world loaded from it has none.
+/// matters), entities in key order, world facts in category then key order. The vault keeps no aliases or world facts yet, so a world loaded from it has none.
 // apps/novel-forge-server/src/modules/ai/context/context-assembler.service.ts:196-222 and the queries of the helpers it calls
 struct WriterPackWorld: Equatable, Sendable {
   var writingStyle: String?

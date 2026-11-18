@@ -83,9 +83,10 @@ struct ChapterContractReading {
   let terms: ChapterTerms
 }
 
-// One row per plan that is not removed and per final chapter; a final chapter is read from its stored canon alone, never its digest, text or amendments.
+// One row per plan that is not removed and per final chapter; a final chapter is read from its stored canon alone, never its digest, text or amendments, and claims
+// the milestones it reached.
 struct ChapterContractDerivation: Derivation {
-  static let version = 1
+  static let version = 2
   static let definition = """
     CREATE TABLE nf_derived_chapter_contract (
       basis TEXT NOT NULL, key TEXT NOT NULL, novel BLOB NOT NULL, chapter INTEGER NOT NULL, readable INTEGER NOT NULL, volume TEXT, ending INTEGER NOT NULL,
@@ -143,7 +144,8 @@ struct ChapterContractDerivation: Derivation {
     } catch {
       terms = nil
     }
-    guard let terms else { return [try .unreadable(.canon, ref, novel: key.novel, chapter: chapter)] }
+    guard var terms else { return [try .unreadable(.canon, ref, novel: key.novel, chapter: chapter)] }
+    terms.contract.claimedMilestones = CanonMilestones.reached(claims: terms.contract.claimedMilestones, review: stored.objectValue?[FinalChapterCanonMember.review.rawValue])
     return [try .reading(.canon, ref, novel: key.novel, chapter: chapter, volume: terms.volume, contract: terms.contract)]
   }
 

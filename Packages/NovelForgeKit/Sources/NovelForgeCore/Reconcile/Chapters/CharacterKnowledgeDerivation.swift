@@ -46,25 +46,39 @@ public struct CharacterKnowledgeEntry: Hashable, Sendable, FetchableRecord, Pers
   }
 }
 
-/// A chapter whose contract the ledger takes: final ones commit, approved ones are provisional. `since` is the clock of the approval it rests on.
+/// A chapter whose contract the ledger takes: final ones commit, approved ones are provisional. `since` is the clock of the approval it rests on. A final chapter
+/// whose canon recorded its knowledge commits exactly `frozen` in place of its contract's learns, and `generated` holds the knowledge items its review kept.
 struct KnowledgeContributor: Equatable {
   let chapter: Int
   let isFinal: Bool
   let since: HLCTimestamp?
+  var frozen: [LedgerPair]? = nil
+  var generated: [LedgerPair] = []
 }
 
 enum DerivedLedger {
   /// apps/novel-forge-server/src/common/provisional-knowledge.ts:88 and 163 replayed in chapter order on the current world: each contributor is ledgered as an
   /// approval would, and a final one committed as finalize would, so every pair lands at its earliest contributor and a manual row stays authoritative. A pair
   /// the author retracted stays hidden, whichever chapter claims it. `plans` are the world's chapters with each contributor's learns cut to what it could ledger.
+  /// A frozen contributor commits the pairs its finalizing device recorded, which the reveal rule is not asked about again.
   static func rows(
     world: NovelPlanWorld, plans: [DisclosurePlan], entities: [String], manual: [KnowledgeRow], retracted: Set<LedgerPair>, contributors: [KnowledgeContributor]
   ) -> [KnowledgeRow] {
     var ledger = world.disclosureWorld(plans: plans, entities: entities, knowledge: manual)
     let contexts = plannedUnlockContexts(ledger.planWorld, conditioned: true)
     for contributor in contributors.sorted(by: { $0.chapter < $1.chapter }) {
-      ledger.ledgerBriefReveals(chapter: contributor.chapter, draftRevision: contributor.chapter, contexts: contexts)
-      if contributor.isFinal { ledger.commitProvisionalRows(chapter: contributor.chapter, draftRevision: contributor.chapter) }
+      if let frozen = contributor.frozen {
+        ledger.writeBriefReveals(
+          frozen.map { KnowledgeRow(factKey: $0.factKey, entityKey: $0.entityKey, learnedInChapter: contributor.chapter, source: .brief, status: .committed) })
+      } else {
+        ledger.ledgerBriefReveals(chapter: contributor.chapter, draftRevision: contributor.chapter, contexts: contexts)
+        if contributor.isFinal { ledger.commitProvisionalRows(chapter: contributor.chapter, draftRevision: contributor.chapter) }
+      }
+      // review-event-apply.ts:203-214, after commitChapterKnowledge (chapter-finalization.graph.ts:175-176): a kept item never displaces a row the pair holds
+      for pair in contributor.generated where !ledger.knowledge.contains(where: { $0.pair == pair }) {
+        ledger.knowledge.append(
+          KnowledgeRow(factKey: pair.factKey, entityKey: pair.entityKey, learnedInChapter: contributor.chapter, source: .generated, status: .committed))
+      }
     }
     return ledger.ledger.filter { $0.source == .manual || !retracted.contains($0.pair) }
   }
@@ -86,10 +100,11 @@ extension DisclosureVolume {
   }
 }
 
-// Committed knowledge from the canon contracts of final chapters and provisional knowledge from approvals in force, over the author's manual reveals; a removed
-// secret or entity hides its rows, and one restored or created again starts with none, as the reference's delete cascades them (database/schemas/knowledge.ts:188-191).
+// Committed knowledge from final chapters (the pairs a canon recorded at finalize, else its contract's learns, then the knowledge items its review kept) and
+// provisional knowledge from approvals in force, over the author's manual reveals; a removed secret or entity hides its rows, and one restored or created again
+// starts with none, as the reference's delete cascades them (database/schemas/knowledge.ts:188-191).
 public struct CharacterKnowledgeDerivation: Derivation {
-  public static let version = 3
+  public static let version = 4
   public static let definition = """
     CREATE TABLE nf_derived_character_knowledge (
       novel BLOB NOT NULL, fact TEXT NOT NULL, entity TEXT NOT NULL, chapter INTEGER NOT NULL, source TEXT NOT NULL, status TEXT NOT NULL, draft TEXT,
@@ -108,6 +123,7 @@ public struct CharacterKnowledgeDerivation: Derivation {
       .outputs(of: PlanWorldDerivation.self) { [$0.novel] },
       .outputs(of: ApprovalInForceDerivation.self) { [$0.novel] },
       .outputs(of: ChapterApprovalDerivation.self) { [$0.novel] },
+      .outputs(of: CanonBindingDerivation.self) { [$0.novel] },
       .outputs(of: RecordIndexDerivation.self) { row in Self.recordKinds.contains(row.kind) ? row.novel.map { [$0] } ?? [] : [] },
     ]
   }
@@ -127,6 +143,7 @@ public struct CharacterKnowledgeDerivation: Derivation {
     var revisions = [Int: String?]()
     var contributors = [KnowledgeContributor]()
     let finals = try context.fetchAll(FinalChapterEntry.filter(Column("novel") == novel))
+    let bindings = Dictionary(try CanonBinding.all(of: novel, in: context).map { ($0.chapter, $0) }) { first, _ in first }
     let bound = Set(finals.compactMap(\.approval))
     var approved = [UUID: HLCTimestamp]()
     if !bound.isEmpty {
@@ -141,7 +158,19 @@ public struct CharacterKnowledgeDerivation: Derivation {
       } else {
         since = final.canonClock
       }
-      contributors.append(KnowledgeContributor(chapter: final.chapter, isFinal: true, since: since))
+      var contributor = KnowledgeContributor(chapter: final.chapter, isFinal: true, since: since)
+      if let binding = bindings[final.chapter] {
+        switch binding.knowledge {
+        case .absent: break
+        case .recorded(let pairs): contributor.frozen = pairs
+        case .unreadable: contributor.frozen = []
+        }
+        contributor.generated = binding.kept.compactMap { change in
+          guard case .knowledge(let knowledge) = change else { return nil }
+          return LedgerPair(factKey: knowledge.factKey.jsNormalize(.nfc), entityKey: knowledge.entityKey.jsNormalize(.nfc))
+        }
+      }
+      contributors.append(contributor)
     }
     for approved in try context.fetchAll(ApprovalInForceDerivation.request(for: novel)) where revisions[approved.chapter] == nil {
       revisions[approved.chapter] = .some(approved.draftRevision)
@@ -174,6 +203,10 @@ public struct CharacterKnowledgeDerivation: Derivation {
       named.formUnion(chapter.learns.map { JSString($0.entity) })
       facts.formUnion(chapter.learns.map { JSString($0.fact) })
     }
+    for pair in contributors.flatMap({ ($0.frozen ?? []) + $0.generated }) {
+      named.insert(JSString(pair.entityKey))
+      facts.insert(JSString(pair.factKey))
+    }
     var entities = [String]()
     var entityLive = [JSString: HLCTimestamp]()
     for key in named.sorted() {
@@ -189,15 +222,22 @@ public struct CharacterKnowledgeDerivation: Derivation {
     // provisional-knowledge.ts:73-79 skips a learn whose fact or learner did not exist when the chapter was approved, and finalize commits only what was
     // ledgered; a record removed and then restored or created again is a new row there (fact.handler.ts:61), so it counts from its latest create or restore.
     // The reference's re-ledgering of a revoked pair (provisional-knowledge.ts:183-232) skips this check at the earliest other claimant; here it holds there too.
+    let wasLive = { (fact: String, entity: String, cutoff: HLCTimestamp?) -> Bool in
+      guard let cutoff, let since = factLive[JSString(fact)], let learner = entityLive[JSString(entity)] else { return false }
+      return since <= cutoff && learner <= cutoff
+    }
     let plans = world.chapters.map { chapter -> DisclosurePlan in
       guard let cutoff = since[chapter.chapter] else { return chapter.plan }
-      return chapter.plan(
-        learning: chapter.learns.filter { learn in
-          guard let cutoff, let fact = factLive[JSString(learn.fact)], let entity = entityLive[JSString(learn.entity)] else { return false }
-          return fact <= cutoff && entity <= cutoff
-        })
+      return chapter.plan(learning: chapter.learns.filter { wasLive($0.fact, $0.entity, cutoff) })
     }
-    let ledger = DerivedLedger.rows(world: world, plans: plans, entities: entities, manual: manual, retracted: retracted, contributors: contributors)
+    // review-event-apply.ts:204-209 skips a kept item whose fact or learner does not exist at the commit the canon records.
+    let committed = contributors.map { contributor in
+      var cut = contributor
+      cut.frozen = contributor.frozen?.filter { wasLive($0.factKey, $0.entityKey, contributor.since) }
+      cut.generated = contributor.generated.filter { wasLive($0.factKey, $0.entityKey, bindings[contributor.chapter]?.clock) }
+      return cut
+    }
+    let ledger = DerivedLedger.rows(world: world, plans: plans, entities: entities, manual: manual, retracted: retracted, contributors: committed)
     return ledger.map { row in
       let revision = row.source == .manual ? nil : revisions[row.learnedInChapter] ?? nil
       return CharacterKnowledgeEntry(

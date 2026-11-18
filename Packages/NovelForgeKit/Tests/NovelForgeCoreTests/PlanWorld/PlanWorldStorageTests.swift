@@ -79,7 +79,7 @@ struct PlanWorldStorageTests {
     let plan = try ChapterPlanRecord.ref(novel: novel, chapter: 1)
     let terms = try #require(try await Projection.fetch(ChapterContractDerivation.request(for: plan), in: store).first)
     #expect(String(decoding: terms.terms, as: UTF8.self) == goldenTerms)
-    #expect(PlanWorldDerivation.version == 1 && ChapterContractDerivation.version == 1)
+    #expect(PlanWorldDerivation.version == 1 && ChapterContractDerivation.version == 2)
   }
 
   @Test

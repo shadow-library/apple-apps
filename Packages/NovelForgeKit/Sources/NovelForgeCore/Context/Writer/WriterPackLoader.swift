@@ -3,7 +3,8 @@ import GRDB
 import ShadowCore
 import ShadowStore
 
-/// A part of the vault the writer's disclosure policy is built from: one that cannot be read refuses the pack, as nothing could be scrubbed against it.
+/// A part of the vault the writer pack is built from: one that cannot be read refuses the pack, as nothing could be scrubbed against it or the writer would draft
+/// without the characters' standing state.
 enum WriterPackPart: String, CaseIterable, Sendable {
   case novel
   case plans
@@ -13,6 +14,7 @@ enum WriterPackPart: String, CaseIterable, Sendable {
   case secrets
   case pages
   case knowledge
+  case characters
 }
 
 struct WriterPackLoad: Equatable, Sendable {
@@ -21,17 +23,19 @@ struct WriterPackLoad: Equatable, Sendable {
   var minorNames: [String] = []
 }
 
-/// The vault as `forChapter` reads it, in one read. A final chapter's claims, volume and contract come from its canon, the rest of its plan from the plan head;
-/// drafts are read at their committed head, as a pipeline pins them. The vault keeps no aliases, character states, relationships or world facts yet.
+/// The vault as `forChapter` reads it, in one read. A final chapter's reached milestones, volume and contract come from its canon, the rest of its plan from the plan head;
+/// drafts are read at their committed head, as a pipeline pins them. Character states and relationships are what the winning canons' reviews kept; the vault
+/// keeps no aliases or world facts yet.
 // apps/novel-forge-server/src/modules/ai/context/context-assembler.service.ts:196-222 and the loaders it calls
 enum WriterPackLoader {
   private static let chapterTables = [ChapterLifecycleEntry.databaseTableName, FinalChapterEntry.databaseTableName, IndexedRecord.databaseTableName]
   private static let knowledgeTables = [CharacterKnowledgeEntry.databaseTableName]
+  private static let characterTables = [CharacterStateEntry.databaseTableName, CanonRelationshipEntry.databaseTableName]
 
   /// Only the drafts the pack of `chapter` reads are loaded: the previous chapter's and the recent-summary window's.
   static func load(novel: UUID, chapter: Int, in transaction: ReadTransaction) throws(StoreError) -> WriterPackLoad {
     let faults = try FaultRows(in: transaction)
-    let report = ReadFaults(novel: novel, reading: chapterTables + knowledgeTables, from: faults)
+    let report = ReadFaults(novel: novel, reading: chapterTables + knowledgeTables + characterTables, from: faults)
     let structure = try StoryStructure.load(novel, faults: faults, in: transaction)
     let disclosed = try ReaderDisclosure.load(novel, faults: faults, in: transaction)
     var unreadable = Set<WriterPackPart>()
@@ -93,6 +97,12 @@ enum WriterPackLoader {
     } else {
       unreadable.insert(.knowledge)
     }
+    if let characters = try report.section(characterTables, { () throws(StoreError) in try characters(novel, in: transaction) }).value {
+      world.characterStates = characters.states
+      world.relationships = characters.relationships
+    } else {
+      unreadable.insert(.characters)
+    }
 
     let plans = try ChapterPlanRecord.indexedListing(novel: novel, in: transaction)
     if plans.unreadable > 0 { unreadable.insert(.plans) }
@@ -117,15 +127,45 @@ enum WriterPackLoader {
         body: content.body, pov: content.pov, chapterPurpose: content.chapterPurpose, readerValue: content.readerValue ?? [],
         repetitionRisks: content.repetitionRisks ?? [], guidance: content.guidance, endingContract: content.endingContract)
     }
+    var contract = head?.contract ?? ChapterContract()
+    if let canon {
+      contract = canon.contract
+      contract.claimedMilestones = CanonMilestones.reached(canon)
+    }
     return WriterPackPlan(
-      chapter: chapter, volume: canon.map(\.volume) ?? head?.volume, pov: head?.pov, contextRefs: head?.contextRefs ?? [],
-      contract: canon?.contract ?? head?.contract ?? ChapterContract(), endingContract: head?.endingContract, brief: brief ?? WriterBriefInput())
+      chapter: chapter, volume: canon.map(\.volume) ?? head?.volume, pov: head?.pov, contextRefs: head?.contextRefs ?? [], contract: contract,
+      endingContract: head?.endingContract, brief: brief ?? WriterBriefInput())
   }
 
   private static func knowledgeRows(_ novel: UUID, in transaction: ReadTransaction) throws(StoreError) -> [KnowledgeRow] {
     try transaction.query { database in try CharacterKnowledgeDerivation.request(for: novel).fetchAll(database) }.map { row in
       KnowledgeRow(factKey: row.fact, entityKey: row.entity, learnedInChapter: row.chapter, source: row.source, status: row.status)
     }
+  }
+
+  private struct Characters: Equatable {
+    var states: [WriterPackCharacterState]
+    var relationships: [WriterPackRelationship]
+  }
+
+  private static func characters(_ novel: UUID, in transaction: ReadTransaction) throws(StoreError) -> Characters {
+    let (states, relationships) = try transaction.query { database in
+      (
+        try CharacterStateDerivation.request(for: novel).fetchAll(database),
+        try CanonRelationshipDerivation.request(for: novel).order(Column("chapter"), Column("entity"), Column("target"), Column("kind")).fetchAll(database)
+      )
+    }
+    var characterStates = [WriterPackCharacterState]()
+    for state in states {
+      characterStates.append(
+        WriterPackCharacterState(
+          entity: state.entity, location: state.location, conditions: try state.conditionList(), immediateGoal: state.immediateGoal, statusNote: state.statusNote,
+          lastUpdatedChapter: state.chapter))
+    }
+    let edges = relationships.enumerated().map { order, row in
+      WriterPackRelationship(entity: row.entity, target: row.target, kind: row.kind, note: row.note, chapter: row.chapter, order: order)
+    }
+    return Characters(states: characterStates, relationships: edges)
   }
 
   private struct FinalRead: Equatable {

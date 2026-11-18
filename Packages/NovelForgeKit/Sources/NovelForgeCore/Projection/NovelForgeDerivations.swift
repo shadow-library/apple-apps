@@ -4,6 +4,7 @@ public enum NovelForgeDerivations {
       ProjectionDerivations.all,
       StoryDerivations.all,
       NotebookDerivations.all,
+      CanonDerivations.all,
       PlanWorldDerivations.all,
       ChapterDerivations.all,
       ChatDerivations.all,
