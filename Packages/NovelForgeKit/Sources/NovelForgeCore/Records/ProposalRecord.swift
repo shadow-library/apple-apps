@@ -263,7 +263,7 @@ extension ProposalCard: JSONRepresentable {
 public struct ProposalApplication: Sendable, Equatable {
   public let selected: [Int]
   let postState: ArtifactStates
-  let sources: [StoredEnum<OpSource>]?
+  public let sources: [StoredEnum<OpSource>]?
   public let automatic: Bool
   public private(set) var unrecognised: [String: JSONValue]
 

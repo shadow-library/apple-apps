@@ -11,6 +11,7 @@ struct ChatSessionScreen: View {
     content
       .background(ShadowColor.surfaceApp)
       .safeAreaInset(edge: .bottom, spacing: 0) { ChatBottomBar(model: model, chats: chats) }
+      .chatCards(model)
       .task(id: model.generation) { await model.observe() }
       .aiConsentSheet($model.consentRequest, services: services, store: model.context.store) {
         Task { await model.consentAllowed() }

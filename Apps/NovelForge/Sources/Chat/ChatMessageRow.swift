@@ -73,32 +73,31 @@ struct ChatMessageRow: View {
   }
 }
 
-/// What a reply did beyond its words: the note on changes that could not be saved, and whether it applied changes or left suggestions. The cards and
-/// receipts that review them (F31) take this place.
+/// What a reply did beyond its words: the note on changes that could not be saved, then its receipt, card and question (`Cards/ChatReplyCards`). Without
+/// the session's cards context the reply only says that it changed the story or left suggestions.
 struct ChatReplyFooter: View {
   let reply: ChatMessageRecord
+  @Environment(\.chatCards) private var cards
 
   var body: some View {
     if let note = reply.applyNote {
       ShadowCallout(Text(verbatim: note), intent: .warning) { EmptyView() }
     }
-    if reply.appliedProposal != nil {
-      Label {
-        Text("Changed your story", tableName: "Chat")
-      } icon: {
-        Image(systemName: "checkmark.circle")
-      }
-      .shadowFont(.footnote)
-      .foregroundStyle(ShadowColor.successText)
+    if let cards {
+      ChatReplyCards(reply: reply, cards: cards)
+    } else {
+      if reply.appliedProposal != nil { caption(Text("Changed your story", tableName: "ChatCards"), systemImage: "checkmark.circle", color: ShadowColor.successText) }
+      if reply.cardProposal != nil { caption(Text("Suggested changes", tableName: "ChatCards"), systemImage: "sparkles", color: ShadowColor.accentText) }
     }
-    if reply.cardProposal != nil {
-      Label {
-        Text("Suggested changes", tableName: "Chat")
-      } icon: {
-        Image(systemName: "sparkles")
-      }
-      .shadowFont(.footnote)
-      .foregroundStyle(ShadowColor.accentText)
+  }
+
+  private func caption(_ title: Text, systemImage: String, color: Color) -> some View {
+    Label {
+      title
+    } icon: {
+      Image(systemName: systemImage)
     }
+    .shadowFont(.footnote)
+    .foregroundStyle(color)
   }
 }

@@ -114,7 +114,7 @@ public struct ChatMessageRecord: AppendedRecord {
     return items.contains { ChatPassageContext(json: $0) == nil }
   }
 
-  var questionCard: ChatQuestion? { question.flatMap { ChatQuestion(stored: $0) } }
+  public var questionCard: ChatQuestion? { question.flatMap { ChatQuestion(stored: $0) } }
 
   var hasUnreadableQuestion: Bool { question.map { ChatQuestion(stored: $0) == nil } == true }
 

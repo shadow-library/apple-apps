@@ -1,5 +1,5 @@
 // apps/novel-forge-server/src/modules/refinement/change-set/change-set.types.ts:345
-enum OpType: String, CaseIterable, Sendable {
+public enum OpType: String, CaseIterable, Sendable {
   case premiseUpdate = "premise.update"
   case bibleDocumentUpsert = "bible_document.upsert"
   case bibleDocumentRemove = "bible_document.remove"

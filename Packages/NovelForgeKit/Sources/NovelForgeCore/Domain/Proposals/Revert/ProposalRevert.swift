@@ -2,35 +2,46 @@ import Foundation
 import ShadowCore
 import ShadowStore
 
-struct ProposalRevertContext: Sendable {
+public struct ProposalRevertContext: Sendable {
   let novel: UUID
   var now: Date
   /// apply/unrestricted-raise.ts:18: asked only when a redone op raises a plan to unrestricted.
   var unrestrictedAvailable = UnrestrictedWriting.isAvailable
   /// Indexes this card's apply left out whose records changed since, which the author confirmed to treat as never applied (`declinedChanged`).
   var acceptingChangedDeclined: Set<Int> = []
+
+  public init(novel: UUID, now: Date, acceptingChangedDeclined: Set<Int> = []) {
+    self.novel = novel
+    self.now = now
+    self.acceptingChangedDeclined = acceptingChangedDeclined
+  }
 }
 
 // apps/novel-forge-server/src/modules/refinement/proposal-op-undo.service.ts:22-23: an undone idea is turned down, `not_now` unless the author chose a scope
-struct IdeaUndoChoice: Sendable, Equatable {
+public struct IdeaUndoChoice: Sendable, Equatable {
   var scope: LedgerRejectionScope = .notNow
   var why: String?
+
+  public init(scope: LedgerRejectionScope = .notNow, why: String? = nil) {
+    self.scope = scope
+    self.why = why
+  }
 }
 
 // proposal-revert.service.ts:39-49
-struct ProposalChangeToggle: Sendable, Equatable {
+public struct ProposalChangeToggle: Sendable, Equatable {
   let index: Int
   /// False when the change already stood as asked: undo and redo are idempotent.
-  let changed: Bool
+  public let changed: Bool
   let source: OpSource?
   let refs: [String]
   var rejection: NotebookEntryRecord?
   var withdrawals: [NotebookWithdrawalRecord] = []
 }
 
-struct ProposalRevertResult: Sendable, Equatable {
+public struct ProposalRevertResult: Sendable, Equatable {
   /// The indexes undone, in the order their inverses ran.
-  let reverted: [Int]
+  public let reverted: [Int]
   let refs: [String]
 }
 

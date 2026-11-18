@@ -1,0 +1,2049 @@
+{
+  "sourceLanguage": "en",
+  "strings": {
+    "%@ (since chapter %@)": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ (since chapter %@)"
+          }
+        }
+      }
+    },
+    "%@ knows %@": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ knows %@"
+          }
+        }
+      }
+    },
+    "%@ was already redone.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ was already redone."
+          }
+        }
+      }
+    },
+    "%@ was already undone.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ was already undone."
+          }
+        }
+      }
+    },
+    "%@ were already redone.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ were already redone."
+          }
+        }
+      }
+    },
+    "%@ were already undone.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ were already undone."
+          }
+        }
+      }
+    },
+    "%lld changes": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld change"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld changes"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld changes to chapter %@": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%#@changes@ to chapter %@"
+          },
+          "substitutions": {
+            "changes": {
+              "argNum": 1,
+              "formatSpecifier": "lld",
+              "variations": {
+                "plural": {
+                  "one": {
+                    "stringUnit": {
+                      "state": "translated",
+                      "value": "%arg change"
+                    }
+                  },
+                  "other": {
+                    "stringUnit": {
+                      "state": "translated",
+                      "value": "%arg changes"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld chapter plans": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld chapter plan"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld chapter plans"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld drafts": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld draft"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld drafts"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld final chapters and plans also rely on it and stay as they are.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld final chapter or plan also relies on it and stays as it is."
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld final chapters and plans also rely on it and stay as they are."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld records can't be read on this device, so this list may be missing what relies on them.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld record can't be read on this device, so this list may be missing what relies on it."
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld records can't be read on this device, so this list may be missing what relies on them."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld things characters know": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld thing a character knows"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld things characters know"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld undone": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld undone"
+          }
+        }
+      }
+    },
+    "%lld waiting suggestions": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld waiting suggestion"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld waiting suggestions"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "A change this version cannot read": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A change this version cannot read"
+          }
+        }
+      }
+    },
+    "A newer suggestion replaced this one.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A newer suggestion replaced this one."
+          }
+        }
+      }
+    },
+    "A passage of chapter %@": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A passage of chapter %@"
+          }
+        }
+      }
+    },
+    "A rewrite no longer matches its chapter. Leave it out to apply the others, or ask again.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A rewrite no longer matches its chapter. Leave it out to apply the others, or ask again."
+          }
+        }
+      }
+    },
+    "A suggestion waiting for you": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A suggestion waiting for you"
+          }
+        }
+      }
+    },
+    "Add chapter %@ to the Story Bible": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Add chapter %@ to the Story Bible"
+          }
+        }
+      }
+    },
+    "Answer: %@": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Answer: %@"
+          }
+        }
+      }
+    },
+    "Applies only when you select it deliberately.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Applies only when you select it deliberately."
+          }
+        }
+      }
+    },
+    "Apply": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Apply"
+          }
+        }
+      }
+    },
+    "Apply %lld selected": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Apply %lld selected"
+          }
+        }
+      }
+    },
+    "Approve chapter %@": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Approve chapter %@"
+          }
+        }
+      }
+    },
+    "Approve the chapter's draft before finalizing it.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Approve the chapter's draft before finalizing it."
+          }
+        }
+      }
+    },
+    "Audit the Story Bible": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Audit the Story Bible"
+          }
+        }
+      }
+    },
+    "Available with chapters.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Available with chapters."
+          }
+        }
+      }
+    },
+    "Cancel": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cancel"
+          }
+        }
+      }
+    },
+    "Change %lld": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Change %lld"
+          }
+        }
+      }
+    },
+    "Changed your story": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Changed your story"
+          }
+        }
+      }
+    },
+    "Changes left out of this card have changed since, perhaps on another device.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Changes left out of this card have changed since, perhaps on another device."
+          }
+        }
+      }
+    },
+    "Changes left out of this reply have changed since, perhaps on another device. Go ahead, treating them as never applied?": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Changes left out of this reply have changed since, perhaps on another device. Go ahead, treating them as never applied?"
+          }
+        }
+      }
+    },
+    "Chapter %@": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Chapter %@"
+          }
+        }
+      }
+    },
+    "Chapter %@ draft": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Chapter %@ draft"
+          }
+        }
+      }
+    },
+    "Chapter %@ plan": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Chapter %@ plan"
+          }
+        }
+      }
+    },
+    "Chapter %@ · %@": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Chapter %@ · %@"
+          }
+        }
+      }
+    },
+    "Check chapter %@ against the Story Bible": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Check chapter %@ against the Story Bible"
+          }
+        }
+      }
+    },
+    "Check chapter %@ for continuity": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Check chapter %@ for continuity"
+          }
+        }
+      }
+    },
+    "Check the novel for continuity": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Check the novel for continuity"
+          }
+        }
+      }
+    },
+    "Checking what relies on this change…": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Checking what relies on this change…"
+          }
+        }
+      }
+    },
+    "Choose an Option": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Choose an Option"
+          }
+        }
+      }
+    },
+    "Couldn't be saved: %@": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Couldn't be saved: %@"
+          }
+        }
+      }
+    },
+    "Couldn't check what relies on this change": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Couldn't check what relies on this change"
+          }
+        }
+      }
+    },
+    "Discard": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Discard"
+          }
+        }
+      }
+    },
+    "Discard these changes?": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Discard these changes?"
+          }
+        }
+      }
+    },
+    "Ending": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ending"
+          }
+        }
+      }
+    },
+    "Ending question": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ending question"
+          }
+        }
+      }
+    },
+    "Every change applied after this one is undone, newest first. Final chapters are never rewritten.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Every change applied after this one is undone, newest first. Final chapters are never rewritten."
+          }
+        }
+      }
+    },
+    "Every change from this reply was undone.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Every change from this reply was undone."
+          }
+        }
+      }
+    },
+    "Everything listed in this change is taken back out of your story. Final chapters are never rewritten.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Everything listed in this change is taken back out of your story. Final chapters are never rewritten."
+          }
+        }
+      }
+    },
+    "Finalize chapters up to %lld": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Finalize chapters up to %lld"
+          }
+        }
+      }
+    },
+    "Finalize the approved chapters": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Finalize the approved chapters"
+          }
+        }
+      }
+    },
+    "Finalize the chapters before this one first.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Finalize the chapters before this one first."
+          }
+        }
+      }
+    },
+    "Forge's idea": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Forge's idea"
+          }
+        }
+      }
+    },
+    "Forge's pick": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Forge's pick"
+          }
+        }
+      }
+    },
+    "Go Ahead": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Go Ahead"
+          }
+        }
+      }
+    },
+    "Include %@": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Include %@"
+          }
+        }
+      }
+    },
+    "It relies on changes that are undone. Redo these first: %@.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "It relies on changes that are undone. Redo these first: %@."
+          }
+        }
+      }
+    },
+    "Keep It": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Keep It"
+          }
+        }
+      }
+    },
+    "Left open. It counts as answered on the checklist.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Left open. It counts as answered on the checklist."
+          }
+        }
+      }
+    },
+    "Mark this volume's goal met and start the next": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mark this volume's goal met and start the next"
+          }
+        }
+      }
+    },
+    "Moves with “%@”.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Moves with “%@”."
+          }
+        }
+      }
+    },
+    "Never": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Never"
+          }
+        }
+      }
+    },
+    "Not Now": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Not Now"
+          }
+        }
+      }
+    },
+    "Not for this version": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Not for this version"
+          }
+        }
+      }
+    },
+    "Not now, maybe later": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Not now, maybe later"
+          }
+        }
+      }
+    },
+    "Nothing else relies on it yet. Undoing removes only what was added.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nothing else relies on it yet. Undoing removes only what was added."
+          }
+        }
+      }
+    },
+    "Nothing from this reply could be saved.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nothing from this reply could be saved."
+          }
+        }
+      }
+    },
+    "Nothing here can be undone any more.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nothing here can be undone any more."
+          }
+        }
+      }
+    },
+    "Nothing on this card is applied. You can ask the chat again later.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nothing on this card is applied. You can ask the chat again later."
+          }
+        }
+      }
+    },
+    "One of these changes is no longer valid. Leave it out and apply the rest.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "One of these changes is no longer valid. Leave it out and apply the rest."
+          }
+        }
+      }
+    },
+    "Opposition": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Opposition"
+          }
+        }
+      }
+    },
+    "Organise your notes": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Organise your notes"
+          }
+        }
+      }
+    },
+    "Other changes rely on it. Undo these too: %@.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Other changes rely on it. Undo these too: %@."
+          }
+        }
+      }
+    },
+    "Other changes rely on this one. Undo them first.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Other changes rely on this one. Undo them first."
+          }
+        }
+      }
+    },
+    "Plan the next chapter": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Plan the next chapter"
+          }
+        }
+      }
+    },
+    "Premise": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Premise"
+          }
+        }
+      }
+    },
+    "Protagonist": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Protagonist"
+          }
+        }
+      }
+    },
+    "Question": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Question"
+          }
+        }
+      }
+    },
+    "Reader promise": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reader promise"
+          }
+        }
+      }
+    },
+    "Redo": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Redo"
+          }
+        }
+      }
+    },
+    "Redo These %lld": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Redo These %lld"
+          }
+        }
+      }
+    },
+    "Redo the Other Change": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Redo the Other Change"
+          }
+        }
+      }
+    },
+    "Relies on it: %@.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Relies on it: %@."
+          }
+        }
+      }
+    },
+    "Revert": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Revert"
+          }
+        }
+      }
+    },
+    "Revise chapter %@": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Revise chapter %@"
+          }
+        }
+      }
+    },
+    "Rule": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Rule"
+          }
+        }
+      }
+    },
+    "Run an action": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Run an action"
+          }
+        }
+      }
+    },
+    "Select this step on its own and apply it deliberately.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Select this step on its own and apply it deliberately."
+          }
+        }
+      }
+    },
+    "Should it be suggested again?": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Should it be suggested again?"
+          }
+        }
+      }
+    },
+    "Skipped because an earlier step failed.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Skipped because an earlier step failed."
+          }
+        }
+      }
+    },
+    "Some changes left out of this card have changed since": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Some changes left out of this card have changed since"
+          }
+        }
+      }
+    },
+    "Some of these changes are still arriving from another device. Try again once they've synced.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Some of these changes are still arriving from another device. Try again once they've synced."
+          }
+        }
+      }
+    },
+    "Something this change needs is stored in a form this version cannot read.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Something this change needs is stored in a form this version cannot read."
+          }
+        }
+      }
+    },
+    "Something went wrong.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Something went wrong."
+          }
+        }
+      }
+    },
+    "Stopped at “%@”, so this wasn't redone.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Stopped at “%@”, so this wasn't redone."
+          }
+        }
+      }
+    },
+    "Stopped at “%@”, so this wasn't undone.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Stopped at “%@”, so this wasn't undone."
+          }
+        }
+      }
+    },
+    "Strengthen the premise": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Strengthen the premise"
+          }
+        }
+      }
+    },
+    "Suggest it again": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Suggest it again"
+          }
+        }
+      }
+    },
+    "Suggested changes": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Suggested changes"
+          }
+        }
+      }
+    },
+    "That change isn't part of these changes.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "That change isn't part of these changes."
+          }
+        }
+      }
+    },
+    "That chapter has no draft to act on.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "That chapter has no draft to act on."
+          }
+        }
+      }
+    },
+    "That chapter has unsaved edits on this device. Save or close the chapter, then try again.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "That chapter has unsaved edits on this device. Save or close the chapter, then try again."
+          }
+        }
+      }
+    },
+    "That chapter is final, so its prose can't change.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "That chapter is final, so its prose can't change."
+          }
+        }
+      }
+    },
+    "That chapter is isolated, so the chat can't rewrite it. Edit it in the chapter instead.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "That chapter is isolated, so the chat can't rewrite it. Edit it in the chapter instead."
+          }
+        }
+      }
+    },
+    "That chapter's plan is already final, so it can't change.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "That chapter's plan is already final, so it can't change."
+          }
+        }
+      }
+    },
+    "That draft is out of date with its plan. Revise it before approving it.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "That draft is out of date with its plan. Revise it before approving it."
+          }
+        }
+      }
+    },
+    "That volume isn't the active one, so its goal can't be marked met.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "That volume isn't the active one, so its goal can't be marked met."
+          }
+        }
+      }
+    },
+    "The chapter changed after this was suggested, so it wasn't approved. Ask again to approve the version you see.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The chapter changed after this was suggested, so it wasn't approved. Ask again to approve the version you see."
+          }
+        }
+      }
+    },
+    "The idea could not be set aside in your Notebook.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The idea could not be set aside in your Notebook."
+          }
+        }
+      }
+    },
+    "Theme": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Theme"
+          }
+        }
+      }
+    },
+    "These changes are stored in a form this version cannot read.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "These changes are stored in a form this version cannot read."
+          }
+        }
+      }
+    },
+    "These changes are unavailable": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "These changes are unavailable"
+          }
+        }
+      }
+    },
+    "These changes could not be applied together, so nothing was changed.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "These changes could not be applied together, so nothing was changed."
+          }
+        }
+      }
+    },
+    "These changes could not be found. They may have been removed on another device.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "These changes could not be found. They may have been removed on another device."
+          }
+        }
+      }
+    },
+    "These changes were already answered, perhaps on another device.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "These changes were already answered, perhaps on another device."
+          }
+        }
+      }
+    },
+    "These changes were undone together, so one can't be redone on its own.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "These changes were undone together, so one can't be redone on its own."
+          }
+        }
+      }
+    },
+    "These suggested changes are stored in a form this version cannot read.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "These suggested changes are stored in a form this version cannot read."
+          }
+        }
+      }
+    },
+    "These suggested changes haven't arrived on this device yet.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "These suggested changes haven't arrived on this device yet."
+          }
+        }
+      }
+    },
+    "They are not up to date on this device yet. Try again after syncing.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "They are not up to date on this device yet. Try again after syncing."
+          }
+        }
+      }
+    },
+    "They may be your own edits, or another device's changes still arriving. Undo anyway, treating them as never applied?": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "They may be your own edits, or another device's changes still arriving. Undo anyway, treating them as never applied?"
+          }
+        }
+      }
+    },
+    "This change can only be undone together with the rest of its changes.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This change can only be undone together with the rest of its changes."
+          }
+        }
+      }
+    },
+    "This change can't be brought back exactly as it was. Ask the chat to suggest it again and apply it from the new card.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This change can't be brought back exactly as it was. Ask the chat to suggest it again and apply it from the new card."
+          }
+        }
+      }
+    },
+    "This change couldn't be put back exactly as it was, so nothing was undone.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This change couldn't be put back exactly as it was, so nothing was undone."
+          }
+        }
+      }
+    },
+    "This change is stored in a form this version cannot read, so it can't be undone or redone here.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This change is stored in a form this version cannot read, so it can't be undone or redone here."
+          }
+        }
+      }
+    },
+    "This change relies on changes that are undone. Redo them first.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This change relies on changes that are undone. Redo them first."
+          }
+        }
+      }
+    },
+    "This plan is out of date: the story has moved on to a later chapter. Plan again.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This plan is out of date: the story has moved on to a later chapter. Plan again."
+          }
+        }
+      }
+    },
+    "This reply asked a question this version cannot show.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This reply asked a question this version cannot show."
+          }
+        }
+      }
+    },
+    "This step becomes available with chapters.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This step becomes available with chapters."
+          }
+        }
+      }
+    },
+    "This was already undone by another reply that added the same thing, so there is nothing left to undo. Redo that reply's change to bring it back.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This was already undone by another reply that added the same thing, so there is nothing left to undo. Redo that reply's change to bring it back."
+          }
+        }
+      }
+    },
+    "Trade-off: %@": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Trade-off: %@"
+          }
+        }
+      }
+    },
+    "Try Again": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Try Again"
+          }
+        }
+      }
+    },
+    "Two of the selected rewrites change the same words. Select only one of them.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Two of the selected rewrites change the same words. Select only one of them."
+          }
+        }
+      }
+    },
+    "Undecided for Now": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Undecided for Now"
+          }
+        }
+      }
+    },
+    "Undecided for now.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Undecided for now."
+          }
+        }
+      }
+    },
+    "Undo": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Undo"
+          }
+        }
+      }
+    },
+    "Undo All": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Undo All"
+          }
+        }
+      }
+    },
+    "Undo Anyway": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Undo Anyway"
+          }
+        }
+      }
+    },
+    "Undo Them": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Undo Them"
+          }
+        }
+      }
+    },
+    "Undo These %lld": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Undo These %lld"
+          }
+        }
+      }
+    },
+    "Undo This Change": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Undo This Change"
+          }
+        }
+      }
+    },
+    "Undo everything after this?": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Undo everything after this?"
+          }
+        }
+      }
+    },
+    "Undo this change?": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Undo this change?"
+          }
+        }
+      }
+    },
+    "Unrestricted writing isn't available in this version.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Unrestricted writing isn't available in this version."
+          }
+        }
+      }
+    },
+    "Updated your story · %lld changes": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Updated your story · %lld change"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Updated your story · %lld changes"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "Volume %@": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Volume %@"
+          }
+        }
+      }
+    },
+    "What relies on this change can't be read on this device right now": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "What relies on this change can't be read on this device right now"
+          }
+        }
+      }
+    },
+    "What relies on this change can't be read on this device right now.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "What relies on this change can't be read on this device right now."
+          }
+        }
+      }
+    },
+    "What this change touched has changed since, so it can't be undone.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "What this change touched has changed since, so it can't be undone."
+          }
+        }
+      }
+    },
+    "What this change touches has changed since it was undone, so it can't be redone.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "What this change touches has changed since it was undone, so it can't be redone."
+          }
+        }
+      }
+    },
+    "Write chapter %@": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Write chapter %@"
+          }
+        }
+      }
+    },
+    "You can still undo it.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You can still undo it."
+          }
+        }
+      }
+    },
+    "Your data could not be read or saved.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your data could not be read or saved."
+          }
+        }
+      }
+    },
+    "Your story moved on since this was suggested. Ask again for a fresh change.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your story moved on since this was suggested. Ask again for a fresh change."
+          }
+        }
+      }
+    },
+    "action": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "action"
+          }
+        }
+      }
+    },
+    "applied": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "applied"
+          }
+        }
+      }
+    },
+    "arriving": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "arriving"
+          }
+        }
+      }
+    },
+    "auto": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "auto"
+          }
+        }
+      }
+    },
+    "collapsed": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "collapsed"
+          }
+        }
+      }
+    },
+    "conflicted": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "conflicted"
+          }
+        }
+      }
+    },
+    "declined": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "declined"
+          }
+        }
+      }
+    },
+    "discarded": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "discarded"
+          }
+        }
+      }
+    },
+    "expanded": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "expanded"
+          }
+        }
+      }
+    },
+    "failed": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "failed"
+          }
+        }
+      }
+    },
+    "final, stays as it is": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "final, stays as it is"
+          }
+        }
+      }
+    },
+    "marked to review": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "marked to review"
+          }
+        }
+      }
+    },
+    "pending": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "pending"
+          }
+        }
+      }
+    },
+    "reverted": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "reverted"
+          }
+        }
+      }
+    },
+    "superseded": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "superseded"
+          }
+        }
+      }
+    },
+    "undone": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "undone"
+          }
+        }
+      }
+    },
+    "unknown": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "unknown"
+          }
+        }
+      }
+    },
+    "waiting to run": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "waiting to run"
+          }
+        }
+      }
+    },
+    "¶%lld of chapter %@": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "¶%lld of chapter %@"
+          }
+        }
+      }
+    }
+  },
+  "version": "1.0"
+}

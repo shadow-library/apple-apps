@@ -1,15 +1,15 @@
-struct ChatQuestionAnswer: Equatable, Sendable {
-  var title: String
-  var why: String?
-  var tradeOff: String?
-  var recommended: Bool
+public struct ChatQuestionAnswer: Equatable, Sendable {
+  public internal(set) var title: String
+  public internal(set) var why: String?
+  public internal(set) var tradeOff: String?
+  public internal(set) var recommended: Bool
 }
 
-struct ChatQuestion: Equatable, Sendable {
-  var question: String
-  var why: String?
-  var answers: [ChatQuestionAnswer]
-  var progressKey: String?
+public struct ChatQuestion: Equatable, Sendable {
+  public internal(set) var question: String
+  public internal(set) var why: String?
+  public internal(set) var answers: [ChatQuestionAnswer]
+  public internal(set) var progressKey: String?
 }
 
 // apps/novel-forge-server/src/modules/refinement/chat-question.ts:19

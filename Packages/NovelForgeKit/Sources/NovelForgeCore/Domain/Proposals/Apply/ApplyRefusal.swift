@@ -1,7 +1,7 @@
 import ShadowCore
 
 // apps/novel-forge-server/src/classes/app-error-code.ts:168-197: an op a handler refuses before its first write
-enum ApplyRefusal: ShadowError, Equatable {
+public enum ApplyRefusal: ShadowError, Equatable {
   case locked
   case isolated
   case overlapping(chapter: Int)
@@ -17,7 +17,7 @@ enum ApplyRefusal: ShadowError, Equatable {
   case unstorable(field: String)
   case approvalOverMovedDraft(chapter: Int)
 
-  var code: String {
+  public var code: String {
     switch self {
     case .locked: "RFN_010"
     case .isolated: "RFN_012"
@@ -37,7 +37,7 @@ enum ApplyRefusal: ShadowError, Equatable {
     }
   }
 
-  var errorDescription: String? {
+  public var errorDescription: String? {
     switch self {
     case .locked: "Draft is final or the chapter is already finalized — prose cannot be modified"
     case .isolated: "This chapter is isolated — chat cannot see its prose, so it cannot rewrite it. Edit the prose in the chapter editor."

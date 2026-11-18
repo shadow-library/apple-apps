@@ -41,7 +41,7 @@ private func stage(_ ops: String..., in replicas: CausalReplicas) async throws -
 }
 
 private func applyTurn(_ id: UUID, _ selection: ApplySelection, sources: [OpSource], on index: Int, in replicas: CausalReplicas) async throws {
-  let apply = ProposalApplyContext(novel: novel, now: now, automatic: true, sources: sources)
+  let apply = ProposalApplyContext(novel: novel, now: now, automatic: true, sources: sources, unrestrictedAvailable: UnrestrictedWriting.isAvailable)
   _ = try await replicas.write(index) { transaction in try ProposalApply.apply(proposal: id, selection: selection, context: apply, in: &transaction) }
 }
 

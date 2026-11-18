@@ -357,17 +357,6 @@
         }
       }
     },
-    "Changed your story": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Changed your story"
-          }
-        }
-      }
-    },
     "Chapter %lld draft": {
       "extractionState": "manual",
       "localizations": {
@@ -1161,17 +1150,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "Story Bible page"
-          }
-        }
-      }
-    },
-    "Suggested changes": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Suggested changes"
           }
         }
       }

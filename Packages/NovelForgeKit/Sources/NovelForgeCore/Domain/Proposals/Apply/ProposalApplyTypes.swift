@@ -8,7 +8,7 @@ public enum UnrestrictedWriting {
 }
 
 // apps/novel-forge-server/src/modules/refinement/proposal-apply.service.ts:36-44
-struct ProposalApplyContext: Sendable {
+public struct ProposalApplyContext: Sendable {
   let novel: UUID
   var now: Date
   /// Set when a turn applies what the write policy let through; such an apply carries no action and no always-card op.
@@ -18,7 +18,12 @@ struct ProposalApplyContext: Sendable {
   /// apply/unrestricted-raise.ts:18: whether unrestricted writing is available to this caller, asked only when a selected op raises a plan to it.
   var unrestrictedAvailable = UnrestrictedWriting.isAvailable
 
-  init(novel: UUID, now: Date, automatic: Bool = false, sources: [OpSource]? = nil, unrestrictedAvailable: Bool = UnrestrictedWriting.isAvailable) {
+  /// The author's own apply: never automatic, and unrestricted only as far as this build allows.
+  public init(novel: UUID, now: Date) {
+    self.init(novel: novel, now: now, automatic: false, sources: nil, unrestrictedAvailable: UnrestrictedWriting.isAvailable)
+  }
+
+  init(novel: UUID, now: Date, automatic: Bool = false, sources: [OpSource]? = nil, unrestrictedAvailable: Bool) {
     self.novel = novel
     self.now = now
     self.automatic = automatic
@@ -28,8 +33,8 @@ struct ProposalApplyContext: Sendable {
 }
 
 /// Why a selected index did not apply, as stored on its change: the message in `error`, the code in `result.code`.
-struct ProposalChangeFailure: Sendable, Equatable {
-  let code: String
+public struct ProposalChangeFailure: Sendable, Equatable {
+  public let code: String
   let message: String
 
   init(code: String, message: String) {
@@ -50,23 +55,23 @@ struct ProposalChangeFailure: Sendable, Equatable {
 }
 
 /// What one selected index amounted to (apply.types.ts:15); an action is `pending` until it runs after the content commits.
-struct ProposalChangeOutcome: Sendable, Equatable {
-  let index: Int
-  var status: ProposalChangeStatus
+public struct ProposalChangeOutcome: Sendable, Equatable {
+  public let index: Int
+  public internal(set) var status: ProposalChangeStatus
   let source: OpSource?
-  var failure: ProposalChangeFailure?
+  public internal(set) var failure: ProposalChangeFailure?
   /// What a settled action reported (action-registry.ts:6).
   var summary: String?
 }
 
-enum ProposalApplyOutcome: Sendable, Equatable {
+public enum ProposalApplyOutcome: Sendable, Equatable {
   /// proposal-apply.service.ts:148-160 (RFN_003): nothing was applied and no change was recorded; `conflicted` is derived, never stored.
   case conflicted([BaselineMismatch])
   /// One outcome per selected index, in index order.
   case applied([ProposalChangeOutcome])
 }
 
-enum ProposalApplyError: ShadowError, Equatable {
+public enum ProposalApplyError: ShadowError, Equatable {
   case notFound(UUID)
   case notPending(StoredEnum<ProposalDecision>)
   case unreadable(UUID)
@@ -84,7 +89,7 @@ enum ProposalApplyError: ShadowError, Equatable {
   case unstorable(ProposalRecordError)
   case store(StoreError)
 
-  var code: String {
+  public var code: String {
     switch self {
     case .notFound: "RFN_001"
     case .notPending: "RFN_002"
@@ -109,7 +114,7 @@ enum ProposalApplyError: ShadowError, Equatable {
     }
   }
 
-  var errorDescription: String? {
+  public var errorDescription: String? {
     switch self {
     case .notFound: "Refinement proposal not found"
     case .notPending: "Refinement proposal is not pending"
@@ -133,7 +138,7 @@ enum ProposalApplyError: ShadowError, Equatable {
     }
   }
 
-  static func == (left: ProposalApplyError, right: ProposalApplyError) -> Bool {
+  public static func == (left: ProposalApplyError, right: ProposalApplyError) -> Bool {
     switch (left, right) {
     case (.notFound(let first), .notFound(let second)), (.unreadable(let first), .unreadable(let second)): first == second
     case (.notPending(let first), .notPending(let second)): first == second

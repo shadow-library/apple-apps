@@ -3,7 +3,7 @@ import ShadowCore
 import ShadowStore
 
 // apps/novel-forge-server/src/classes/app-error-code.ts:166-191 and classes/op-dependency.error.ts:8
-enum ProposalRevertError: ShadowError, Equatable {
+public enum ProposalRevertError: ShadowError, Equatable {
   case notFound(UUID)
   case unreadable(UUID)
   case notRevertible
@@ -29,7 +29,7 @@ enum ProposalRevertError: ShadowError, Equatable {
   case notebook(IdeaRejectionError)
   case store(StoreError)
 
-  var code: String {
+  public var code: String {
     switch self {
     case .notFound: "RFN_001"
     case .unreadable: "refinement.unreadable_record"
@@ -54,7 +54,7 @@ enum ProposalRevertError: ShadowError, Equatable {
     }
   }
 
-  var errorDescription: String? {
+  public var errorDescription: String? {
     switch self {
     case .notFound: "Refinement proposal not found"
     case .unreadable: "This proposal cannot be read on this device, so its changes are not undone or redone here"
@@ -85,7 +85,7 @@ enum ProposalRevertError: ShadowError, Equatable {
     indexes.map(String.init).joined(separator: ", ")
   }
 
-  static func == (left: ProposalRevertError, right: ProposalRevertError) -> Bool {
+  public static func == (left: ProposalRevertError, right: ProposalRevertError) -> Bool {
     switch (left, right) {
     case (.notFound(let first), .notFound(let second)), (.unreadable(let first), .unreadable(let second)): first == second
     case (.notRevertible, .notRevertible), (.turnNotApplied, .turnNotApplied), (.impactUnavailable, .impactUnavailable): true

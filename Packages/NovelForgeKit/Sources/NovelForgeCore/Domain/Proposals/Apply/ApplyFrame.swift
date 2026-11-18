@@ -2,7 +2,7 @@ import Foundation
 import ShadowCore
 import ShadowStore
 
-enum ApplyError: ShadowError, Equatable {
+public enum ApplyError: ShadowError, Equatable {
   case invalidSelection
   case rewriteBesideWholeDraft(chapter: Int)
   case noHandler(OpType)
@@ -15,7 +15,7 @@ enum ApplyError: ShadowError, Equatable {
   case domain(DomainError)
   case store(StoreError)
 
-  var code: String {
+  public var code: String {
     switch self {
     case .invalidSelection: "RFN_011"
     case .rewriteBesideWholeDraft: "refinement.rewrite_beside_whole_draft"
@@ -29,7 +29,7 @@ enum ApplyError: ShadowError, Equatable {
     }
   }
 
-  var errorDescription: String? {
+  public var errorDescription: String? {
     switch self {
     case .invalidSelection: "The selected changes are not changes of this proposal"
     case .rewriteBesideWholeDraft(let chapter): "A change set never rewrites chapter \(chapter) whole beside its passage rewrites"
@@ -43,7 +43,7 @@ enum ApplyError: ShadowError, Equatable {
     }
   }
 
-  static func == (left: ApplyError, right: ApplyError) -> Bool {
+  public static func == (left: ApplyError, right: ApplyError) -> Bool {
     left.code == right.code && left.errorDescription == right.errorDescription
   }
 }
@@ -74,11 +74,11 @@ struct OpResult: Sendable, Equatable {
 }
 
 // apply.types.ts:36
-struct BaselineMismatch: Sendable, Equatable {
+public struct BaselineMismatch: Sendable, Equatable {
   let ref: String
   let expected: ArtifactState?
   let actual: ArtifactState?
-  let indexes: [Int]
+  public let indexes: [Int]
 }
 
 /// What a handler did to the records of one call. The inverse restores the records' content as the handler found it (never a revision or a counter), so
@@ -221,7 +221,7 @@ protocol StoredChangeOp {
   var problems: [String] { get }
 }
 
-enum ApplySelection: Sendable, Equatable {
+public enum ApplySelection: Sendable, Equatable {
   case whole
   case indexes([Int])
 }

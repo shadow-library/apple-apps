@@ -114,7 +114,7 @@ extension ProposalApply {
 extension VaultStore {
   /// proposal-apply.service.ts:109-230: the content of the selection, its change records and the decision commit together; the selected actions then run
   /// in index order, each in its own transaction, and once one fails the rest are settled as skipped while the content stays applied.
-  func applyProposal(_ id: UUID, selection: ApplySelection, context: ProposalApplyContext) async throws(ProposalApplyError) -> ProposalApplyOutcome {
+  public func applyProposal(_ id: UUID, selection: ApplySelection, context: ProposalApplyContext) async throws(ProposalApplyError) -> ProposalApplyOutcome {
     let outcome = try await writeProposal { transaction throws(ProposalApplyError) in
       try ProposalApply.apply(proposal: id, selection: selection, context: context, in: &transaction)
     }

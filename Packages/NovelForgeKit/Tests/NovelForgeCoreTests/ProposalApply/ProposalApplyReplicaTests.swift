@@ -33,7 +33,7 @@ private func expectConverged(_ reconciler: NovelForgeReconciler, _ replicas: Cau
 }
 
 private func apply(_ id: UUID, _ selection: [Int], sources: [OpSource], on index: Int, in replicas: CausalReplicas) async throws -> ProposalApplyOutcome {
-  let context = ProposalApplyContext(novel: novel, now: now, automatic: true, sources: sources)
+  let context = ProposalApplyContext(novel: novel, now: now, automatic: true, sources: sources, unrestrictedAvailable: UnrestrictedWriting.isAvailable)
   return try await replicas.write(index) { transaction in try ProposalApply.apply(proposal: id, selection: .indexes(selection), context: context, in: &transaction) }
 }
 

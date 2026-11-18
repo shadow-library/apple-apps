@@ -42,7 +42,7 @@ public struct ChatChange: Sendable, Equatable {
   /// One per index of the card: an unreadable or unrecognised change shows as such, never left out, since it may hold an undo.
   public let entries: [ChatChangeEntry]
 
-  init(applied: HLCTimestamp, state: ProposalState, session: ChatProposalSession, record: ProposalRecord?, rows: [ProposalEntryRow]) {
+  public init(applied: HLCTimestamp, state: ProposalState, session: ChatProposalSession, record: ProposalRecord?, rows: [ProposalEntryRow]) {
     self.applied = applied
     self.state = state
     self.session = session

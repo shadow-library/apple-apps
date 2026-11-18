@@ -2,7 +2,7 @@ import Foundation
 import ShadowCore
 
 // apps/novel-forge-server/src/modules/refinement/undo-impact.ts:8
-enum UndoDependentKind: String, CaseIterable, Sendable {
+public enum UndoDependentKind: String, CaseIterable, Sendable {
   case plan
   case draft
   case knowledge
@@ -10,24 +10,24 @@ enum UndoDependentKind: String, CaseIterable, Sendable {
 }
 
 // undo-impact.ts:10-19
-struct UndoDependent: Sendable, Equatable {
-  let kind: UndoDependentKind
+public struct UndoDependent: Sendable, Equatable {
+  public let kind: UndoDependentKind
   /// `chapter:<n>`, `draft:<n>`, `knowledge:<entityKey>/<factKey>` or `proposal:<id>`.
-  let ref: String
-  let chapter: Int?
+  public let ref: String
+  public let chapter: Int?
   /// The undone record this one relies on.
   let because: String
   /// Finalized history, which undo never rewrites: the author sees it, the revert leaves it as it is.
-  let final: Bool
+  public let final: Bool
 }
 
 // undo-impact.ts:21-25
-struct UndoImpact: Sendable, Equatable {
-  let dependents: [UndoDependent]
+public struct UndoImpact: Sendable, Equatable {
+  public let dependents: [UndoDependent]
   /// Finalized plans and drafts that only relied on an updated record: counted, not listed, since the undo leaves them exactly as they are.
-  let finalUnaffected: Int
+  public let finalUnaffected: Int
   /// Plans, drafts, finals and pending suggestions of the novel this device cannot read, so the list may lack what relies on them.
-  var unreadable = 0
+  public internal(set) var unreadable = 0
 }
 
 // undo-impact.ts:28-31

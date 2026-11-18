@@ -45,7 +45,7 @@ enum AlwaysCardRule: String, CaseIterable, Sendable {
 }
 
 // apps/novel-forge-server/src/modules/refinement/write-policy.ts:39
-enum OpSource: String, CaseIterable, Sendable {
+public enum OpSource: String, CaseIterable, Sendable {
   case quoted
   case idea
 }
