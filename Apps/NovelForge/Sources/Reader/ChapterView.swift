@@ -11,6 +11,7 @@ struct ChapterView: View {
   @State private var editing = false
   @State private var importing = false
   @State private var openedEmptyDraft = false
+  @State private var commenting = false
   @State private var listing = ReadObserver<ChapterList>()
 
   var body: some View {
@@ -161,6 +162,7 @@ struct ChapterView: View {
       let text = model.existingEditor(for: chapter)?.text ?? draft.editable
       reading(loaded, title: text.title, markdown: text.body, note: nil, amended: false)
         .toolbar { readingToolbar(draft) }
+        .sheet(isPresented: $commenting) { ChatPassageCommentSheet(context: context, chapter: chapter) }
     }
   }
 
@@ -256,6 +258,14 @@ struct ChapterView: View {
       } label: {
         Label(title: { Text("Edit", tableName: "Reader") }, icon: { Image(systemName: "pencil") })
       }
+      .shadowBarItem()
+      Button {
+        commenting = true
+      } label: {
+        Label(title: { Text("Comment on Passage…", tableName: "ChatComposer") }, icon: { Image(systemName: "text.bubble") })
+      }
+      .keyboardShortcut("k", modifiers: .command)
+      .disabled(draft.editable.body.allSatisfy(\.isWhitespace))
       .shadowBarItem()
       NavigationLink(value: ReaderRoute.versions(chapter)) {
         Label(title: { Text("Versions", tableName: "Reader") }, icon: { Image(systemName: "clock.arrow.circlepath") })

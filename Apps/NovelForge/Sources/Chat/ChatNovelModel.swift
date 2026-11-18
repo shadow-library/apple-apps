@@ -47,6 +47,7 @@ final class ChatNovelModel {
   var presenting: ChatSheet?
   var failure: ActionFailure?
   var draft = ""
+  let composer = ChatComposerState()
   var renaming: UUID?
   var renameText = ""
   var deleting: UUID?
@@ -68,16 +69,11 @@ final class ChatNovelModel {
 
   var overviews: [ChatSessionOverview] { state.value?.all.sessions.value ?? [] }
 
-  /// chat.tsx:398-404: the chat asked for while it is still there, else the most recently updated active one; New chat asks for none.
-  var current: UUID? {
-    switch choice {
-    case .draft: return nil
-    case .session(let id) where id == created || overviews.contains(where: { $0.state.session == id }): return id
-    case .session, .latest: return overviews.first { $0.record?.status == .known(.active) }?.state.session
-    }
-  }
+  var current: UUID? { current(among: overviews) }
 
   var novelTitle: String? { state.value?.novel?.displayTitle }
+
+  var replyOffer: ChatReplyOffer { ChatReplyOffer(novel: state.value?.novel) }
 
   func overview(of session: UUID) -> ChatSessionOverview? {
     overviews.first { $0.state.session == session }
@@ -99,6 +95,7 @@ final class ChatNovelModel {
     if let existing = sessions[id] { return existing }
     let model = ChatSessionModel(session: id, context: context, engine: engine)
     model.novelMode = novelMode
+    model.replyOffer = replyOffer
     sessions[id] = model
     return model
   }
@@ -127,10 +124,28 @@ final class ChatNovelModel {
     startRequest += 1
     isStarting = false
     choice = .draft
+    composer.startOver()
+  }
+
+  /// ChatColumn.tsx:461-465: the opening message needs words of its own; comments go with it.
+  var canStartDraft: Bool {
+    !isStarting && !draft.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty && !composer.hasStaleChips
   }
 
   func startDraft() async {
-    await startChat(draft)
+    guard canStartDraft else { return }
+    await startChat(draft, passages: composer.passages, choices: composer.choices(offer: replyOffer))
+  }
+
+  /// A Reader comment joins the open chat's composer, else the opening one; the chats are read once if they have not been yet.
+  func addPassage(_ chip: ChatPassageChip) async -> ChatPassageAddition {
+    var listed = state.value?.all.sessions.value
+    if listed == nil {
+      let (store, novel) = (context.store, context.novel)
+      listed = try? await store.read { transaction in try ChatSessionsSnapshot.load(novel: novel, in: transaction) }.all.sessions.value
+    }
+    guard let open = current(among: listed ?? []) else { return composer.add(chip) }
+    return session(open).composer.add(chip)
   }
 
   /// chat.tsx:424-443: the opening message creates the chat, then goes out through that chat's own sending path, carrying the composer's text with it so
@@ -145,7 +160,7 @@ final class ChatNovelModel {
     defer { if request == startRequest { isStarting = false } }
     let record: ChatSessionRecord
     do {
-      record = try await context.store.createChatSession(novel: context.novel)
+      record = try await context.store.createChatSession(novel: context.novel, mode: composer.draftMode)
     } catch {
       if request == startRequest { failure = ActionFailure(error: ChatErrors.presented(error)) }
       return false
@@ -157,6 +172,7 @@ final class ChatNovelModel {
     if draft.trimmingCharacters(in: .whitespacesAndNewlines) == trimmed {
       opened.draft = draft
       draft = ""
+      opened.composer.adopt(composer)
     }
     return await opened.send(trimmed, passages: passages, choices: choices)
   }
@@ -212,7 +228,19 @@ final class ChatNovelModel {
     guard let listed = snapshot.all.sessions.value.map({ Set($0.map(\.state.session)) }) else { return }
     if let created, listed.contains(created) { self.created = nil }
     sessions = sessions.filter { listed.contains($0.key) || $0.key == created }
-    for model in sessions.values { model.novelMode = novelMode }
+    for model in sessions.values {
+      model.novelMode = novelMode
+      model.replyOffer = replyOffer
+    }
+  }
+
+  /// chat.tsx:398-404: the chat asked for while it is still there, else the most recently updated active one; New chat asks for none.
+  private func current(among overviews: [ChatSessionOverview]) -> UUID? {
+    switch choice {
+    case .draft: return nil
+    case .session(let id) where id == created || overviews.contains(where: { $0.state.session == id }): return id
+    case .session, .latest: return overviews.first { $0.record?.status == .known(.active) }?.state.session
+    }
   }
 
   private var novelMode: ContentMode { state.value?.novel?.contentMode.known == .unrestricted ? .unrestricted : .standard }

@@ -722,28 +722,6 @@
         }
       }
     },
-    "Message": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Message"
-          }
-        }
-      }
-    },
-    "Message Forge": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Message Forge"
-          }
-        }
-      }
-    },
     "Model": {
       "extractionState": "manual",
       "localizations": {
@@ -1110,17 +1088,6 @@
         }
       }
     },
-    "Send": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Send"
-          }
-        }
-      }
-    },
     "Sent": {
       "extractionState": "manual",
       "localizations": {
@@ -1172,17 +1139,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "Start a new chat, or shorten your message and the passages it quotes, then send it again."
-          }
-        }
-      }
-    },
-    "Stop": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Stop"
           }
         }
       }

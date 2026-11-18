@@ -97,9 +97,10 @@ struct ChatBottomBar: View {
           if notice.opensSettings { AISettingsButton(store: model.context.store) }
         }
       }
-      ChatComposerPlaceholder(
-        draft: $model.draft, canSend: model.canSendDraft && !chats.isArchived(model.session), isSending: model.isBusy,
-        isLocked: chats.isArchived(model.session), isRunning: model.isTurnActive
+      ChatComposer(
+        state: model.composer, draft: $model.draft, sessionMode: chats.mode(of: model.session), offer: model.replyOffer, isOpening: false,
+        canSend: model.canSendDraft && !chats.isArchived(model.session), isSending: model.isBusy, isLocked: chats.isArchived(model.session),
+        isRunning: model.isTurnActive, saveMode: { [chats, session = model.session] mode in await chats.saveMode(mode, of: session) }
       ) {
         Task { await model.sendDraft() }
       } stop: {

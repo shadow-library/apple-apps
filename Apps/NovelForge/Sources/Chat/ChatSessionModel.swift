@@ -47,6 +47,8 @@ final class ChatSessionModel {
   var notice: ChatNotice?
   /// What a message with no recorded mode follows: the novel's, standard unless known unrestricted (chat-selection.ts:22).
   var novelMode = ContentMode.standard
+  var replyOffer = ChatReplyOffer.none
+  let composer = ChatComposerState()
   private(set) var activity = ChatTurnActivity.idle
   private(set) var live: StreamedTurn?
   private(set) var isBusy = false
@@ -102,7 +104,11 @@ final class ChatSessionModel {
     }
   }
 
-  var canSendDraft: Bool { !isBusy && !isTurnActive && !draft.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }
+  /// ChatColumn.tsx:455-456: text, or comments alone, and never a comment on a passage that changed or while the mode is being saved.
+  var canSendDraft: Bool {
+    let hasWords = !draft.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || !composer.chips.isEmpty
+    return !isBusy && !isTurnActive && hasWords && !composer.hasStaleChips && composer.switching == nil
+  }
 
   /// Retry asks again with the message as it was sent; one that asked for unrestricted writing waits for the flag.
   func canRetry(_ turn: LocalTurn) -> Bool {
@@ -127,9 +133,8 @@ final class ChatSessionModel {
   }
 
   func sendDraft() async {
-    let content = draft.trimmingCharacters(in: .whitespacesAndNewlines)
-    guard !content.isEmpty else { return }
-    await send(content)
+    guard canSendDraft else { return }
+    await send(draft.trimmingCharacters(in: .whitespacesAndNewlines), passages: composer.passages, choices: composer.choices(offer: replyOffer))
   }
 
   /// The composer's way in: `true` once the author's message is saved and its turn runs.
@@ -185,16 +190,29 @@ final class ChatSessionModel {
       let handle = try await start(request)
       activityTicket += 1
       follow(handle.turn, from: Date()) { handle.events }
-      if case .send(let content, _, _) = request, draft.trimmingCharacters(in: .whitespacesAndNewlines) == content { draft = "" }
+      if case .send(let content, let passages, _) = request {
+        if draft.trimmingCharacters(in: .whitespacesAndNewlines) == content { draft = "" }
+        composer.sent(passages)
+      }
       return true
     } catch .routing(.consentRequired(let consent)) {
       awaitingConsent = request
       consentRequest = consent
     } catch {
+      if case .send(_, let passages, _) = request { await refused(error, passages: passages) }
       notice = ChatErrors.notice(error)
       await refreshActivity()
     }
     return false
+  }
+
+  /// ChatColumn.tsx:399-406, :449: a refusal names one chapter at most, so the sent passages are anchored again to tell which changed.
+  private func refused(_ error: ChatTurnError, passages: [ChatTurnPassage]) async {
+    composer.refused(error)
+    guard case .passage(let code, _) = error, code == "CHT_009" else { return }
+    let (store, novel) = (context.store, context.novel)
+    let unresolved = try? await store.read { transaction in try ChatPassageSource.unresolved(passages, novel: novel, in: transaction) }
+    composer.markStale(passages, unresolved: unresolved ?? [])
   }
 
   private func start(_ request: ChatTurnRequest) async throws(ChatTurnError) -> ChatTurnHandle {

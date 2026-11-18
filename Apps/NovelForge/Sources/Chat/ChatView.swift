@@ -221,16 +221,17 @@ struct ChatStartScreen: View {
   @Bindable var model: ChatNovelModel
 
   var body: some View {
-    ChatHero(novelTitle: model.novelTitle, mode: .auto)
+    ChatHero(novelTitle: model.novelTitle, mode: model.composer.draftMode)
       .fillingSurface()
       .safeAreaInset(edge: .bottom, spacing: 0) {
-        ChatComposerPlaceholder(draft: $model.draft, canSend: canSend, isSending: model.isStarting, isLocked: false, isRunning: false) {
+        ChatComposer(
+          state: model.composer, draft: $model.draft, sessionMode: model.composer.draftMode, offer: model.replyOffer, isOpening: true, canSend: model.canStartDraft,
+          isSending: model.isStarting, isLocked: false, isRunning: false, saveMode: nil
+        ) {
           Task { await model.startDraft() }
         }
       }
   }
-
-  private var canSend: Bool { !model.isStarting && !model.draft.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }
 }
 
 /// apps/novel-forge-web/src/features/chat/chat-view.ts:635-638
