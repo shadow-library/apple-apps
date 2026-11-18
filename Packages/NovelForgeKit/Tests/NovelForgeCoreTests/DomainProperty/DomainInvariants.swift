@@ -139,10 +139,10 @@ struct DomainInvariants {
       }
       let taught = contract.pov.contains { !$0.isEmpty } && contract.reveals.contains { $0.factKey == row.fact && $0.entityKey == row.entity }
       expect(taught, "a contract row is taught by its chapter's contract", "\(pair) in chapter \(row.chapter)")
-      let fact = records.created[SecretRecord.ref(novel: novel, secret: row.fact)]
-      let learner = records.created[EntityRecord.ref(novel: novel, entity: row.entity)]
+      let fact = records.liveSince[SecretRecord.ref(novel: novel, secret: row.fact)]
+      let learner = records.liveSince[EntityRecord.ref(novel: novel, entity: row.entity)]
       let existed = cutoff.map { cutoff in fact.map { $0 <= cutoff } == true && learner.map { $0 <= cutoff } == true } ?? false
-      expect(existed, "knowledge is ledgered only for a fact and a learner that existed at the bound approval", "\(pair) in chapter \(row.chapter)")
+      expect(existed, "knowledge is ledgered only for a fact and a learner live since the bound approval or earlier", "\(pair) in chapter \(row.chapter)")
     }
     for (pair, (chapter, status)) in requiredKnowledge(manual: Set(manual.keys)).sorted(by: { $0.key < $1.key }) {
       let row = rows[pair]
@@ -153,7 +153,7 @@ struct DomainInvariants {
   }
 
   /// The rows the ledger must hold: for each final chapter and chapter with an approval in force, ascending, each learn of its POV contract whose fact is
-  /// live and revealed by then, whose learner is live, both created by the cutoff, and not manual, retracted or ledgered earlier.
+  /// live and revealed by then, whose learner is live, both live since the cutoff or earlier, and not manual, retracted or ledgered earlier.
   private func requiredKnowledge(manual: Set<String>) -> [String: (Int, KnowledgeStatus)] {
     var required = [String: (Int, KnowledgeStatus)]()
     for chapter in chapters.keys.sorted() {
@@ -161,8 +161,8 @@ struct DomainInvariants {
       for learn in contract.reveals {
         let pair = NovelRecords.pair(learn.factKey, learn.entityKey)
         guard let fact = records.secrets[learn.factKey], records.entities.contains(learn.entityKey), isRevealed(fact, at: chapter) else { continue }
-        let created = [SecretRecord.ref(novel: novel, secret: learn.factKey), EntityRecord.ref(novel: novel, entity: learn.entityKey)].map { records.created[$0] }
-        guard created.allSatisfy({ $0.map { $0 <= cutoff } == true }), !manual.contains(pair), !records.retracted.contains(pair), required[pair] == nil else { continue }
+        let live = [SecretRecord.ref(novel: novel, secret: learn.factKey), EntityRecord.ref(novel: novel, entity: learn.entityKey)].map { records.liveSince[$0] }
+        guard live.allSatisfy({ $0.map { $0 <= cutoff } == true }), !manual.contains(pair), !records.retracted.contains(pair), required[pair] == nil else { continue }
         required[pair] = (chapter, status)
       }
     }

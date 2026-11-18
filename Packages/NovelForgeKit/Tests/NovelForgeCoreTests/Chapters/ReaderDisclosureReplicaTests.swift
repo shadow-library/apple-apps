@@ -52,7 +52,7 @@ struct ReaderDisclosureReplicaTests {
     try await expectRebuilt(reconciler, second)
   }
 
-  @Test func shouldNotDiscloseASecretTheFinalizingDeviceDidNotHaveWhenAnEarlierCreationArrives() async throws {
+  @Test func shouldNeitherDiscloseNorCommitASecretTheFinalizingDeviceDidNotHaveWhenAnEarlierCreationArrives() async throws {
     let reconciler = try Projection.reconciler(chapterAreaDerivations)
     let (writer, offline) = (SchemaTestClock(), SchemaTestClock())
     let (store, other) = (try Projection.store(reconciler, clock: writer), try Projection.store(reconciler, clock: offline))
@@ -73,7 +73,30 @@ struct ReaderDisclosureReplicaTests {
     try await Projection.apply(try await Projection.lines(of: other), to: store)
     #expect(try await ChapterTables.recorded(in: store) == [[]])
     #expect(try await disclosed(store).isEmpty)
+    #expect(try await ChapterTables.knowledge(novel, in: store).isEmpty)
+    try await expectRebuilt(reconciler, store)
+  }
+
+  @Test func shouldNeitherDiscloseNorCommitASecretWhoseLatestCreationOnAnotherDeviceFollowsTheFinalize() async throws {
+    let reconciler = try Projection.reconciler(chapterAreaDerivations)
+    let (finalizing, creating) = (SchemaTestClock(), SchemaTestClock())
+    let (store, other) = (try Projection.store(reconciler, clock: finalizing), try Projection.store(reconciler, clock: creating))
+    try await write(store) { transaction in
+      try PlanWorldWrites.secret(novel: novel, "heir", revealChapter: 1, in: &transaction)
+      try ChapterWrites.entity(novel: novel, "mara", in: &transaction)
+      try PlanWorldWrites.putPlan(novel: novel, chapter: 1, planContent(contract(learns: [Learn("mara", "heir")])), in: &transaction)
+      try ChapterWrites.draft(novel: novel, chapter: 1, in: &transaction)
+    }
+    try await write(store) { transaction in try ChapterWrites.approve(novel: novel, chapter: 1, in: &transaction) }
+    try await write(store) { transaction in try ChapterWrites.finalize(novel: novel, chapter: 1, in: &transaction) }
+    #expect(try await disclosed(store) == ["heir": 1])
     #expect(try await ChapterTables.knowledge(novel, in: store) == [LedgerView("heir", "mara", 1, .brief, .committed)])
+
+    for _ in 0..<3 { creating.advance() }
+    try await write(other) { transaction in try PlanWorldWrites.secret(novel: novel, "heir", revealChapter: 1, in: &transaction) }
+    try await Projection.apply(try await Projection.lines(of: other), to: store)
+    #expect(try await disclosed(store).isEmpty)
+    #expect(try await ChapterTables.knowledge(novel, in: store).isEmpty)
     try await expectRebuilt(reconciler, store)
   }
 

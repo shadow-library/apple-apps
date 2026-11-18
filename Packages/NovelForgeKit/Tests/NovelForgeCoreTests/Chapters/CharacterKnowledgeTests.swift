@@ -34,6 +34,27 @@ private func knowledge(_ store: VaultStore) async throws -> Set<LedgerView> {
   try await ChapterTables.knowledge(novel, in: store)
 }
 
+private func finalize(_ chapter: Int, in store: VaultStore) async throws {
+  try await draftAndApprove(chapter, in: store)
+  try await write(store) { transaction in try ChapterWrites.finalize(novel: novel, chapter: chapter, in: &transaction) }
+}
+
+private func recreate(secret key: String, in store: VaultStore) async throws {
+  try await write(store) { transaction in _ = try SecretRecord.remove(novel: novel, secret: key, in: &transaction) }
+  try await write(store) { transaction in
+    _ = try SecretRecord(novel: novel, secret: key, text: "A new secret.", revealChapter: 1, unlock: nil, source: .known(.manual)).create(in: &transaction)
+  }
+}
+
+private func restore(secret key: String, in store: VaultStore) async throws {
+  try await write(store) { transaction in
+    let ref = SecretRecord.ref(novel: novel, secret: key)
+    guard case .readable(let entry) = try SecretRecord.read(ref, in: transaction) else { throw SchemaFixtureError(description: "\(key) is not readable") }
+    try #require(entry.isRemoved)
+    _ = try entry.record.restore(in: &transaction)
+  }
+}
+
 @Suite("Character knowledge", .timeLimit(.minutes(2)))
 struct CharacterKnowledgeTests {
   @Test func shouldLedgerEachPairAtItsEarliestApprovedChapterAndCommitItAtFinalize() async throws {
@@ -170,5 +191,61 @@ struct CharacterKnowledgeTests {
     #expect(try await knowledge(reader).isEmpty)
     try await Projection.apply(lines.filter(isApproval), to: reader)
     #expect(try await knowledge(reader) == [LedgerView("early", "mara", 1, .brief, .committed)])
+  }
+
+  @Test func shouldKnowNothingOfARecreatedSecretUntilALaterFinalizeCommitsIt() async throws {
+    let store = try await seeded()
+    try await finalize(1, in: store)
+    #expect(try await knowledge(store) == [LedgerView("heir", "mara", 1, .brief, .committed)])
+    try await recreate(secret: "heir", in: store)
+    #expect(try await knowledge(store).isEmpty)
+    try await draftAndApprove(2, in: store)
+    #expect(try await knowledge(store) == [LedgerView("heir", "mara", 2, .brief, .provisional), LedgerView("tide", "tobin", 2, .brief, .provisional)])
+    try await write(store) { transaction in try ChapterWrites.finalize(novel: novel, chapter: 2, in: &transaction) }
+    #expect(try await knowledge(store) == [LedgerView("heir", "mara", 2, .brief, .committed), LedgerView("tide", "tobin", 2, .brief, .committed)])
+  }
+
+  @Test func shouldNotBringKnowledgeBackWhenASecretRemovedAfterFinalizeIsRestored() async throws {
+    let store = try await seeded()
+    try await finalize(1, in: store)
+    try await write(store) { transaction in _ = try SecretRecord.remove(novel: novel, secret: "heir", in: &transaction) }
+    try await restore(secret: "heir", in: store)
+    #expect(try await knowledge(store).isEmpty)
+  }
+
+  @Test func shouldCommitNothingOfASecretRestoredBetweenTheApprovalAndFinalize() async throws {
+    let store = try await seeded()
+    try await draftAndApprove(1, in: store)
+    try await write(store) { transaction in _ = try SecretRecord.remove(novel: novel, secret: "heir", in: &transaction) }
+    try await restore(secret: "heir", in: store)
+    #expect(try await knowledge(store).isEmpty)
+    try await write(store) { transaction in try ChapterWrites.finalize(novel: novel, chapter: 1, in: &transaction) }
+    #expect(try await knowledge(store).isEmpty)
+  }
+
+  @Test func shouldLedgerASecretRestoredBeforeTheApproval() async throws {
+    let store = try await seeded()
+    try await write(store) { transaction in _ = try SecretRecord.remove(novel: novel, secret: "heir", in: &transaction) }
+    try await restore(secret: "heir", in: store)
+    try await finalize(1, in: store)
+    #expect(try await knowledge(store) == [LedgerView("heir", "mara", 1, .brief, .committed)])
+  }
+
+  @Test func shouldStartALearnerCreatedAgainWithNoKnowledge() async throws {
+    let store = try await seeded()
+    try await finalize(1, in: store)
+    try await write(store) { transaction in _ = try EntityRecord.remove(novel: novel, entity: "mara", in: &transaction) }
+    try await write(store) { transaction in try ChapterWrites.entity(novel: novel, "mara", in: &transaction) }
+    #expect(try await knowledge(store).isEmpty)
+  }
+
+  @Test func shouldKeepCommittedKnowledgeWhenTheLiveSecretIsEdited() async throws {
+    let store = try await seeded()
+    try await finalize(1, in: store)
+    var edit = SecretEdit()
+    edit.text = .set("Mara is the heir, and always was.")
+    let changes = edit
+    try await write(store) { transaction in _ = try SecretRecord.edit(SecretRecord.ref(novel: novel, secret: "heir"), changes.fields, in: &transaction) }
+    #expect(try await knowledge(store) == [LedgerView("heir", "mara", 1, .brief, .committed)])
   }
 }

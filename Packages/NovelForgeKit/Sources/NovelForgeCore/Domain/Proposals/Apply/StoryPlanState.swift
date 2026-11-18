@@ -1,4 +1,5 @@
 import Foundation
+import GRDB
 import ShadowCore
 import ShadowStore
 
@@ -175,15 +176,31 @@ enum StoryPlanState {
     return HandlerOutcome(inverse: inverse.json, planEdits: [try written(key, novel: novel, in: transaction)])
   }
 
-  // fact.handler.ts:62. FCT_003 is not ported: it guards a delete that cascades the knowledge ledger the inverse cannot rebuild, and here a removal hides that
-  // knowledge by derivation and the inverse brings it back
+  // fact.handler.ts:62-67 (FCT_003): the inverse restores the fact but not what characters knew of it, as a restored secret starts with no knowledge
   static func removeFact(_ key: String, novel: UUID, in transaction: inout WriteTransaction) throws(ApplyError) -> HandlerOutcome {
     let presence = try handlerDomain("fact:\(key)", SecretRecord.ref(novel: novel, secret: key)) { () throws(DomainError) in
       try transaction.presence(SecretRecord.ref(novel: novel, secret: key), as: SecretRecord.self)
     }
     guard case .live(let existing) = presence else { throw .domain(.secretNotFound(key)) }
+    try requireUnledgered(existing.secret, novel: novel, in: transaction)
     try handlerDomain { () throws(DomainError) in try Secrets.remove(novel: novel, secret: key, in: &transaction) }
     return HandlerOutcome(inverse: FactRestore(existing, key: key).json, planEdits: [.factRemoved(storyKey(key))])
+  }
+
+  /// The ledger as reconciled at the transaction's start; a standing fault that may hide one of the novel's rows refuses, a per-entry one included.
+  private static func requireUnledgered(_ key: String, novel: UUID, in transaction: borrowing WriteTransaction) throws(ApplyError) {
+    let table = CharacterKnowledgeEntry.databaseTableName
+    let ledgered = try handlerDomain { () throws(DomainError) in
+      try transaction.sql { database -> Bool? in
+        guard try database.tableExists(table) else { return nil }
+        if try database.tableExists(ProjectionFaults.table) {
+          guard ReadFaults(novel: novel, reading: [table], from: try FaultRows(in: database)).relevant.isEmpty else { return nil }
+        }
+        return try CharacterKnowledgeEntry.filter(Column("novel") == novel && Column("fact") == key).fetchCount(database) > 0
+      }
+    }
+    guard let ledgered else { throw .refused(.ledgerUnavailable(fact: key)) }
+    guard !ledgered else { throw .refused(.ledgered(fact: key)) }
   }
 
   private static func writtenVolume(_ key: String, novel: UUID, in transaction: borrowing WriteTransaction) throws(ApplyError) -> PlanOverlay.Edit {

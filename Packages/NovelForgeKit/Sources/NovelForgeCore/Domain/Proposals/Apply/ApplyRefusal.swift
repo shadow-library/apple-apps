@@ -16,6 +16,8 @@ public enum ApplyRefusal: ShadowError, Equatable {
   case unrestrictedUnavailable
   case unstorable(field: String)
   case approvalOverMovedDraft(chapter: Int)
+  case ledgered(fact: String)
+  case ledgerUnavailable(fact: String)
 
   public var code: String {
     switch self {
@@ -34,6 +36,8 @@ public enum ApplyRefusal: ShadowError, Equatable {
     case .unrestrictedUnavailable: "AI_024"
     case .unstorable: "refinement.unstorable_value"
     case .approvalOverMovedDraft: "refinement.approval_over_moved_draft"
+    case .ledgered: "FCT_003"
+    case .ledgerUnavailable: "refinement.ledger_unavailable"
     }
   }
 
@@ -54,6 +58,8 @@ public enum ApplyRefusal: ShadowError, Equatable {
     case .unstorable(let field): "\(field) holds a fraction, or keys that differ only in their Unicode form, which this app cannot store"
     case .approvalOverMovedDraft(let chapter):
       "Chapter \(chapter) has unsaved edits over an earlier version of its draft — save or close the chapter, then ask for the approval again"
+    case .ledgered: "Canon fact has ledgered reveals — retract them before removing the fact"
+    case .ledgerUnavailable(let fact): "What characters know of \(fact) cannot be read on this device, so it is not removed"
     }
   }
 }

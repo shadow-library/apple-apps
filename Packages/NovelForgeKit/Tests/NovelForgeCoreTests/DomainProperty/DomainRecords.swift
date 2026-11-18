@@ -19,7 +19,7 @@ struct NovelRecords {
   var approvals: [AppendedEntry<ApprovalRecord>] = []
   var secrets: [String: SecretRecord] = [:]
   var entities: Set<String> = []
-  var created: [EntityRef: HLCTimestamp] = [:]
+  var liveSince: [EntityRef: HLCTimestamp] = [:]
   var milestones: Set<String> = []
   var volumes: [VolumeRecord] = []
   var manual: [CharacterKnowledgeRecord] = []
@@ -67,12 +67,12 @@ struct NovelRecords {
     records.approvals = try ApprovalRecord.listing(novel: novel, in: transaction).entries
     for entry in try SecretRecord.listing(novel: novel, in: transaction).entries {
       records.note("secret", entry.record.ref, SecretRecord.ref(novel: novel, secret: entry.record.secret), entry.record.secret)
-      records.created[entry.record.ref] = try creation(of: entry.record.ref, in: transaction)
+      records.liveSince[entry.record.ref] = try liveSince(of: entry.record.ref, in: transaction)
       if !entry.isRemoved { records.secrets[entry.record.secret] = entry.record }
     }
     for entry in try EntityRecord.listing(novel: novel, in: transaction).entries {
       records.note("entity", entry.record.ref, EntityRecord.ref(novel: novel, entity: entry.record.entity), entry.record.entity)
-      records.created[entry.record.ref] = try creation(of: entry.record.ref, in: transaction)
+      records.liveSince[entry.record.ref] = try liveSince(of: entry.record.ref, in: transaction)
       if !entry.isRemoved { records.entities.insert(entry.record.entity) }
     }
     for entry in try MilestoneRecord.listing(novel: novel, in: transaction).entries {
@@ -110,10 +110,10 @@ struct NovelRecords {
     naturalKeys[kind, default: []].append((stored, rebuilt, key))
   }
 
-  /// A natural-key record's first creation: its key field is first-writer-wins, so removal and re-creation keep it.
-  private static func creation(of ref: EntityRef, in transaction: ReadTransaction) throws -> HLCTimestamp? {
+  /// When the record last became live: `removed` is written by its latest create, restore or removal.
+  private static func liveSince(of ref: EntityRef, in transaction: ReadTransaction) throws -> HLCTimestamp? {
     guard case .record(let state)? = try transaction.state(of: ref, scope: .vault) else { return nil }
-    return state[field: CommonField.naturalKey.rawValue]?.clock
+    return state[field: CommonField.removed.rawValue]?.clock
   }
 }
 

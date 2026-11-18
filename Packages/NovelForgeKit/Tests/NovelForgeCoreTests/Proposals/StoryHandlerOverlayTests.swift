@@ -96,7 +96,7 @@ struct StoryHandlerOverlayTests {
   }
 
   @Test func shouldReturnTheOverlayEditOfAnUndoAsWritten() async throws {
-    let world = try await StoryWorld.make()
+    let world = try await StoryWorld.make(reconciled: true)
     try await world.seed(VolumeRecord(novel: world.novel, volume: "v1", ordinal: 4), MilestoneRecord(novel: world.novel, milestone: "rise", label: "Rise"))
     for json in [#"{"op":"volume.remove","volumeKey":"v1"}"#, #"{"op":"milestone.remove","milestoneKey":"rise"}"#] {
       let op = try storyOp(json)
@@ -110,7 +110,7 @@ struct StoryHandlerOverlayTests {
   }
 
   @Test func shouldKeyEveryOverlayEditInNormalForm() async throws {
-    let world = try await StoryWorld.make()
+    let world = try await StoryWorld.make(reconciled: true)
     let decomposed = "cafe\u{301}"
     let composed = "caf\u{E9}"
     let cases: [(String, PlanOverlay.Edit)] = [

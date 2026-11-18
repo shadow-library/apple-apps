@@ -80,14 +80,6 @@ extension NovelPlanWorld {
   }
 }
 
-extension EntityState {
-  /// When the record was first created: its natural key is first-writer-wins, so a later removal and re-creation keeps it, and a merge can only move it earlier.
-  var creationClock: HLCTimestamp? {
-    guard case .record(let record) = self else { return nil }
-    return record[field: CommonField.naturalKey.rawValue]?.clock
-  }
-}
-
 extension DisclosureVolume {
   init(volumeKey: String, ordinal: Int) {
     self.init(volumeKey: volumeKey, ordinal: ordinal, title: nil, objective: nil, body: nil)
@@ -95,9 +87,9 @@ extension DisclosureVolume {
 }
 
 // Committed knowledge from the canon contracts of final chapters and provisional knowledge from approvals in force, over the author's manual reveals; a removed
-// secret or entity hides its rows.
+// secret or entity hides its rows, and one restored or created again starts with none, as the reference's delete cascades them (database/schemas/knowledge.ts:188-191).
 public struct CharacterKnowledgeDerivation: Derivation {
-  public static let version = 2
+  public static let version = 3
   public static let definition = """
     CREATE TABLE nf_derived_character_knowledge (
       novel BLOB NOT NULL, fact TEXT NOT NULL, entity TEXT NOT NULL, chapter INTEGER NOT NULL, source TEXT NOT NULL, status TEXT NOT NULL, draft TEXT,
@@ -105,7 +97,7 @@ public struct CharacterKnowledgeDerivation: Derivation {
     ) STRICT, WITHOUT ROWID;
     """
 
-  // A secret's creation clock moves earlier when another device's creation of it arrives, leaving the plan world as it was.
+  // A secret's live-since clock moves when another device's creation of it arrives, leaving the plan world as it was.
   static let recordKinds: [NovelForgeKind] = [.entity, .secret, .characterKnowledge]
 
   public init() {}
@@ -183,23 +175,25 @@ public struct CharacterKnowledgeDerivation: Derivation {
       facts.formUnion(chapter.learns.map { JSString($0.fact) })
     }
     var entities = [String]()
-    var created = [JSString: HLCTimestamp]()
+    var entityLive = [JSString: HLCTimestamp]()
     for key in named.sorted() {
       let ref = EntityRecord.ref(novel: novel, entity: key.value)
       let state = try context.records.state(of: ref, scope: .vault)
       guard case .readable(let entry) = EntityRecord.reading(state, of: ref), !entry.isRemoved else { continue }
       entities.append(key.value)
-      created[key] = state?.creationClock
+      entityLive[key] = state?.liveSince
     }
-    var factCreated = [JSString: HLCTimestamp]()
-    for key in facts { factCreated[key] = try context.records.state(of: SecretRecord.ref(novel: novel, secret: key.value), scope: .vault)?.creationClock }
+    var factLive = [JSString: HLCTimestamp]()
+    for key in facts { factLive[key] = try context.records.state(of: SecretRecord.ref(novel: novel, secret: key.value), scope: .vault)?.liveSince }
 
-    // provisional-knowledge.ts:73 skips a learn whose fact or learner did not exist when the chapter was approved, and finalize commits only what was ledgered.
+    // provisional-knowledge.ts:73-79 skips a learn whose fact or learner did not exist when the chapter was approved, and finalize commits only what was
+    // ledgered; a record removed and then restored or created again is a new row there (fact.handler.ts:61), so it counts from its latest create or restore.
+    // The reference's re-ledgering of a revoked pair (provisional-knowledge.ts:183-232) skips this check at the earliest other claimant; here it holds there too.
     let plans = world.chapters.map { chapter -> DisclosurePlan in
       guard let cutoff = since[chapter.chapter] else { return chapter.plan }
       return chapter.plan(
         learning: chapter.learns.filter { learn in
-          guard let cutoff, let fact = factCreated[JSString(learn.fact)], let entity = created[JSString(learn.entity)] else { return false }
+          guard let cutoff, let fact = factLive[JSString(learn.fact)], let entity = entityLive[JSString(learn.entity)] else { return false }
           return fact <= cutoff && entity <= cutoff
         })
     }

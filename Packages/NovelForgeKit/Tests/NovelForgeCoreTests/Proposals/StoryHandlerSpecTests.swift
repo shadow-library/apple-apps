@@ -1,4 +1,5 @@
 import Foundation
+import GRDB
 import ShadowCore
 import ShadowStore
 import Testing
@@ -283,7 +284,7 @@ struct StoryHandlerFactSpecTests {
 
   // fact.handler.ts:47: the undo of a removal finds no row, so every clue it brings back is judged
   @Test func shouldRefuseUndoingARemovalWhoseCluesNameATerm() async throws {
-    let world = try await StoryWorld.make()
+    let world = try await StoryWorld.make(reconciled: true)
     let named = SecretRecord(novel: world.novel, secret: "f1", text: "Mara is the heir.", cluesAndTerms: CluesAndTerms(clues: ["the heir's ring"], terms: ["heir"]))
     try await world.seed(named)
     let op = try storyOp(#"{"op":"fact.remove","factKey":"f1"}"#)
@@ -301,18 +302,74 @@ struct StoryHandlerFactSpecTests {
     try await world.refuses(#"{"op":"fact.remove","factKey":"f1"}"#, with: .domain(.secretNotFound("f1")))
   }
 
-  // fact.handler.ts:66 (FCT_003) is not ported: a removal cascades nothing here, so the manual reveal stands and comes back with its fact
-  @Test func shouldRemoveAFactWithAManualRevealAndBringBothBackOnRevert() async throws {
-    let world = try await StoryWorld.make()
-    let mara = world.entity("mara")
+  // fact.handler.ts:66 (FCT_003): the inverse would restore the fact without what characters knew of it
+  @Test func shouldRefuseRemovingAFactWithAManualReveal() async throws {
+    let world = try await StoryWorld.make(reconciled: true)
     let reveal = CharacterKnowledgeRecord(novel: world.novel, fact: "f1", entity: "mara", reveal: ManualReveal(chapter: 2, note: nil))
-    try await world.seed(mara, dated(world, revealChapter: 12), reveal)
-    try await world.applyThenRevert(#"{"op":"fact.remove","factKey":"f1"}"#) {
-      let current = try await world.secret("f1")
-      #expect(isRemoved(current))
-    }
+    try await world.seed(world.entity("mara"), dated(world, revealChapter: 12), reveal)
+    try await world.refuses(#"{"op":"fact.remove","factKey":"f1"}"#, with: .refused(.ledgered(fact: "f1")))
     #expect(live(try await world.secret("f1")) == dated(world, revealChapter: 12))
-    #expect(live(try await world.knowledge(fact: "f1", entity: "mara")) == reveal)
+  }
+
+  @Test func shouldRefuseRemovingAFactAnApprovedOrFinalChapterLedgered() async throws {
+    let world = try await StoryWorld.make(reconciled: true)
+    let novel = world.novel
+    try await world.seed(world.entity("mara"), dated(world, revealChapter: 1))
+    try await world.run { transaction in
+      try PlanWorldWrites.putPlan(novel: novel, chapter: 1, planContent(contract(learns: [Learn("mara", "f1")])), in: &transaction)
+      try ChapterWrites.draft(novel: novel, chapter: 1, in: &transaction)
+    }
+    try await world.run { transaction in try ChapterWrites.approve(novel: novel, chapter: 1, in: &transaction) }
+    #expect(try await ChapterTables.knowledge(novel, in: world.store) == [LedgerView("f1", "mara", 1, .brief, .provisional)])
+    try await world.refuses(#"{"op":"fact.remove","factKey":"f1"}"#, with: .refused(.ledgered(fact: "f1")))
+    try await world.run { transaction in try ChapterWrites.finalize(novel: novel, chapter: 1, in: &transaction) }
+    #expect(try await ChapterTables.knowledge(novel, in: world.store) == [LedgerView("f1", "mara", 1, .brief, .committed)])
+    try await world.refuses(#"{"op":"fact.remove","factKey":"f1"}"#, with: .refused(.ledgered(fact: "f1")))
+  }
+
+  @Test func shouldRefuseRemovingAFactWhileTheLedgerOrItsInputsAreFaulted() async throws {
+    let world = try await StoryWorld.make(reconciled: true)
+    try await world.seed(dated(world, revealChapter: 12))
+    try await world.run { transaction in
+      try transaction.database.execute(
+        sql: "INSERT INTO \(ProjectionFaults.table) (derivation, key, version, message) VALUES (?, ?, 1, 'probe')",
+        arguments: [PlanWorldEntry.databaseTableName, ProjectionFaults.wholeDerivation])
+    }
+    try await world.refuses(#"{"op":"fact.remove","factKey":"f1"}"#, with: .refused(.ledgerUnavailable(fact: "f1")))
+  }
+
+  @Test func shouldRefuseRemovingAFactWhenTheLedgerCannotBeRead() async throws {
+    let world = try await StoryWorld.make()
+    try await world.seed(dated(world, revealChapter: 12))
+    try await world.refuses(#"{"op":"fact.remove","factKey":"f1"}"#, with: .refused(.ledgerUnavailable(fact: "f1")))
+  }
+
+  @Test func shouldRemoveAFactNoCharacterKnowsWhileOtherFactsAndAnotherNovelsFactOfTheSameKeyAreKnown() async throws {
+    let world = try await StoryWorld.make(reconciled: true)
+    let other = SchemaFixture.otherNovel
+    let tide = SecretRecord(novel: world.novel, secret: "tide", text: "The tide is turned by hand.", revealChapter: nil)
+    try await world.seed(
+      world.entity("mara"), dated(world, revealChapter: 12), tide,
+      CharacterKnowledgeRecord(novel: world.novel, fact: "f1", entity: "mara", reveal: ManualReveal(chapter: 2, note: nil)),
+      NovelRecord(id: other, name: "Ash"), EntityRecord(novel: other, entity: "mara", type: .known(.character), name: "Mara"),
+      SecretRecord(novel: other, secret: "tide", text: "Another tide.", revealChapter: nil),
+      CharacterKnowledgeRecord(novel: other, fact: "tide", entity: "mara", reveal: ManualReveal(chapter: 1, note: nil)))
+    #expect(try await ChapterTables.knowledge(world.novel, in: world.store) == [LedgerView("f1", "mara", 2, .manual, .committed)])
+    #expect(try await ChapterTables.knowledge(other, in: world.store) == [LedgerView("tide", "mara", 1, .manual, .committed)])
+    _ = try await world.apply(#"{"op":"fact.remove","factKey":"tide"}"#).get()
+    #expect(isRemoved(try await world.secret("tide")))
+  }
+
+  @Test func shouldRemoveAFactWhileOnlyAnotherNovelsLedgerIsFaulted() async throws {
+    let world = try await StoryWorld.make(reconciled: true)
+    try await world.seed(dated(world, revealChapter: 12))
+    try await world.run { transaction in
+      try transaction.database.execute(
+        sql: "INSERT INTO \(ProjectionFaults.table) (derivation, key, version, message) VALUES (?, ?, 1, 'probe')",
+        arguments: [CharacterKnowledgeEntry.databaseTableName, ProjectionFaults.key(SchemaFixture.otherNovel)])
+    }
+    _ = try await world.apply(#"{"op":"fact.remove","factKey":"f1"}"#).get()
+    #expect(isRemoved(try await world.secret("f1")))
   }
 }
 

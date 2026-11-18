@@ -11,8 +11,10 @@ struct StoryWorld: Sendable {
   let store: VaultStore
   let novel: UUID
 
-  static func make(withNovel: Bool = true) async throws -> StoryWorld {
-    let world = StoryWorld(store: try SchemaFixture.store(), novel: SchemaFixture.novel)
+  /// `reconciled` keeps the derived state current, which a fact removal reads for the knowledge it would orphan.
+  static func make(withNovel: Bool = true, reconciled: Bool = false) async throws -> StoryWorld {
+    let store = reconciled ? try Projection.store(try Projection.reconciler()) : try SchemaFixture.store()
+    let world = StoryWorld(store: store, novel: SchemaFixture.novel)
     if withNovel { _ = try await Harness.create(NovelRecord(id: world.novel, name: "Ember"), in: world.store) }
     return world
   }

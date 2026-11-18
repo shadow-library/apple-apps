@@ -60,7 +60,11 @@ struct FaultRows {
   let rows: [Row]
 
   init(in transaction: ReadTransaction) throws(StoreError) {
-    rows = try transaction.query { database in try Row.fetchAll(database, sql: "SELECT derivation, key, message FROM \(ProjectionFaults.table)") }
+    rows = try transaction.query { database in try FaultRows(in: database).rows }
+  }
+
+  init(in database: Database) throws {
+    rows = try Row.fetchAll(database, sql: "SELECT derivation, key, message FROM \(ProjectionFaults.table)")
   }
 }
 

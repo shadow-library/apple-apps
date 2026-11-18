@@ -117,7 +117,7 @@ struct StoryHandlerRoundTripTests {
   }
 
   @Test func shouldRestoreAFactAnUpsertCreatedEditedOrARemovalTookAway() async throws {
-    let world = try await StoryWorld.make()
+    let world = try await StoryWorld.make(reconciled: true)
     try await world.roundTrip(#"{"op":"fact.upsert","factKey":"heir","body":"Mara is the heir.","terms":["heir"],"revealChapter":4}"#)
     let dated = SecretRecord(
       novel: world.novel, secret: "vault", text: "The vault is empty.", subjects: ["mara"], constraintNote: "Never say it.", writerNote: "",
