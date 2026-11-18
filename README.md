@@ -95,7 +95,8 @@ A product module is added the same way: a library product in the product's packa
 | `Chat/*`                 | `Engine` (`ChatTurnEngine`), `Turn` (relay and local turn store), `Compaction`, `Lookups`                |
 | `Context`                | The chat context: `ChatPack` renderers, `ChatContextAssembler`, `TokenBudget`                            |
 | `Prompts`                | Chat refine, compact and title prompts, scope playbooks, writing instructions                            |
-| `ReadModels`             | Observed reads, among them the chat session list, transcript, Waiting on you, change history and reply costs |
+| `Pipelines/Routing`      | `ChapterRoute` and `ChapterCallRouter`: a chapter call's content mode from its plan head and isolation (unrestricted refused with `AI_024` while the build cannot write it), hard-line screens of inputs and results, and the draft's generator and isolated flags |
+| `ReadModels`             | Observed reads, among them the chat session list, transcript, Waiting on you, change history, reply costs and `UnrestrictedLock` (the chats, drafts, canon and reviews of isolated prose that keep a novel unrestricted; unavailable counts as locked) |
 
 ### Chat
 

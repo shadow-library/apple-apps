@@ -213,7 +213,7 @@ public enum DomainError: ShadowError, Equatable {
     case .lifecycleUnavailable(nil): "The state of this novel's chapters is not up to date on this device, so no chapter can be started now"
     case .planStateUnavailable(let chapter): "The plans of this novel are not up to date on this device, so the plan for chapter \(chapter) cannot be written now"
     case .unreadable(let ref): "\(ref.kind.rawValue)/\(ref.key.rawValue) is stored in a form this version cannot read"
-    case .unrestrictedLocked: "This novel's chats hold, or may hold, unrestricted text, so it stays unrestricted"
+    case .unrestrictedLocked: "This novel's chats, drafts, final chapters or reviews hold, or may hold, unrestricted text, so it stays unrestricted"
     case .store(let error): error.errorDescription
     }
   }

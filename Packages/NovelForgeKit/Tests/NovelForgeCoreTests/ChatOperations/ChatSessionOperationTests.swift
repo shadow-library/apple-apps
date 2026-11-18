@@ -207,6 +207,25 @@ struct ChatUnrestrictedSwitchTests {
     #expect(try await mode(in: store) == .known(.standard))
   }
 
+  @Test func shouldRefuseToLeaveUnrestrictedOnceADraftOrCanonHoldsUnrestrictedText() async throws {
+    let isolated = DraftContent(body: "Walled.", source: .known(.generated), generator: .known(.unrestricted), isolated: true)
+    let draftStore = try await World.store(mode: .unrestricted)
+    _ = try await Projection.write(draftStore) { transaction in try DraftRecord(novel: World.novel, chapter: 1, content: isolated).create(in: &transaction) }
+    await #expect(throws: DomainError.unrestrictedLocked) { try await setMode(.standard, in: draftStore) }
+
+    let canonStore = try await World.store(mode: .unrestricted)
+    let canon = Canon(body: "Final.", generator: .known(.unrestricted), isolated: true)
+    _ = try await Projection.write(canonStore) { transaction in try FinalChapterRecord(novel: World.novel, chapter: 1, canon: canon).finalize(in: &transaction) }
+    await #expect(throws: DomainError.unrestrictedLocked) { try await setMode(.standard, in: canonStore) }
+    #expect(try await mode(in: canonStore) == .known(.unrestricted))
+  }
+
+  @Test func shouldTreatAFaultedChapterLockAsHeld() async throws {
+    let store = try await World.store(mode: .unrestricted)
+    try await ReadWorld.insertFault(IndexedRecord.databaseTableName, key: ProjectionFaults.wholeDerivation, in: store)
+    await #expect(throws: DomainError.unrestrictedLocked) { try await setMode(.standard, in: store) }
+  }
+
   @Test func shouldForgetTheLocalStateOfChatsDeletedOnAnotherDevice() async throws {
     let store = try await World.store()
     let deletedElsewhere = try await store.createChatSession(novel: World.novel)
