@@ -75,6 +75,8 @@ private final class ScriptedSteps: TurnStagingSteps {
   private(set) var direct: DirectCall?
   private(set) var applied = false
   private(set) var cards = [CardCall]()
+  /// The notes each step that committed recorded, in order.
+  private(set) var recorded = [TurnStagingNotes]()
 
   init(script: OrderedJSONObject) throws {
     stageFails = try texts(script["stageFails"])
@@ -82,7 +84,7 @@ private final class ScriptedSteps: TurnStagingSteps {
     applyFails = try text(script["applyFails"])
   }
 
-  func applyDirect(_ ops: [ChangeOp], sources: [OpSource], entityMaterialization: Bool, cardsFollow: Bool) async -> TurnDirectOutcome {
+  func applyDirect(_ ops: [ChangeOp], sources: [OpSource], entityMaterialization: Bool, cardsFollow: Bool, notes: TurnStagingNotes) async -> TurnDirectOutcome {
     direct = DirectCall(ops: ops, sources: sources, entityMaterialization: entityMaterialization)
     if stageFails.contains("direct") { return .failed(note: TurnStagingFlow.failureNote(ProposalStagingError.store(.invalidChange("op not allowed")))) }
     if directWarns { return .warned }
@@ -91,16 +93,21 @@ private final class ScriptedSteps: TurnStagingSteps {
     case "internal": return .failed(note: TurnStagingFlow.failureNote(ProposalApplyError.store(.invalidChange("connection reset by peer at 10.0.0.4"))))
     default:
       applied = true
+      recorded.append(notes)
       return .applied(proposal: UUID(), changes: ops.indices.map { ProposalChangeOutcome(index: $0, status: .applied, source: sources[$0]) })
     }
   }
 
-  func stageCards(_ ops: [ChangeOp], warnings: [String], entityMaterialization: Bool) async throws(TurnStagingError) -> TurnCardStaging {
+  func stageCards(
+    _ ops: [ChangeOp], warnings: [String], entityMaterialization: Bool, notes: @escaping @Sendable (TurnCardStaging) -> TurnStagingNotes
+  ) async throws(TurnStagingError) -> TurnCardStaging {
     let role = direct == nil || applied ? "cards" : "all"
     if stageFails.contains(role) { throw .store(.invalidChange("op not allowed")) }
     let id = UUID()
     cards.append(CardCall(ops: ops, warnings: warnings, entityMaterialization: entityMaterialization, id: id))
-    return TurnCardStaging(proposal: id, replyNotes: [])
+    let staging = TurnCardStaging(proposal: id, replyNotes: [])
+    recorded.append(notes(staging))
+    return staging
   }
 }
 
@@ -217,6 +224,8 @@ struct TurnStagingParityTests {
       #expect(result.applyNote.map(OrderedJSON.string) ?? .null == expected["applyNote"], "case \(index): note")
       #expect(result.held.map { OrderedJSON.string($0.rawValue) } ?? .null == expected["held"], "case \(index): held")
       #expect(result.replyNote == nil, "case \(index)")
+      // the last step that committed records what the reply says, so a turn stopped before it saved the result says the same
+      if let last = steps.recorded.last { #expect(last == result.notes, "case \(index): recorded notes") }
     }
   }
 

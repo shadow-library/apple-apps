@@ -38,24 +38,27 @@ extension VaultStore {
 
     let plan = try await turnWrite { transaction throws(TurnStagingError) in try TurnStagingPlan.make(request, ops: proposed, in: transaction) }
     let steps = TurnStoreSteps(store: self, request: request)
-    var result: TurnStagingResult
-    var organiseNote: String?
+    let dropped = TurnRewriteAnchoring.droppedNote(plan.droppedRewrites)
     switch plan.route {
     case .empty:
-      result = TurnStagingResult()
+      return TurnStagingFlow.noted(TurnStagingResult(), leading: [dropped])
     case .organise(let ops):
-      let card = try await steps.stageCards(ops, warnings: request.warnings, entityMaterialization: true)
-      organiseNote = card.proposal == nil ? nil : TurnStagingPlan.organiseWaitsNote()
-      result = TurnStagingResult(cardProposal: card.proposal, replyNote: TurnStagingFlow.replyNote(card.replyNotes))
+      let settle: @Sendable (TurnCardStaging) -> TurnStagingResult = { card in
+        let organiseNote = card.proposal == nil ? nil : TurnStagingPlan.organiseWaitsNote()
+        return TurnStagingFlow.noted(TurnStagingResult(cardProposal: card.proposal, replyNote: TurnStagingFlow.replyNote(card.replyNotes)), leading: [organiseNote, dropped])
+      }
+      return settle(try await steps.stageCards(ops, warnings: request.warnings, entityMaterialization: true) { settle($0).notes })
     case .split(let turn) where turn.split.ops.isEmpty:
-      result = TurnStagingResult(applyNote: ideasDroppedNote)
+      return TurnStagingFlow.noted(TurnStagingResult(applyNote: ideasDroppedNote), leading: [dropped])
     case .split(let turn):
-      result = try await TurnStagingFlow.stage(turn.split, warnings: request.warnings, steps: steps)
-      // chat-turn-staging.service.ts:146
-      if !turn.droppedIdeas.isEmpty { result.applyNote = [result.applyNote, ideasDroppedNote].compactMap { $0 }.joined(separator: " ") }
+      let ideasDropped = !turn.droppedIdeas.isEmpty
+      return try await TurnStagingFlow.stage(turn.split, warnings: request.warnings, steps: steps) { result in
+        var result = result
+        // chat-turn-staging.service.ts:146
+        if ideasDropped { result.applyNote = [result.applyNote, ideasDroppedNote].compactMap { $0 }.joined(separator: " ") }
+        return TurnStagingFlow.noted(result, leading: [dropped])
+      }
     }
-    result.replyNote = TurnStagingFlow.replyNote([organiseNote, TurnRewriteAnchoring.droppedNote(plan.droppedRewrites), result.replyNote])
-    return result
   }
 
   fileprivate func turnWrite<T: Sendable>(_ body: @Sendable (inout WriteTransaction) throws(TurnStagingError) -> T) async throws(TurnStagingError) -> T {
@@ -166,7 +169,7 @@ struct TurnStoreSteps: TurnStagingSteps {
   let request: TurnStagingRequest
 
   // turn-proposals.ts:141-157 in one transaction: a direct card that cannot stage, raises warnings of its own or does not apply is never written
-  func applyDirect(_ ops: [ChangeOp], sources: [OpSource], entityMaterialization: Bool, cardsFollow: Bool) async -> TurnDirectOutcome {
+  func applyDirect(_ ops: [ChangeOp], sources: [OpSource], entityMaterialization: Bool, cardsFollow: Bool, notes: TurnStagingNotes) async -> TurnDirectOutcome {
     let request = request
     do {
       return try await store.write { transaction in
@@ -188,7 +191,7 @@ struct TurnStoreSteps: TurnStagingSteps {
         case .conflicted: throw DirectAbort(outcome: .failed(note: turnApplyConflictNote))
         case .applied(let changes):
           let step = TurnStagingStep.applied(proposal: staged.proposal.id, cardsFollow: cardsFollow)
-          try TurnStagingMarks.record(step, reply: request.reply, session: request.session, in: transaction.database)
+          try TurnStagingMarks.record(step, notes: notes, reply: request.reply, session: request.session, in: transaction.database)
           return .applied(proposal: staged.proposal.id, changes: changes)
         }
       }
@@ -200,41 +203,46 @@ struct TurnStoreSteps: TurnStagingSteps {
 
   /// turn-proposals.ts:136, :168 and :131. An approval over a working copy that rests on an earlier head refuses the whole staging, so the staging runs
   /// again without that chapter's approvals and the reply says why; it never turns the rest into something else.
-  func stageCards(_ ops: [ChangeOp], warnings: [String], entityMaterialization: Bool) async throws(TurnStagingError) -> TurnCardStaging {
+  func stageCards(
+    _ ops: [ChangeOp], warnings: [String], entityMaterialization: Bool, notes: @escaping @Sendable (TurnCardStaging) -> TurnStagingNotes
+  ) async throws(TurnStagingError) -> TurnCardStaging {
     var remaining = ops
-    var notes = [String]()
+    var leftOut = [String]()
     let request = request
     while !remaining.isEmpty {
-      let attempt = remaining
+      let (attempt, reasons) = (remaining, leftOut)
       do throws(TurnStagingError) {
         let proposal = try await store.turnWrite { transaction throws(TurnStagingError) in
           let proposal = try Self.stage(attempt, warnings: warnings, entityMaterialization: entityMaterialization, request: request, in: &transaction).proposal.id
+          let recorded = notes(TurnCardStaging(proposal: proposal, replyNotes: reasons))
           do throws(StoreError) {
-            try TurnStagingMarks.record(.cards(proposal: proposal), reply: request.reply, session: request.session, in: transaction.database)
+            try TurnStagingMarks.record(.cards(proposal: proposal), notes: recorded, reply: request.reply, session: request.session, in: transaction.database)
           } catch {
             throw .store(error)
           }
           return proposal
         }
-        return TurnCardStaging(proposal: proposal, replyNotes: notes)
+        return TurnCardStaging(proposal: proposal, replyNotes: leftOut)
       } catch {
-        guard case .staging(.approvalOverMovedDraft(let chapter)) = error else { throw notes.isEmpty ? error : .unsaved(error, replyNotes: notes) }
+        guard case .staging(.approvalOverMovedDraft(let chapter)) = error else { throw leftOut.isEmpty ? error : .unsaved(error, replyNotes: leftOut) }
         remaining = attempt.filter { op in
           guard case .actionApproveDraft(let approval) = op.operation else { return true }
           return approval.chapter != chapter
         }
         guard remaining.count < attempt.count else { throw error }
-        notes.append(error.errorDescription ?? "")
+        leftOut.append(error.errorDescription ?? "")
       }
     }
+    let empty = TurnCardStaging(proposal: nil, replyNotes: leftOut)
+    let recorded = notes(empty)
     do {
       try await store.write { transaction in
-        try TurnStagingMarks.record(.cards(proposal: nil), reply: request.reply, session: request.session, in: transaction.database)
+        try TurnStagingMarks.record(.cards(proposal: nil), notes: recorded, reply: request.reply, session: request.session, in: transaction.database)
       }
     } catch {
       throw .store(error)
     }
-    return TurnCardStaging(proposal: nil, replyNotes: notes)
+    return empty
   }
 
   // chat-turn-staging.service.ts:90-104: the stager does not check allowed ops, so the change set is validated for the hub here

@@ -35,9 +35,16 @@ struct ChatTurnUpkeepTests {
     let book = try await World.book()
     let titles = ScriptedModelProvider(calls: [titled("Mara's dockside trade")])
     let turns = ScriptedModelProvider(calls: [World.reply(("reply", World.text("Noted."))), World.reply(("reply", World.text("Kael.")))])
-    let named = Signal()
-    let engine = try await World.vaultEngine(book.store, provider: TitleSplittingProvider(titles: titles, turns: turns, turnsWait: named), named: named)
+    let (named, settled) = (Signal(), Signal())
+    let engine = try await World.vaultEngine(book.store, provider: TitleSplittingProvider(titles: titles, turns: turns, turnsWait: settled), named: named)
+    // the turn asks once the naming has recorded its end, so the naming finishes first
+    let gate = Task {
+      await named.wait()
+      await engine.namingsSettled()
+      settled.raise()
+    }
     let reply = try World.reply(of: await engine.send(World.message, session: World.session, novel: book.novel).outcome())
+    await gate.value
 
     #expect(titles.requests.count == 1 && turns.requests.count == 1)
     let session = try await book.store.read { try ChatSessionRecord.read(id: World.session, in: $0).entry?.record }

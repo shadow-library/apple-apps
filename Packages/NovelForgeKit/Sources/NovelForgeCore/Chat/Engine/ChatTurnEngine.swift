@@ -87,6 +87,7 @@ public final class ChatTurnEngine: Sendable {
   /// Whether a turn may be written unrestricted; the app takes the build's flag (orchestrator decision 5).
   let unrestrictedAvailable: Bool
   private let running = Mutex<[UUID: Control]>([:])
+  private let namings = Mutex<[UUID: (token: UUID, answer: Task<[UUID]?, Never>, settled: Task<Void, Never>)]>([:])
 
   init(
     store: VaultStore, router: @escaping @Sendable () async -> TaskRouter, consent: AIConsentRequirement, upkeep: ChatSessionUpkeep,
@@ -153,9 +154,9 @@ public final class ChatTurnEngine: Sendable {
       throw error
     }
     let run = ChatTurnRun(
-      engine: self, basis: record.basis, control: control, call: nil, checkpoint: nil, settled: settled, staged: record.staged, after: 0, sources: [])
-    let router = await router()
-    return start(run, opening: [.user(message: local.userMessage)], titled: record.basis.namesSession ? router : nil)
+      engine: self, basis: record.basis, control: control, call: nil, checkpoint: nil, settled: settled, staged: record.staged, after: 0, sources: [],
+      earlierCalls: record.calls)
+    return start(run, opening: [.user(message: local.userMessage)], router: await router())
   }
 
   /// Resumes a pending turn of this device that is not running, as one the system stopped in the background: a reset voids what it had shown, and it asks
@@ -168,7 +169,8 @@ public final class ChatTurnEngine: Sendable {
   }
 
   /// At launch: runs the card actions an apply left pending, clears what this device kept of chats deleted elsewhere, ends cancelled every turn the author
-  /// stopped before its end was written, resumes every other interrupted turn it can, and fails the rest (CHT_013) so none shows as running for ever.
+  /// stopped before its end was written, resumes every other interrupted turn it can, fails the rest (CHT_013) so none shows as running for ever, and runs
+  /// the namings a crash cut off.
   @concurrent
   public func resumeInterruptedTurns() async throws(StoreError) -> [ChatTurnHandle] {
     await resumeInterruptedActions()
@@ -201,7 +203,71 @@ public final class ChatTurnEngine: Sendable {
         Self.logger.notice("Did not resume an interrupted turn code=\(error.code, privacy: .public)")
       }
     }
+    await resumeOwedNamings()
     return handles
+  }
+
+  /// A naming owed past its turn, as when the reply was appended while the title call ran, or the turn failed at this launch: the reference names a session
+  /// from its opening message whatever becomes of the turn (chat-session.service.ts:139). A resumed turn's naming is that one, not another.
+  private func resumeOwedNamings() async {
+    let replica = store.replica
+    let owed: [ChatSessionNaming]
+    do throws(StoreError) {
+      owed = try await store.read { transaction in try LocalSessionNamings.owed(replica: replica, in: transaction.database) }
+    } catch {
+      Self.logger.notice("Could not read the namings owed code=\(error.code, privacy: .public)")
+      return
+    }
+    guard !owed.isEmpty else { return }
+    let router = await router()
+    for naming in owed { _ = name(naming, router: router) }
+  }
+
+  /// chat.service.ts:331 once per opening message: a naming asked for while its session's naming runs here shares it, so a quick Resume asks no second title.
+  func name(_ naming: ChatSessionNaming, router: TaskRouter) -> Task<[UUID]?, Never> {
+    namings.withLock { namings in
+      if let running = namings[naming.session] { return running.answer }
+      let token = UUID()
+      let answer = Task.detached { [self] in await owedNaming(naming, router: router) }
+      let settled = Task.detached { [self] in
+        if await answer.value != nil { await endNaming(naming) }
+        self.namings.withLock { if $0[naming.session]?.token == token { $0[naming.session] = nil } }
+      }
+      namings[naming.session] = (token, answer, settled)
+      return answer
+    }
+  }
+
+  /// Returns once every naming running here has recorded its end, those begun meanwhile included.
+  func namingsSettled() async {
+    while true {
+      let tasks = namings.withLock { $0.values.map(\.settled) }
+      if tasks.isEmpty { return }
+      for task in tasks { await task.value }
+    }
+  }
+
+  /// It names only while the naming is still owed; nil when that cannot be read, which leaves it owed. Every other end, a failed naming's included, ends it,
+  /// as the reference logs a failed one and moves on.
+  private func owedNaming(_ naming: ChatSessionNaming, router: TaskRouter) async -> [UUID]? {
+    do throws(StoreError) {
+      guard try await store.read({ transaction in try LocalSessionNamings.isOwed(naming, in: transaction.database) }) else { return [] }
+    } catch {
+      Self.logger.notice("Could not read whether a chat is owed its name code=\(error.code, privacy: .public)")
+      return nil
+    }
+    // decision 5 for a naming that skips preparation, as a resumed or retried turn's does
+    let allowed = naming.contentMode == .standard || unrestrictedAvailable
+    let turn = ChatTitleTurn(pace: naming.costTier.pace, contentMode: naming.contentMode, consent: consent)
+    return allowed ? await upkeep.nameSession(naming.session, naming.novel, naming.opening, turn, router) : []
+  }
+
+  private func endNaming(_ naming: ChatSessionNaming) async {
+    do throws(StoreError) {
+      try await store.write { transaction in try LocalSessionNamings.forget(naming, in: transaction.database) }
+    } catch {
+      Self.logger.notice("Could not record that a chat's naming ended code=\(error.code, privacy: .public)")
+    }
   }
 
   /// At launch, before any turn resumes: runs what is pending of the actions of every card apply this device stopped between its content and its actions,
@@ -300,6 +366,8 @@ public final class ChatTurnEngine: Sendable {
           let basis = prepared.basis
           try LocalTurnStore.begin(turn, novel: novel, session: session, userMessage: basis.userMessage, replica: replica, at: now, in: transaction.database)
           try ChatTurnRecords.save(basis, in: transaction.database)
+          try ChatTurnRecords.forgetCalls(turn, in: transaction.database)
+          if basis.namesSession { try LocalSessionNamings.owe(ChatSessionNaming(basis), replica: replica, in: transaction.database) }
         }
       }
     } catch {
@@ -307,8 +375,9 @@ public final class ChatTurnEngine: Sendable {
       throw error
     }
     let run = ChatTurnRun(
-      engine: self, basis: prepared.basis, control: control, call: prepared.call, checkpoint: nil, settled: nil, staged: nil, after: 0, sources: [])
-    return start(run, opening: [.user(message: prepared.basis.userMessage)], titled: prepared.basis.namesSession ? router : nil)
+      engine: self, basis: prepared.basis, control: control, call: prepared.call, checkpoint: nil, settled: nil, staged: nil, after: 0, sources: [],
+      earlierCalls: [])
+    return start(run, opening: [.user(message: prepared.basis.userMessage)], router: router)
   }
 
   /// chat.service.ts:270-271 for a turn that resumes or is tried again: its chat is still active and its novel still there.
@@ -348,16 +417,15 @@ public final class ChatTurnEngine: Sendable {
     let carry = local.checkpoint.flatMap { ChatTurnCarry(json: $0.carry) }
     let run = ChatTurnRun(
       engine: self, basis: record.basis, control: control, call: nil, checkpoint: carry == nil ? nil : local.checkpoint, settled: record.settled,
-      staged: record.staged, after: local.lastSequence, sources: carry?.sources ?? [])
-    // the naming that ran beside the turn may have ended with the process; it names nothing once the session has a title
-    let router = await router()
-    return start(run, opening: [.reset], titled: record.basis.namesSession ? router : nil)
+      staged: record.staged, after: local.lastSequence, sources: carry?.sources ?? [], earlierCalls: record.calls)
+    // the naming that ran beside the turn may have ended with the process, or still run here
+    return start(run, opening: [.reset], router: await router())
   }
 
-  private func start(_ run: ChatTurnRun, opening: [TurnStreamEvent], titled router: TaskRouter?) -> ChatTurnHandle {
+  private func start(_ run: ChatTurnRun, opening: [TurnStreamEvent], router: TaskRouter) -> ChatTurnHandle {
     let events = run.stream.subscribe()
     for event in opening { run.stream.emit(event) }
-    if let router { run.nameSession(router: router) }
+    if run.basis.namesSession { run.nameSession(router: router) }
     let task = Task.detached(priority: .userInitiated) { await run.run() }
     run.control.attach(task, stream: run.stream)
     return ChatTurnHandle(turn: run.basis.turn, userMessage: run.basis.userMessage, events: events, task: task)

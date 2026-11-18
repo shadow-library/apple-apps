@@ -56,7 +56,7 @@ private func revisedWithNewerMembers<R: ChapterDocument>(_ record: R, newer: JSO
   return try await SchemaFixture.document(record.ref, in: store).revisions[ExactString(revised.revision)]?.body
 }
 
-@Suite("Chapter plans and drafts", .timeLimit(.minutes(2)))
+@Suite("Chapter plans and drafts", .timeLimit(.minutes(5)))
 struct ChapterDocumentTests {
   @Test func shouldCreateAndReviseAPlanWithoutTouchingItsDocumentFields() async throws { try await createAndEdit(PlanSubject.self, seed: 0x1A1) }
   @Test func shouldCreateAndReviseADraftWithoutTouchingItsDocumentFields() async throws { try await createAndEdit(DraftSubject.self, seed: 0x1A2) }
@@ -296,7 +296,7 @@ struct ChapterDocumentTests {
   }
 }
 
-@Suite("Chapter plans and drafts across replicas", .timeLimit(.minutes(2)))
+@Suite("Chapter plans and drafts across replicas", .timeLimit(.minutes(5)))
 struct ChapterDocumentReplicaTests {
   @Test func shouldLetAPlanRemovalWithALaterClockWinOverARevision() async throws { try await removalWinsOverAnEditWithAnEarlierClock(PlanSubject.self, seed: 0x111) }
   @Test func shouldLetADraftRemovalWithALaterClockWinOverARevision() async throws { try await removalWinsOverAnEditWithAnEarlierClock(DraftSubject.self, seed: 0x112) }

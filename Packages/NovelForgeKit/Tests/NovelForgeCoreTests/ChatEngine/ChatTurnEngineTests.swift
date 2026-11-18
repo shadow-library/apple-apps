@@ -22,10 +22,18 @@ struct ChatTurnEngineTests {
       World.reply(("reply", World.text("Let me check Mara first.")), ("lookups", #"[{"tool":"get_entity","args":{"entityKey":"mara"}}]"#)),
       World.reply(("reply", World.text("Done — I noted it.\nMore below.")), ("changeSet", "[\(World.maraThief),\(World.removeRise)]")),
     ])
-    let upkeep = RecordedUpkeep(titleCalls: [UUID()])
-    let engine = try await World.engine(book.store, provider: provider, upkeep: upkeep)
+    let (named, settled) = (Signal(), Signal())
+    let upkeep = RecordedUpkeep(titleCalls: [UUID()], recorded: named)
+    let engine = try await World.engine(book.store, provider: provider, upkeep: upkeep, turnsWait: settled)
+    // the turn asks once the naming has recorded its end, so the naming finishes first
+    let gate = Task {
+      await named.wait()
+      await engine.namingsSettled()
+      settled.raise()
+    }
     let handle = try await engine.send(World.message, session: World.session, novel: book.novel)
     let outcome = await handle.outcome()
+    await gate.value
     let events = await World.events(handle)
 
     let replyID = try World.reply(of: outcome)

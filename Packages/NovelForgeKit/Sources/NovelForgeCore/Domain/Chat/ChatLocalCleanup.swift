@@ -4,8 +4,8 @@ import ShadowCore
 import ShadowStore
 
 /// What this device keeps beside the vault about a chat: its turns, their frames and stop marks (`LocalTurnStore`), the exchanges a next turn replays
-/// (`ChatContextExchangeLog`), the turns' records (`ChatTurnRecords`) and their last requests (`ChatCallInspector`). None of it syncs, so a deletion clears
-/// it on the deleting device and leaves another device's own rows to that device.
+/// (`ChatContextExchangeLog`), the turns' records (`ChatTurnRecords`), their last requests (`ChatCallInspector`) and the naming it owes
+/// (`LocalSessionNamings`). None of it syncs, so a deletion clears it on the deleting device and leaves another device's own rows to that device.
 enum ChatLocalCleanup {
   static func forget(session: UUID, in database: Database) throws(StoreError) {
     try forgetTurns(where: "session = ?", [session], in: database)
@@ -22,14 +22,16 @@ enum ChatLocalCleanup {
       return sessions
     }
     try forgetTurns(where: "novel = ?", [novel], in: database)
+    try LocalSessionNamings.forget(novel: novel, in: database)
     for session in sessions.sorted(by: { $0.uuidString < $1.uuidString }) { try forgetSessionRows(session, in: database) }
   }
 
-  /// The replayed exchanges, the turn records and the Inspector's requests of one session.
+  /// The replayed exchanges, the turn records, the Inspector's requests and the owed naming of one session.
   private static func forgetSessionRows(_ session: UUID, in database: Database) throws(StoreError) {
     try ChatContextExchangeLog.forget(session: session, in: database)
     try ChatTurnRecords.forget(session: session, in: database)
     try ChatCallInspector.forget(session: session, in: database)
+    try LocalSessionNamings.forget(session: session, in: database)
   }
 
   /// Clears what this device kept of every chat that now reads as deleted, as when the deletion was made on another device and arrived by sync; returns those
@@ -45,7 +47,7 @@ enum ChatLocalCleanup {
         sessions.formUnion(try UUID.fetchAll(database, sql: "SELECT DISTINCT session FROM \(ChatContextExchangeLog.table)"))
       }
       return sessions
-    }
+    }.union(try LocalSessionNamings.sessions(in: database))
     let records = ReadTransaction(database: database, registry: NovelForgeSchema.registry)
     var removed = [UUID]()
     for session in kept.sorted(by: { $0.uuidString < $1.uuidString }) where try isRemoved(session, in: records) {

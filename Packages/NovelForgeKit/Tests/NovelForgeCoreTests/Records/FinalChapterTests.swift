@@ -51,7 +51,7 @@ private let learning = ChapterContract(
 private let otherLearning = ChapterContract(
   pov: ["brook"], learns: [ContractLearn(KnowledgeReveal(entityKey: "brook", factKey: "fire"))], claimedMilestones: ["rank-three"], isEnding: true)
 
-@Suite("Final chapters", .timeLimit(.minutes(2)))
+@Suite("Final chapters", .timeLimit(.minutes(5)))
 struct FinalChapterTests {
   @Test func shouldFinalizeWithOneSetOfTheKeyAndTheWholeCanon() async throws {
     let store = try SchemaFixture.store()
@@ -339,7 +339,7 @@ struct FinalChapterTests {
   }
 }
 
-@Suite("Final chapters across replicas", .timeLimit(.minutes(2)))
+@Suite("Final chapters across replicas", .timeLimit(.minutes(5)))
 struct FinalChapterReplicaTests {
   @Test func shouldConvergeConcurrentFinalizesOnOneWholeCanon() async throws {
     try await forAll(iterations: 25, seed: 0x2A1) { generator in

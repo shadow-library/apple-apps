@@ -45,11 +45,25 @@ final class ChatTurnRun: Sendable {
   private let checkpoint: LocalTurnCheckpoint?
   private let settled: ChatTurnSettled?
   private let staged: ChatTurnStaged?
+  /// What the turn's earlier runs here began, a call a crash cut off included (orchestrator decision 9: the reply stores its call ids).
+  private let earlierCalls: [UUID]
   private let titleCalls = Mutex<[UUID]?>(nil)
+  private let begun = Mutex<BegunCalls>(BegunCalls())
+
+  /// The model call this run is making, and which of its ledger ids are stored with the turn record.
+  private struct BegunCalls {
+    var call: RoutedCall?
+    var stored: Set<UUID> = []
+    var storing = false
+    /// The last store, which the run waits for before it ends, so no store lands after a retry of the turn began or a resume read its calls.
+    var task: Task<Void, Never>?
+
+    var unstored: [UUID] { call?.callIDs.filter { !stored.contains($0) } ?? [] }
+  }
 
   init(
     engine: ChatTurnEngine, basis: ChatTurnBasis, control: ChatTurnEngine.Control, call: RoutedCall?, checkpoint: LocalTurnCheckpoint?, settled: ChatTurnSettled?,
-    staged: ChatTurnStaged?, after lastSequence: Int, sources: [TurnTraceSource]
+    staged: ChatTurnStaged?, after lastSequence: Int, sources: [TurnTraceSource], earlierCalls: [UUID]
   ) {
     self.engine = engine
     self.basis = basis
@@ -58,6 +72,7 @@ final class ChatTurnRun: Sendable {
     self.checkpoint = checkpoint
     self.settled = settled
     self.staged = staged
+    self.earlierCalls = earlierCalls
     stream = ChatTurnStream(after: lastSequence, sources: sources, now: engine.timing.monotonic)
   }
 
@@ -65,9 +80,9 @@ final class ChatTurnRun: Sendable {
 
   /// chat.service.ts:329-331: not awaited, it overlaps the turn; its ledger ids join the reply only when it finished first.
   func nameSession(router: TaskRouter) {
-    let turn = ChatTitleTurn(pace: basis.costTier.pace, contentMode: basis.contentMode, consent: engine.consent)
+    let naming = engine.name(ChatSessionNaming(basis), router: router)
     Task.detached { [self] in
-      let calls = await engine.upkeep.nameSession(basis.session, basis.novel, basis.userMessage, turn, router)
+      let calls = await naming.value ?? []
       titleCalls.withLock { $0 = calls }
     }
   }
@@ -78,6 +93,7 @@ final class ChatTurnRun: Sendable {
     let ending = await execute()
     flusher.cancel()
     await flusher.value
+    await begun.withLock { $0.task }?.value
     let outcome = await Task.detached { [self] in await end(ending) }.value
     engine.grace.turnEnded(basis.turn)
     engine.release(basis.turn)
@@ -110,6 +126,7 @@ final class ChatTurnRun: Sendable {
   // chat.service.ts:349-396
   private func ask() async throws(ChatTurnStop) -> ChatTurnSettled {
     let call = try await routed()
+    begun.withLock { $0.call = call }
     var rounds = checkpoint?.messages ?? []
     var carry = checkpoint.flatMap { ChatTurnCarry(json: $0.carry) } ?? ChatTurnCarry()
     var round = checkpoint?.round ?? 0
@@ -180,6 +197,7 @@ final class ChatTurnRun: Sendable {
         TaskCall(
           task: .chat, pace: basis.costTier.pace, thinksDeeper: basis.thinksDeeper, contentMode: basis.contentMode.modelContentMode, consent: engine.consent))
     } catch {
+      if Task.isCancelled || control.stop != nil { throw .stopped }
       throw .failed(ChatTurnFailures.failure(error))
     }
   }
@@ -211,7 +229,9 @@ final class ChatTurnRun: Sendable {
         // a stop ends the call as a failed attempt, and the stopped turn keeps what it wrote (apps/novel-forge-web/src/features/chat/StreamedTurn.tsx:28)
         case .completed(.failed) where control.stop == nil:
           stream.relay(relay.restart())
-        case .textDelta, .reset, .completed:
+        case .textDelta:
+          storeBegunCalls()
+        case .reset, .completed:
           break
         }
         stream.relay(relay.receive(event))
@@ -334,7 +354,7 @@ final class ChatTurnRun: Sendable {
     let result = outcome ?? ChatTurnStaged(appliedProposal: nil, cardProposal: nil, applyNote: nil, held: nil, replyNote: nil)
     let content = result.replyNote.map { "\(answer.reply)\n\n\($0)" } ?? answer.reply
     var calls = [UUID]()
-    for id in basis.compactionCalls + (titleCalls.withLock { $0 } ?? []) + answer.calls where !calls.contains(id) { calls.append(id) }
+    for id in basis.compactionCalls + (titleCalls.withLock { $0 } ?? []) + earlierCalls + answer.calls where !calls.contains(id) { calls.append(id) }
     let reply: ChatMessageRecord
     do {
       reply = try ChatMessageRecord(
@@ -389,30 +409,33 @@ final class ChatTurnRun: Sendable {
   private struct RecoveryUnavailable: Error {}
 
   /// What a run that stopped after staging committed and before it saved the result had staged, from the steps recorded in the staging transactions:
-  /// nil when nothing committed. Notes the staging would have added are lost; cards that were to follow an applied side and whose step never committed
-  /// are said to be missing, as when their transaction fails (turn-proposals.ts:160); a card step that left every op out is no card and none missing.
+  /// nil when nothing committed. The last step's notes are the reply's, as the staging would have ended there; cards that were to follow an applied side
+  /// and whose step never committed are said to be missing, as when their transaction fails (turn-proposals.ts:160). A step recorded without notes says
+  /// only that.
   private func recoveredStaging() async -> Result<ChatTurnStaged?, RecoveryUnavailable> {
     let reply = basis.reply
-    let read: [TurnStagingStep]?
+    let read: [TurnStagingMark]?
     do {
-      read = try await store.read { transaction in try TurnStagingMarks.steps(of: reply, in: transaction.database) }
+      read = try await store.read { transaction in try TurnStagingMarks.marks(of: reply, in: transaction.database) }
     } catch {
       return .failure(RecoveryUnavailable())
     }
-    guard let steps = read else { return .failure(RecoveryUnavailable()) }
-    guard !steps.isEmpty else { return .success(nil) }
+    guard let marks = read else { return .failure(RecoveryUnavailable()) }
+    guard let last = marks.last else { return .success(nil) }
     var applied: (proposal: UUID, cardsFollow: Bool)?
     var cards: UUID??
-    for step in steps {
-      switch step {
+    for mark in marks {
+      switch mark.step {
       case .applied(let proposal, let cardsFollow): applied = (proposal, cardsFollow)
       case .cards(let proposal): cards = .some(proposal)
       }
     }
     let card = cards ?? nil
     let missing = cards == nil && applied?.cardsFollow == true
+    let notes = last.notes ?? TurnStagingNotes(applyNote: missing ? cardsUnsavedNote : nil)
     return .success(
-      ChatTurnStaged(appliedProposal: applied?.proposal, cardProposal: card, applyNote: missing ? cardsUnsavedNote : nil, held: nil, replyNote: nil))
+      ChatTurnStaged(
+        appliedProposal: applied?.proposal, cardProposal: card, applyNote: notes.applyNote, held: notes.held?.rawValue, replyNote: notes.replyNote))
   }
 
   // MARK: writing
@@ -462,13 +485,47 @@ final class ChatTurnRun: Sendable {
         return
       }
       let (turn, pending, now, session) = (basis.turn, stream.take(), engine.timing.now(), basis.session)
-      guard !pending.isEmpty else { continue }
+      let calls = begun.withLock { $0.unstored }
+      guard !pending.isEmpty || !calls.isEmpty else { continue }
       do {
-        try await store.write { transaction in try Self.write(pending, turn: turn, session: session, at: now, in: transaction.database) }
+        try await store.write { transaction in
+          try Self.write(pending, turn: turn, session: session, at: now, in: transaction.database)
+          try ChatTurnRecords.began(calls, turn: turn, session: session, in: transaction.database)
+        }
+        begun.withLock { $0.stored.formUnion(calls) }
       } catch {
         stream.requeue(pending)
       }
     }
+  }
+
+  /// A call's ledger id is stored as soon as the call streams, so a crash while it runs leaves the id for the reply of the resumed turn; a call that
+  /// streams nothing before a crash is stored by the next flush or not at all.
+  private func storeBegunCalls() {
+    let start = begun.withLock { begun -> Bool in
+      guard !begun.storing, !begun.unstored.isEmpty else { return false }
+      begun.storing = true
+      return true
+    }
+    guard start else { return }
+    let (turn, session) = (basis.turn, basis.session)
+    let task = Task.detached { [self] in
+      while let calls = begun.withLock({ begun -> [UUID]? in
+        let calls = begun.unstored
+        if calls.isEmpty { begun.storing = false }
+        return calls.isEmpty ? nil : calls
+      }) {
+        do throws(StoreError) {
+          try await store.write { transaction in try ChatTurnRecords.began(calls, turn: turn, session: session, in: transaction.database) }
+        } catch {
+          ChatTurnEngine.logger.notice("Could not store a turn's model calls code=\(error.code, privacy: .public)")
+          begun.withLock { $0.storing = false }
+          return
+        }
+        begun.withLock { $0.stored.formUnion(calls) }
+      }
+    }
+    begun.withLock { $0.task = task }
   }
 
   /// Ends the local turn with its last frames in one write; an interrupted turn only stores them and stays pending.

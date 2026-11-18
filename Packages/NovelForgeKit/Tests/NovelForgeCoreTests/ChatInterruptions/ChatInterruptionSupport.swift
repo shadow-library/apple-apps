@@ -110,7 +110,7 @@ final class KillableProvider: ModelProvider {
   }
 }
 
-private struct CrashCredentials: ModelCredentialSource {
+struct CrashCredentials: ModelCredentialSource {
   func credential(for provider: ModelProviderKind) async -> ProviderCredential? {
     ProviderCredential(origin: provider == .anthropic ? CompactionWorld.anthropic : CompactionWorld.openRouter, secret: "sk-test")
   }
@@ -133,10 +133,10 @@ enum CrashWorld {
   static let refs = ["entity:mara", "milestone:rise"]
 
   /// The engine as a relaunched app builds it, over `provider`. Its session upkeep records the naming it is asked for unless `upkeep` is given; `routing`
-  /// runs each time a turn asks for its router.
+  /// runs each time a turn asks for its router, and `credentials` answers its keys.
   static func engine(
     _ store: VaultStore, provider: any ModelProvider, faults: ChatTurnEngine.Faults = .none, flush: Duration = .seconds(3_600), upkeep: ChatSessionUpkeep? = nil,
-    routing: @escaping @Sendable () async -> Void = {}
+    routing: @escaping @Sendable () async -> Void = {}, credentials: any ModelCredentialSource = CrashCredentials()
   ) async throws -> ChatTurnEngine {
     guard let standard = ProviderBinding(origin: CompactionWorld.anthropic, provider: provider),
       let unrestricted = ProviderBinding(origin: CompactionWorld.openRouter, provider: provider)
@@ -149,7 +149,7 @@ enum CrashWorld {
     }
     let router = TaskRouter(
       configuration: TaskRouterConfiguration(provider: .anthropic, assignments: OpenRouterAssignments(unrestricted: CompactionWorld.unrestrictedModel)),
-      anthropic: standard, openRouter: unrestricted, credentials: CrashCredentials(), store: store, requestGuard: { ModelRequestGuard.hardLine(for: $0) })
+      anthropic: standard, openRouter: unrestricted, credentials: credentials, store: store, requestGuard: { ModelRequestGuard.hardLine(for: $0) })
     let timing = ChatTurnEngine.Timing(flushInterval: flush, monotonic: { ProcessInfo.processInfo.systemUptime * 1000 }, now: { Date() })
     return ChatTurnEngine(
       store: store,

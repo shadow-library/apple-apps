@@ -236,6 +236,40 @@ struct ChatTurnRecoveryTests {
     #expect(reply.appliedProposal == applied && reply.cardProposal == nil && reply.applyNote == nil)
   }
 
+  // A store of begun calls that lands once the turn is no longer pending here leaves nothing for a later run to claim
+  @Test func shouldStoreNoCallOfATurnThatIsNoLongerPending() async throws {
+    let book = try await World.book()
+    let basis = try await begun(World.message, engine: try await World.engine(book.store, provider: ScriptedModelProvider()), book: book)
+    let (kept, late) = (UUID(), UUID())
+    try await book.run { try ChatTurnRecords.began([kept], turn: basis.turn, session: basis.session, in: $0.database) }
+    try await book.run { try LocalTurnStore.end(basis.turn, as: .cancelled, at: Date(), in: $0.database) }
+    try await book.run { try ChatTurnRecords.began([late], turn: basis.turn, session: basis.session, in: $0.database) }
+    #expect(try await World.record(basis.turn, in: book.store)?.calls == [kept])
+  }
+
+  // A retry that asks again from the message starts its calls afresh: the failed run's call is not the retried run's
+  @Test func shouldStartTheCallsAfreshWhenARetryAsksAgain() async throws {
+    let book = try await World.book()
+    let broken: [ScriptedModelProvider.Step] = [.event(.started(requestID: "req", generationID: nil)), .text(#"{"reply":"Thin"#), .failure(.authentication)]
+    let engine = try await World.engine(book.store, provider: ScriptedModelProvider(calls: [broken, stalled]))
+    let first = try await engine.send(World.message, session: World.session, novel: book.novel)
+    guard case .failed = await first.outcome() else {
+      Issue.record("the first run did not fail")
+      return
+    }
+    let failed = try #require(try await World.record(first.turn, in: book.store)?.calls)
+    #expect(failed.count == 1)
+
+    let retried = try await engine.retry(turn: first.turn)
+    for await event in retried.events {
+      if case .delta = event { break }
+    }
+    engine.interrupt(turn: retried.turn)
+    #expect(await retried.outcome() == .interrupted)
+    let calls = try #require(try await World.record(first.turn, in: book.store)?.calls)
+    #expect(calls.count == 1 && calls != failed)
+  }
+
   @Test func shouldFailAnInterruptedTurnItCannotResumeAtLaunch() async throws {
     let book = try await World.book()
     let engine = try await World.engine(book.store, provider: ScriptedModelProvider())

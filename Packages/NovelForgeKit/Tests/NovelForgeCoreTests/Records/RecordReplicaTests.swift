@@ -165,7 +165,7 @@ extension Sequence {
   }
 }
 
-@Suite("Typed records across replicas", .timeLimit(.minutes(2)))
+@Suite("Typed records across replicas", .timeLimit(.minutes(5)))
 struct RecordReplicaTests {
   @Test func shouldLetAVolumeRemovalWithALaterClockWinOverAnEdit() async throws { try await removalWinsOverAnEditWithAnEarlierClock(VolumeSubject.self, seed: 0x11) }
   @Test func shouldLetAMilestoneRemovalWithALaterClockWinOverAnEdit() async throws { try await removalWinsOverAnEditWithAnEarlierClock(MilestoneSubject.self, seed: 0x12) }

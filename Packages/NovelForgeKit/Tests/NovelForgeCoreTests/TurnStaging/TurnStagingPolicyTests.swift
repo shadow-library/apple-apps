@@ -12,12 +12,14 @@ private func changeOps(_ ops: String...) throws -> [ChangeOp] {
 private final class FailingCards: TurnStagingSteps {
   private(set) var calls = 0
 
-  func applyDirect(_ ops: [ChangeOp], sources: [OpSource], entityMaterialization: Bool, cardsFollow: Bool) async -> TurnDirectOutcome {
+  func applyDirect(_ ops: [ChangeOp], sources: [OpSource], entityMaterialization: Bool, cardsFollow: Bool, notes: TurnStagingNotes) async -> TurnDirectOutcome {
     calls += 1
     return .applied(proposal: UUID(), changes: [])
   }
 
-  func stageCards(_ ops: [ChangeOp], warnings: [String], entityMaterialization: Bool) async throws(TurnStagingError) -> TurnCardStaging {
+  func stageCards(
+    _ ops: [ChangeOp], warnings: [String], entityMaterialization: Bool, notes: @escaping @Sendable (TurnCardStaging) -> TurnStagingNotes
+  ) async throws(TurnStagingError) -> TurnCardStaging {
     calls += 1
     throw .store(.invalidChange("disk full"))
   }
@@ -32,11 +34,13 @@ private final class EmptiedCards: TurnStagingSteps {
     self.failure = failure
   }
 
-  func applyDirect(_ ops: [ChangeOp], sources: [OpSource], entityMaterialization: Bool, cardsFollow: Bool) async -> TurnDirectOutcome {
+  func applyDirect(_ ops: [ChangeOp], sources: [OpSource], entityMaterialization: Bool, cardsFollow: Bool, notes: TurnStagingNotes) async -> TurnDirectOutcome {
     direct ?? .failed(note: applyFailedNote)
   }
 
-  func stageCards(_ ops: [ChangeOp], warnings: [String], entityMaterialization: Bool) async throws(TurnStagingError) -> TurnCardStaging {
+  func stageCards(
+    _ ops: [ChangeOp], warnings: [String], entityMaterialization: Bool, notes: @escaping @Sendable (TurnCardStaging) -> TurnStagingNotes
+  ) async throws(TurnStagingError) -> TurnCardStaging {
     if let failure { throw failure }
     return TurnCardStaging(proposal: nil, replyNotes: ["Chapter 3 moved."])
   }

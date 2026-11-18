@@ -10,6 +10,17 @@ import Testing
 private typealias World = EngineWorld
 private typealias Crash = CrashWorld
 
+/// Keys that are only answered once the asking task is cancelled, and then not at all: a turn stopped while it routes.
+private struct StalledCredentials: ModelCredentialSource {
+  let asked: Signal
+
+  func credential(for provider: ModelProviderKind) async -> ProviderCredential? {
+    asked.raise()
+    while !Task.isCancelled { try? await Task.sleep(for: .milliseconds(5)) }
+    return nil
+  }
+}
+
 // RULE E07 (F27 follow-up 1a): the author's Stop is stored as it is asked for, so a process that ends before the turn records its end leaves a turn the next
 // launch ends cancelled with what it showed, never one it resumes; an answer that had settled is still appended, as Stop leaves it
 @Suite("Chat turns stopped and killed", .serialized, .timeLimit(.minutes(3)))
@@ -99,5 +110,28 @@ struct ChatTurnStopCrashTests {
     #expect(try await book.store.localTurn(first.turn)?.state == .pending)
     engine.interrupt(turn: retried.turn)
     #expect(await retried.outcome() == .interrupted)
+  }
+
+  // From the E08 review: a turn stopped while its resumed run routes ends as the stop says, never as a routing failure
+  @Test(arguments: [false, true])
+  func shouldEndATurnStoppedWhileItRoutesAsTheStopSays(cancelled: Bool) async throws {
+    let vault = try await CrashVault.make()
+    defer { vault.remove() }
+    let killed = try vault.open()
+    let provider = KillableProvider(turns: [.freeze([])])
+    let handle = try await Crash.engine(killed.store, provider: provider).send(World.message, session: World.session, novel: killed.novel)
+    try await provider.waitFrozen()
+
+    let launched = try vault.open()
+    let asked = Signal()
+    let idle = KillableProvider(turns: [])
+    let engine = try await Crash.engine(launched.store, provider: idle, credentials: StalledCredentials(asked: asked))
+    let resumed = try #require(try await engine.resumeInterruptedTurns().first)
+    await asked.wait()
+    if cancelled { engine.cancel(turn: resumed.turn) } else { engine.interrupt(turn: resumed.turn) }
+
+    #expect(await resumed.outcome() == (cancelled ? .cancelled : .interrupted))
+    #expect(try await launched.store.localTurn(handle.turn)?.state == (cancelled ? .cancelled : .pending))
+    #expect(idle.turnRequests.isEmpty)
   }
 }

@@ -28,7 +28,7 @@ enum CompactionWorld {
   }
 
   /// Both providers answer from one script; a request for `unrestrictedModel` went the unrestricted route.
-  static func router(_ provider: ScriptedModelProvider, store: VaultStore) async throws -> TaskRouter {
+  static func router(_ provider: any ModelProvider, store: VaultStore) async throws -> TaskRouter {
     guard let standard = ProviderBinding(origin: anthropic, provider: provider), let unrestricted = ProviderBinding(origin: openRouter, provider: provider) else {
       preconditionFailure("valid bindings")
     }

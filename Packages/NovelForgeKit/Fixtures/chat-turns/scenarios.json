@@ -1262,6 +1262,58 @@
           }
         }
       ]
+    },
+    {
+      "name": "approval-supersession",
+      "about": "A second approval of one chapter supersedes the first card by the action decision they share, though actions touch no record (proposal.service.ts:222-226, change-set-refs.ts:5).",
+      "vault": {
+        "mode": "manual"
+      },
+      "watch": [
+        "draft:3"
+      ],
+      "steps": [
+        {
+          "turn": {
+            "message": "Chapter 3 reads well — approve it.",
+            "calls": [
+              {
+                "reply": "Ready when you are.",
+                "changeSet": [
+                  {
+                    "op": "action.approve_draft",
+                    "chapter": 3
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "turn": {
+            "message": "Approve chapter 3 after all.",
+            "calls": [
+              {
+                "reply": "Staged again.",
+                "changeSet": [
+                  {
+                    "op": "action.approve_draft",
+                    "chapter": 3
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "apply": {
+            "proposal": "s1.card",
+            "selection": [
+              0
+            ]
+          }
+        }
+      ]
     }
   ]
 }

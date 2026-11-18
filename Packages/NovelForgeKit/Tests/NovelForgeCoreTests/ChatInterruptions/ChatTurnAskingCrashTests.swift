@@ -216,4 +216,29 @@ struct ChatTurnAskingCrashTests {
       try await Crash.expectSettled(relaunched, launched.store, session: session)
     }
   }
+
+  // F27 1d, orchestrator decision 9: the call a crash cut off stays begun in the ledger, its cost pending, and the resumed turn's reply carries its id
+  @Test func shouldCarryTheLedgerIdOfTheCallACrashCutOffOnTheResumedReply() async throws {
+    let vault = try await CrashVault.make()
+    defer { vault.remove() }
+    let killed = try vault.open()
+    let provider = KillableProvider(turns: [.freeze(Crash.shown)])
+    let engine = try await Crash.engine(killed.store, provider: provider)
+    let handle = try await engine.send(World.message, session: World.session, novel: killed.novel)
+    try await provider.waitFrozen()
+    try await World.eventually("the call's ledger id was stored with the turn") { try await World.record(handle.turn, in: killed.store)?.calls.count == 1 }
+
+    let launched = try vault.open()
+    let cut = try #require(try await World.record(handle.turn, in: launched.store)?.calls.first)
+    let relaunched = try await Crash.engine(launched.store, provider: ScriptedModelProvider(calls: [Crash.split()]))
+    let resumed = try #require(try await relaunched.resumeInterruptedTurns().first)
+    _ = try World.reply(of: await resumed.outcome())
+
+    let reply = try #require(try await World.messages(in: launched.store).last)
+    let ledger = try await launched.store.read { try Ledger.entries(in: $0) }.filter { $0.parent == nil }
+    #expect(ledger.map(\.id) == reply.modelCalls)
+    #expect(reply.modelCalls?.count == 2 && reply.modelCalls?.first == cut)
+    #expect(ledger.first { $0.id == cut }?.outcome == .started)
+    try await Crash.expectSettled(relaunched, launched.store)
+  }
 }

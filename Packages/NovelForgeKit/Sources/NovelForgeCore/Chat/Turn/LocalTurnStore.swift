@@ -194,7 +194,7 @@ enum LocalTurnStore {
     try database.execute(sql: "DELETE FROM \(stopTable) WHERE turn = ?", arguments: [turn])
   }
 
-  private static func isPending(_ turn: UUID, in database: Database) throws -> Bool {
+  static func isPending(_ turn: UUID, in database: Database) throws -> Bool {
     guard try database.tableExists(turnTable) else { return false }
     let sql = "SELECT EXISTS (SELECT 1 FROM \(turnTable) WHERE id = ? AND state = ?)"
     return try Bool.fetchOne(database, sql: sql, arguments: [turn, LocalTurnState.pending.rawValue]) ?? false

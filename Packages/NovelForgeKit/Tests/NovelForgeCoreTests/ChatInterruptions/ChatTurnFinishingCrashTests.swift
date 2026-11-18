@@ -32,7 +32,7 @@ private func stagedAppliedSideOnly(_ turn: UUID, in store: VaultStore) async thr
   let plan = try await store.write { transaction in try TurnStagingPlan.make(request, ops: ops, in: transaction) }
   guard case .split(let turn) = plan.route, !turn.split.direct.isEmpty, !turn.split.cards.isEmpty else { throw StagingCrashError.notSplit }
   let direct = await TurnStoreSteps(store: store, request: request).applyDirect(
-    turn.split.direct, sources: turn.split.sources, entityMaterialization: false, cardsFollow: true)
+    turn.split.direct, sources: turn.split.sources, entityMaterialization: false, cardsFollow: true, notes: TurnStagingNotes(applyNote: cardsUnsavedNote))
   guard case .applied(let proposal, _) = direct else { throw StagingCrashError.notApplied(direct) }
   return proposal
 }
@@ -40,6 +40,36 @@ private func stagedAppliedSideOnly(_ turn: UUID, in store: VaultStore) async thr
 private enum StagingCrashError: Error {
   case notSplit
   case notApplied(TurnDirectOutcome)
+}
+
+/// A turn whose staging leaves notes for its reply: a hold and its note, or why a rewrite was left out.
+struct NotedStaging: Sendable, CustomTestStringConvertible {
+  let name: String
+  let message: String
+  let ops: [String]
+  let held: TurnHoldReason?
+  let applyNote: String?
+  let notesReply: Bool
+  var choices = ChatTurnChoices()
+  var dagger = false
+
+  var testDescription: String { name }
+
+  static let cases = [
+    NotedStaging(
+      name: "held for review", message: "Take her dagger away.",
+      ops: [#"{"op":"entity.upsert","entityKey":"mara","type":"character","name":"Mara","motivation":"She carries no dagger to the tower."}"#], held: .warnings,
+      applyNote: heldForReviewNote, notesReply: false, dagger: true),
+    NotedStaging(
+      name: "a rewrite left out", message: EngineWorld.message, ops: [StagingText.rewrite("words that are nowhere in the chapter", "new words"), EngineWorld.removeRise],
+      held: nil, applyNote: nil, notesReply: true, choices: ChatTurnChoices(proseEdits: true)),
+  ]
+
+  func prepare(_ book: ChapterBook) async throws {
+    guard dagger else { return }
+    let novel = book.novel
+    try await book.run { try Entities.edit(novel: novel, entity: "mara", EntityDetails(motivation: "She carries a dagger to the tower."), in: &$0) }
+  }
 }
 
 // The finishing half of a turn, each boundary killed on a vault in a file and resumed by a relaunched app: the answer is never asked for again and nothing
@@ -159,6 +189,38 @@ struct ChatTurnFinishingCrashTests {
     #expect(idle.requests.isEmpty)
     let reply = try #require(try await World.messages(in: launched.store).last)
     #expect(reply.held == staged.held && reply.applyNote == heldForReviewNote && reply.cardProposal == staged.cardProposal && reply.appliedProposal == nil)
+    #expect(try await Crash.footprint(in: launched.store) == expected)
+    try await Crash.expectSettled(relaunched, launched.store)
+  }
+
+  // Killed after staging committed and before its result was saved: the reply takes the notes the last staging step recorded, so it holds and says what
+  // an uncrashed turn's reply holds and says
+  @Test(arguments: NotedStaging.cases)
+  func shouldWriteTheSameNotesWhenKilledBeforeWhatStagingLeftWasSaved(_ staging: NotedStaging) async throws {
+    let script = [World.reply(("reply", World.text("Done.")), ("changeSet", "[\(staging.ops.joined(separator: ","))]")), [ScriptedModelProvider.Step.failure(.authentication)]]
+    let uncrashed = try await World.book(workspace: true)
+    try await staging.prepare(uncrashed)
+    let reference = try await World.engine(uncrashed.store, provider: ScriptedModelProvider(calls: script))
+    _ = try World.reply(of: await reference.send(staging.message, session: World.session, novel: uncrashed.novel, choices: staging.choices).outcome())
+    let expected = try await Crash.footprint(in: uncrashed.store)
+    let vault = try await CrashVault.make(workspace: true)
+    defer { vault.remove() }
+    let book = try vault.open()
+    try await staging.prepare(book)
+    let engine = try await Crash.engine(book.store, provider: ScriptedModelProvider(calls: script), faults: World.faults(.crash, at: .staged))
+    let handle = try await engine.send(staging.message, session: World.session, novel: book.novel, choices: staging.choices)
+    #expect(await handle.outcome() == .interrupted)
+    #expect(try await World.record(handle.turn, in: book.store)?.staged == nil)
+
+    let launched = try vault.open()
+    let idle = ScriptedModelProvider()
+    let relaunched = try await Crash.engine(launched.store, provider: idle)
+    let finishing = try #require(try await relaunched.resumeInterruptedTurns().first)
+    _ = try World.reply(of: await finishing.outcome())
+    #expect(idle.requests.isEmpty)
+    let reply = try #require(try await World.messages(in: launched.store).last)
+    #expect(reply.held == staging.held?.rawValue && reply.applyNote == staging.applyNote)
+    #expect(reply.content.hasPrefix("Done.\n\n") == staging.notesReply)
     #expect(try await Crash.footprint(in: launched.store) == expected)
     try await Crash.expectSettled(relaunched, launched.store)
   }

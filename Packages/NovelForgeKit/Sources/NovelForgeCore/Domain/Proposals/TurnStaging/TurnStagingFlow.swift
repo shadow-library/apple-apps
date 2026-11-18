@@ -30,6 +30,8 @@ struct TurnStagingResult: Sendable, Equatable {
     self.held = held
     self.replyNote = replyNote
   }
+
+  var notes: TurnStagingNotes { TurnStagingNotes(applyNote: applyNote, held: held, replyNote: replyNote) }
 }
 
 /// How the direct side of a split ended: staged and applied automatically as one step, or left with nothing written.
@@ -48,55 +50,71 @@ struct TurnCardStaging: Sendable, Equatable {
   let replyNotes: [String]
 }
 
-/// The two steps a turn's split is staged by (turn-proposals.ts:39), each one write transaction.
+/// The two steps a turn's split is staged by (turn-proposals.ts:39), each one write transaction, which records the notes the reply takes when no later step
+/// commits.
 protocol TurnStagingSteps {
   /// `cardsFollow` says whether the split holds cards staged after it, which the applied side records for a turn stopped in between.
-  func applyDirect(_ ops: [ChangeOp], sources: [OpSource], entityMaterialization: Bool, cardsFollow: Bool) async -> TurnDirectOutcome
-  func stageCards(_ ops: [ChangeOp], warnings: [String], entityMaterialization: Bool) async throws(TurnStagingError) -> TurnCardStaging
+  func applyDirect(_ ops: [ChangeOp], sources: [OpSource], entityMaterialization: Bool, cardsFollow: Bool, notes: TurnStagingNotes) async -> TurnDirectOutcome
+  func stageCards(
+    _ ops: [ChangeOp], warnings: [String], entityMaterialization: Bool, notes: @escaping @Sendable (TurnCardStaging) -> TurnStagingNotes
+  ) async throws(TurnStagingError) -> TurnCardStaging
 }
 
 enum TurnStagingFlow {
   /// turn-proposals.ts:127: at most two proposals, the applied side first so the cards' baseline includes its records; anything that stops the applied
   /// side turns the whole change set into cards. The direct card is applied or rolled back inside its own step, so no step leaves it pending beside the
-  /// cards. A hold note is dropped with a card whose every op was left out.
-  static func stage(_ split: ChangeSetSplit, warnings: [String], steps: some TurnStagingSteps) async throws(TurnStagingError) -> TurnStagingResult {
+  /// cards. A hold note is dropped with a card whose every op was left out. `finish` adds the caller's notes, to the result and to what each step records.
+  static func stage(
+    _ split: ChangeSetSplit, warnings: [String], steps: some TurnStagingSteps, finish: @escaping @Sendable (TurnStagingResult) -> TurnStagingResult = { $0 }
+  ) async throws(TurnStagingError) -> TurnStagingResult {
     guard split.sources.count == split.direct.count else { throw .misalignedSources }
     let hold = turnHoldNote(split.held)
     if split.direct.isEmpty {
-      guard !split.cards.isEmpty else { return TurnStagingResult(applyNote: hold?.note, held: hold?.reason) }
-      return held(try await steps.stageCards(split.cards, warnings: warnings, entityMaterialization: true), hold: hold)
+      guard !split.cards.isEmpty else { return finish(TurnStagingResult(applyNote: hold?.note, held: hold?.reason)) }
+      let settle: @Sendable (TurnCardStaging) -> TurnStagingResult = { finish(held($0, hold: hold)) }
+      return settle(try await steps.stageCards(split.cards, warnings: warnings, entityMaterialization: true) { settle($0).notes })
     }
 
     let half = split.cards.isEmpty
-    switch await steps.applyDirect(split.direct, sources: split.sources, entityMaterialization: half, cardsFollow: !split.cards.isEmpty) {
+    let alone = finish(TurnStagingResult(applyNote: half ? nil : cardsUnsavedNote)).notes
+    switch await steps.applyDirect(split.direct, sources: split.sources, entityMaterialization: half, cardsFollow: !half, notes: alone) {
     case .failed(let note):
-      return try await allAsCards(split, warnings: warnings, steps: steps, note: note, held: nil)
+      return try await allAsCards(split, warnings: warnings, steps: steps, note: note, held: nil, finish: finish)
     case .warned:
-      return try await allAsCards(split, warnings: warnings, steps: steps, note: heldForReviewNote, held: .warnings)
+      return try await allAsCards(split, warnings: warnings, steps: steps, note: heldForReviewNote, held: .warnings, finish: finish)
     case .applied(let proposal, let changes):
-      var result = TurnStagingResult(appliedProposal: proposal, applied: changes)
-      if split.cards.isEmpty { return result }
-      do throws(TurnStagingError) {
-        let cards = held(try await steps.stageCards(split.cards, warnings: warnings, entityMaterialization: false), hold: hold)
+      let applied = TurnStagingResult(appliedProposal: proposal, applied: changes)
+      if half { return finish(applied) }
+      let settle: @Sendable (TurnCardStaging) -> TurnStagingResult = { staging in
+        let cards = held(staging, hold: hold)
+        var result = applied
         result.cardProposal = cards.cardProposal
         result.applyNote = cards.applyNote
         result.held = cards.held
         result.replyNote = cards.replyNote
+        return finish(result)
+      }
+      do throws(TurnStagingError) {
+        return settle(try await steps.stageCards(split.cards, warnings: warnings, entityMaterialization: false) { settle($0).notes })
       } catch {
+        var result = applied
         result.applyNote = cardsUnsavedNote
         if case .unsaved(_, let notes) = error { result.replyNote = replyNote(notes) }
+        return finish(result)
       }
-      return result
     }
   }
 
   // turn-proposals.ts:131: staging re-runs its own checks over the whole change set, so a warning the direct side raised comes back on the cards
   private static func allAsCards(
-    _ split: ChangeSetSplit, warnings: [String], steps: some TurnStagingSteps, note: String, held: TurnHoldReason?
+    _ split: ChangeSetSplit, warnings: [String], steps: some TurnStagingSteps, note: String, held: TurnHoldReason?,
+    finish: @escaping @Sendable (TurnStagingResult) -> TurnStagingResult
   ) async throws(TurnStagingError) -> TurnStagingResult {
-    let cards = try await steps.stageCards(split.ops, warnings: warnings, entityMaterialization: true)
-    let staged = cards.proposal != nil
-    return TurnStagingResult(cardProposal: cards.proposal, applyNote: staged ? note : nil, held: staged ? held : nil, replyNote: replyNote(cards.replyNotes))
+    let settle: @Sendable (TurnCardStaging) -> TurnStagingResult = { cards in
+      let staged = cards.proposal != nil
+      return finish(TurnStagingResult(cardProposal: cards.proposal, applyNote: staged ? note : nil, held: staged ? held : nil, replyNote: replyNote(cards.replyNotes)))
+    }
+    return settle(try await steps.stageCards(split.ops, warnings: warnings, entityMaterialization: true) { settle($0).notes })
   }
 
   private static func held(_ cards: TurnCardStaging, hold: TurnHoldNote?) -> TurnStagingResult {
@@ -108,6 +126,12 @@ enum TurnStagingFlow {
   static func replyNote(_ notes: [String?]) -> String? {
     let kept = notes.compactMap { $0 }.filter { !$0.isEmpty }
     return kept.isEmpty ? nil : kept.joined(separator: "\n\n")
+  }
+
+  static func noted(_ result: TurnStagingResult, leading: [String?]) -> TurnStagingResult {
+    var result = result
+    result.replyNote = replyNote(leading + [result.replyNote])
+    return result
   }
 
   // turn-proposals.ts:122: a refusal's own words, and never the text of a failure of the store

@@ -13,9 +13,12 @@ import Testing
 final class RecordedUpkeep: Sendable {
   private let state = Mutex<(named: [UUID], forgot: Int, events: [String])>(([], 0, []))
   let titleCalls: [UUID]
+  private let recorded: Signal?
 
-  init(titleCalls: [UUID] = []) {
+  /// `recorded` is raised once each naming was recorded.
+  init(titleCalls: [UUID] = [], recorded: Signal? = nil) {
     self.titleCalls = titleCalls
+    self.recorded = recorded
   }
 
   var named: [UUID] { state.withLock { $0.named } }
@@ -25,6 +28,7 @@ final class RecordedUpkeep: Sendable {
     ChatSessionUpkeep(
       nameSession: { [self] _, _, opening, _, _ in
         state.withLock { $0.named.append(opening) }
+        recorded?.raise()
         return titleCalls
       },
       forgetRemovedChats: { [self] () throws(StoreError) in state.withLock { $0.forgot += 1 } })
@@ -93,9 +97,10 @@ enum EngineWorld {
 
   static func engine(
     _ store: VaultStore, provider: ScriptedModelProvider, upkeep: RecordedUpkeep = RecordedUpkeep(), now: @escaping @Sendable () -> Date = { Date() },
-    faults: ChatTurnEngine.Faults = .none, unrestrictedAvailable: Bool = true
+    faults: ChatTurnEngine.Faults = .none, unrestrictedAvailable: Bool = true, turnsWait: Signal? = nil
   ) async throws -> ChatTurnEngine {
-    let router = try await CompactionWorld.router(provider, store: store)
+    let gated: any ModelProvider = turnsWait.map { TitleSplittingProvider(titles: provider, turns: provider, turnsWait: $0) } ?? provider
+    let router = try await CompactionWorld.router(gated, store: store)
     let timing = ChatTurnEngine.Timing(flushInterval: .seconds(3_600), monotonic: { ProcessInfo.processInfo.systemUptime * 1000 }, now: now)
     return ChatTurnEngine(
       store: store, router: { router }, consent: CompactionWorld.consent, upkeep: upkeep.seam, timing: timing, faults: faults,

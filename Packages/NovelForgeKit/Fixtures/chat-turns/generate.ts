@@ -386,13 +386,22 @@ function normalisedOp(op: Op): Op {
 const results = (opResults: Row[]): Row[] =>
   opResults.map(entry => ({ index: entry['index'], status: entry['status'], ...(entry['source'] ? { source: entry['source'] } : {}) }));
 
-// A scripted reply the reference's own output checks refuse would cost repair calls this driver does not model, so the script is refused instead.
+// A scripted reply the reference's own output checks refuse would cost repair calls this driver does not model, so the script is refused instead: the
+// schema parse (model-router.service.ts parseOutput, a non-empty `reply` above all), the change set's validation and the prompt's blocking checks.
 const checks = R.chatRefine.buildChatRefinePrompt('project');
+const schemaIssues = (call: Call): string[] => {
+  const parsed = R.schemaValidate.parseSchema(R.chatRefineSchema.ChatRefineSchema, call);
+  return parsed.success ? [] : (parsed.issues as { message: string }[]).map(issue => issue.message);
+};
 for (const scenario of input.scenarios) {
   for (const [index, step] of scenario.steps.entries()) {
     for (const call of step.turn?.calls ?? []) {
       if (call.failure) continue;
-      const issues = [...(call.changeSet?.length ? R.changeSet.validateChangeSet(call.changeSet, R.playbooks.HUB_ALLOWED_OPS) : []), ...checks.postValidate(call)];
+      const issues = [
+        ...schemaIssues(call),
+        ...(call.changeSet?.length ? R.changeSet.validateChangeSet(call.changeSet, R.playbooks.HUB_ALLOWED_OPS) : []),
+        ...checks.postValidate(call),
+      ];
       if (issues.length > 0) throw new Error(`${scenario.name} step ${index}: an invalid scripted reply: ${issues.join('; ')}`);
     }
   }

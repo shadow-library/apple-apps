@@ -127,5 +127,7 @@ export const organisePlan = await import(join(server, 'modules/notes/organise-pl
 export const metrics = await import(join(server, 'modules/eval/deterministic-metrics.ts'));
 // The checks and advice of the model router's repair ladder; this file holds uncommitted edits in the reference checkout (its template, not these).
 export const chatRefine = await import(join(server, 'modules/ai/prompts/chat-refine.prompt.ts'));
+export const chatRefineSchema = await import(join(server, 'modules/ai/schemas/chat-refine.schema.ts'));
+export const schemaValidate = await import(join(server, 'modules/ai/schemas/validate.ts'));
 export const ErrorCode = shadowCommon.ErrorCode;
 export { playbooks };

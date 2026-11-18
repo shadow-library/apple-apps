@@ -1,4 +1,5 @@
 import Foundation
+import GRDB
 import ShadowCore
 import ShadowStore
 import Testing
@@ -326,7 +327,7 @@ struct TurnStagingStoreTests {
     let steps = TurnStoreSteps(store: book.store, request: try Turn.request(Turn.approve3, novel: book.novel, now: book.clock.now))
 
     do throws(TurnStagingError) {
-      _ = try await steps.stageCards(ops, warnings: [], entityMaterialization: true)
+      _ = try await steps.stageCards(ops, warnings: [], entityMaterialization: true) { _ in TurnStagingNotes() }
       Issue.record("the card staged a rewrite it cannot place")
     } catch {
       guard case .unsaved(.staging(.rewriteNotPlaced(chapter: 3, reason: .notFound)), let notes) = error else {
@@ -368,6 +369,59 @@ struct TurnStagingStoreTests {
     #expect(types(try await book.ops(of: try #require(result.appliedProposal))) == [.entityUpsert])
     #expect(types(try await book.ops(of: try #require(result.cardProposal))) == [.milestoneUpsert])
     #expect(result.held == nil)
+  }
+
+  // F27 1c: the last staging step records the notes the reply takes, so a turn stopped before it saved the result writes the same reply
+  @Test func shouldRecordWithTheLastStagingStepTheNotesTheReplyTakes() async throws {
+    let organise = try await StagingWorld.book()
+    let workspace = try await StagingWorld.workspace()
+    let moved = try await StagingWorld.workspace()
+    try await movedHead(3, in: moved)
+    let ideas = try await StagingWorld.book()
+    let rejected = try #require(try await ideas.turn(try Turn.request(Turn.kael, novel: ideas.novel, mode: .manual, now: ideas.clock.now)).cardProposal)
+    _ = try await ideas.store.rejectIdea(proposal: rejected, opIndex: 0, scope: .never, novel: ideas.novel)
+    try await ideas.store.write { transaction in try TurnStagingMarks.forget(turn: Turn.reply, in: transaction.database) }
+    let held = try await StagingWorld.book()
+    let missing = StagingText.rewrite("words that are nowhere in the chapter", "new words")
+    let cases: [(ChapterBook, TurnStagingRequest)] = [
+      (organise, try Turn.request(Turn.organise, novel: organise.novel, organise: .start, now: organise.clock.now)),
+      (workspace, try Turn.request(missing, Turn.removeRise, novel: workspace.novel, now: workspace.clock.now)),
+      (moved, try Turn.request(Turn.approve3, Turn.removeRise, novel: moved.novel, now: moved.clock.now)),
+      (ideas, try Turn.request(Turn.maraThief, Turn.kael, novel: ideas.novel, now: ideas.clock.now)),
+      (held, try Turn.request(Turn.maraThief, Turn.removeRise, novel: held.novel, warnings: [plannerOnlyWarning], now: held.clock.now)),
+    ]
+    for (index, (book, request)) in cases.enumerated() {
+      let result = try await book.turn(request)
+      let marks = try #require(try await book.store.read { try TurnStagingMarks.marks(of: Turn.reply, in: $0.database) })
+      #expect(marks.last?.notes == result.notes, "case \(index)")
+      #expect(result.notes != TurnStagingNotes(), "case \(index) leaves no notes")
+    }
+  }
+
+  // A step table made before steps carried notes gains the column; its earlier steps read without notes
+  @Test func shouldRecordNotesInAStepTableMadeBeforeStepsCarriedThem() async throws {
+    let book = try await StagingWorld.book()
+    let (earlier, later, card) = (UUID(), UUID(), UUID())
+    try await book.store.write { transaction in
+      try transaction.database.execute(
+        sql: """
+          CREATE TABLE nf_local_turn_step (
+            turn BLOB NOT NULL, step TEXT NOT NULL, session BLOB NOT NULL, proposal BLOB, cards_follow INTEGER NOT NULL, PRIMARY KEY (turn, step)
+          ) STRICT, WITHOUT ROWID
+          """)
+      try transaction.database.execute(
+        sql: "INSERT INTO nf_local_turn_step (turn, step, session, proposal, cards_follow) VALUES (?, 'cards', ?, ?, 0)", arguments: [earlier, StagingWorld.session, card])
+    }
+    let notes = TurnStagingNotes(applyNote: heldForReviewNote, held: .warnings, replyNote: "Why.")
+    try await book.store.write { transaction in
+      try TurnStagingMarks.record(.cards(proposal: card), notes: notes, reply: later, session: StagingWorld.session, in: transaction.database)
+    }
+
+    let read = try await book.store.read { transaction in
+      (try TurnStagingMarks.marks(of: earlier, in: transaction.database), try TurnStagingMarks.marks(of: later, in: transaction.database))
+    }
+    #expect(read.0 == [TurnStagingMark(step: .cards(proposal: card), notes: nil)])
+    #expect(read.1 == [TurnStagingMark(step: .cards(proposal: card), notes: notes)])
   }
 
   @Test func shouldStageNothingForAnEmptyChangeSet() async throws {

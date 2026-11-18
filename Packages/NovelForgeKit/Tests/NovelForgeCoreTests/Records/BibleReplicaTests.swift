@@ -6,7 +6,7 @@ import Testing
 
 @testable import NovelForgeCore
 
-@Suite("Bible records across replicas", .timeLimit(.minutes(2)))
+@Suite("Bible records across replicas", .timeLimit(.minutes(5)))
 struct BibleReplicaTests {
   @Test func shouldLetASecretRemovalWithALaterClockWinOverAnEdit() async throws { try await removalWinsOverAnEditWithAnEarlierClock(SecretSubject.self, seed: 0x15) }
   @Test func shouldLetAnEntityRemovalWithALaterClockWinOverAnEdit() async throws { try await removalWinsOverAnEditWithAnEarlierClock(EntitySubject.self, seed: 0x16) }

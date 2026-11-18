@@ -99,15 +99,23 @@ struct ChatTurnRecord: Sendable {
   let basis: ChatTurnBasis
   let settled: ChatTurnSettled?
   let staged: ChatTurnStaged?
+  /// The ledger ids of the model calls the turn's runs began here, in order, a call a crash cut off included.
+  let calls: [UUID]
 }
 
-/// The turn records this device keeps beside its local turns, in a table of the app's own: nothing in it syncs, and each row goes with the reply's
+/// The turn records this device keeps beside its local turns, in tables of the app's own: nothing in them syncs, and each row goes with the reply's
 /// transaction. A row that cannot be read is no record, so its turn is not resumed.
 enum ChatTurnRecords {
   static let table = "nf_local_turn_basis"
+  static let callTable = "nf_local_turn_call"
   private static let definition = """
     CREATE TABLE IF NOT EXISTS nf_local_turn_basis (
       turn BLOB NOT NULL PRIMARY KEY, session BLOB NOT NULL, basis BLOB NOT NULL, settled BLOB, staged BLOB
+    ) STRICT, WITHOUT ROWID
+    """
+  private static let callDefinition = """
+    CREATE TABLE IF NOT EXISTS nf_local_turn_call (
+      turn BLOB NOT NULL, call BLOB NOT NULL, session BLOB NOT NULL, position INTEGER NOT NULL, PRIMARY KEY (turn, call)
     ) STRICT, WITHOUT ROWID
     """
 
@@ -134,6 +142,27 @@ enum ChatTurnRecords {
     }
   }
 
+  /// Calls a run began, recorded while its turn is pending here; one already recorded keeps its place.
+  static func began(_ calls: [UUID], turn: UUID, session: UUID, in database: Database) throws(StoreError) {
+    guard !calls.isEmpty else { return }
+    try execute {
+      guard try LocalTurnStore.isPending(turn, in: database) else { return }
+      try database.execute(sql: callDefinition)
+      for call in calls {
+        try database.execute(
+          sql: "INSERT OR IGNORE INTO \(callTable) (turn, call, session, position) SELECT ?, ?, ?, COALESCE(MAX(position), 0) + 1 FROM \(callTable) WHERE turn = ?",
+          arguments: [turn, call, session, turn])
+      }
+    }
+  }
+
+  /// A turn that asks again from its message starts its spend afresh.
+  static func forgetCalls(_ turn: UUID, in database: Database) throws(StoreError) {
+    try execute {
+      if try database.tableExists(callTable) { try database.execute(sql: "DELETE FROM \(callTable) WHERE turn = ?", arguments: [turn]) }
+    }
+  }
+
   static func load(_ turn: UUID, in database: Database) throws(StoreError) -> ChatTurnRecord? {
     try execute {
       guard try database.tableExists(table), let row = try Row.fetchOne(database, sql: "SELECT basis, settled, staged FROM \(table) WHERE turn = ?", arguments: [turn]),
@@ -142,7 +171,10 @@ enum ChatTurnRecords {
       let settled = decode(row, "settled").map(ChatTurnSettled.init(json:))
       let staged = decode(row, "staged").map(ChatTurnStaged.init(json:))
       guard settled != .some(nil), staged != .some(nil) else { return nil }
-      return ChatTurnRecord(basis: basis, settled: settled.flatMap { $0 }, staged: staged.flatMap { $0 })
+      let calls =
+        try database.tableExists(callTable)
+        ? try UUID.fetchAll(database, sql: "SELECT call FROM \(callTable) WHERE turn = ? ORDER BY position", arguments: [turn]) : []
+      return ChatTurnRecord(basis: basis, settled: settled.flatMap { $0 }, staged: staged.flatMap { $0 }, calls: calls)
     }
   }
 
@@ -150,12 +182,13 @@ enum ChatTurnRecords {
     try execute {
       if try database.tableExists(table) { try database.execute(sql: "DELETE FROM \(table) WHERE turn = ?", arguments: [turn]) }
     }
+    try forgetCalls(turn, in: database)
     try TurnStagingMarks.forget(turn: turn, in: database)
   }
 
   static func forget(session: UUID, in database: Database) throws(StoreError) {
     try execute {
-      if try database.tableExists(table) { try database.execute(sql: "DELETE FROM \(table) WHERE session = ?", arguments: [session]) }
+      for name in [table, callTable] where try database.tableExists(name) { try database.execute(sql: "DELETE FROM \(name) WHERE session = ?", arguments: [session]) }
     }
     try TurnStagingMarks.forget(session: session, in: database)
   }
@@ -164,7 +197,7 @@ enum ChatTurnRecords {
   static func forgetOrphans(in database: Database) throws(StoreError) {
     try execute {
       let turns = try database.tableExists(LocalTurnStore.turnTable)
-      for name in [table, TurnStagingMarks.table, LocalTurnStore.stopTable] where try database.tableExists(name) {
+      for name in [table, callTable, TurnStagingMarks.table, LocalTurnStore.stopTable] where try database.tableExists(name) {
         try database.execute(sql: turns ? "DELETE FROM \(name) WHERE turn NOT IN (SELECT id FROM \(LocalTurnStore.turnTable))" : "DELETE FROM \(name)")
       }
     }
