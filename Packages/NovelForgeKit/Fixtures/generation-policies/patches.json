@@ -1,0 +1,58 @@
+{
+ "resolve": [
+  {"prose":"Mara climbed the ridge. The wind was cold. She did not look back. The wind was cold again.","proposal":{"action":"rewrite","body":"A whole new chapter."},"outcome":{"kind":"rewriteBody","prose":"A whole new chapter.","attemptBumped":false,"keepsFindings":false}},
+  {"prose":"Mara climbed the ridge. The wind was cold. She did not look back. The wind was cold again.","proposal":{"action":"rewrite","body":""},"outcome":{"kind":"fallBack","prose":null,"attemptBumped":false,"keepsFindings":false}},
+  {"prose":"Mara climbed the ridge. The wind was cold. She did not look back. The wind was cold again.","proposal":{"action":"rewrite"},"outcome":{"kind":"fallBack","prose":null,"attemptBumped":false,"keepsFindings":false}},
+  {"prose":"Mara climbed the ridge. The wind was cold. She did not look back. The wind was cold again.","proposal":{"action":"rewrite","body":"ignored","patches":[{"find":"ridge","replace":"hill"}]},"outcome":{"kind":"rewriteBody","prose":"ignored","attemptBumped":false,"keepsFindings":false}},
+  {"prose":"Mara climbed the ridge. The wind was cold. She did not look back. The wind was cold again.","proposal":{"action":"patch"},"outcome":{"kind":"fallBack","prose":null,"attemptBumped":false,"keepsFindings":false}},
+  {"prose":"Mara climbed the ridge. The wind was cold. She did not look back. The wind was cold again.","proposal":{"action":"patch","patches":[]},"outcome":{"kind":"fallBack","prose":null,"attemptBumped":false,"keepsFindings":false}},
+  {"prose":"Mara climbed the ridge. The wind was cold. She did not look back. The wind was cold again.","proposal":{"action":"patch","body":"ignored body","patches":[{"find":"ridge","replace":"hill"}]},"outcome":{"kind":"patched","prose":"Mara climbed the hill. The wind was cold. She did not look back. The wind was cold again.","attemptBumped":true,"keepsFindings":true}},
+  {"prose":"Mara climbed the ridge. The wind was cold. She did not look back. The wind was cold again.","proposal":{"action":"patch","patches":[{"find":"ridge","replace":"hill"}]},"outcome":{"kind":"patched","prose":"Mara climbed the hill. The wind was cold. She did not look back. The wind was cold again.","attemptBumped":true,"keepsFindings":true}},
+  {"prose":"Mara climbed the ridge. The wind was cold. She did not look back. The wind was cold again.","proposal":{"action":"patch","patches":[{"find":"ridge","replace":"hill"},{"find":"hill","replace":"mountain"}]},"outcome":{"kind":"patched","prose":"Mara climbed the mountain. The wind was cold. She did not look back. The wind was cold again.","attemptBumped":true,"keepsFindings":true}},
+  {"prose":"Mara climbed the ridge. The wind was cold. She did not look back. The wind was cold again.","proposal":{"action":"patch","patches":[{"find":"ridge","replace":"hill"},{"find":"ridge","replace":"mountain"}]},"outcome":{"kind":"fallBack","prose":null,"attemptBumped":false,"keepsFindings":false,"rejection":{"patch":1,"occurrences":0}}},
+  {"prose":"Mara climbed the ridge. The wind was cold. She did not look back. The wind was cold again.","proposal":{"action":"patch","patches":[{"find":"valley","replace":"hill"}]},"outcome":{"kind":"fallBack","prose":null,"attemptBumped":false,"keepsFindings":false,"rejection":{"patch":0,"occurrences":0}}},
+  {"prose":"Mara climbed the ridge. The wind was cold. She did not look back. The wind was cold again.","proposal":{"action":"patch","patches":[{"find":"The wind was cold","replace":"It was cold"}]},"outcome":{"kind":"fallBack","prose":null,"attemptBumped":false,"keepsFindings":false,"rejection":{"patch":0,"occurrences":2}}},
+  {"prose":"Mara climbed the ridge. The wind was cold. She did not look back. The wind was cold again.","proposal":{"action":"patch","patches":[{"find":"ridge","replace":"hill"},{"find":"The wind was cold","replace":"It was cold"}]},"outcome":{"kind":"fallBack","prose":null,"attemptBumped":false,"keepsFindings":false,"rejection":{"patch":1,"occurrences":2}}},
+  {"prose":"Mara climbed the ridge. The wind was cold. She did not look back. The wind was cold again.","proposal":{"action":"patch","patches":[{"find":"The wind was cold again.","replace":"It grew colder."},{"find":"The wind","replace":"A gust"}]},"outcome":{"kind":"patched","prose":"Mara climbed the ridge. A gust was cold. She did not look back. It grew colder.","attemptBumped":true,"keepsFindings":true}},
+  {"prose":"Mara climbed the ridge. The wind was cold. She did not look back. The wind was cold again.","proposal":{"action":"patch","patches":[{"find":"ridge","replace":"ridge. The wind was cold"}]},"outcome":{"kind":"patched","prose":"Mara climbed the ridge. The wind was cold. The wind was cold. She did not look back. The wind was cold again.","attemptBumped":true,"keepsFindings":true}},
+  {"prose":"Mara climbed the ridge. The wind was cold. She did not look back. The wind was cold again.","proposal":{"action":"patch","patches":[{"find":"Mara","replace":"Mara"}]},"outcome":{"kind":"patched","prose":"Mara climbed the ridge. The wind was cold. She did not look back. The wind was cold again.","attemptBumped":true,"keepsFindings":true}},
+  {"prose":"Mara climbed the ridge. The wind was cold. She did not look back. The wind was cold again.","proposal":{"action":"patch","patches":[{"find":"She did not look back. ","replace":""}]},"outcome":{"kind":"patched","prose":"Mara climbed the ridge. The wind was cold. The wind was cold again.","attemptBumped":true,"keepsFindings":true}},
+  {"prose":"Mara climbed the ridge. The wind was cold. She did not look back. The wind was cold again.","proposal":{"action":"patch","patches":[{"find":"ridge","replace":""}]},"outcome":{"kind":"patched","prose":"Mara climbed the . The wind was cold. She did not look back. The wind was cold again.","attemptBumped":true,"keepsFindings":true}},
+  {"prose":"Mara climbed the ridge. The wind was cold. She did not look back. The wind was cold again.","proposal":{"action":"patch","patches":[{"find":"Mara climbed the ridge. The wind was cold. She did not look back. The wind was cold again.","replace":"everything"}]},"outcome":{"kind":"patched","prose":"everything","attemptBumped":true,"keepsFindings":true}},
+  {"prose":"Mara climbed the ridge. The wind was cold. She did not look back. The wind was cold again.","proposal":{"action":"patch","patches":[{"find":"mara","replace":"x"}]},"outcome":{"kind":"fallBack","prose":null,"attemptBumped":false,"keepsFindings":false,"rejection":{"patch":0,"occurrences":0}}},
+  {"prose":"aaa","proposal":{"action":"patch","patches":[{"find":"aa","replace":"b"}]},"outcome":{"kind":"patched","prose":"ba","attemptBumped":true,"keepsFindings":true}},
+  {"prose":"aaaa","proposal":{"action":"patch","patches":[{"find":"aa","replace":"b"}]},"outcome":{"kind":"fallBack","prose":null,"attemptBumped":false,"keepsFindings":false,"rejection":{"patch":0,"occurrences":2}}},
+  {"prose":"abab","proposal":{"action":"patch","patches":[{"find":"abab","replace":"x"}]},"outcome":{"kind":"patched","prose":"x","attemptBumped":true,"keepsFindings":true}},
+  {"prose":"Ünïcode café — “quotes” 😀 end","proposal":{"action":"patch","patches":[{"find":"café — “quotes” 😀","replace":"tea"}]},"outcome":{"kind":"patched","prose":"Ünïcode tea end","attemptBumped":true,"keepsFindings":true}},
+  {"prose":"Ünïcode café 😀 😀 end","proposal":{"action":"patch","patches":[{"find":"😀","replace":"x"}]},"outcome":{"kind":"fallBack","prose":null,"attemptBumped":false,"keepsFindings":false,"rejection":{"patch":0,"occurrences":2}}},
+  {"prose":"line one\r\nline two\nline three","proposal":{"action":"patch","patches":[{"find":"one\nline","replace":"x"}]},"outcome":{"kind":"fallBack","prose":null,"attemptBumped":false,"keepsFindings":false,"rejection":{"patch":0,"occurrences":0}}},
+  {"prose":"line one\r\nline two\nline three","proposal":{"action":"patch","patches":[{"find":"one\r\nline","replace":"x"}]},"outcome":{"kind":"patched","prose":"line x two\nline three","attemptBumped":true,"keepsFindings":true}},
+  {"prose":"é and é","proposal":{"action":"patch","patches":[{"find":"é","replace":"x"}]},"outcome":{"kind":"patched","prose":"é and x","attemptBumped":true,"keepsFindings":true}},
+  {"prose":"plain","proposal":{"action":"patch","patches":[{"find":"","replace":"x"}]},"outcome":{"kind":"fallBack","prose":null,"attemptBumped":false,"keepsFindings":false,"rejection":{"patch":0,"occurrences":-1}}},
+  {"prose":"plain","proposal":{"action":"patch","patches":[{"find":"plain","replace":"x"},{"find":"","replace":"y"}]},"outcome":{"kind":"fallBack","prose":null,"attemptBumped":false,"keepsFindings":false,"rejection":{"patch":1,"occurrences":-1}}},
+  {"prose":"","proposal":{"action":"patch","patches":[{"find":"x","replace":"y"}]},"outcome":{"kind":"fallBack","prose":null,"attemptBumped":false,"keepsFindings":false,"rejection":{"patch":0,"occurrences":0}}}
+ ],
+ "dollars": [
+  {"prose":"She paid fifty coins.","patch":{"find":"fifty coins","replace":"$$50 and $& more"},"referenceProse":"She paid $50 and fifty coins more.","literalProse":"She paid $$50 and $& more."},
+  {"prose":"She paid fifty coins.","patch":{"find":"fifty","replace":"a $` of"},"referenceProse":"She paid a She paid  of coins.","literalProse":"She paid a $` of coins."},
+  {"prose":"She paid fifty coins.","patch":{"find":"fifty","replace":"an $' of"},"referenceProse":"She paid an  coins. of coins.","literalProse":"She paid an $' of coins."},
+  {"prose":"She paid fifty coins.","patch":{"find":"fifty","replace":"costs $5 or $1"},"referenceProse":"She paid costs $5 or $1 coins.","literalProse":"She paid costs $5 or $1 coins."},
+  {"prose":"She paid fifty coins.","patch":{"find":"fifty","replace":"$$$"},"referenceProse":"She paid $$ coins.","literalProse":"She paid $$$ coins."}
+ ],
+ "emptyAnchors": [
+  {"prose":"","referenceProse":null},
+  {"prose":"a","referenceProse":null},
+  {"prose":"ab","referenceProse":"xab"},
+  {"prose":"abc","referenceProse":null}
+ ],
+ "sources": [
+  {"attempt":0,"repairMode":"patch","source":"generated"},
+  {"attempt":0,"repairMode":"rewrite","source":"generated"},
+  {"attempt":1,"repairMode":"patch","source":"patched"},
+  {"attempt":1,"repairMode":"rewrite","source":"rewritten"},
+  {"attempt":2,"repairMode":"patch","source":"patched"},
+  {"attempt":2,"repairMode":"rewrite","source":"rewritten"},
+  {"attempt":5,"repairMode":"patch","source":"patched"},
+  {"attempt":5,"repairMode":"rewrite","source":"rewritten"}
+ ]
+}

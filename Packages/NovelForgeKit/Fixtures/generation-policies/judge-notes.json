@@ -1,0 +1,10 @@
+[
+  {"findings":[],"readabilityNote":null,"note":null},
+  {"findings":[],"readabilityNote":"","note":null},
+  {"findings":[],"readabilityNote":"[info] readability: measured 25 words per sentence","note":"[info] readability: measured 25 words per sentence"},
+  {"findings":[{"severity":"hard","text":"Mara is in the cellar"}],"readabilityNote":null,"note":"[hard] Mara is in the cellar"},
+  {"findings":[{"severity":"hard","text":"Mara is in the cellar"},{"severity":"soft","text":"mechanical: the comparison frame \"like a…\" appears 8 times (3.1 per 1,000 words) — keep two at most and vary or cut the rest"}],"readabilityNote":"[info] readability: measured 25 words per sentence","note":"[hard] Mara is in the cellar\n[soft] mechanical: the comparison frame \"like a…\" appears 8 times (3.1 per 1,000 words) — keep two at most and vary or cut the rest\n[info] readability: measured 25 words per sentence"},
+  {"findings":[{"severity":"soft","text":""}],"readabilityNote":null,"note":"[soft] "},
+  {"findings":[{"severity":"soft","text":"line one\nline two"}],"readabilityNote":"","note":"[soft] line one\nline two"},
+  {"findings":[],"readabilityNote":"   ","note":"   "}
+]
