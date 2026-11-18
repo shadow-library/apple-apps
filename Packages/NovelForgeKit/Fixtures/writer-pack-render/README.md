@@ -1,0 +1,1 @@
+Generated from the platform working copy, whose context, knowledge-view, ledger-sections, writer-disclosure-policy and brief-body files had no uncommitted edits (the other 27 edited files are not read).

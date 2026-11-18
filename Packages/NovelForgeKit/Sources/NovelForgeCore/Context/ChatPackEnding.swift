@@ -1,7 +1,7 @@
 // apps/novel-forge-server/src/modules/ai/context/pack-render.ts
 extension ChatPack {
   // pack-render.ts:27
-  private static func makeSectionTail(_ key: String, _ content: String, maxTokens: Int, tier: ChatPackTier, sourceRefs: [String]) -> ChatPackSection {
+  static func makeSectionTail(_ key: String, _ content: String, maxTokens: Int, tier: ChatPackTier, sourceRefs: [String]) -> ChatPackSection {
     let cut = truncateAtParagraphTail(content, maxTokens: maxTokens)
     let rendered = renderSection(key, cut.text)
     return ChatPackSection(key: key, tier: tier, segment: .volatile, tokens: countTokens(rendered), truncated: cut.truncated, sourceRefs: sourceRefs, rendered: rendered)
