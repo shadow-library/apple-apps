@@ -488,6 +488,7 @@ final class ChatTurnRun: Sendable {
     case .stopped:
       (outcome, end) = (.cancelled, .cancelled)
     }
+    if engine.faults.inject(.ending) == .crash { return .interrupted }
     let (turn, pending, now, session) = (basis.turn, stream.take(), engine.timing.now(), basis.session)
     do {
       try await store.write { transaction in
@@ -500,7 +501,7 @@ final class ChatTurnRun: Sendable {
     return outcome
   }
 
-  private static func write(_ pending: ChatTurnStream.Pending, turn: UUID, session: UUID, at now: Date, in database: Database) throws(StoreError) {
+  static func write(_ pending: ChatTurnStream.Pending, turn: UUID, session: UUID, at now: Date, in database: Database) throws(StoreError) {
     try LocalTurnStore.append(pending.frames, turn: turn, at: now, in: database)
     if let attempt = pending.attempt { try ChatCallInspector.record(attempt, turn: turn, session: session, at: now, in: database) }
   }

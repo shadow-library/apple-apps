@@ -3,7 +3,7 @@ import GRDB
 import ShadowCore
 import ShadowStore
 
-/// What this device keeps beside the vault about a chat: its turns and their frames (`LocalTurnStore`), the exchanges a next turn replays
+/// What this device keeps beside the vault about a chat: its turns, their frames and stop marks (`LocalTurnStore`), the exchanges a next turn replays
 /// (`ChatContextExchangeLog`), the turns' records (`ChatTurnRecords`) and their last requests (`ChatCallInspector`). None of it syncs, so a deletion clears
 /// it on the deleting device and leaves another device's own rows to that device.
 enum ChatLocalCleanup {
@@ -72,8 +72,8 @@ enum ChatLocalCleanup {
     try execute(in: database) {
       guard try database.tableExists(LocalTurnStore.turnTable) else { return }
       let turns = "SELECT id FROM \(LocalTurnStore.turnTable) WHERE \(condition)"
-      if try database.tableExists(LocalTurnStore.frameTable) {
-        try database.execute(sql: "DELETE FROM \(LocalTurnStore.frameTable) WHERE turn IN (\(turns))", arguments: arguments)
+      for table in [LocalTurnStore.frameTable, LocalTurnStore.stopTable] where try database.tableExists(table) {
+        try database.execute(sql: "DELETE FROM \(table) WHERE turn IN (\(turns))", arguments: arguments)
       }
       try database.execute(sql: "DELETE FROM \(LocalTurnStore.turnTable) WHERE \(condition)", arguments: arguments)
     }

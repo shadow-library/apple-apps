@@ -14,9 +14,10 @@ enum ProposalApply {
 
   /// proposal-apply.service.ts:109-219: the content of the selected indexes, its change records and the decision, in this one transaction. A conflict with
   /// the card's baseline records nothing; a stored op that no longer validates is recorded as a failed change while the rest apply; any handler error, a
-  /// broken plan rule or a store failure aborts everything and leaves the card pending. Selected actions are recorded `pending` and run after the commit,
-  /// each in a transaction of its own (`runAction`), because their guards read the lifecycle as reconciled when a transaction starts. On a conflict the
-  /// working copies the apply settled stay committed, as leaving the editor would commit them; `conflicted` itself is derived, never stored.
+  /// broken plan rule or a store failure aborts everything and leaves the card pending. Selected actions are recorded `pending`, and in `PendingActions`
+  /// for the launch sweep, and run after the commit, each in a transaction of its own (`runAction`), because their guards read the lifecycle as reconciled
+  /// when a transaction starts. On a conflict the working copies the apply settled stay committed, as leaving the editor would commit them; `conflicted`
+  /// itself is derived, never stored.
   static func apply(
     proposal id: UUID, selection: ApplySelection, context: ProposalApplyContext, in transaction: inout WriteTransaction,
     performing perform: ContentPerformer = { call, context, transaction throws(ApplyError) in try ApplyFrame.perform(call, context: context, in: &transaction) }
@@ -59,6 +60,8 @@ enum ProposalApply {
         proposal.ref, changes: changes, postState: postState, sources: context.sources?.map(StoredEnum.known), automatic: context.automatic, in: &transaction)
     }
     if case .notPending(let decision) = recording { throw .notPending(decision) }
+    let actions = outcomes.filter { $0.status == .pending }.map(\.index)
+    try stored { () throws(StoreError) in try PendingActions.record(proposal: id, novel: context.novel, actions: actions, at: context.now, in: transaction.database) }
     return .applied(outcomes)
   }
 

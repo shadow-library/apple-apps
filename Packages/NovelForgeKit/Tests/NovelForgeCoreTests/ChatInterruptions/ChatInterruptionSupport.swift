@@ -132,9 +132,11 @@ struct ChatFootprint: Equatable, CustomStringConvertible {
 enum CrashWorld {
   static let refs = ["entity:mara", "milestone:rise"]
 
-  /// The engine as a relaunched app builds it, over `provider`. Its session upkeep records the naming it is asked for unless `upkeep` is given.
+  /// The engine as a relaunched app builds it, over `provider`. Its session upkeep records the naming it is asked for unless `upkeep` is given; `routing`
+  /// runs each time a turn asks for its router.
   static func engine(
-    _ store: VaultStore, provider: any ModelProvider, faults: ChatTurnEngine.Faults = .none, flush: Duration = .seconds(3_600), upkeep: ChatSessionUpkeep? = nil
+    _ store: VaultStore, provider: any ModelProvider, faults: ChatTurnEngine.Faults = .none, flush: Duration = .seconds(3_600), upkeep: ChatSessionUpkeep? = nil,
+    routing: @escaping @Sendable () async -> Void = {}
   ) async throws -> ChatTurnEngine {
     guard let standard = ProviderBinding(origin: CompactionWorld.anthropic, provider: provider),
       let unrestricted = ProviderBinding(origin: CompactionWorld.openRouter, provider: provider)
@@ -150,7 +152,11 @@ enum CrashWorld {
       anthropic: standard, openRouter: unrestricted, credentials: CrashCredentials(), store: store, requestGuard: { ModelRequestGuard.hardLine(for: $0) })
     let timing = ChatTurnEngine.Timing(flushInterval: flush, monotonic: { ProcessInfo.processInfo.systemUptime * 1000 }, now: { Date() })
     return ChatTurnEngine(
-      store: store, router: { router }, consent: consent, upkeep: upkeep ?? RecordedUpkeep().seam, timing: timing, faults: faults,
+      store: store,
+      router: {
+        await routing()
+        return router
+      }, consent: consent, upkeep: upkeep ?? RecordedUpkeep().seam, timing: timing, faults: faults,
       unrestrictedAvailable: true)
   }
 

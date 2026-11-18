@@ -19,10 +19,14 @@ struct ProposalActionResult: Sendable, Equatable {
 
 extension ProposalApply {
   /// proposal-apply.service.ts:261-281 for one selected action, in a transaction of its own after the content committed, so its guards read the lifecycle
-  /// the content left. A thrown `.action` abandons the transaction; the caller then settles the change as failed in another.
+  /// the content left. A thrown `.action` abandons the transaction; the caller then settles the change as failed in another. The action's effect and its
+  /// settled change commit together, so a change read as settled is an action that took effect and never runs again.
   static func runAction(proposal id: UUID, index: Int, novel: UUID, in transaction: inout WriteTransaction) throws(ProposalApplyError) -> ProposalActionStep {
     let (proposal, op, ref, change) = try actionChange(id, index: index, novel: novel, in: transaction)
-    guard change.actionOutcome == .known(.pending) else { return .settled(change.actionOutcome) }
+    guard change.actionOutcome == .known(.pending) else {
+      try settlePending(id, index: index, in: transaction)
+      return .settled(change.actionOutcome)
+    }
     guard let executor = ProposalActionRegistry.executor(for: op.type) else { return .unavailable }
     let summary: String
     do throws(ApplyError) {
@@ -31,7 +35,9 @@ extension ProposalApply {
       throw .action(index: index, error)
     }
     let result = ProposalChangeResult(result: ["summary": .string(summary)])
-    switch try stored({ () throws(StoreError) in try ProposalChangeRecord.settleAction(ref, result: result, in: &transaction) }) {
+    let settled = try stored { () throws(StoreError) in try ProposalChangeRecord.settleAction(ref, result: result, in: &transaction) }
+    try settlePending(id, index: index, in: transaction)
+    switch settled {
     case .settled: return .ran(summary: summary)
     case .alreadySettled(let outcome): return .settled(outcome)
     }
@@ -42,9 +48,28 @@ extension ProposalApply {
     -> StoredEnum<ProposalChangeStatus>
   {
     let (_, _, ref, _) = try actionChange(id, index: index, novel: novel, in: transaction)
-    switch try stored({ () throws(StoreError) in try ProposalChangeRecord.settleAction(ref, result: failure.stored, in: &transaction) }) {
+    let settled = try stored { () throws(StoreError) in try ProposalChangeRecord.settleAction(ref, result: failure.stored, in: &transaction) }
+    try settlePending(id, index: index, in: transaction)
+    switch settled {
     case .settled: return .known(.failed)
     case .alreadySettled(let outcome): return outcome
+    }
+  }
+
+  private static func settlePending(_ id: UUID, index: Int, in transaction: borrowing WriteTransaction) throws(ProposalApplyError) {
+    try stored { () throws(StoreError) in try PendingActions.settle(proposal: id, index: index, in: transaction.database) }
+  }
+
+  /// Whether a change of the card may still be a pending action: one recorded pending, or one this device cannot read.
+  static func holdsPendingAction(proposal id: UUID, novel: UUID, in transaction: borrowing WriteTransaction) throws(ProposalApplyError) -> Bool {
+    let proposal = try readable(id, novel: novel, in: transaction)
+    let entries = try stored { () throws(StoreError) in try ProposalChangeRecord.changes(of: proposal, in: transaction) }
+    return entries.contains { entry in
+      switch entry {
+      case .recorded(let change): change.actionOutcome == .known(.pending)
+      case .unreadable: true
+      case .awaiting, .declined, .notApplied: false
+      }
     }
   }
 
@@ -115,6 +140,64 @@ extension VaultStore {
       throw .store(error)
     }
     return await runProposalActions(id, novel: novel, indexes: indexes)
+  }
+
+  /// At launch, once per row of `PendingActions`, oldest first: resumes the actions of every apply this device stopped between its content and its actions.
+  /// Never throws and never loops: a row whose card is gone or holds no pending action is removed, one the sweep leaves pending is kept with its fault, and
+  /// a row `PendingActions.attemptLimit` sweeps started on is skipped.
+  func resumePendingActions() async -> [PendingActionResume] {
+    let rows: [PendingActionRow]
+    do {
+      rows = try await read { transaction in try PendingActions.rows(in: transaction.database) }
+    } catch {
+      return [.unreadable(code: error.code)]
+    }
+    var resumes = [PendingActionResume]()
+    for row in rows {
+      resumes.append(await resumePendingActions(row))
+    }
+    return resumes
+  }
+
+  private func resumePendingActions(_ row: PendingActionRow) async -> PendingActionResume {
+    let proposal = row.proposal
+    guard row.attempts < PendingActions.attemptLimit else { return .skipped(proposal: proposal, fault: row.fault) }
+    do {
+      try await write { transaction in try PendingActions.attempt(proposal: proposal, in: transaction.database) }
+    } catch {
+      return .faulted(proposal: proposal, code: error.code)
+    }
+    let novel = row.novel
+    let results: [ProposalActionResult]
+    do throws(ProposalApplyError) {
+      results = try await resumeProposalActions(proposal, novel: novel)
+    } catch {
+      guard case .notFound = error else { return await faultPendingActions(proposal, code: error.code) }
+      return await forgetPendingActions(proposal, code: error.code)
+    }
+    let done: Bool
+    do throws(ProposalApplyError) {
+      done = try await writeProposal { transaction throws(ProposalApplyError) in
+        guard try !ProposalApply.holdsPendingAction(proposal: proposal, novel: novel, in: transaction) else { return false }
+        try ProposalApply.stored { () throws(StoreError) in try PendingActions.forget(proposal: proposal, in: transaction.database) }
+        return true
+      }
+    } catch {
+      return .faulted(proposal: proposal, code: error.code)
+    }
+    guard !done else { return .resumed(proposal: proposal, results) }
+    let stalled = results.last { $0.outcome == .known(.pending) }?.failure?.code
+    return await faultPendingActions(proposal, code: stalled ?? PendingActions.unsettledFault)
+  }
+
+  private func forgetPendingActions(_ proposal: UUID, code: String) async -> PendingActionResume {
+    _ = try? await write { transaction in try PendingActions.forget(proposal: proposal, in: transaction.database) }
+    return .forgotten(proposal: proposal, code: code)
+  }
+
+  private func faultPendingActions(_ proposal: UUID, code: String) async -> PendingActionResume {
+    _ = try? await write { transaction in try PendingActions.fault(proposal: proposal, code: code, in: transaction.database) }
+    return .faulted(proposal: proposal, code: code)
   }
 
   /// Never throws: the content has committed, so an action this run could not settle (the store failed under it) stays pending, reported with why, and the

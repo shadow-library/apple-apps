@@ -9,6 +9,7 @@ import ShadowStore
 enum LocalTurnStore {
   static let turnTable = "nf_local_turn"
   static let frameTable = "nf_local_turn_frame"
+  static let stopTable = "nf_local_turn_stop"
   private static let definitions = [
     """
     CREATE TABLE IF NOT EXISTS nf_local_turn (
@@ -22,11 +23,8 @@ enum LocalTurnStore {
       turn BLOB NOT NULL, seq INTEGER NOT NULL, event TEXT NOT NULL, data TEXT NOT NULL, PRIMARY KEY (turn, seq)
     ) STRICT, WITHOUT ROWID
     """,
+    "CREATE TABLE IF NOT EXISTS nf_local_turn_stop (turn BLOB NOT NULL PRIMARY KEY, stopped_at INTEGER NOT NULL) STRICT, WITHOUT ROWID",
   ]
-  private static let columns = """
-    id, novel, session, user_message, replica, state, started_at, updated_at, ended_at, error_code, error_message, checkpoint,
-    (SELECT MAX(seq) FROM nf_local_turn_frame WHERE turn = nf_local_turn.id) AS last_seq
-    """
 
   /// What a turn this replica stopped running without ending is failed with: the native stand-in for the reference's pending cutoff (chat.service.ts:138, :207).
   static let interrupted = TurnFailure(code: "CHT_013", message: "The turn stopped responding — the app closed while it ran")
@@ -41,6 +39,7 @@ enum LocalTurnStore {
       let superseded = "SELECT id FROM \(turnTable) WHERE session = ? AND (state <> ? OR replica <> ?)"
       let arguments: StatementArguments = [session, LocalTurnState.pending.rawValue, replica.description]
       try database.execute(sql: "DELETE FROM \(frameTable) WHERE turn IN (\(superseded))", arguments: arguments)
+      try database.execute(sql: "DELETE FROM \(stopTable) WHERE turn IN (\(superseded)) OR turn = ?", arguments: arguments + [id])
       try database.execute(sql: "DELETE FROM \(turnTable) WHERE id IN (\(superseded))", arguments: arguments)
       try database.execute(
         sql: """
@@ -90,7 +89,21 @@ enum LocalTurnStore {
       try database.execute(
         sql: "UPDATE \(turnTable) SET state = ?, ended_at = ?, updated_at = ?, error_code = ?, error_message = ? WHERE id = ? AND state = ?",
         arguments: [state.rawValue, milliseconds(now), milliseconds(now), failure?.code, failure?.message, turn, LocalTurnState.pending.rawValue])
-      return database.changesCount > 0
+      let ended = database.changesCount > 0
+      try forgetStop(turn, in: database)
+      return ended
+    }
+  }
+
+  /// The author's Stop, written as soon as it is asked for, so a turn whose process ends before it records its end is ended cancelled at the next launch
+  /// instead of resumed; false when the turn is no longer pending.
+  @discardableResult
+  static func markStopped(_ turn: UUID, at now: Date, in database: Database) throws(StoreError) -> Bool {
+    try storeExecute(in: database) {
+      guard try isPending(turn, in: database) else { return false }
+      try createTables(in: database)
+      try database.execute(sql: "INSERT OR IGNORE INTO \(stopTable) (turn, stopped_at) VALUES (?, ?)", arguments: [turn, milliseconds(now)])
+      return true
     }
   }
 
@@ -99,6 +112,7 @@ enum LocalTurnStore {
     try storeExecute(in: database) {
       guard try database.tableExists(turnTable) else { return }
       try database.execute(sql: "DELETE FROM \(frameTable) WHERE turn = ?", arguments: [turn])
+      try forgetStop(turn, in: database)
       try database.execute(sql: "DELETE FROM \(turnTable) WHERE id = ?", arguments: [turn])
     }
   }
@@ -106,7 +120,7 @@ enum LocalTurnStore {
   static func turn(_ id: UUID, in database: Database) throws(StoreError) -> LocalTurn? {
     try storeExecute(in: database) {
       guard try database.tableExists(turnTable) else { return nil }
-      return try Row.fetchOne(database, sql: "SELECT \(columns) FROM \(turnTable) WHERE id = ?", arguments: [id]).flatMap(LocalTurn.init(row:))
+      return try Row.fetchOne(database, sql: "SELECT \(columns(in: database)) FROM \(turnTable) WHERE id = ?", arguments: [id]).flatMap(LocalTurn.init(row:))
     }
   }
 
@@ -126,7 +140,7 @@ enum LocalTurnStore {
     try storeExecute(in: database) {
       guard try database.tableExists(turnTable) else { return [] }
       return try Row.fetchAll(
-        database, sql: "SELECT \(columns) FROM \(turnTable) WHERE state = ? AND replica = ? ORDER BY started_at, id",
+        database, sql: "SELECT \(columns(in: database)) FROM \(turnTable) WHERE state = ? AND replica = ? ORDER BY started_at, id",
         arguments: [LocalTurnState.pending.rawValue, replica.description]
       ).compactMap(LocalTurn.init(row:))
     }
@@ -138,7 +152,7 @@ enum LocalTurnStore {
     try storeExecute(in: database) {
       guard try database.tableExists(turnTable) else { return .idle }
       let turns = try Row.fetchAll(
-        database, sql: "SELECT \(columns) FROM \(turnTable) WHERE session = ? AND replica = ? ORDER BY started_at DESC, id DESC",
+        database, sql: "SELECT \(columns(in: database)) FROM \(turnTable) WHERE session = ? AND replica = ? ORDER BY started_at DESC, id DESC",
         arguments: [session, replica.description]
       ).compactMap(LocalTurn.init(row:))
       if let pending = turns.first(where: { $0.state == .pending }) { return LocalTurnStatus(pending: pending, ended: nil) }
@@ -164,6 +178,20 @@ enum LocalTurnStore {
 
   private static func createTables(in database: Database) throws {
     for definition in definitions { try database.execute(sql: definition) }
+  }
+
+  /// A table made before Stop was recorded has no stop table until the next turn begins, and a read cannot create it.
+  private static func columns(in database: Database) throws -> String {
+    let stopped = try database.tableExists(stopTable) ? "EXISTS (SELECT 1 FROM \(stopTable) WHERE turn = nf_local_turn.id)" : "0"
+    return """
+      id, novel, session, user_message, replica, state, started_at, updated_at, ended_at, error_code, error_message, checkpoint,
+      (SELECT MAX(seq) FROM nf_local_turn_frame WHERE turn = nf_local_turn.id) AS last_seq, \(stopped) AS stopped
+      """
+  }
+
+  private static func forgetStop(_ turn: UUID, in database: Database) throws {
+    guard try database.tableExists(stopTable) else { return }
+    try database.execute(sql: "DELETE FROM \(stopTable) WHERE turn = ?", arguments: [turn])
   }
 
   private static func isPending(_ turn: UUID, in database: Database) throws -> Bool {
@@ -201,7 +229,8 @@ extension LocalTurn {
       id: id, novel: novel, session: session, userMessage: userMessage, replica: replica, state: state, startedAt: Self.date(startedAt),
       updatedAt: Self.date(updatedAt), endedAt: endedAt.flatMap { $0 }.map(Self.date),
       failure: state == .failed ? Self.failure(code: code.flatMap { $0 }, message: message.flatMap { $0 }) : nil,
-      lastSequence: (try? row.decode(Int?.self, forColumn: "last_seq")).flatMap { $0 } ?? 0, checkpoint: state == .pending ? checkpoint : nil)
+      lastSequence: (try? row.decode(Int?.self, forColumn: "last_seq")).flatMap { $0 } ?? 0, checkpoint: state == .pending ? checkpoint : nil,
+      stopped: state == .pending && (try? row.decode(Bool.self, forColumn: "stopped")) == true)
   }
 
   private static func failure(code: String?, message: String?) -> TurnFailure? {

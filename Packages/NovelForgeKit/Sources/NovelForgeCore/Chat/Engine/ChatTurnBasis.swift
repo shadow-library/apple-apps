@@ -164,7 +164,7 @@ enum ChatTurnRecords {
   static func forgetOrphans(in database: Database) throws(StoreError) {
     try execute {
       let turns = try database.tableExists(LocalTurnStore.turnTable)
-      for name in [table, TurnStagingMarks.table] where try database.tableExists(name) {
+      for name in [table, TurnStagingMarks.table, LocalTurnStore.stopTable] where try database.tableExists(name) {
         try database.execute(sql: turns ? "DELETE FROM \(name) WHERE turn NOT IN (SELECT id FROM \(LocalTurnStore.turnTable))" : "DELETE FROM \(name)")
       }
     }

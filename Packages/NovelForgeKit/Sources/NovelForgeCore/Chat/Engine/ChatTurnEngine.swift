@@ -27,6 +27,7 @@ public final class ChatTurnEngine: Sendable {
       case settled
       case staged
       case appending
+      case ending
     }
 
     enum Fault: Sendable {
@@ -35,6 +36,8 @@ public final class ChatTurnEngine: Sendable {
     }
 
     let inject: @Sendable (Point) -> Fault?
+    /// Runs the stop write that `cancel` starts, so a test can hold it until a later run of the turn began.
+    var stopWrite: @Sendable (_ write: @Sendable () async -> Void) async -> Void = { await $0() }
 
     static let none = Faults { _ in nil }
   }
@@ -164,21 +167,30 @@ public final class ChatTurnEngine: Sendable {
     return try await resume(local)
   }
 
-  /// At launch: clears what this device kept of chats deleted elsewhere, resumes every interrupted turn it can, and fails the rest (CHT_013) so none shows
-  /// as running for ever.
+  /// At launch: runs the card actions an apply left pending, clears what this device kept of chats deleted elsewhere, ends cancelled every turn the author
+  /// stopped before its end was written, resumes every other interrupted turn it can, and fails the rest (CHT_013) so none shows as running for ever.
   @concurrent
   public func resumeInterruptedTurns() async throws(StoreError) -> [ChatTurnHandle] {
+    await resumeInterruptedActions()
     try await upkeep.forgetRemovedChats()
     let busy = running.withLock { Set($0.values.map(\.session)) }
     var resumable = [LocalTurn]()
-    for turn in try await store.pendingLocalTurns().reversed() where !busy.contains(turn.session) && !resumable.contains(where: { $0.session == turn.session }) {
+    var stopped = Set<UUID>()
+    for turn in try await store.pendingLocalTurns().reversed() where !busy.contains(turn.session) {
       let record = try await store.read { transaction in try ChatTurnRecords.load(turn.id, in: transaction.database) }
-      if record != nil { resumable.append(turn) }
+      // a settled answer is appended whatever the author asks after it (ChatTurnRun.execute), so its stop is not kept
+      if turn.stopped, record?.settled == nil {
+        stopped.insert(turn.id)
+      } else if record != nil, !resumable.contains(where: { $0.session == turn.session }) {
+        resumable.append(turn)
+      }
     }
     let (replica, kept, now) = (store.replica, Set(resumable.map(\.id)), timing.now())
-    try await store.write { [self] transaction in
+    try await store.write { [self, stopped] transaction in
       // the running set is read inside the write, so a turn begun meanwhile is either running here or has no row yet
-      try LocalTurnStore.failStale(replica: replica, except: kept.union(runningTurns()), at: now, in: transaction.database)
+      let running = runningTurns()
+      for turn in stopped.subtracting(running) { try LocalTurnStore.end(turn, as: .cancelled, at: now, in: transaction.database) }
+      try LocalTurnStore.failStale(replica: replica, except: kept.union(running), at: now, in: transaction.database)
       try ChatTurnRecords.forgetOrphans(in: transaction.database)
     }
     var handles = [ChatTurnHandle]()
@@ -190,6 +202,23 @@ public final class ChatTurnEngine: Sendable {
       }
     }
     return handles
+  }
+
+  /// At launch, before any turn resumes: runs what is pending of the actions of every card apply this device stopped between its content and its actions,
+  /// as that apply would have (F16). Never throws; a row it cannot finish is kept for a later launch, up to `PendingActions.attemptLimit` sweeps.
+  @concurrent
+  @discardableResult
+  func resumeInterruptedActions() async -> [PendingActionResume] {
+    let resumes = await store.resumePendingActions()
+    for resume in resumes {
+      switch resume {
+      case .resumed: continue
+      case .forgotten(_, let code): Self.logger.notice("Forgot the actions of a card not found here code=\(code, privacy: .public)")
+      case .faulted(_, let code), .unreadable(let code): Self.logger.notice("Did not finish an interrupted card's actions code=\(code, privacy: .public)")
+      case .skipped(_, let fault): Self.logger.notice("Skipped a faulted card's actions code=\(fault ?? "-", privacy: .public)")
+      }
+    }
+    return resumes
   }
 
   /// The turn's events from its first stored frame, then live while it runs here; a turn not running here replays what it stored. Every caller gets
@@ -206,9 +235,35 @@ public final class ChatTurnEngine: Sendable {
     return events
   }
 
-  /// The author stops the turn: it ends cancelled once whatever it is writing settles; an answer it already settled is still appended.
+  /// The author stops the turn: it ends cancelled once whatever it is writing settles; an answer it already settled is still appended. The stop is written
+  /// at once, with the frames not yet stored, so a process that ends before the turn records its end leaves it to end cancelled at the next launch.
   public func cancel(turn: UUID) {
-    control(turn)?.stop(.cancelled)
+    guard let control = control(turn) else { return }
+    control.stop(.cancelled)
+    guard control.stop == .cancelled else { return }
+    let (faults, now) = (faults, timing.now())
+    Task.detached(priority: .userInitiated) { [self] in
+      await faults.stopWrite { await self.writeStop(turn, control: control, at: now) }
+    }
+  }
+
+  private func writeStop(_ turn: UUID, control: Control, at now: Date) async {
+    let (stream, session) = (control.stream, control.session)
+    let taken = Mutex<ChatTurnStream.Pending?>(nil)
+    do throws(StoreError) {
+      try await store.write { [self] transaction in
+        // a later run of the turn, begun before this write, is not the one the author stopped
+        guard self.control(turn).map({ $0 === control }) ?? true else { return }
+        // taken inside the write, so the run's own end, written before or after it, never drops frames this took
+        let pending = stream?.take()
+        taken.withLock { $0 = pending }
+        if let pending { try ChatTurnRun.write(pending, turn: turn, session: session, at: now, in: transaction.database) }
+        try LocalTurnStore.markStopped(turn, at: now, in: transaction.database)
+      }
+    } catch {
+      if let pending = taken.withLock({ $0 }) { stream?.requeue(pending) }
+      Self.logger.notice("Could not record a stop code=\(error.code, privacy: .public)")
+    }
   }
 
   /// Stops the turn without ending it, for the background grace's expiry; it stays pending to resume.

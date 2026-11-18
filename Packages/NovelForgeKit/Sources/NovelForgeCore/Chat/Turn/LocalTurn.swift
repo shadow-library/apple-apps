@@ -44,6 +44,8 @@ public struct LocalTurn: Sendable, Equatable {
   public let lastSequence: Int
   /// Nil when no round was saved or the saved one cannot be read; the turn then resumes from the start, which only repeats read-only lookups.
   let checkpoint: LocalTurnCheckpoint?
+  /// The author stopped it while it ran here and its end was not written: a launch ends it cancelled, unless its answer had settled.
+  let stopped: Bool
 
   /// Lookup rounds a resume can skip.
   public var savedRounds: Int { checkpoint?.round ?? 0 }
