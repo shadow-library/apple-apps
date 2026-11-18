@@ -52,14 +52,9 @@ struct StrandedReveal: Equatable, Sendable {
   var facts: [String]
 }
 
-// apps/novel-forge-server/src/modules/review/review-findings.ts:75
-func reviewedBodyHash(_ body: String) -> String {
-  sha256Hex(body)
-}
-
 // apps/novel-forge-server/src/modules/finalize-review/finalize-review-gate.ts:25
 func isReviewCurrent(_ review: FinalizeReviewSnapshot, _ draft: ReviewedRevision) -> Bool {
-  review.draftRevision.jsEquals(draft.revision) && review.sourceHash == reviewedBodyHash(draft.body)
+  review.draftRevision.jsEquals(draft.revision) && review.sourceHash == hashReviewedBody(draft.body)
 }
 
 // apps/novel-forge-server/src/modules/finalize-review/finalize-review-gate.ts:32

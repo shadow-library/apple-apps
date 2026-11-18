@@ -70,9 +70,9 @@ struct FinalizeReviewGateParityTests {
 
   @Test func shouldRefuseAsStillPreparingWhileTheApprovedRevisionHasNoReview() {
     let draft = ReviewedRevision(revision: "rev-3", body: "Mira climbs.")
-    let older = FinalizeReviewSnapshot(draftRevision: "rev-2", sourceHash: reviewedBodyHash("Mira climbs."), status: .ready, items: [])
+    let older = FinalizeReviewSnapshot(draftRevision: "rev-2", sourceHash: hashReviewedBody("Mira climbs."), status: .ready, items: [])
     #expect(reviewRefusal([], draft) == .preparing)
     #expect(reviewRefusal([older], draft) == .preparing)
-    #expect(reviewRefusal([FinalizeReviewSnapshot(draftRevision: "rev-3", sourceHash: reviewedBodyHash("Mira climbs."), status: .ready, items: [])], draft) == nil)
+    #expect(reviewRefusal([FinalizeReviewSnapshot(draftRevision: "rev-3", sourceHash: hashReviewedBody("Mira climbs."), status: .ready, items: [])], draft) == nil)
   }
 }
