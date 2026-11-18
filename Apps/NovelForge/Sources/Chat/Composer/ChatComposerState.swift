@@ -66,6 +66,8 @@ final class ChatComposerState {
   var draftMode = ChatSessionMode.auto
   /// ChatColumn.tsx:327: a message sent while the mode saves could still run under the old one.
   private(set) var switching: ChatSessionMode?
+  /// Raised to put the cursor in the composer, as ChatColumn.tsx:767 focuses its input.
+  private(set) var focusRequest = 0
 
   var passages: [ChatTurnPassage] { chips.map(\.passage) }
 
@@ -81,6 +83,10 @@ final class ChatComposerState {
     guard !isFull else { return .full }
     chips.append(chip)
     return .added
+  }
+
+  func requestFocus() {
+    focusRequest += 1
   }
 
   func remove(_ id: ChatPassageChip.ID) {

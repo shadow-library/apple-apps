@@ -17,6 +17,7 @@ struct ChatComposer: View {
   let saveMode: ((ChatSessionMode) async -> Bool)?
   let send: () -> Void
   var stop: (() -> Void)?
+  @FocusState private var isFocused: Bool
 
   var body: some View {
     VStack(alignment: .leading, spacing: Spacing.space2) {
@@ -27,7 +28,9 @@ struct ChatComposer: View {
       .lineLimit(1...6)
       .shadowField()
       .disabled(isLocked || isSending)
+      .focused($isFocused)
       .onSubmit(submit)
+      .onChange(of: state.focusRequest) { isFocused = true }
       HStack(spacing: Spacing.space3) {
         ChatComposerModeMenu(value: state.mode(in: sessionMode)) { mode in
           Task { await state.choose(mode, current: sessionMode, save: saveMode) }

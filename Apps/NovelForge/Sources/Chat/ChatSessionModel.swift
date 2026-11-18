@@ -54,6 +54,7 @@ final class ChatSessionModel {
   private(set) var isBusy = false
   private(set) var window = ChatTranscript.pageSize
   private(set) var generation = 0
+  private(set) var focus: ChatFocusTarget?
   private let engine: ChatTurnEngine
   private let observer = ReadObserver<ChatTranscriptSnapshot>()
   @ObservationIgnored private var following: Task<Void, Never>?
@@ -88,7 +89,7 @@ final class ChatSessionModel {
     case .ended(let turn):
       return .failed(turn, turn.failure ?? TurnFailure(code: "", message: ""), streamed(turn))
     case .answeringElsewhere(let message):
-      return .elsewhere(message: message, answerable: !asksForUnrestricted(message))
+      return .elsewhere(message: message, answerable: answerBlock(message) == nil)
     case .idle:
       guard let live else { return .idle }
       if !live.isFinished { return .running(live) }
@@ -108,6 +109,26 @@ final class ChatSessionModel {
   var canSendDraft: Bool {
     let hasWords = !draft.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || !composer.chips.isEmpty
     return !isBusy && !isTurnActive && hasWords && !composer.hasStaleChips && composer.switching == nil
+  }
+
+  /// Nil while the message is not in the window yet: the engine still refuses what it cannot answer.
+  func answerBlock(_ message: UUID) -> ChatAnswerBlock? {
+    messages.first { $0.record?.id == message }.flatMap { ChatAnswerBlock.of($0, novelMode: novelMode) }
+  }
+
+  var focusedRow: EntityKey? {
+    guard let focus else { return nil }
+    return messages.last(where: focus.matches)?.row.key
+  }
+
+  /// The window grows a page at a time until it holds the target.
+  func focus(on target: ChatFocusTarget) {
+    focus = target
+    revealFocus()
+  }
+
+  func focusShown() {
+    focus = nil
   }
 
   /// Retry asks again with the message as it was sent; one that asked for unrestricted writing waits for the flag.
@@ -226,7 +247,13 @@ final class ChatSessionModel {
   }
 
   private func transcriptChanged() {
+    revealFocus()
     Task { await refreshActivity() }
+  }
+
+  private func revealFocus() {
+    guard focus != nil, focusedRow == nil, let page else { return }
+    if page.hasEarlier { loadEarlier() } else { focus = nil }
   }
 
   private func attach(to activity: ChatTurnActivity) {

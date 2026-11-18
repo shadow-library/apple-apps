@@ -37,18 +37,23 @@ struct ChatTurnStatusView: View {
           button(Text("Resume", tableName: "Chat")) { await model.resume() }
         }
       }
-    case .elsewhere(_, let answerable):
+    case .elsewhere(let message, let answerable):
       ShadowCallout(
-        Text("Being answered on another device", tableName: "Chat"), message: elsewhereMessage(answerable), intent: .info, systemImage: "laptopcomputer.and.iphone"
+        Text("Being answered on another device", tableName: "Chat"), message: elsewhereMessage(model.answerBlock(message)), intent: .info,
+        systemImage: "laptopcomputer.and.iphone"
       ) {
         if answerable { button(Text("Answer Here", tableName: "Chat")) { await model.answerHere() } }
       }
     }
   }
 
-  private func elsewhereMessage(_ answerable: Bool) -> Text {
-    guard answerable else { return Text("It asks for unrestricted writing, which this version cannot do.", tableName: "Chat") }
-    return Text("Its reply appears here when it arrives. Answer here to write a reply on this device as well; both stay in the chat.", tableName: "Chat")
+  private func elsewhereMessage(_ block: ChatAnswerBlock?) -> Text {
+    switch block {
+    case nil: Text("Its reply appears here when it arrives. Answer here to write a reply on this device as well; both stay in the chat.", tableName: "Chat")
+    case .unrestricted: Text("It asks for unrestricted writing, which this version cannot do.", tableName: "Chat")
+    case .folded: ChatAnswerBlockText.folded
+    case .unreadable: ChatAnswerBlockText.unreadable
+    }
   }
 
   private func button(_ title: Text, action: @escaping () async -> Void) -> some View {

@@ -62,15 +62,26 @@ extension ProposalApply {
 
   /// Whether a change of the card may still be a pending action: one recorded pending, or one this device cannot read.
   static func holdsPendingAction(proposal id: UUID, novel: UUID, in transaction: borrowing WriteTransaction) throws(ProposalApplyError) -> Bool {
+    let pending = try pendingActions(proposal: id, novel: novel, in: transaction)
+    return !pending.indexes.isEmpty || pending.unreadable
+  }
+
+  /// The indexes recorded as pending actions, ascending, and whether a change this device cannot read may be one too.
+  static func pendingActions(proposal id: UUID, novel: UUID, in transaction: borrowing WriteTransaction) throws(ProposalApplyError)
+    -> (indexes: [Int], unreadable: Bool)
+  {
     let proposal = try readable(id, novel: novel, in: transaction)
     let entries = try stored { () throws(StoreError) in try ProposalChangeRecord.changes(of: proposal, in: transaction) }
-    return entries.contains { entry in
+    var indexes = [Int]()
+    var unreadable = false
+    for entry in entries {
       switch entry {
-      case .recorded(let change): change.actionOutcome == .known(.pending)
-      case .unreadable: true
-      case .awaiting, .declined, .notApplied: false
+      case .recorded(let change) where change.actionOutcome == .known(.pending): indexes.append(change.index)
+      case .unreadable: unreadable = true
+      case .recorded, .awaiting, .declined, .notApplied: continue
       }
     }
+    return (indexes.sorted(), unreadable)
   }
 
   /// The action indexes of an applied card that hold a change record, in index order, up to the first change this device cannot read or the first pending
@@ -175,19 +186,36 @@ extension VaultStore {
       guard case .notFound = error else { return await faultPendingActions(proposal, code: error.code) }
       return await forgetPendingActions(proposal, code: error.code)
     }
-    let done: Bool
+    let left: [Int]?
     do throws(ProposalApplyError) {
-      done = try await writeProposal { transaction throws(ProposalApplyError) in
-        guard try !ProposalApply.holdsPendingAction(proposal: proposal, novel: novel, in: transaction) else { return false }
-        try ProposalApply.stored { () throws(StoreError) in try PendingActions.forget(proposal: proposal, in: transaction.database) }
-        return true
-      }
+      left = try await settleSweptRow(proposal, novel: novel)
     } catch {
       return .faulted(proposal: proposal, code: error.code)
     }
-    guard !done else { return .resumed(proposal: proposal, results) }
-    let stalled = results.last { $0.outcome == .known(.pending) }?.failure?.code
-    return await faultPendingActions(proposal, code: stalled ?? PendingActions.unsettledFault)
+    guard left != nil else { return .resumed(proposal: proposal, results) }
+    return await faultPendingActions(proposal, code: Self.stall(of: results))
+  }
+
+  /// Try Again for actions the sweep gave up on: runs them as it does, without counting an attempt, and returns the indexes still pending.
+  public func retryPendingActions(_ proposal: UUID, novel: UUID) async throws(ProposalApplyError) -> [Int] {
+    let results = try await resumeProposalActions(proposal, novel: novel)
+    guard let left = try await settleSweptRow(proposal, novel: novel) else { return [] }
+    _ = await faultPendingActions(proposal, code: Self.stall(of: results))
+    return left
+  }
+
+  /// Forgets the card's row once no action of it may be pending; otherwise the indexes still recorded pending.
+  private func settleSweptRow(_ proposal: UUID, novel: UUID) async throws(ProposalApplyError) -> [Int]? {
+    try await writeProposal { transaction throws(ProposalApplyError) in
+      let pending = try ProposalApply.pendingActions(proposal: proposal, novel: novel, in: transaction)
+      guard pending.indexes.isEmpty && !pending.unreadable else { return pending.indexes }
+      try ProposalApply.stored { () throws(StoreError) in try PendingActions.forget(proposal: proposal, in: transaction.database) }
+      return nil
+    }
+  }
+
+  private static func stall(of results: [ProposalActionResult]) -> String {
+    results.last { $0.outcome == .known(.pending) }?.failure?.code ?? PendingActions.unsettledFault
   }
 
   private func forgetPendingActions(_ proposal: UUID, code: String) async -> PendingActionResume {

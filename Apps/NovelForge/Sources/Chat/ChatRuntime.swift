@@ -50,8 +50,7 @@ final class ChatRuntime {
     return created
   }
 
-  /// Once per vault open: turns the app was running when it last closed resume here, and the rest end failed; every chat already open then reads its turn
-  /// again, since the sweep changes no transcript that would make it look.
+  /// Once per vault open: pending card actions run, interrupted turns resume or end, and every open chat and Waiting on you then read their turns again.
   func launch() async {
     if let launching { return await launching.value }
     let engine = engine

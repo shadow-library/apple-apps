@@ -15,6 +15,7 @@ struct ChatQuestionCard: View {
   let isDisabled: Bool
   let answer: (String) async -> Void
   let leaveUndecided: (ProgressItemKey?) async -> Void
+  let ownWords: () -> Void
   @State private var selected: Int?
 
   var body: some View {
@@ -76,15 +77,25 @@ struct ChatQuestionCard: View {
   private var footer: some View {
     ViewThatFits(in: .horizontal) {
       HStack(spacing: Spacing.space2) {
+        ownWordsButton
         undecided
         Spacer(minLength: Spacing.space2)
         confirm
       }
       VStack(alignment: .leading, spacing: Spacing.space2) {
         confirm
+        ownWordsButton
         undecided
       }
     }
+  }
+
+  /// QuestionCard.tsx:48-50: never disabled, since typing waits for nothing.
+  private var ownWordsButton: some View {
+    Button(action: ownWords) {
+      Text("Answer in My Own Words", tableName: "ChatCards")
+    }
+    .buttonStyle(.borderless)
   }
 
   private var undecided: some View {

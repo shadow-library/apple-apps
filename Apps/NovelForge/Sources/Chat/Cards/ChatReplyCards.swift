@@ -77,7 +77,8 @@ private struct ChatQuestionHost: View {
       ChatQuestionCard(
         question: question, isSettled: ChatQuestionAnswering.isSettled(reply: reply.id, in: session.messages),
         isDisabled: session.isBusy || session.isTurnActive, answer: { await session.send($0) },
-        leaveUndecided: { key in undecided = await ChatQuestionAnswering.leaveUndecided(key, session: session) })
+        leaveUndecided: { key in undecided = await ChatQuestionAnswering.leaveUndecided(key, session: session) },
+        ownWords: { session.composer.requestFocus() })
       if let undecided {
         Text(verbatim: undecided.error.headline).shadowFont(.footnote).foregroundStyle(ShadowColor.textSecondary)
       }

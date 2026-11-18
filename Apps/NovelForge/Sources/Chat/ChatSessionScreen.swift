@@ -8,7 +8,7 @@ struct ChatSessionScreen: View {
   @Environment(AIServices.self) private var services
 
   var body: some View {
-    content
+    ChatTranscriptFocus(model: model) { content }
       .background(ShadowColor.surfaceApp)
       .safeAreaInset(edge: .bottom, spacing: 0) { ChatBottomBar(model: model, chats: chats) }
       .chatCards(model)
@@ -77,13 +77,14 @@ struct ChatSessionScreen: View {
   }
 }
 
-/// What sits under the transcript: notices about this chat, then the composer. Waiting on you (F32) joins it above the composer.
+/// What sits under the transcript: what waits on the author across the novel, notices about this chat, then the composer.
 struct ChatBottomBar: View {
   @Bindable var model: ChatSessionModel
   let chats: ChatNovelModel
 
   var body: some View {
     VStack(alignment: .leading, spacing: Spacing.space2) {
+      ChatWaitingTray(tray: chats.waiting, chats: chats, session: model)
       if chats.isArchived(model.session) {
         ShadowCallout(Text("This chat is archived.", tableName: "Chat"), intent: .info, systemImage: "archivebox") {
           Button {
@@ -110,5 +111,6 @@ struct ChatBottomBar: View {
     }
     .frame(maxWidth: 760)
     .frame(maxWidth: .infinity)
+    .task(id: chats.waiting.generation) { await chats.waiting.observe() }
   }
 }

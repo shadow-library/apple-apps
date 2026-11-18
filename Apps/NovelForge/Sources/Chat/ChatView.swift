@@ -22,6 +22,7 @@ struct ChatHome: View {
       .sheet(item: $model.presenting) { sheet in
         switch sheet {
         case .history: ChatHistorySheet(model: model)
+        case .changes: ChatChangesSheet(chats: model)
         case .inspect(let reply): ChatInspectorSheet(store: model.context.store, reply: reply)
         }
       }
@@ -72,6 +73,15 @@ private struct ChatToolbar: ToolbarContent {
   var body: some ToolbarContent {
     ToolbarItemGroup {
       if let session { ChatSessionMenu(model: model, session: session) }
+      Button {
+        model.presenting = .changes
+      } label: {
+        Label {
+          Text("Changes", tableName: "ChatChanges")
+        } icon: {
+          Image(systemName: "arrow.uturn.backward.circle")
+        }
+      }
       Button {
         model.presenting = .history
       } label: {
@@ -224,12 +234,16 @@ struct ChatStartScreen: View {
     ChatHero(novelTitle: model.novelTitle, mode: model.composer.draftMode)
       .fillingSurface()
       .safeAreaInset(edge: .bottom, spacing: 0) {
-        ChatComposer(
-          state: model.composer, draft: $model.draft, sessionMode: model.composer.draftMode, offer: model.replyOffer, isOpening: true, canSend: model.canStartDraft,
-          isSending: model.isStarting, isLocked: false, isRunning: false, saveMode: nil
-        ) {
-          Task { await model.startDraft() }
+        VStack(alignment: .leading, spacing: Spacing.space2) {
+          ChatWaitingTray(tray: model.waiting, chats: model, session: nil)
+          ChatComposer(
+            state: model.composer, draft: $model.draft, sessionMode: model.composer.draftMode, offer: model.replyOffer, isOpening: true, canSend: model.canStartDraft,
+            isSending: model.isStarting, isLocked: false, isRunning: false, saveMode: nil
+          ) {
+            Task { await model.startDraft() }
+          }
         }
+        .task(id: model.waiting.generation) { await model.waiting.observe() }
       }
   }
 }

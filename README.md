@@ -157,6 +157,8 @@ A screen that holds text the user has typed registers its flush with `Shared/Uns
 
 Chat turns run on one `ChatTurnEngine` per open vault, held by `Chat/ChatRuntimes` in the app's environment and shared by every window: the engine alone knows which turns run on this device, so a second engine on the same vault would take a running turn for an interrupted one. When the vault opens, `ChatRuntime.launch()` calls `resumeInterruptedTurns` once and then has every open chat read its turn again. Each novel's `ChatNovelModel` and each chat's `ChatSessionModel` live in that runtime, above the section switch, so a running turn keeps being followed while the Chat section is out of view. Whether a turn may be written unrestricted is the core's `UnrestrictedWriting.isAvailable`, which the engine enforces.
 
+Waiting on you (`Chat/Changes/ChatWaitingTray`) also lists conflicted cards, which the reference marks conflicted and stops listing, so the author can still apply what fits or discard them.
+
 Observe reads with `ReadObserver` (`Shared/ReadObserver.swift`; `run(_:onValue:)` hands every emitted value to a hook, and an equal value is not republished) and surface failures through `PresentedError` (a localized headline with the error code as detail, never developer text). Markdown prose is rendered by `Shared/ProseView`, which the Reader and the Story Bible share. Strings are per area: `Library.xcstrings`, `Navigation.xcstrings` and `Chat.xcstrings` are used with `Text(_:tableName:)` and `LocalizedStringResource(_:table:)`; an area adds its own `<Area>.xcstrings` and never edits another's. `Localizable.xcstrings` holds only the vault-opening strings.
 
 ## Catalog app

@@ -96,7 +96,7 @@
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "%#@changes@ to chapter %@"
+            "value": "%#@changes@ to chapter %2$@"
           },
           "substitutions": {
             "changes": {
@@ -334,6 +334,17 @@
           "stringUnit": {
             "state": "translated",
             "value": "Add chapter %@ to the Story Bible"
+          }
+        }
+      }
+    },
+    "Answer in My Own Words": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Answer in My Own Words"
           }
         }
       }

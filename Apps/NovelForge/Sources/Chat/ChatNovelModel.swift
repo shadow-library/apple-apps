@@ -22,11 +22,13 @@ nonisolated struct ChatSessionsSnapshot: Equatable, Sendable {
 
 enum ChatSheet: Identifiable, Equatable {
   case history
+  case changes
   case inspect(reply: UUID)
 
   var id: String {
     switch self {
     case .history: "history"
+    case .changes: "changes"
     case .inspect(let reply): "inspect-\(reply.uuidString)"
     }
   }
@@ -48,6 +50,7 @@ final class ChatNovelModel {
   var failure: ActionFailure?
   var draft = ""
   let composer = ChatComposerState()
+  let waiting: ChatTrayModel
   var renaming: UUID?
   var renameText = ""
   var deleting: UUID?
@@ -63,6 +66,8 @@ final class ChatNovelModel {
   init(context: NovelContext, engine: ChatTurnEngine) {
     self.context = context
     self.engine = engine
+    waiting = ChatTrayModel(context: context, engine: engine)
+    waiting.live = { [weak self] session in self?.sessions[session]?.activity }
   }
 
   var state: Loadable<ChatSessionsSnapshot> { observer.state }
@@ -102,6 +107,7 @@ final class ChatNovelModel {
 
   func refreshActivities() async {
     for model in sessions.values { await model.refreshActivity() }
+    await waiting.refreshActivities()
   }
 
   func observe() async {
@@ -117,6 +123,12 @@ final class ChatNovelModel {
 
   func open(_ session: UUID) {
     choice = .session(session)
+  }
+
+  /// Opens the chat and has its transcript show the target; another section reaches it through this and `navigator.show(.chat)`.
+  func reveal(_ target: ChatFocusTarget, in session: UUID) {
+    open(session)
+    self.session(session).focus(on: target)
   }
 
   /// chat.tsx:415-421: the chat that does not exist yet, created by its first message. A create still in flight is abandoned: it opens nothing.
