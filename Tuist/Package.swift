@@ -6,7 +6,7 @@ import PackageDescription
   import ProjectDescription
 
   let libraryTargets = [
-    "ShadowCore", "ShadowNetworking", "ShadowKeychain", "ShadowStore", "ShadowSync", "ShadowAI", "ShadowDesignSystem", "ShadowTestSupport", "NovelForgeCore",
+    "ShadowCore", "ShadowNetworking", "ShadowKeychain", "ShadowStore", "ShadowSync", "ShadowAI", "ShadowJobs", "ShadowDesignSystem", "ShadowTestSupport", "NovelForgeCore",
   ]
 
   let packageSettings = PackageSettings(

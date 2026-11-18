@@ -7,6 +7,7 @@ public enum SharedModule: String, CaseIterable {
   case store = "ShadowStore"
   case sync = "ShadowSync"
   case ai = "ShadowAI"
+  case jobs = "ShadowJobs"
   case designSystem = "ShadowDesignSystem"
   case testSupport = "ShadowTestSupport"
 }
