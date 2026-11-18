@@ -1,39 +1,39 @@
 import ShadowCore
 
+// apps/novel-forge-server/src/modules/ai/schemas/generation.schema.ts:13
+let chapterContinuationStateSchema: OrderedJSON = shapeSchema(
+  [
+    ("openConflict", textSchema(description: #"the unresolved conflict/tension active at chapter end, if any"#)),
+    (
+      "characterPositions",
+      listSchema(
+        shapeSchema(
+          [
+            ("entityKey", textSchema(minLength: 1, description: #"the character's entity key, exactly as the story context's roster lists it"#)),
+            (
+              "location",
+              textSchema(minLength: 1, maxLength: 60, description: #"where the character is at the cutoff, as a place only — "the lamp room", "on the north pier""#)
+            ),
+          ], required: ["entityKey", "location"]), #"where each on-scene character is, physically, at the cutoff — one entry per character"#)
+    ),
+    ("lastBeat", textSchema(description: #"the exact last action, line, or decision — what the next chapter must resume from"#)),
+    ("emotionalState", textSchema(description: #"POV character emotional state at cutoff"#)),
+    (
+      "establishedFacts",
+      listSchema(
+        textSchema(),
+        #"concrete facts fixed on the page that later chapters must not contradict, one short entry each: exact figures and measurements, times, distances, injuries, possessions and where objects are, who knows or has been told what, promises made and questions left open. Carry forward every entry of the incoming CONTINUATION STATE that still holds, drop what this chapter changed, add what it newly fixed; at most 15 entries"#
+      )
+    ),
+  ], required: [])
+
 // apps/novel-forge-server/src/modules/ai/schemas/generation.schema.ts:37
 let chapterGenerationSchema: OrderedJSON = shapeSchema(
   [
     ("title", textSchema(minLength: 1, maxLength: 200, description: #"chapter title"#)),
     ("body", textSchema(minLength: 100, description: #"full chapter prose — scene content at the length the system prompt specifies"#)),
     ("summary", textSchema(minLength: 1, description: #"2-3 sentence summary of what happened, past tense"#)),
-    (
-      "state",
-      shapeSchema(
-        [
-          ("openConflict", textSchema(description: #"the unresolved conflict/tension active at chapter end, if any"#)),
-          (
-            "characterPositions",
-            listSchema(
-              shapeSchema(
-                [
-                  ("entityKey", textSchema(minLength: 1, description: #"the character's entity key, exactly as the story context's roster lists it"#)),
-                  (
-                    "location",
-                    textSchema(minLength: 1, maxLength: 60, description: #"where the character is at the cutoff, as a place only — "the lamp room", "on the north pier""#)
-                  ),
-                ], required: ["entityKey", "location"]), #"where each on-scene character is, physically, at the cutoff — one entry per character"#)
-          ),
-          ("lastBeat", textSchema(description: #"the exact last action, line, or decision — what the next chapter must resume from"#)),
-          ("emotionalState", textSchema(description: #"POV character emotional state at cutoff"#)),
-          (
-            "establishedFacts",
-            listSchema(
-              textSchema(),
-              #"concrete facts fixed on the page that later chapters must not contradict, one short entry each: exact figures and measurements, times, distances, injuries, possessions and where objects are, who knows or has been told what, promises made and questions left open. Carry forward every entry of the incoming CONTINUATION STATE that still holds, drop what this chapter changed, add what it newly fixed; at most 15 entries"#
-            )
-          ),
-        ], required: [])
-    ),
+    ("state", chapterContinuationStateSchema),
   ], required: ["title", "body", "summary"])
 
 // apps/novel-forge-server/src/modules/ai/schemas/chapter-expand.schema.ts:4

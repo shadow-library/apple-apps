@@ -6,6 +6,7 @@ struct ChapterPromptRequest: Equatable, Sendable {
   static let maxBreakpoints = 4
 
   enum Layout: Equatable, Sendable {
+    case plain
     case stablePrefix
     case conversation(format: ResponseFormat)
   }
@@ -44,6 +45,11 @@ struct ChapterPromptRequest: Equatable, Sendable {
   // The Anthropic adapter caches through the last message, OpenRouter at the message before it, so the conversation layouts cache the context message on OpenRouter only.
   func modelRequest(model: String, maxOutputTokens: Int, effort: Effort? = nil) -> ModelRequest {
     switch layout {
+    case .plain:
+      ModelRequest(
+        model: model, system: messages.filter { $0.role == .system }.map { ContextSegment(text: $0.text) },
+        messages: messages.filter { $0.role != .system }.map { $0.role == .assistant ? .assistant($0.text) : .user($0.text) }, maxOutputTokens: maxOutputTokens,
+        effort: effort)
     case .stablePrefix:
       ModelRequest(
         model: model, system: [ContextSegment(text: messages[0].text), ContextSegment(text: messages[1].text, endsStablePrefix: true)],
