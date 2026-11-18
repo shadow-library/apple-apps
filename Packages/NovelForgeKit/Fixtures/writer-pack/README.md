@@ -1,0 +1,1 @@
+Generated from the platform working copy: the context, knowledge-view, writer-disclosure-policy and tests/sql-filter files it runs had no uncommitted edits, but the import graph also loads the edited `ai/model-router.service.ts`, `ai/prompt-caching.ts` and `ai/prompts/types.ts`, which it uses as they stand.
