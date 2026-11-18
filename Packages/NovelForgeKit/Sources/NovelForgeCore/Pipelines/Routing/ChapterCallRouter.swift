@@ -85,20 +85,20 @@ extension ChapterCallRoute {
   }
 
   /// An unrestricted call's writer-pack sections, each named by its records, then its prompt inputs, each at its scope; a standard model holds the line itself,
-  /// so a standard call is not screened.
+  /// so a standard call is not screened. `lexicon` carries the novel's minor names (G19); a job step passes its live one.
   // apps/novel-forge-server/src/modules/ai/context/pack-finalize.ts:36-39; model-router.service.ts:464,721-726
-  func screenInputs(_ input: OrderedJSONObject, sections: [ContextSection] = []) throws(ChapterCallError) {
-    guard contentMode == .unrestricted, let hit = screenTexts(sectionScreens(sections) + inputScreens(input)) else { return }
+  func screenInputs(_ input: OrderedJSONObject, sections: [ContextSection] = [], lexicon: HardLineLexicon) throws(ChapterCallError) {
+    guard contentMode == .unrestricted, let hit = screenTexts(sectionScreens(sections) + inputScreens(input), lexicon: lexicon) else { return }
     throw refused(hit)
   }
 
   /// What an unrestricted model wrote, held to its role's scope before anything keeps it; text that is not JSON is screened whole.
   // apps/novel-forge-server/src/modules/ai/model-router.service.ts:705-708,761-781
-  func screenOutput(_ json: Data) throws(ChapterCallError) {
+  func screenOutput(_ json: Data, lexicon: HardLineLexicon) throws(ChapterCallError) {
     guard contentMode == .unrestricted else { return }
     let text = String(decoding: json, as: UTF8.self)
     let output = (try? OrderedJSON(parsing: text)) ?? .string(text)
-    guard let hit = screenTexts(outputScreens(output, role: role.aiRole)) else { return }
+    guard let hit = screenTexts(outputScreens(output, role: role.aiRole), lexicon: lexicon) else { return }
     throw refused(hit)
   }
 
@@ -106,11 +106,12 @@ extension ChapterCallRoute {
   /// only the returned result and never render the deltas of an unrestricted call, which the result screen has not yet passed.
   func run(
     _ router: TaskRouter, pace: Pace, thinksDeeper: Bool = false, consent: AIConsentRequirement, screening input: OrderedJSONObject, sections: [ContextSection] = [],
-    request: (RoutedCall) -> ModelRequest, name: String, schema: JSONValue, review: StructuredReview = .none, observer: (StructuredStreamEvent) -> Void = { _ in }
+    lexicon: HardLineLexicon, request: (RoutedCall) -> ModelRequest, name: String, schema: JSONValue, review: StructuredReview = .none,
+    observer: (StructuredStreamEvent) -> Void = { _ in }
   ) async throws(ChapterCallFailure) -> StructuredResult {
     let call: RoutedCall
     do throws(ChapterCallError) {
-      try screenInputs(input, sections: sections)
+      try screenInputs(input, sections: sections, lexicon: lexicon)
       call = try await prepare(router, pace: pace, thinksDeeper: thinksDeeper, consent: consent)
     } catch {
       throw ChapterCallFailure(error: error, callIDs: [])
@@ -122,7 +123,7 @@ extension ChapterCallRoute {
       throw ChapterCallFailure(error: error.error.hardLineHit.map(refused) ?? .model(error.error), callIDs: error.callIDs)
     }
     do throws(ChapterCallError) {
-      try screenOutput(result.json)
+      try screenOutput(result.json, lexicon: lexicon)
     } catch {
       throw ChapterCallFailure(error: error, callIDs: result.callIDs)
     }

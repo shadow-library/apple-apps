@@ -31,7 +31,8 @@ extension VaultStore {
     try await writeChat { transaction throws(ChatSessionError) in try ChatSessionOperations.delete(session, novel: novel, in: &transaction) }
   }
 
-  /// Clears this device's turns and replayed exchanges of every chat of the novel; the novel's deletion, which a later phase brings, calls it.
+  /// Clears this device's turns and replayed exchanges of every chat of the novel, and its writer Inspector rows and pinned packs; the novel's deletion, which
+  /// a later phase brings, calls it.
   public func forgetLocalChats(novel: UUID) async throws(StoreError) {
     try await write { transaction in try ChatLocalCleanup.forget(novel: novel, in: transaction.database) }
   }

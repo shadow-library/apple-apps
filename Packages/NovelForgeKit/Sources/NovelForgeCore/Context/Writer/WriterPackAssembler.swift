@@ -146,6 +146,23 @@ enum WriterPackAssembler {
     return (pack, composed.disclosure)
   }
 
+  /// A loaded vault's pack, with the policy it was scrubbed by and the sources that policy was built from, so a caller that keeps the sources rebuilds it.
+  static func assemble(
+    _ load: WriterPackLoad, chapter: Int, options: WriterPackOptions
+  ) throws(WriterPackError) -> (pack: WriterPack, disclosure: WriterDisclosurePolicy, sources: WriterDisclosureSources) {
+    var options = options
+    options.minorNames = (options.minorNames + load.minorNames).jsUnique()
+    let sources = writerDisclosureSources(in: load.world.disclosureWorld, chapter: chapter)
+    let policy: WriterDisclosurePolicy
+    do throws(DisclosureError) {
+      policy = try writerDisclosurePolicy(sources)
+    } catch {
+      throw .disclosure(error)
+    }
+    let built = try assemble(load.world, chapter: chapter, options: options, disclosure: policy)
+    return (built.pack, built.disclosure, sources)
+  }
+
   private struct Composed {
     var rendered: WriterRendered
     var planTokens: Int

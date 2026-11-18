@@ -55,7 +55,7 @@ private enum RouteWorld {
     -> StructuredResult
   {
     try await route.run(
-      router, pace: .steady, consent: CompactionWorld.consent, screening: input, sections: sections,
+      router, pace: .steady, consent: CompactionWorld.consent, screening: input, sections: sections, lexicon: .standard,
       request: { $0.request(system: [ContextSegment(text: "Write the chapter.")], messages: [ModelMessage(role: .user, text: "Chapter 3.")]) }, name: "chapter-draft",
       schema: schema)
   }
@@ -145,7 +145,7 @@ struct ChapterCallRouterTests {
   @Test func shouldHoldWhatTheAuthorSuppliedToTheFullListAndBackgroundToTheExplicitOne() async throws {
     let route = try ChapterCallRouter.route(RouteWorld.source(plan: RouteWorld.plan(.unrestricted)), unrestrictedAvailable: true)
     do {
-      try route.screenInputs(RouteWorld.input(guidance: RouteWorld.suppliedOnly))
+      try route.screenInputs(RouteWorld.input(guidance: RouteWorld.suppliedOnly), lexicon: .standard)
       Issue.record("expected a refusal")
     } catch {
       guard case .hardLine(let hit) = error else {
@@ -154,7 +154,7 @@ struct ChapterCallRouterTests {
       }
       #expect(hit == HardLineHit(rule: .minorWithSexualContent, source: "The guidance for this chapter", sourceRefs: []))
     }
-    try route.screenInputs(RouteWorld.input(stableContext: RouteWorld.suppliedOnly))
+    try route.screenInputs(RouteWorld.input(stableContext: RouteWorld.suppliedOnly), lexicon: .standard)
   }
 
   @Test func shouldRefuseAnOutputTheHardLineFindsBeforeItCanBeSaved() async throws {
@@ -173,7 +173,7 @@ struct ChapterCallRouterTests {
       #expect(error.callIDs.count == 1)
     }
     #expect(provider.requests.count == 1)
-    #expect(throws: ChapterCallError.self) { try route.screenOutput(Data("not json: nothing but loli art".utf8)) }
+    #expect(throws: ChapterCallError.self) { try route.screenOutput(Data("not json: nothing but loli art".utf8), lexicon: .standard) }
   }
 
   @Test func shouldLeaveAStandardChapterCallUnscreened() async throws {
@@ -244,5 +244,17 @@ struct ChapterCallRouterTests {
     #expect(raised.generator == .known(.unrestricted) && raised.isolated)
     let sticky = unrestricted.contained(revised, revising: isolated)
     #expect(sticky.generator == .known(.human) && sticky.isolated)
+  }
+
+  @Test func shouldScreenInputsAndOutputWithTheNovelsMinorNames() throws {
+    let route = try ChapterCallRouter.route(RouteWorld.source(plan: RouteWorld.plan(.unrestricted)), unrestrictedAvailable: true)
+    let pip = EntityRecord(novel: RouteWorld.novel, entity: "pip", type: .known(.character), name: "Pip", age: 15)
+    let lexicon = HardLineLexicon.standard(withMinorsIn: [pip])
+    let section = ContextSection(key: "characters", rendered: "Pip and the orgasm.", sourceRefs: ["entity:pip"])
+    let output = Data(#"{"body":"Pip and the orgasm."}"#.utf8)
+    #expect(throws: ChapterCallError.self) { try route.screenInputs(RouteWorld.input(), sections: [section], lexicon: lexicon) }
+    #expect(throws: ChapterCallError.self) { try route.screenOutput(output, lexicon: lexicon) }
+    try route.screenInputs(RouteWorld.input(), sections: [section], lexicon: .standard)
+    try route.screenOutput(output, lexicon: .standard)
   }
 }

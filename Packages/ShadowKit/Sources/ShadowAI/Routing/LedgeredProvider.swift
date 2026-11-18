@@ -3,6 +3,14 @@ import OSLog
 import ShadowStore
 import Synchronization
 
+public typealias ModelCallBeginHook = @Sendable (_ call: UUID, _ transaction: inout WriteTransaction) throws -> Void
+
+public enum ModelCallHooks {
+  /// Runs inside the write that begins each ledger call, for every stream the task opens (repair retries included), before anything is sent: a throw rolls
+  /// that write back and ends the stream unsent with `ModelError.notRecorded`.
+  @TaskLocal public static var begin: ModelCallBeginHook?
+}
+
 final class CallJournal: Sendable {
   /// A second journal for the streams one structured call creates, so concurrent calls on one `RoutedCall` each know their own ids.
   @TaskLocal static var collector: CallJournal?
@@ -68,8 +76,11 @@ struct CallLedger: Sendable {
     return ModelCallStart(id: makeID(), provider: host, model: route.model, task: route.task, pace: route.pace, startedMillis: millis)
   }
 
-  func begin(_ call: ModelCallStart) async throws(StoreError) {
-    try await store.write { transaction in try Ledger.begin(call, in: &transaction) }
+  func begin(_ call: ModelCallStart, hook: ModelCallBeginHook?) async throws(StoreError) {
+    try await store.write { transaction in
+      try Ledger.begin(call, in: &transaction)
+      try hook?(call.id, &transaction)
+    }
     journal.began(call.id)
   }
 
@@ -118,16 +129,17 @@ struct LedgeredProvider: ModelProvider {
   let ledger: CallLedger
 
   /// The stream counts as open from its first `next()`, before its task runs, so `RoutedCall.settled()` cannot pass a stream that is about to begin.
-  /// The collector of the task that creates the stream counts it too.
+  /// The collector and the begin hook are those of the task that creates the stream.
   func stream(_ request: ModelRequest) -> ModelStream {
     let journals = [ledger.journal] + (CallJournal.collector.map { [$0] } ?? [])
+    let hook = ModelCallHooks.begin
     let opened: @Sendable () -> Void = { for journal in journals { journal.opened() } }
     return ModelStream(onStart: opened) { continuation throws(ModelError) in
       defer { for journal in journals { journal.closed() } }
       guard request.model == ledger.route.model else { throw .invalidRequest("The request names a model other than its route's.") }
       let call = ledger.start()
       do throws(StoreError) {
-        try await ledger.begin(call)
+        try await ledger.begin(call, hook: hook)
       } catch {
         if Task.isCancelled { throw .cancelled }
         TaskRouter.logger.error("Did not send a call the ledger could not record code=\(error.code, privacy: .public)")

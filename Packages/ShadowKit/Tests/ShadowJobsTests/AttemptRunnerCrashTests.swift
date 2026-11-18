@@ -71,6 +71,27 @@ struct AttemptRunnerCrashTests {
     #expect(try await world.status() == .succeeded(interrupted.attempt))
   }
 
+  @Test func shouldResumeOnlyTheNamedAttemptAndNothingThatRunsHere() async throws {
+    let world = try await JobWorld()
+    let other = try JobFixture.key(target: "chapter:4")
+    _ = try await world.store.write { transaction in try JobRecords.request(JobFixture.request(other, replica: world.store.replica), in: &transaction) }
+    let named = try await world.start(world.runner(.once(at: .afterCommit(step: 0))), FakeModel())
+    let left = try await world.runner(.once(at: .afterCommit(step: 0))).start(job: other.ref, pipeline: world.pipeline(FakeModel()), input: ["text": "seed"])
+    #expect(await named.result == .interrupted)
+    #expect(await left.result == .interrupted)
+    let runner = world.runner()
+    let model = FakeModel(freezing: [0])
+    let resumed = try #require(try await runner.resume(named.attempt) { _ in world.pipeline(model) })
+    #expect(resumed.attempt == named.attempt)
+    try await model.waitFrozen()
+    #expect(try await runner.resume(named.attempt) { _ in world.pipeline(model) } == nil)
+    #expect(runner.runningAttempts == [named.attempt])
+    #expect(try await JobFixture.attempt(left.attempt, in: world.store).outcome == .running)
+    _ = try await runner.cancel(job: world.key.ref)
+    #expect(await resumed.result == .settled(.cancelled))
+    #expect(try await JobFixture.localRuns(in: world.store).map(\.attempt) == [left.attempt])
+  }
+
   @Test func shouldStandDownAnInterruptedRunWhenAStartOfItsJobIsUnderWayHere() async throws {
     let world = try await JobWorld()
     let interrupted = try await world.start(world.runner(.once(at: .afterCommit(step: 0))), FakeModel())

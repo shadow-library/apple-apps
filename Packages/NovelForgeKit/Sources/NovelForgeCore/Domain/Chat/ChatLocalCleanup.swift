@@ -12,7 +12,7 @@ enum ChatLocalCleanup {
     try forgetSessionRows(session, in: database)
   }
 
-  /// Every session the novel's derived chats or this device's turns name, a deleted one included.
+  /// Every session the novel's derived chats or this device's turns name, a deleted one included, with the novel's writer Inspector rows and pinned packs.
   static func forget(novel: UUID, in database: Database) throws(StoreError) {
     let sessions = try execute(in: database) { () throws -> Set<UUID> in
       var sessions = Set(try UUID.fetchAll(database, sql: "SELECT session FROM \(ChatSessionState.databaseTableName) WHERE novel = ?", arguments: [novel]))
@@ -24,6 +24,8 @@ enum ChatLocalCleanup {
     try forgetTurns(where: "novel = ?", [novel], in: database)
     try LocalSessionNamings.forget(novel: novel, in: database)
     for session in sessions.sorted(by: { $0.uuidString < $1.uuidString }) { try forgetSessionRows(session, in: database) }
+    try WriterSnapshots.forget(novel: novel, in: database)
+    try WriterPackPins.forget(novel: novel, in: database)
   }
 
   /// The replayed exchanges, the turn records, the Inspector's requests and the owed naming of one session.

@@ -114,6 +114,18 @@ public final class AttemptRunner: Sendable {
 
   /// An attempt whose kind `pipeline` does not know is left for a launch that does (apps/novel-forge-server/src/modules/jobs/job.executor.ts:135-139).
   public func resumeInterrupted(pipeline: @escaping @Sendable (JobRecord) -> AttemptPipeline?) async throws(JobRunError) -> [AttemptHandle] {
+    try await resume(where: { _ in true }, pipeline: pipeline)
+  }
+
+  /// `resumeInterrupted` for one attempt, as `start` answers `alreadyRunningHere` for a run this device holds but is not running: nil when the attempt is
+  /// running here or its run settled, was forgotten or was left for a launch that knows its kind.
+  public func resume(_ attempt: AttemptID, pipeline: @escaping @Sendable (JobRecord) -> AttemptPipeline?) async throws(JobRunError) -> AttemptHandle? {
+    try await resume(where: { $0.attempt == attempt }, pipeline: pipeline).first
+  }
+
+  private func resume(
+    where included: @escaping @Sendable (LocalRun) -> Bool, pipeline: @escaping @Sendable (JobRecord) -> AttemptPipeline?
+  ) async throws(JobRunError) -> [AttemptHandle] {
     let replica = store.replica
     let now = clock.now()
     let reserved = Mutex<[AttemptID]>([])
@@ -122,7 +134,7 @@ public final class AttemptRunner: Sendable {
       resumable = try await storeWrite { transaction in
         try JobsLocal.cleanup(keeping: replica, in: transaction.database)
         var resumable: [Resumable] = []
-        for run in try JobsLocal.runs(of: replica, in: transaction.database) where !self.isRunning(run.attempt) {
+        for run in try JobsLocal.runs(of: replica, in: transaction.database) where included(run) && !self.isRunning(run.attempt) {
           switch try Self.resumption(of: run, by: replica, pipeline: pipeline, in: transaction) {
           case .resume(let entry):
             do {
