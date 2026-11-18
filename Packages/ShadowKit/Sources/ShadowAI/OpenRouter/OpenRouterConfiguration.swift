@@ -30,6 +30,8 @@ public struct OpenRouterConfiguration: Sendable, Equatable {
 
   var modelsURL: URL { apiURL("models") }
 
+  var generationURL: URL { apiURL("generation") }
+
   var authKeysURL: URL { apiURL("auth/keys") }
 
   var authorizationURL: URL { origin.appending(path: "auth") }
