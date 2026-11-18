@@ -91,11 +91,38 @@ A product module is added the same way: a library product in the product's packa
 | `ChangeSet`              | The change-set vocabulary (`OpType`, `OpSpecs`), parsing, reference resolution and validation          |
 | `Projection`             | `Derivation`, `NovelForgeReconciler` and the record index: derived tables kept equal to a rebuild        |
 | `Reconcile/*`            | Derivations per area: `Chapters`, `Chat`, `Notebook`, `PlanWorld`, `Story`                               |
-| `Domain/*`               | Operations on the records: `Chat`, `Story`, `Notebook`                                                   |
+| `Domain/*`               | Operations on the records: `Chat` (sessions, cleanup), `Story`, `Notebook`, `Proposals` (staging, apply, revert, turn staging) |
+| `Chat/*`                 | `Engine` (`ChatTurnEngine`), `Turn` (relay and local turn store), `Compaction`, `Lookups`                |
+| `Context`                | The chat context: `ChatPack` renderers, `ChatContextAssembler`, `TokenBudget`                            |
+| `Prompts`                | Chat refine, compact and title prompts, scope playbooks, writing instructions                            |
+| `ReadModels`             | Observed reads, among them the chat session list, transcript, Waiting on you, change history and reply costs |
+
+### Chat
+
+Schema v2 (`NovelForgeSchema.version`; `Fixtures/schema/registry-v2.json` beside v1) adds the synced kinds `nf_chat_session`, `nf_chat_message`, `nf_chat_summary`, `nf_proposal` and `nf_proposal_change`, and registers the ledger kinds `ai_model_call` and `ai_consent` in the vault. `Reconcile/Chat` derives the transcript, window, session state (including the unrestricted lock) and proposal state from them.
+
+`ChatTurnEngine` (`Chat/Engine`) runs a turn: `send`, `answer`, `retry`, `resume`, `cancel` and `interrupt`. It screens the input, compacts the conversation, routes the call through `ShadowAI`, streams the reply, runs up to three lookup rounds and one negation-fix round, stages the change set (`stageTurn`) and appends the reply in one transaction. `resumeInterruptedTurns` runs once when the vault opens: it runs card actions left pending first, clears what this device kept of chats deleted elsewhere, ends turns the author had stopped, resumes the other interrupted turns it can, fails the rest (`CHT_013`), and runs owed chat namings last.
+
+Tables of this device's own, never synced; each is created idempotently by the write that first needs it, read only after a `tableExists` check, and cleared with its owner: chat rows by `ChatLocalCleanup` and `ChatTurnRecords.forgetOrphans`, pending actions by the sweep once the card has none left or is gone:
+
+| Table                       | Holds                                                                                              |
+| --------------------------- | -------------------------------------------------------------------------------------------------- |
+| `nf_local_turn`             | One row per turn on this device: its state, session, novel and replica; what resume reads          |
+| `nf_local_turn_frame`       | The turn's stream frames, for re-attaching to a running or ended turn                              |
+| `nf_local_turn_stop`        | The author's stop mark, so a stopped turn is ended cancelled at launch instead of resumed          |
+| `nf_local_turn_basis`       | What a turn was asked and what it settled or staged, which a resume continues from                 |
+| `nf_local_turn_call`        | The ledger ids of the model calls a turn began, a call a crash cut off included                    |
+| `nf_local_turn_step`        | Which staging transactions of a reply committed, with the notes the reply then carries             |
+| `nf_local_chat_naming`      | A session naming owed from its opening message until the naming ends                               |
+| `nf_local_pending_action`   | Applied cards whose actions have not settled; the launch sweep runs them                           |
+| `nf_local_chat_segment`     | What each reply's turn sent, replayed so the cached prefix holds; other devices send plain history |
+| `nf_local_call_inspector`   | The last request of each turn, for the Inspector (newest 20 per session)                           |
+
+Proposals live in `Domain/Proposals`: `ProposalStager` stages a card (anchors, baselines, warnings, supersession), `applyProposal` applies it whole or by selected indexes in one transaction (a baseline mismatch makes it conflicted; the actions `approve_draft`, `finalize` and `advance_volume` each run in their own transaction afterwards), and `undoProposalChange`, `redoProposalChange`, `revertProposal` and `rollbackProposals` reverse it. Every apply and revert goes through typed records and handlers per op family (`Apply/*Handlers.swift`). The public `ProposalApplyContext(novel:now:)` and `ProposalRevertContext(novel:now:)` take whether unrestricted writing is available from the build (`UnrestrictedWriting.isAvailable`, `false` for now) and expose no way to override it. Unrestricted turns are refused with `AI_024` by `ChatTurnPreparation` and by compaction, and an op that raises a plan to unrestricted is refused by the apply.
 
 ### Reference fixtures
 
-Expected outputs come from the TypeScript reference product and are committed under `Packages/NovelForgeKit/Fixtures/<area>/` (`change-set`, `checks`, `hard-line`, `ideas`, `metrics`, `prose`, `regex`, `reply-scanner`, `reveal`, `rules`, `schema`, `text`, `write-policy`). Regenerate an area with a read-only checkout of the reference:
+Expected outputs come from the TypeScript reference product and are committed under `Packages/NovelForgeKit/Fixtures/<area>/` (see the folder for the full list: `change-set`, `chat-turns`, `prompts`, `schema`, `write-policy`, ...). Regenerate an area with a read-only checkout of the reference:
 
 ```sh
 PLATFORM_REPO=<path to the reference checkout> bun Packages/NovelForgeKit/Fixtures/<area>/generate.ts
@@ -156,11 +183,11 @@ Each area owns a folder under `Apps/NovelForge/Sources/<Area>/` (`Library`, `Rea
 
 A screen that holds text the user has typed registers its flush with `Shared/UnsavedWork` (`UnsavedWork.shared.register { … }` returns a token to `unregister` with). The app flushes every registration when the scene leaves the active phase (inside a background-task assertion on iOS), when a window closes, and before quitting on macOS (`applicationShouldTerminate` answers `.terminateLater` until the flushes finish or a timeout passes). A flush should write the text to durable local storage and not depend on the network. Models that carry such state are kept per novel above the section switch (`Navigation/NovelReaders` for the Reader) so a section or novel switch does not discard them.
 
-Chat turns run on one `ChatTurnEngine` per open vault, held by `Chat/ChatRuntimes` in the app's environment and shared by every window: the engine alone knows which turns run on this device, so a second engine on the same vault would take a running turn for an interrupted one. When the vault opens, `ChatRuntime.launch()` calls `resumeInterruptedTurns` once and then has every open chat read its turn again. Each novel's `ChatNovelModel` and each chat's `ChatSessionModel` live in that runtime, above the section switch, so a running turn keeps being followed while the Chat section is out of view. Whether a turn may be written unrestricted is the core's `UnrestrictedWriting.isAvailable`, which the engine enforces.
+The Chat area (`Apps/NovelForge/Sources/Chat`) is split into `Composer/` (composer state, mode menu, passage chips and the passage comment sheet), `Cards/` (proposal cards, receipts, question cards and `ChatRevertFlow`, the undo and revert flow shared with `Changes/`) and `Changes/` (Waiting on you tray and the change history with Undo and Roll Back to Here); the transcript, streamed turn, Inspector and history sheet sit beside them. Chat turns run on one `ChatTurnEngine` per open vault, held by `Chat/ChatRuntimes` in the app's environment and shared by every window: the engine alone knows which turns run on this device, so a second engine on the same vault would take a running turn for an interrupted one. When the vault opens, `ChatRuntime.launch()` calls `resumeInterruptedTurns` once and then has every open chat read its turn again. Each novel's `ChatNovelModel` and each chat's `ChatSessionModel` live in that runtime, above the section switch, so a running turn keeps being followed while the Chat section is out of view. The app builds proposal contexts only through the core's public inits. Whether a turn may be written unrestricted is the core's `UnrestrictedWriting.isAvailable`, which the engine enforces and the composer reads to hide the option.
 
 Waiting on you (`Chat/Changes/ChatWaitingTray`) also lists conflicted cards, which the reference marks conflicted and stops listing, so the author can still apply what fits or discard them.
 
-Observe reads with `ReadObserver` (`Shared/ReadObserver.swift`; `run(_:onValue:)` hands every emitted value to a hook, and an equal value is not republished) and surface failures through `PresentedError` (a localized headline with the error code as detail, never developer text). Markdown prose is rendered by `Shared/ProseView`, which the Reader and the Story Bible share. Strings are per area: `Library.xcstrings`, `Navigation.xcstrings` and `Chat.xcstrings` are used with `Text(_:tableName:)` and `LocalizedStringResource(_:table:)`; an area adds its own `<Area>.xcstrings` and never edits another's. `Localizable.xcstrings` holds only the vault-opening strings.
+Observe reads with `ReadObserver` (`Shared/ReadObserver.swift`; `run(_:onValue:)` hands every emitted value to a hook, and an equal value is not republished) and surface failures through `PresentedError` (a localized headline with the error code as detail, never developer text). Markdown prose is rendered by `Shared/ProseView`, which the Reader and the Story Bible share. Strings are per area (`Library`, `Navigation`, `Notebook`, `Story`, `StoryBible`, `Reader`, `Settings`, and for chat `Chat`, `ChatComposer`, `ChatCards` and `ChatChanges`, each its own `<Area>.xcstrings`) and are used with `Text(_:tableName:)` and `LocalizedStringResource(_:table:)`; an area adds its own `<Area>.xcstrings` and never edits another's. `Localizable.xcstrings` holds only the vault-opening strings.
 
 ## Catalog app
 

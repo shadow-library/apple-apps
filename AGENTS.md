@@ -16,10 +16,13 @@ Read `README.md` first; it covers layout, modules and tasks.
 - `ShadowDesignSystem`: use semantic tokens only (`ShadowColor`, `Spacing`, `Radius`), never primitives or literal colours; the library has no user-facing strings.
 - Glass goes on the navigation layer only (bars, sidebars, menus, popovers, sheets), never on content. Use `.shadowGlass` and `ShadowGlassGroup`, never a hand-drawn effect.
 - Tokens come from `Design/tokens.json`; run `mise run tokens` and never edit `Tokens/Generated/`.
+- Each app area owns its own `<Area>.xcstrings` and never edits another's. A plural variation key written as `%#@name@` takes later arguments by explicit position (`%2$@`, `%2$lld`); an unnumbered specifier after it crashes at run time.
 - `@_spi(Preview)` is for preview and capture hooks (Catalog, screenshots), never for app code.
 - Novel Forge schema v1 is frozen: adding kinds or fields raises `NovelForgeSchema.version` and saves `Fixtures/schema/registry-v<N>.json` beside v1; never reorder or rename hashed key components.
 - Write Novel Forge data through the typed records in `NovelForgeCore/Records` (their create, edit, revise and append writes), never by setting raw JSON fields on a `WriteTransaction`.
 - Derived state lives in a `Derivation` on the `Projection` frame, in `Reconcile/<Area>/`: `.records` inputs map from the `EntityRef` alone, per-novel aggregates over hash-keyed kinds subscribe through `RecordIndexDerivation` (or through `.outputs(of:)` of their own per-ref layer whose rows record the novel and chapter), and `key(of:)`, a one-key `request(for:)` and a primary key are mandatory.
+- Local unsynced Novel Forge tables are named `nf_local_*`, created with `CREATE TABLE IF NOT EXISTS` by the write that first needs them, read only after a `tableExists` check, and cleared with their owner (`ChatLocalCleanup`, `ChatTurnRecords.forgetOrphans`, `PendingActions.forget`) so a deleted session, novel or proposal leaves nothing behind.
+- App code builds proposal apply and revert contexts only through the public narrow inits (`ProposalApplyContext(novel:now:)`, `ProposalRevertContext(novel:now:)`); whether unrestricted writing is available comes from `UnrestrictedWriting.isAvailable`, never from a caller.
 - Register every derivation in the incremental == rebuild harness (`Tests/NovelForgeCoreTests/Projection/ProjectionHarness.swift`); raise its `version` when `outputs(for:in:)` changes meaning.
 - Fixtures come from `bun` generators that import the reference read-only; they are deterministic and hold no machine paths. Never write inside the reference checkout.
 - Port JavaScript semantics through `Text/` and `Text/Regex`; never use `NSRegularExpression` or Swift `Regex` for a pattern taken from the reference.
