@@ -80,6 +80,7 @@ struct NovelForgeKeyTests {
         .characterKnowledge(fact: text, entity: generator.unicodeString(maxLength: 6)),
         .page(section: .known(generator.pick(from: BiblePageSection.allCases)), slug: text), .page(section: .unknown(generator.asciiString(maxLength: 8)), slug: text),
         .finalChapter(chapter: generator.int(in: 1...500)), .proposalChange(proposal: UUID(), index: generator.int(in: 0...10_000)),
+        .reviewRemedy(review: UUID(), finding: text), .finalizeDecision(chapter: generator.int(in: 1...500), draftRevision: generator.asciiString(maxLength: 8), item: text),
       ]
       for component in components {
         let key = try NovelForgeKey(novel: SchemaFixture.novel, component)
@@ -121,6 +122,7 @@ struct NovelForgeKeyTests {
 
   @Test(arguments: [
     NovelForgeKey.approval(UUID()), NovelForgeKey.chatSession(UUID()), NovelForgeKey.chatMessage(UUID()), NovelForgeKey.chatSummary(UUID()), NovelForgeKey.proposal(UUID()),
+    NovelForgeKey.chapterReview(UUID()), NovelForgeKey.finalizeReview(UUID()), NovelForgeKey.refreshReport(UUID()),
   ])
   func shouldRefuseReadingAKindWithRandomKeys(_ ref: EntityRef) {
     #expect(throws: NovelForgeKeyError.notNaturallyKeyed(ref.kind.rawValue)) { try NovelForgeKey(stored: [:], of: ref) }
@@ -142,7 +144,8 @@ struct NovelForgeKeyTests {
       .characterKnowledge: "n:ca7c6f16259f05a686743e33f908a32c365acba3", .page: "n:e9f22938281a023e4cde8274206e9520f4b214a4",
       .chapterPlan: "n:d9776391406114475540f661b90be54986e72be6", .draft: "n:c375a907d001ad7fab5eecaa973cf1a68b56cbcb",
       .finalChapter: "n:26792fb64b234503b40b705131127714d6a095d0", .authorNotes: "n:424386a6c8407d0bf63d2396ba6765798ae94e5b",
-      .proposalChange: "n:f94891d877a63823a3aa6800423f2be0cc35c176",
+      .proposalChange: "n:f94891d877a63823a3aa6800423f2be0cc35c176", .reviewRemedy: "n:6b34e188cdb88fec0e64a473bf1e317698ad74dd",
+      .finalizeDecision: "n:44a67526add243fab096ee116998fac7e5b5dc14",
     ]
     let keys = try SchemaFixture.naturalKeys(novel: Self.novel)
     #expect(Set(keys.map(\.kind)) == Set(frozen.keys))
@@ -183,6 +186,63 @@ struct NovelForgeKeyTests {
     }
     #expect(throws: NovelForgeKeyError.opIndexOutOfRange(-3)) { try NovelForgeKey(stored: ["novel": novel, "proposal": proposal, "index": -3], of: ref) }
     #expect(throws: NovelForgeKeyError.keyMismatch(ref)) { try NovelForgeKey(stored: ["novel": novel, "proposal": proposal, "index": 4], of: ref) }
+  }
+
+  @Test func shouldHashARemedyFromTheLowerCaseReviewThenTheFinding() throws {
+    let key = NovelForgeKey.reviewRemedyKey(novel: Self.novel, review: SchemaFixture.review, finding: "f1")
+    let expected = EntityKey.natural(
+      scope: "6f0c4d1e-0000-4000-8000-000000000001", kind: NovelForgeKind.reviewRemedy.entityKind, components: ["6f0c4d1e-0000-4000-8000-0000000000b1", "f1"])
+    #expect(key.ref == EntityRef(kind: NovelForgeKind.reviewRemedy.entityKind, key: expected))
+    #expect(key.stored == ["novel": "6f0c4d1e-0000-4000-8000-000000000001", "review": "6f0c4d1e-0000-4000-8000-0000000000b1", "finding": "f1"])
+  }
+
+  @Test func shouldHashAFinalizeDecisionFromTheDecimalChapterThenTheDraftRevisionThenTheItemKey() throws {
+    let key = try NovelForgeKey.finalizeDecisionKey(novel: Self.novel, chapter: 12, draftRevision: SchemaFixture.draftRevision, item: "entity:aria")
+    let expected = EntityKey.natural(
+      scope: "6f0c4d1e-0000-4000-8000-000000000001", kind: NovelForgeKind.finalizeDecision.entityKind, components: ["12", SchemaFixture.draftRevision, "entity:aria"])
+    #expect(key.ref == EntityRef(kind: NovelForgeKind.finalizeDecision.entityKind, key: expected))
+    #expect(
+      key.stored == ["novel": "6f0c4d1e-0000-4000-8000-000000000001", "chapter": 12, "draft_revision": .string(SchemaFixture.draftRevision), "item": "entity:aria"])
+  }
+
+  @Test func shouldGiveTheSpellingsOfAFindingOrItemKeyOneKeyAndEveryRevisionItsOwn() throws {
+    let precomposed = "Am\u{E9}lie"
+    let decomposed = "Ame\u{301}lie"
+    let remedy = { (finding: String) in NovelForgeKey.reviewRemedy(novel: Self.novel, review: SchemaFixture.review, finding: finding) }
+    #expect(remedy(precomposed) == remedy(decomposed))
+    let decision = { (chapter: Int, revision: String, item: String) throws(NovelForgeKeyError) in
+      try NovelForgeKey.finalizeDecision(novel: Self.novel, chapter: chapter, draftRevision: revision, item: item)
+    }
+    #expect(try decision(1, SchemaFixture.draftRevision, precomposed) == decision(1, SchemaFixture.draftRevision, decomposed))
+    #expect(try decision(1, SchemaFixture.draftRevision, precomposed) != decision(1, "v:ffffffffffffffffffffffffffffffffffffffff", precomposed))
+    #expect(try decision(1, SchemaFixture.draftRevision, "a") != decision(2, SchemaFixture.draftRevision, "a"))
+  }
+
+  @Test func shouldRefuseAFinalizeDecisionBeforeChapterOne() {
+    #expect(throws: NovelForgeKeyError.chapterOutOfRange(0)) {
+      try NovelForgeKey.finalizeDecision(novel: Self.novel, chapter: 0, draftRevision: SchemaFixture.draftRevision, item: "a")
+    }
+  }
+
+  @Test func shouldRefuseAMalformedStoredRemedyOrDecisionKey() throws {
+    let novel = JSONValue.string(Self.novel.uuidString.lowercased())
+    let review = JSONValue.string(SchemaFixture.review.uuidString.lowercased())
+    let remedy = NovelForgeKey.reviewRemedy(novel: Self.novel, review: SchemaFixture.review, finding: "f1")
+    for value: JSONValue in [
+      ["novel": novel, "review": .string(SchemaFixture.review.uuidString), "finding": "f1"], ["novel": novel, "review": review, "finding": 1], ["novel": novel, "review": review],
+    ] {
+      #expect(throws: NovelForgeKeyError.self) { try NovelForgeKey(stored: value, of: remedy) }
+    }
+    #expect(throws: NovelForgeKeyError.keyMismatch(remedy)) { try NovelForgeKey(stored: ["novel": novel, "review": review, "finding": "f2"], of: remedy) }
+    let decision = try NovelForgeKey.finalizeDecision(novel: Self.novel, chapter: 1, draftRevision: SchemaFixture.draftRevision, item: "a")
+    let revision = JSONValue.string(SchemaFixture.draftRevision)
+    for value: JSONValue in [
+      ["novel": novel, "chapter": "1", "draft_revision": revision, "item": "a"], ["novel": novel, "chapter": 1, "item": "a"],
+      ["novel": novel, "chapter": 1, "draft_revision": revision, "item": "a", "position": 0],
+    ] {
+      #expect(throws: NovelForgeKeyError.self) { try NovelForgeKey(stored: value, of: decision) }
+    }
+    #expect(throws: NovelForgeKeyError.chapterOutOfRange(0)) { try NovelForgeKey(stored: ["novel": novel, "chapter": 0, "draft_revision": revision, "item": "a"], of: decision) }
   }
 
   @Test func shouldMergeTwoDevicesRecordingTheSameChangeIntoOneRecord() async throws {

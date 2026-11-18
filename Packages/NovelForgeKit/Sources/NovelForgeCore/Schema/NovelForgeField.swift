@@ -327,3 +327,108 @@ public enum ProposalChangeResultMember: String, CaseIterable, Sendable {
   case note
   case result
 }
+
+// apps/novel-forge-server/src/database/schemas/projects.ts:9-11; NovelRecord still reads it as an unrecognised member.
+public enum NovelAddedField: String, CaseIterable, Sendable {
+  case autoKeep = "auto_keep"
+}
+
+// Not in the reference: the hard-line rule reads a character's structured age; EntityRecord still reads it as an unrecognised member.
+public enum EntityAddedField: String, CaseIterable, Sendable {
+  case age
+}
+
+// apps/novel-forge-server/src/database/schemas/review.ts:40-73
+public enum ChapterReviewMember: String, CaseIterable, Sendable {
+  case novel
+  case chapter
+  case kind
+  case draftRevision = "draft_revision"
+  case bodyHash = "body_hash"
+  case disposition
+  case verdict
+  case findings
+  // The draft was isolated or the review ran unrestricted: apps/novel-forge-server/src/database/schemas/review.ts:50-51, modules/review/review-records.ts:62.
+  case isolated
+  // apps/novel-forge-server/src/database/schemas/review.ts:57 and :59
+  case note
+  case checked
+  // The judge pass a generation run recorded as its review (apps/novel-forge-server/src/modules/ai/graphs/chapter-generation.graph.ts:884-914).
+  case generationPass = "generation_pass"
+  case job
+  case attempt
+  case calls
+}
+
+public enum ReviewRemedyField: String, CaseIterable, Sendable {
+  case remedy
+}
+
+// apps/novel-forge-server/src/database/schemas/review.ts:82-85
+public enum ReviewRemedyMember: String, CaseIterable, Sendable {
+  case action
+  case fingerprint
+  case reason
+}
+
+// apps/novel-forge-server/src/database/schemas/finalize-review.ts:50-82; one appended per attempt, only once it is ready.
+public enum FinalizeReviewMember: String, CaseIterable, Sendable {
+  case novel
+  case chapter
+  case draftRevision = "draft_revision"
+  case sourceHash = "source_hash"
+  case planHash = "plan_hash"
+  case isolated
+  case job
+  case attempt
+  case items
+}
+
+// apps/novel-forge-server/src/database/schemas/finalize-review.ts:84-113, without the author's answer, which is a finalize decision.
+public enum FinalizeReviewItemMember: String, CaseIterable, Sendable {
+  case key
+  case position
+  case category
+  case triage
+  case basis
+  case subject
+  case claim
+  case evidence
+  case proposed
+  case flag
+  case dependents
+  case autoDecision = "auto_decision"
+}
+
+public enum FinalizeDecisionField: String, CaseIterable, Sendable {
+  case decision
+}
+
+// apps/novel-forge-server/src/database/schemas/finalize-review.ts:101-107; answers are keyed by the item key, so a re-prepared review keeps them.
+public enum FinalizeDecisionMember: String, CaseIterable, Sendable {
+  case decision
+  case proposalDigest = "proposal_digest"
+  case edit
+  case reason
+  case auto
+}
+
+// The `origin` of a job a Novel Forge chat or card requested.
+public enum NovelJobOriginMember: String, CaseIterable, Sendable {
+  case session
+  case message
+  case proposal
+  case opIndex = "op_index"
+}
+
+// apps/novel-forge-server/src/database/schemas/jobs.ts:115-139, a chapter's canon refresh only.
+public enum RefreshReportMember: String, CaseIterable, Sendable {
+  case novel
+  case chapter
+  case canonDigest = "canon_digest"
+  case findings
+  case checked
+  case copy
+  case proposal
+  case attempt
+}

@@ -78,6 +78,8 @@ public struct NovelForgeKey: Hashable, Sendable {
     case finalChapter(chapter: Int)
     case authorNotes
     case proposalChange(proposal: UUID, index: Int)
+    case reviewRemedy(review: UUID, finding: String)
+    case finalizeDecision(chapter: Int, draftRevision: String, item: String)
   }
 
   public let novel: UUID
@@ -119,7 +121,11 @@ public struct NovelForgeKey: Hashable, Sendable {
     case .finalChapter: components = .finalChapter(chapter: try reader.integer("chapter"))
     case .authorNotes: components = .authorNotes
     case .proposalChange: components = .proposalChange(proposal: try reader.uuid("proposal"), index: try reader.integer("index"))
-    case .novel, .approval, .notebookEntry, .notebookWithdrawal, .chatSession, .chatMessage, .chatSummary, .proposal: throw .notNaturallyKeyed(kind.rawValue)
+    case .reviewRemedy: components = .reviewRemedy(review: try reader.uuid("review"), finding: try reader.text("finding"))
+    case .finalizeDecision:
+      components = .finalizeDecision(chapter: try reader.integer("chapter"), draftRevision: try reader.text("draft_revision"), item: try reader.text("item"))
+    case .novel, .approval, .notebookEntry, .notebookWithdrawal, .chatSession, .chatMessage, .chatSummary, .proposal, .chapterReview, .finalizeReview, .refreshReport:
+      throw .notNaturallyKeyed(kind.rawValue)
     }
     try self.init(novel: try reader.uuid("novel"), components)
     guard self.ref == ref else { throw .keyMismatch(ref) }
@@ -143,6 +149,9 @@ public struct NovelForgeKey: Hashable, Sendable {
   public static func chatMessage(_ id: UUID) -> EntityRef { randomRef(.chatMessage, id) }
   public static func chatSummary(_ id: UUID) -> EntityRef { randomRef(.chatSummary, id) }
   public static func proposal(_ id: UUID) -> EntityRef { randomRef(.proposal, id) }
+  public static func chapterReview(_ id: UUID) -> EntityRef { randomRef(.chapterReview, id) }
+  public static func finalizeReview(_ id: UUID) -> EntityRef { randomRef(.finalizeReview, id) }
+  public static func refreshReport(_ id: UUID) -> EntityRef { randomRef(.refreshReport, id) }
 
   public static func volume(novel: UUID, key: String) -> EntityRef { volumeKey(novel: novel, volume: key).ref }
   public static func milestone(novel: UUID, key: String) -> EntityRef { milestoneKey(novel: novel, milestone: key).ref }
@@ -153,12 +162,16 @@ public struct NovelForgeKey: Hashable, Sendable {
   public static func characterKnowledge(novel: UUID, fact: String, entity: String) -> EntityRef { characterKnowledgeKey(novel: novel, fact: fact, entity: entity).ref }
   public static func page(novel: UUID, section: BiblePageSection, slug: String) -> EntityRef { pageKey(novel: novel, section: section, slug: slug).ref }
   public static func authorNotes(novel: UUID) -> EntityRef { authorNotesKey(novel: novel).ref }
+  public static func reviewRemedy(novel: UUID, review: UUID, finding: String) -> EntityRef { reviewRemedyKey(novel: novel, review: review, finding: finding).ref }
 
   public static func chapterPlan(novel: UUID, chapter: Int) throws(NovelForgeKeyError) -> EntityRef { try chapterPlanKey(novel: novel, chapter: chapter).ref }
   public static func draft(novel: UUID, chapter: Int) throws(NovelForgeKeyError) -> EntityRef { try draftKey(novel: novel, chapter: chapter).ref }
   public static func finalChapter(novel: UUID, chapter: Int) throws(NovelForgeKeyError) -> EntityRef { try finalChapterKey(novel: novel, chapter: chapter).ref }
   public static func proposalChange(novel: UUID, proposal: UUID, index: Int) throws(NovelForgeKeyError) -> EntityRef {
     try proposalChangeKey(novel: novel, proposal: proposal, index: index).ref
+  }
+  public static func finalizeDecision(novel: UUID, chapter: Int, draftRevision: String, item: String) throws(NovelForgeKeyError) -> EntityRef {
+    try finalizeDecisionKey(novel: novel, chapter: chapter, draftRevision: draftRevision, item: item).ref
   }
 
   private static func randomRef(_ kind: NovelForgeKind, _ id: UUID) -> EntityRef {
@@ -183,7 +196,9 @@ public struct NovelForgeKey: Hashable, Sendable {
     case .chapterPlan, .draft, .finalChapter: ["chapter"]
     case .authorNotes: []
     case .proposalChange: ["proposal", "index"]
-    case .novel, .approval, .notebookEntry, .notebookWithdrawal, .chatSession, .chatMessage, .chatSummary, .proposal: nil
+    case .reviewRemedy: ["review", "finding"]
+    case .finalizeDecision: ["chapter", "draft_revision", "item"]
+    case .novel, .approval, .notebookEntry, .notebookWithdrawal, .chatSession, .chatMessage, .chatSummary, .proposal, .chapterReview, .finalizeReview, .refreshReport: nil
     }
   }
 }
@@ -206,6 +221,12 @@ extension NovelForgeKey {
   public static func proposalChangeKey(novel: UUID, proposal: UUID, index: Int) throws(NovelForgeKeyError) -> NovelForgeKey {
     try NovelForgeKey(novel: novel, .proposalChange(proposal: proposal, index: index))
   }
+  public static func reviewRemedyKey(novel: UUID, review: UUID, finding: String) -> NovelForgeKey {
+    NovelForgeKey(unchecked: novel, .reviewRemedy(review: review, finding: finding))
+  }
+  public static func finalizeDecisionKey(novel: UUID, chapter: Int, draftRevision: String, item: String) throws(NovelForgeKeyError) -> NovelForgeKey {
+    try NovelForgeKey(novel: novel, .finalizeDecision(chapter: chapter, draftRevision: draftRevision, item: item))
+  }
 }
 
 extension NovelForgeKey.Components {
@@ -224,12 +245,14 @@ extension NovelForgeKey.Components {
     case .finalChapter: .finalChapter
     case .authorNotes: .authorNotes
     case .proposalChange: .proposalChange
+    case .reviewRemedy: .reviewRemedy
+    case .finalizeDecision: .finalizeDecision
     }
   }
 
   var chapters: [Int] {
     switch self {
-    case .chapterPlan(let chapter), .draft(let chapter), .finalChapter(let chapter): [chapter]
+    case .chapterPlan(let chapter), .draft(let chapter), .finalChapter(let chapter), .finalizeDecision(let chapter, _, _): [chapter]
     default: []
     }
   }
@@ -245,6 +268,8 @@ extension NovelForgeKey.Components {
     case .entity(let key): return .entity(nfc(key))
     case .characterKnowledge(let fact, let entity): return .characterKnowledge(fact: nfc(fact), entity: nfc(entity))
     case .page(let section, let slug): return .page(section: StoredPageSection(rawValue: section.rawValue), slug: nfc(slug))
+    case .reviewRemedy(let review, let finding): return .reviewRemedy(review: review, finding: nfc(finding))
+    case .finalizeDecision(let chapter, let draftRevision, let item): return .finalizeDecision(chapter: chapter, draftRevision: nfc(draftRevision), item: nfc(item))
     case .chapterPlan, .draft, .finalChapter, .authorNotes, .proposalChange: return self
     }
   }
@@ -257,6 +282,8 @@ extension NovelForgeKey.Components {
     case .chapterPlan(let chapter), .draft(let chapter), .finalChapter(let chapter): [String(chapter)]
     case .authorNotes: []
     case .proposalChange(let proposal, let index): [proposal.uuidString.lowercased(), String(index)]
+    case .reviewRemedy(let review, let finding): [review.uuidString.lowercased(), finding]
+    case .finalizeDecision(let chapter, let draftRevision, let item): [String(chapter), draftRevision, item]
     }
   }
 
@@ -273,6 +300,8 @@ extension NovelForgeKey.Components {
     case .chapterPlan(let chapter), .draft(let chapter), .finalChapter(let chapter): ["chapter": .int(Int64(chapter))]
     case .authorNotes: [:]
     case .proposalChange(let proposal, let index): ["proposal": .string(proposal.uuidString.lowercased()), "index": .int(Int64(index))]
+    case .reviewRemedy(let review, let finding): ["review": .string(review.uuidString.lowercased()), "finding": .string(finding)]
+    case .finalizeDecision(let chapter, let draftRevision, let item): ["chapter": .int(Int64(chapter)), "draft_revision": .string(draftRevision), "item": .string(item)]
     }
   }
 }

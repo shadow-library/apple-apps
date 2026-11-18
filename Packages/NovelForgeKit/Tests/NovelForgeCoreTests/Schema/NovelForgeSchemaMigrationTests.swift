@@ -1,6 +1,7 @@
 import Foundation
 import ShadowAI
 import ShadowCore
+import ShadowJobs
 import ShadowStore
 import Testing
 
@@ -17,6 +18,12 @@ struct NovelForgeSchemaMigrationTests {
 
   private static func openAtVersionOne(_ url: URL) throws -> VaultStore {
     let registry = try versionOne()
+    let reconciler = try NovelForgeReconciler(registry: registry)
+    return try VaultStore.open(.file(url), registry: registry, migrations: reconciler.migrations, reconciler: reconciler)
+  }
+
+  private static func openAtVersionTwo(_ url: URL) throws -> VaultStore {
+    let registry = try SchemaRegistry(canonicalDescription: try ReferenceFixture.data("schema/registry-v2.json"))
     let reconciler = try NovelForgeReconciler(registry: registry)
     return try VaultStore.open(.file(url), registry: registry, migrations: reconciler.migrations, reconciler: reconciler)
   }
@@ -65,13 +72,72 @@ struct NovelForgeSchemaMigrationTests {
     #expect(throws: StoreError.self) { try Self.openAtVersionOne(url) }
   }
 
+  @Test func shouldOpenAVaultWrittenAtVersionTwoAtVersionThreeWithItsDataIntactAndAdoptWhatItHeldForeign() async throws {
+    let url = try Self.temporaryVault()
+    defer { try? FileManager.default.removeItem(at: url.deletingLastPathComponent()) }
+    let session = NovelForgeKey.chatSession(UUID())
+    let proposal = NovelForgeKey.proposal(UUID())
+    let entity = NovelForgeKey.entityKey(novel: Self.novel, entity: "aria")
+    let job = try JobKey(scope: SchemaFixture.novel.uuidString.lowercased(), kind: "generate", target: "chapter:1", fingerprint: "f0", run: 1)
+    let attempt = try AttemptID(UUID.v7()).ref
+    let review = NovelForgeKey.chapterReview(UUID())
+    let decision = try NovelForgeKey.finalizeDecisionKey(novel: Self.novel, chapter: 1, draftRevision: SchemaFixture.draftRevision, item: "entity:aria")
+    let newer = try NovelForgeStore.openInMemory()
+    _ = try await newer.write { transaction in
+      _ = try transaction.set(entity.ref, ["natural_key": entity.stored, "name": "Aria", "age": 16, "removed": false])
+      _ = try transaction.set(NovelForgeKey.novel(Self.novel), ["auto_keep": ["summary"]])
+      _ = try transaction.set(job.ref, ["request": .object(job.requestMembers), "cancel": "none"])
+      _ = try transaction.set(attempt, ["start": ["job": .string(job.ref.key.rawValue)], "outcome": "running"])
+      _ = try transaction.append(review, item: ["novel": Self.novelID, "chapter": 1, "kind": "judge"])
+      _ = try transaction.set(decision.ref, ["natural_key": decision.stored, "decision": ["decision": "kept"]])
+    }
+    let sent = try await newer.pendingChanges(limit: Int.max).map(\.line)
+    do {
+      let old = try Self.openAtVersionTwo(url)
+      _ = try await old.write { transaction in
+        _ = try NovelRecord(id: Self.novel, name: "Ember").create(in: &transaction)
+        _ = try transaction.set(session, ["novel": Self.novelID, "title": "Openings", "mode": "auto", "status": "active", "removed": false])
+        _ = try transaction.set(proposal, ["card": ["novel": Self.novelID], "decision": "applied"])
+      }
+      _ = try await old.applyRemote(sent)
+      for ref in [job.ref, attempt, review, decision.ref] { #expect(try await SchemaFixture.state(ref, in: old) == nil) }
+      let held = try await SchemaFixture.record(entity.ref, in: old)
+      #expect(held[field: "name"]?.value == "Aria")
+      #expect(held[field: "age"] == nil)
+      #expect(try await SchemaFixture.record(NovelForgeKey.novel(Self.novel), in: old)[field: "auto_keep"] == nil)
+      await #expect(throws: StoreError.self) { try await SchemaFixture.set(job.ref, ["cancel": "requested"], in: old) }
+      await #expect(throws: StoreError.self) { try await SchemaFixture.set(entity.ref, ["age": 17], in: old) }
+    }
+
+    let upgraded = try NovelForgeStore.open(at: url)
+    #expect(try await upgraded.load(LibraryList.self).novels.map(\.novel.name) == ["Ember"])
+    #expect(try await SchemaFixture.record(session, in: upgraded)[field: "title"]?.value == "Openings")
+    #expect(try await SchemaFixture.record(proposal, in: upgraded)[field: "decision"]?.value == "applied")
+    #expect(try await SchemaFixture.record(NovelForgeKey.novel(Self.novel), in: upgraded)[field: "auto_keep"]?.value == ["summary"])
+    let adopted = try await SchemaFixture.record(entity.ref, in: upgraded)
+    #expect(adopted[field: "name"]?.value == "Aria")
+    #expect(adopted[field: "age"]?.value == 16)
+    #expect(try await SchemaFixture.record(job.ref, in: upgraded)[field: "request"]?.value == .object(job.requestMembers))
+    #expect(try await SchemaFixture.record(attempt, in: upgraded)[field: "outcome"]?.value == "running")
+    #expect(try await SchemaFixture.record(decision.ref, in: upgraded)[field: "decision"]?.value == ["decision": "kept"])
+    guard case .appended(let appended)? = try await SchemaFixture.state(review, in: upgraded) else { throw SchemaFixtureError(description: "the review was not adopted") }
+    #expect(appended.item["kind"] == "judge")
+  }
+
+  @Test func shouldRefuseToReopenAVersionThreeVaultWithTheVersionTwoSchema() throws {
+    let url = try Self.temporaryVault()
+    defer { try? FileManager.default.removeItem(at: url.deletingLastPathComponent()) }
+    _ = try NovelForgeStore.open(at: url)
+    #expect(throws: StoreError.self) { try Self.openAtVersionTwo(url) }
+  }
+
   @Test func shouldKeepADecisionALaterVersionAddsOutOfTheRecordUntilTheUpgrade() async throws {
     let extended = NovelForgeSchema.entities.map { schema in
       guard schema.kind == NovelForgeKind.proposal.entityKind, case .record(var fields) = schema.shape else { return schema }
       fields["decision"] = .monotone(order: ["pending", "conflicted", "superseded", "discarded", "applied"])
       return EntitySchema(kind: schema.kind, shape: .record(fields: fields), syncClass: schema.syncClass)
     }
-    let later = SchemaRegistry(version: NovelForgeSchema.version + 1, entities: extended + LedgerSchema.entities)
+    let later = SchemaRegistry(version: NovelForgeSchema.version + 1, entities: extended + LedgerSchema.entities + JobSchema.entities)
     #expect(later.incompatibilities(with: NovelForgeSchema.registry) == [])
     let newer = try VaultStore.open(.inMemory, registry: later)
     let proposal = NovelForgeKey.proposal(UUID())

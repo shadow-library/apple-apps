@@ -135,7 +135,7 @@ public struct RecordIndexDerivation: Derivation {
     case .notebookEntry: appended(NotebookEntryRecord.self, ref, state)
     case .notebookWithdrawal: appended(NotebookWithdrawalRecord.self, ref, state)
     case .authorNotes: kept(AuthorNotesRecord.self, ref, state)
-    case .chatSession, .chatMessage, .chatSummary, .proposal, .proposalChange: nil
+    case .chatSession, .chatMessage, .chatSummary, .proposal, .proposalChange, .chapterReview, .reviewRemedy, .finalizeReview, .finalizeDecision, .refreshReport: nil
     }
   }
 

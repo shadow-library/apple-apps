@@ -23,6 +23,8 @@ enum SchemaFixture {
   static let novel = uuid("6f0c4d1e-0000-4000-8000-000000000001")
   static let otherNovel = uuid("6f0c4d1e-0000-4000-8000-000000000002")
   static let proposal = uuid("6f0c4d1e-0000-4000-8000-0000000000a1")
+  static let review = uuid("6f0c4d1e-0000-4000-8000-0000000000b1")
+  static let draftRevision = "v:00112233445566778899aabbccddeeff00112233"
 
   static func uuid(_ text: String) -> UUID {
     guard let id = UUID(uuidString: text) else { preconditionFailure("\(text) is a valid UUID") }
@@ -37,7 +39,8 @@ enum SchemaFixture {
     let components: [NovelForgeKey.Components] = [
       .volume(text), .milestone(text), .thread(text), .mystery(text), .secret(text), .entity(text), .characterKnowledge(fact: text, entity: text),
       .page(section: .known(.world), slug: text), .chapterPlan(chapter: 3), .draft(chapter: 3), .finalChapter(chapter: 3), .authorNotes,
-      .proposalChange(proposal: proposal, index: 3),
+      .proposalChange(proposal: proposal, index: 3), .reviewRemedy(review: review, finding: text),
+      .finalizeDecision(chapter: 3, draftRevision: draftRevision, item: text),
     ]
     return try components.map { components throws(NovelForgeKeyError) in try NovelForgeKey(novel: novel, components) }
   }

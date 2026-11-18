@@ -1,20 +1,21 @@
 import ShadowAI
+import ShadowJobs
 import ShadowStore
 
 public enum NovelForgeSchema {
-  public static let version = 2
+  public static let version = 3
 
   // apps/novel-forge-server/src/common/draft-history.ts:10
   static let revisionLimit = 50
 
   public static let entities: [EntitySchema] = [
-    record(.novel, registers(NovelField.self)),
+    record(.novel, registers(NovelField.self).merging(registers(NovelAddedField.self)) { _, _ in preconditionFailure("auto_keep is declared twice") }),
     removableRecord(.volume, registers(VolumeField.self)),
     removableRecord(.milestone, registers(MilestoneField.self)),
     removableRecord(.thread, registers(ThreadField.self)),
     removableRecord(.mystery, registers(MysteryField.self)),
     removableRecord(.secret, registers(SecretField.self)),
-    removableRecord(.entity, registers(EntityField.self)),
+    removableRecord(.entity, registers(EntityField.self).merging(registers(EntityAddedField.self)) { _, _ in preconditionFailure("age is declared twice") }),
     removableRecord(.characterKnowledge, registers(CharacterKnowledgeField.self)),
     document(.page, fields: removable([:])),
     document(.chapterPlan, fields: removable([:]), marks: ChapterPlanMark.allCases.map(\.rawValue)),
@@ -45,9 +46,14 @@ public enum NovelForgeSchema {
         ProposalChangeField.undoneState.rawValue: .register,
         ProposalChangeField.result.rawValue: .firstWriterWins,
       ])),
+    appended(.chapterReview),
+    record(.reviewRemedy, keyed(registers(ReviewRemedyField.self))),
+    appended(.finalizeReview),
+    record(.finalizeDecision, keyed(registers(FinalizeDecisionField.self))),
+    appended(.refreshReport),
   ]
 
-  public static let registry = SchemaRegistry(version: version, entities: entities + LedgerSchema.entities)
+  public static let registry = SchemaRegistry(version: version, entities: entities + LedgerSchema.entities + JobSchema.entities)
 
   private static func registers<Field: RawRepresentable & CaseIterable>(_: Field.Type) -> [String: FieldRule] where Field.RawValue == String {
     Dictionary(uniqueKeysWithValues: Field.allCases.map { ($0.rawValue, FieldRule.register) })

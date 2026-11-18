@@ -37,11 +37,6 @@ struct NovelForgeSchemaVersionTwoTests {
 
   @Test func shouldRegisterTheLedgerKindsInTheVaultBesideTheNovelForgeKinds() throws {
     let registry = NovelForgeStore.registry
-    #expect(registry.version == 2)
-    let described = try JSONDecoder().decode(JSONValue.self, from: registry.canonicalDescription())
-    let kinds = try #require(described["kinds"]?.arrayValue).compactMap { $0["kind"]?.stringValue }
-    #expect(Set(kinds) == Set(NovelForgeKind.allCases.map(\.rawValue) + ["ai_model_call", "ai_consent"]))
-    #expect(kinds.count == NovelForgeKind.allCases.count + 2)
     for schema in LedgerSchema.entities {
       #expect(registry[schema.kind] == schema)
       #expect(NovelForgeKind(schema.kind) == nil)

@@ -1,6 +1,7 @@
 import Foundation
 import ShadowAI
 import ShadowCore
+import ShadowJobs
 import ShadowStore
 import Testing
 
@@ -8,7 +9,7 @@ import Testing
 
 @Suite("NovelForgeSchema")
 struct NovelForgeSchemaTests {
-  private static let frozenVersions = [1, 2]
+  private static let frozenVersions = [1, 2, 3]
 
   private static func frozenPath(_ version: Int) -> String { "schema/registry-v\(version).json" }
 
@@ -42,7 +43,7 @@ struct NovelForgeSchemaTests {
       fields["canon"] = .register
       return EntitySchema(kind: schema.kind, shape: .revisioned(fields: fields, marks: marks, retention: retention), syncClass: schema.syncClass)
     }
-    let problems = SchemaRegistry(version: NovelForgeSchema.version + 1, entities: changed + LedgerSchema.entities).incompatibilities(with: registry)
+    let problems = SchemaRegistry(version: NovelForgeSchema.version + 1, entities: changed + LedgerSchema.entities + JobSchema.entities).incompatibilities(with: registry)
     #expect(problems == ["field nf_final_chapter.canon changed rule from first writer wins to register"])
   }
 
@@ -67,7 +68,7 @@ struct NovelForgeSchemaTests {
     #expect(try await SchemaFixture.record(proposal, in: store)[field: "decision"]?.value == "pending")
     let items = [
       NovelForgeKey.approval(UUID()), NovelForgeKey.notebookEntry(UUID()), NovelForgeKey.notebookWithdrawal(UUID()), NovelForgeKey.chatMessage(UUID()),
-      NovelForgeKey.chatSummary(UUID()),
+      NovelForgeKey.chatSummary(UUID()), NovelForgeKey.chapterReview(UUID()), NovelForgeKey.finalizeReview(UUID()), NovelForgeKey.refreshReport(UUID()),
     ]
     for ref in items {
       _ = try await store.write { transaction in try transaction.append(ref, item: ["novel": .string(SchemaFixture.novel.uuidString.lowercased())]) }
