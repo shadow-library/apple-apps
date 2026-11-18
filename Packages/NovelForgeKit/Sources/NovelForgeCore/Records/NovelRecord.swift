@@ -61,11 +61,13 @@ public struct NovelRecord: NovelForgeRecord {
   public var opposition: String?
   public var writingStyle: String?
   public var archived: Bool
+  public var autoKeep: [StoredEnum<FinalizeCategory>]?
 
   public init(
     id: UUID, name: String, title: String? = nil, contentMode: StoredEnum<ContentMode> = .known(.standard), costTier: StoredEnum<CostTier> = .known(.balanced),
     wordTarget: WordTarget? = nil, brief: String? = nil, premise: String? = nil, themes: [String]? = nil, theme: String? = nil, endingQuestion: String? = nil,
-    ending: String? = nil, readerPromise: String? = nil, protagonist: String? = nil, opposition: String? = nil, writingStyle: String? = nil, archived: Bool = false
+    ending: String? = nil, readerPromise: String? = nil, protagonist: String? = nil, opposition: String? = nil, writingStyle: String? = nil, archived: Bool = false,
+    autoKeep: [StoredEnum<FinalizeCategory>]? = nil
   ) {
     self.id = id
     self.name = name
@@ -84,6 +86,7 @@ public struct NovelRecord: NovelForgeRecord {
     self.opposition = opposition
     self.writingStyle = writingStyle
     self.archived = archived
+    self.autoKeep = autoKeep
   }
 
   public init(ref: EntityRef, reading reader: FieldReader<NovelField>) throws(UnreadableReason) {
@@ -93,7 +96,8 @@ public struct NovelRecord: NovelForgeRecord {
       costTier: try reader.required(.costTier), wordTarget: try reader.optional(.wordTarget), brief: try reader.optional(.brief), premise: try reader.optional(.premise),
       themes: try reader.optional(.themes), theme: try reader.optional(.theme), endingQuestion: try reader.optional(.endingQuestion),
       ending: try reader.optional(.ending), readerPromise: try reader.optional(.readerPromise), protagonist: try reader.optional(.protagonist),
-      opposition: try reader.optional(.opposition), writingStyle: try reader.optional(.writingStyle), archived: try reader.required(.archived))
+      opposition: try reader.optional(.opposition), writingStyle: try reader.optional(.writingStyle), archived: try reader.required(.archived),
+      autoKeep: try reader.optional(.autoKeep))
   }
 
   public var novel: UUID { id }
@@ -122,6 +126,7 @@ public struct NovelRecord: NovelForgeRecord {
     fields.put(.opposition, opposition)
     fields.put(.writingStyle, writingStyle)
     fields.put(.archived, archived)
+    fields.put(.autoKeep, autoKeep)
     return fields
   }
 }
@@ -143,6 +148,7 @@ public struct NovelEdit: Sendable, Equatable {
   public var opposition: FieldChange<String?> = .keep
   public var writingStyle: FieldChange<String?> = .keep
   public var archived: FieldChange<Bool> = .keep
+  public var autoKeep: FieldChange<[StoredEnum<FinalizeCategory>]?> = .keep
 
   public init() {}
 
@@ -164,6 +170,7 @@ public struct NovelEdit: Sendable, Equatable {
     fields.put(.opposition, opposition)
     fields.put(.writingStyle, writingStyle)
     fields.put(.archived, archived)
+    fields.put(.autoKeep, autoKeep)
     return fields
   }
 }

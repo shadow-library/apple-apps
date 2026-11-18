@@ -50,7 +50,9 @@ extension Gen {
   static func draftContent(_ generator: inout SeededGenerator) -> DraftContent {
     DraftContent(
       title: optionalText(&generator), body: text(&generator), summary: optionalText(&generator), source: stored(&generator), generator: stored(&generator),
-      isolated: bool(&generator), restoredFrom: generator.chance(0.5) ? nil : revision(&generator), upstream: generator.chance(0.5) ? nil : upstream(&generator))
+      isolated: bool(&generator), restoredFrom: generator.chance(0.5) ? nil : revision(&generator), upstream: generator.chance(0.5) ? nil : upstream(&generator),
+      state: generator.chance(0.5) ? nil : ["location": .string(text(&generator)), "goals": [.string(text(&generator))]],
+      run: optionalText(&generator), job: generator.chance(0.5) ? nil : EntityKey(uuid: generator.uuid()))
   }
 
   static func upstream(_ generator: inout SeededGenerator) -> DraftUpstream {

@@ -9,13 +9,13 @@ public enum NovelForgeSchema {
   static let revisionLimit = 50
 
   public static let entities: [EntitySchema] = [
-    record(.novel, registers(NovelField.self).merging(registers(NovelAddedField.self)) { _, _ in preconditionFailure("auto_keep is declared twice") }),
+    record(.novel, registers(NovelField.self)),
     removableRecord(.volume, registers(VolumeField.self)),
     removableRecord(.milestone, registers(MilestoneField.self)),
     removableRecord(.thread, registers(ThreadField.self)),
     removableRecord(.mystery, registers(MysteryField.self)),
     removableRecord(.secret, registers(SecretField.self)),
-    removableRecord(.entity, registers(EntityField.self).merging(registers(EntityAddedField.self)) { _, _ in preconditionFailure("age is declared twice") }),
+    removableRecord(.entity, registers(EntityField.self)),
     removableRecord(.characterKnowledge, registers(CharacterKnowledgeField.self)),
     document(.page, fields: removable([:])),
     document(.chapterPlan, fields: removable([:]), marks: ChapterPlanMark.allCases.map(\.rawValue)),

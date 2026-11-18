@@ -30,6 +30,7 @@ struct RecordEditCoverageTests {
       case .opposition: edit.opposition = .set(nil)
       case .writingStyle: edit.writingStyle = .set(nil)
       case .archived: edit.archived = .set(true)
+      case .autoKeep: edit.autoKeep = .set([.known(.summary), .unknown("x_scene")])
       }
       expectOnlyTheNamedField(field, edit.fields)
     }

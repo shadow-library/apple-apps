@@ -61,6 +61,29 @@ public protocol AppendedRecord: Sendable, Equatable {
   init(id: UUID, reading reader: FieldReader<Member>) throws(UnreadableReason)
 }
 
+public protocol ChapterAppendedRecord: AppendedRecord {
+  static var chapterMember: Member { get }
+
+  var chapter: Int { get }
+}
+
+extension ChapterAppendedRecord {
+  /// Unreadable items count when their chapter member names this chapter or cannot be read.
+  public static func listing<Transaction: StateReading & ~Copyable>(novel: UUID, chapter: Int, in transaction: borrowing Transaction) throws(StoreError)
+    -> AppendedListing<Self>
+  {
+    collecting(try transaction.states(ofKind: kind.entityKind, scope: .vault), owner: novel) { reader in
+      let stored: Int? = try? reader.required(chapterMember)
+      return stored.map { $0 == chapter } ?? true
+    }
+  }
+
+  static func attributedChapter(in state: EntityState) -> Int? {
+    guard case .appended(let appended) = state, let reader = FieldReader<Member>(object: .object(appended.item)) else { return nil }
+    return try? reader.required(chapterMember)
+  }
+}
+
 extension AppendedRecord {
   public static func ref(_ id: UUID) -> EntityRef { EntityRef(kind: kind.entityKind, key: EntityKey(uuid: id)) }
 

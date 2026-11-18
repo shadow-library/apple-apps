@@ -2,6 +2,7 @@ import Foundation
 import GRDB
 import ShadowCore
 import ShadowStore
+import ShadowTestSupport
 import Testing
 
 @testable import NovelForgeCore
@@ -75,6 +76,60 @@ struct ProjectionDerivationTests {
 
     let kinds = try await Projection.fetch(IndexedRecord.filter(Column("novel") == novel).order(Column("kind")), in: store).map(\.kind)
     #expect(kinds == [.notebookEntry, .novel, .volume])
+  }
+
+  @Test func shouldIndexTheReviewAndFinalizeKindsUnderTheirNovelAndChapter() async throws {
+    let reconciler = try Projection.reconciler()
+    let store = try Projection.store(reconciler)
+    var generator = SeededGenerator(seed: 0xD1A)
+    try await Projection.createNovel(novel, in: store)
+    let appended: [(record: any AppendedRecord, chapter: Int)] = [
+      (Gen.chapterReview(&generator, novel: novel, chapter: 2), 2), (Gen.finalizeReview(&generator, novel: novel, chapter: 3), 3),
+      (Gen.refreshReport(&generator, novel: novel, chapter: 4), 4), (Gen.approval(&generator, novel: novel, chapter: 5), 5),
+    ]
+    for (record, _) in appended {
+      let (ref, item) = (record.ref, record.item)
+      _ = try await Projection.write(store) { transaction in try transaction.append(ref, item: item) }
+    }
+    let answer = try FinalizeDecisionRecord(
+      novel: novel, chapter: 6, draftRevision: "v:one", item: "summary", answer: StoredFinalizeAnswer(decision: .known(.kept), proposalDigest: "d"))
+    _ = try await Projection.write(store) { transaction in
+      _ = try answer.create(in: &transaction)
+      return try ReviewRemedyRecord.set(
+        novel: novel, review: SchemaFixture.review, finding: "f1", ReviewRemedy(action: .known(.dismissed), fingerprint: "fp"), in: &transaction)
+    }
+    let draft = try DraftRecord(novel: novel, chapter: 7, content: DraftContent(body: "Waves.", source: .known(.generated)))
+    _ = try await Projection.write(store) { transaction in try draft.create(in: &transaction) }
+
+    for (record, chapter) in appended {
+      let row = try #require(try await Projection.indexed(record.ref, in: store))
+      #expect(row.novel == novel && row.chapter == chapter && row.status == .live, "\(record.ref.kind)")
+    }
+    let remedyRef = ReviewRemedyRecord.ref(novel: novel, review: SchemaFixture.review, finding: "f1")
+    for (ref, chapter) in [(answer.ref, 6), (draft.ref, 7), (remedyRef, nil), (NovelForgeKey.novel(novel), nil)] as [(EntityRef, Int?)] {
+      let row = try #require(try await Projection.indexed(ref, in: store))
+      #expect(row.novel == novel && row.chapter == chapter && row.status == .live, "\(ref.kind)")
+    }
+
+    let broken = Gen.chapterReview(&generator, novel: novel, chapter: 8)
+    var item = broken.item
+    item["disposition"] = 3
+    let brokenItem = item
+    _ = try await Projection.write(store) { transaction in try transaction.append(broken.ref, item: brokenItem) }
+    #expect(try await Projection.indexed(broken.ref, in: store).map { [$0.novel == novel, $0.chapter == 8, $0.status == .unreadable] } == [true, true, true])
+    let unchaptered = Gen.chapterReview(&generator, novel: novel, chapter: 8)
+    item = unchaptered.item
+    item["chapter"] = "eight"
+    let unchapteredItem = item
+    _ = try await Projection.write(store) { transaction in try transaction.append(unchaptered.ref, item: unchapteredItem) }
+    #expect(try await Projection.indexed(unchaptered.ref, in: store).map { [$0.novel == novel, $0.chapter == nil, $0.status == .unreadable] } == [true, true, true])
+    try await Projection.set(answer.ref, ["decision": "kept"], in: store)
+    #expect(try await Projection.indexed(answer.ref, in: store).map { [$0.novel == novel, $0.chapter == 6, $0.status == .unreadable] } == [true, true, true])
+    _ = try await Projection.write(store) { transaction in try ReviewRemedyRecord.clear(novel: novel, review: SchemaFixture.review, finding: "f1", in: &transaction) }
+    #expect(try await Projection.indexed(remedyRef, in: store)?.status == .live)
+
+    let comparison = try await Projection.compare(reconciler, in: store)
+    #expect(comparison.incremental == comparison.rebuilt)
   }
 
   @Test func shouldReachAPerNovelAggregateThroughTheIndexWhenARecordIsEdited() async throws {

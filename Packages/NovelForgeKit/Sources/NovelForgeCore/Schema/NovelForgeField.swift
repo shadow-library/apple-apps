@@ -21,6 +21,8 @@ public enum NovelField: String, CaseIterable {
   case opposition
   case writingStyle = "writing_style"
   case archived
+  // apps/novel-forge-server/src/database/schemas/projects.ts:9-11; null until the author chooses (finalize-review-items.ts:71).
+  case autoKeep = "auto_keep"
 }
 
 public enum VolumeField: String, CaseIterable {
@@ -83,6 +85,8 @@ public enum EntityField: String, CaseIterable {
   case body
   case appearance
   case wikiVisibility = "wiki_visibility"
+  // Not in the reference: the hard-line rule reads a character's structured age.
+  case age
 }
 
 public enum CharacterKnowledgeField: String, CaseIterable {
@@ -141,6 +145,16 @@ enum FinalChapterCanonMember: String, CaseIterable {
   case contract
   // The secret keys this chapter disclosed to readers, frozen at finalize; null when not recorded.
   case disclosed
+  // The finalize review the commit applied; null when the chapter was committed without one.
+  case review
+  // The (fact, entity) pairs the finalizing device committed to the knowledge ledger; null when not recorded, so readers recompute.
+  case knowledge
+}
+
+enum CanonReviewMember: String, CaseIterable {
+  case id
+  case kept
+  case unreached
 }
 
 // The finalized plan revision's apps/novel-forge-server/src/common/knowledge-contract.ts:7 contract, database/schemas/generation.ts:120 claimed milestones and :121 ending flag.
@@ -328,16 +342,6 @@ public enum ProposalChangeResultMember: String, CaseIterable, Sendable {
   case result
 }
 
-// apps/novel-forge-server/src/database/schemas/projects.ts:9-11; NovelRecord still reads it as an unrecognised member.
-public enum NovelAddedField: String, CaseIterable, Sendable {
-  case autoKeep = "auto_keep"
-}
-
-// Not in the reference: the hard-line rule reads a character's structured age; EntityRecord still reads it as an unrecognised member.
-public enum EntityAddedField: String, CaseIterable, Sendable {
-  case age
-}
-
 // apps/novel-forge-server/src/database/schemas/review.ts:40-73
 public enum ChapterReviewMember: String, CaseIterable, Sendable {
   case novel
@@ -360,6 +364,51 @@ public enum ChapterReviewMember: String, CaseIterable, Sendable {
   case calls
 }
 
+// apps/novel-forge-server/src/database/schemas/review.ts:36
+public enum ChapterReviewKind: String, CaseIterable, Sendable {
+  case judge
+  case editorial
+  case mechanics
+  case readability
+}
+
+// apps/novel-forge-server/src/database/schemas/review.ts:37
+public enum ChapterReviewDisposition: String, CaseIterable, Sendable {
+  case clear
+  case issues
+  case blocking
+  case failed
+}
+
+// apps/novel-forge-server/src/database/schemas/review.ts:8
+public enum ReviewFindingSeverity: String, CaseIterable, Sendable {
+  case blocking
+  case warning
+  case note
+}
+
+// apps/novel-forge-server/src/database/schemas/review.ts:9
+public enum ReviewFindingCategory: String, CaseIterable, Sendable {
+  case continuity
+  case brief
+  case ending
+  case knowledge
+  case readability
+  case mechanics
+  case editorial
+  case proofreading
+}
+
+// apps/novel-forge-server/src/database/schemas/review.ts:11-21
+public enum ReviewFindingMember: String, CaseIterable, Sendable {
+  case id
+  case severity
+  case category
+  case text
+  case evidence
+  case fingerprint
+}
+
 public enum ReviewRemedyField: String, CaseIterable, Sendable {
   case remedy
 }
@@ -369,6 +418,53 @@ public enum ReviewRemedyMember: String, CaseIterable, Sendable {
   case action
   case fingerprint
   case reason
+}
+
+// apps/novel-forge-server/src/database/schemas/review.ts:38
+public enum ReviewRemedyAction: String, CaseIterable, Sendable {
+  case dismissed
+  case fixingMyself = "fixing_myself"
+  case overridden
+}
+
+// apps/novel-forge-server/src/database/schemas/finalize-review.ts:34-42
+public enum FinalizeCategory: String, CaseIterable, Sendable {
+  case entity
+  case appearance
+  case characterState = "character_state"
+  case relationship
+  case promise
+  case knowledge
+  case milestone
+  case summary
+}
+
+// apps/novel-forge-server/src/database/schemas/finalize-review.ts:44
+public enum FinalizeTriage: String, CaseIterable, Sendable {
+  case consequential
+  case routine
+}
+
+// apps/novel-forge-server/src/database/schemas/finalize-review.ts:45
+public enum FinalizeBasis: String, CaseIterable, Sendable {
+  case observed
+  case inferred
+}
+
+// apps/novel-forge-server/src/database/schemas/finalize-review.ts:46
+public enum FinalizeDecision: String, CaseIterable, Sendable {
+  case kept
+  case edited
+  case skipped
+}
+
+// apps/novel-forge-server/src/database/schemas/finalize-review.ts:47
+public enum FinalizeFlag: String, CaseIterable, Sendable {
+  case missedMilestone = "missed_milestone"
+  case unclaimedMilestone = "unclaimed_milestone"
+  case unplannedDisclosure = "unplanned_disclosure"
+  case renamedRecord = "renamed_record"
+  case reopenedPromise = "reopened_promise"
 }
 
 // apps/novel-forge-server/src/database/schemas/finalize-review.ts:50-82; one appended per attempt, only once it is ready.

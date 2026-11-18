@@ -30,14 +30,16 @@ struct NovelForgeSchemaVersionThreeTests {
     #expect(try Self.rules(of: .refreshReport) == .appended)
   }
 
-  @Test func shouldAddTheEntityAgeAndTheNovelAutoKeepAsRegisters() throws {
+  @Test func shouldDeclareTheEntityAgeAndTheNovelAutoKeepAsTypedRegisters() throws {
     let entity = try Self.rules(of: .entity)
     let novel = try Self.rules(of: .novel)
     guard case .record(let entityFields) = entity, case .record(let novelFields) = novel else { throw SchemaFixtureError(description: "entity and novel are records") }
     #expect(entityFields["age"] == .register)
     #expect(novelFields["auto_keep"] == .register)
-    #expect(!EntityField.allCases.map(\.rawValue).contains("age"))
-    #expect(!NovelField.allCases.map(\.rawValue).contains("auto_keep"))
+    #expect(EntityField.age.rawValue == "age")
+    #expect(NovelField.autoKeep.rawValue == "auto_keep")
+    #expect(Set(entityFields.keys) == Set(EntityField.allCases.map(\.rawValue) + ["natural_key", "removed"]))
+    #expect(Set(novelFields.keys) == Set(NovelField.allCases.map(\.rawValue)))
   }
 
   @Test func shouldRegisterTheLedgerAndJobKindsInTheVaultBesideTheNovelForgeKinds() throws {

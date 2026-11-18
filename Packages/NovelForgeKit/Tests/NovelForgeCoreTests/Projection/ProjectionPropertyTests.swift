@@ -32,6 +32,56 @@ private func volumeOracle(_ reconciler: NovelForgeReconciler, _ store: VaultStor
   }
 }
 
+private struct ExpectedRow: Equatable {
+  let novel: UUID?
+  let chapter: Int?
+  let status: IndexedStatus
+}
+
+private func expectedRow<R: ChapterAppendedRecord>(_: R.Type, _ ref: EntityRef, _ state: EntityState) -> ExpectedRow? {
+  guard case .appended(let appended) = state else { return nil }
+  let novel = appended.item[R.novelMember.rawValue].flatMap(UUID.init(json:))
+  let chapter = appended.item[R.chapterMember.rawValue].flatMap(Int.init(json:))
+  switch R.reading(state, of: ref) {
+  case .absent: return nil
+  case .readable(let entry): return ExpectedRow(novel: entry.record.novel, chapter: entry.record.chapter, status: .live)
+  case .unreadable: return ExpectedRow(novel: novel, chapter: chapter, status: .unreadable)
+  }
+}
+
+private func expectedRow<R: KeyedRecord>(_: R.Type, _ ref: EntityRef, _ state: EntityState) -> ExpectedRow? {
+  let key = try? NovelForgeKey(reading: state, of: ref)
+  switch R.reading(state, of: ref) {
+  case .absent: return nil
+  case .readable(let entry): return ExpectedRow(novel: entry.record.novel, chapter: key?.components.chapters.first, status: entry.isRemoved ? .removed : .live)
+  case .unreadable: return ExpectedRow(novel: key?.novel, chapter: key?.components.chapters.first, status: .unreadable)
+  }
+}
+
+private func reviewIndexOracle(_ reconciler: NovelForgeReconciler, _ store: VaultStore, _ universe: ProjectionUniverse) async throws {
+  let kinds: [NovelForgeKind] = [.chapterReview, .reviewRemedy, .finalizeReview, .finalizeDecision, .refreshReport]
+  let expected = try await store.read { transaction in
+    var rows = [EntityRef: ExpectedRow]()
+    for kind in kinds {
+      for (ref, state) in try transaction.states(ofKind: kind.entityKind, scope: .vault) {
+        let row: ExpectedRow? =
+          switch kind {
+          case .chapterReview: expectedRow(ChapterReviewRecord.self, ref, state)
+          case .finalizeReview: expectedRow(FinalizeReviewRecord.self, ref, state)
+          case .refreshReport: expectedRow(RefreshReportRecord.self, ref, state)
+          case .reviewRemedy: expectedRow(ReviewRemedyRecord.self, ref, state)
+          default: expectedRow(FinalizeDecisionRecord.self, ref, state)
+          }
+        rows[ref] = row
+      }
+    }
+    return rows
+  }
+  let indexed = try await Projection.fetch(IndexedRecord.filter(kinds.map(\.rawValue).contains(Column("kind"))), in: store)
+  let projected = Dictionary(uniqueKeysWithValues: indexed.map { ($0.ref, ExpectedRow(novel: $0.novel, chapter: $0.chapter, status: $0.status)) })
+  guard projected == expected else { throw ProjectionPropertyFailure.oracle("indexed review and finalize records") }
+}
+
 @Suite("Projection property", .timeLimit(.minutes(5)))
 struct ProjectionPropertyTests {
   @Test(arguments: [CausalReplicaOrder.causal, .writerOrderOnly])
@@ -46,5 +96,11 @@ struct ProjectionPropertyTests {
       derivations: NovelForgeDerivations.standard + [HighestVolumeDerivation()], operations: ProjectionOperations.novels + ProjectionOperations.volumes, iterations: 8,
       settled: volumeOracle)
     try await property.check(order: order, seed: order == .causal ? 0xD13C : 0xD13D)
+  }
+
+  @Test(arguments: [CausalReplicaOrder.causal, .writerOrderOnly])
+  func shouldIndexEveryReviewAndFinalizeRecordUnderItsNovelAndChapterAsARebuildDoes(order: CausalReplicaOrder) async throws {
+    let property = ProjectionProperty(operations: ProjectionOperations.novels + ProjectionOperations.reviews, iterations: 8, settled: reviewIndexOracle)
+    try await property.check(order: order, seed: order == .causal ? 0xD13E : 0xD13F)
   }
 }

@@ -80,7 +80,8 @@ struct EntitySubject: RemovableSubject {
     EntityRecord(
       novel: novel, entity: key, type: Gen.stored(&generator), name: Gen.text(&generator), attributes: Gen.optionalJSON(&generator),
       significance: Gen.optionalStored(&generator), status: Gen.optionalText(&generator), origin: Gen.optionalStored(&generator), notes: Gen.optionalText(&generator),
-      motivation: Gen.optionalText(&generator), body: Gen.optionalText(&generator), appearance: Gen.optionalText(&generator), wikiVisibility: Gen.stored(&generator))
+      motivation: Gen.optionalText(&generator), body: Gen.optionalText(&generator), appearance: Gen.optionalText(&generator), wikiVisibility: Gen.stored(&generator),
+      age: Gen.optionalInt(&generator))
   }
 
   static func randomEdit(_ generator: inout SeededGenerator, of record: EntityRecord) -> SubjectEdit<EntityRecord> {
@@ -98,6 +99,7 @@ struct EntitySubject: RemovableSubject {
       draft.maybe(&generator, "body", edit: \.body, record: \.body, Gen.optionalText)
       draft.maybe(&generator, "appearance", edit: \.appearance, record: \.appearance, Gen.optionalText)
       draft.maybe(&generator, "wiki_visibility", edit: \.wikiVisibility, record: \.wikiVisibility, Gen.stored)
+      draft.maybe(&generator, "age", edit: \.age, record: \.age, Gen.optionalInt)
     } while draft.members.isEmpty
     let (novel, entity) = (record.novel, record.entity)
     return draft.subject { edit, transaction throws(StoreError) in try EntityRecord.edit(novel: novel, entity: entity, edit, in: &transaction) }

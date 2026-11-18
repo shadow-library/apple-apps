@@ -45,6 +45,11 @@ enum Gen {
     return (0..<generator.int(in: 0...3)).map { _ in text(&generator) }
   }
 
+  static func autoKeep(_ generator: inout SeededGenerator) -> [StoredEnum<FinalizeCategory>]? {
+    guard !generator.chance(0.35) else { return nil }
+    return (0..<generator.int(in: 0...3)).map { _ in stored(&generator) }
+  }
+
   static func wordTarget(_ generator: inout SeededGenerator) -> WordTarget? {
     guard !generator.chance(0.35) else { return nil }
     let low = generator.int(in: 0...5000)
@@ -214,7 +219,7 @@ struct NovelSubject: RecordSubject {
       wordTarget: Gen.wordTarget(&generator), brief: Gen.optionalText(&generator), premise: Gen.optionalText(&generator), themes: Gen.themes(&generator),
       theme: Gen.optionalText(&generator), endingQuestion: Gen.optionalText(&generator), ending: Gen.optionalText(&generator),
       readerPromise: Gen.optionalText(&generator), protagonist: Gen.optionalText(&generator), opposition: Gen.optionalText(&generator),
-      writingStyle: Gen.optionalText(&generator), archived: Gen.bool(&generator))
+      writingStyle: Gen.optionalText(&generator), archived: Gen.bool(&generator), autoKeep: Gen.autoKeep(&generator))
   }
 
   static func randomEdit(_ generator: inout SeededGenerator, of record: NovelRecord) -> SubjectEdit<NovelRecord> {
@@ -237,6 +242,7 @@ struct NovelSubject: RecordSubject {
       draft.maybe(&generator, "opposition", edit: \.opposition, record: \.opposition, Gen.optionalText)
       draft.maybe(&generator, "writing_style", edit: \.writingStyle, record: \.writingStyle, Gen.optionalText)
       draft.maybe(&generator, "archived", edit: \.archived, record: \.archived, Gen.bool)
+      draft.maybe(&generator, "auto_keep", edit: \.autoKeep, record: \.autoKeep, Gen.autoKeep)
     } while draft.members.isEmpty
     let id = record.id
     return draft.subject { edit, transaction throws(StoreError) in try NovelRecord.edit(id: id, edit, in: &transaction) }

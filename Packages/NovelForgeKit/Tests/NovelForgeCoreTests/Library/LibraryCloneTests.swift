@@ -151,6 +151,23 @@ struct LibraryCloneTests {
   }
 
   @Test
+  func shouldCarryTheAutoKeepChoiceAndEveryEntityAgeIntoTheCopy() async throws {
+    let source = try await source()
+    let world = source.world
+    var novelEdit = NovelEdit()
+    novelEdit.autoKeep = .set([.known(.appearance), .unknown("x_scene")])
+    var entityEdit = EntityEdit()
+    entityEdit.age = .set(16)
+    _ = try await world.store.write { [novelEdit, entityEdit] transaction in
+      _ = try NovelRecord.edit(id: source.id, novelEdit, in: &transaction)
+      return try EntityRecord.edit(novel: source.id, entity: "mara", entityEdit, in: &transaction)
+    }
+    let copy = try await clone(source, NovelCopy(name: "Ember II"))
+    #expect(try await world.novel(copy)?.autoKeep == [.known(.appearance), .unknown("x_scene")])
+    #expect(liveRecord(try await world.store.read { try EntityRecord.read(novel: copy, entity: "mara", in: $0) })?.age == 16)
+  }
+
+  @Test
   func shouldNameTheCopyWithTheTrimmedName() async throws {
     let source = try await source()
     let copy = try await clone(source, NovelCopy(name: "  Ember II \n"))

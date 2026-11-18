@@ -40,11 +40,12 @@ public struct EntityRecord: RemovableRecord {
   public var body: String?
   public var appearance: String?
   public var wikiVisibility: StoredEnum<EntityWikiVisibility>
+  public var age: Int?
 
   public init(
     novel: UUID, entity: String, type: StoredEnum<EntityType>, name: String, attributes: JSONValue? = nil, significance: StoredEnum<EntitySignificance>? = nil,
     status: String? = nil, origin: StoredEnum<EntityOrigin>? = nil, notes: String? = nil, motivation: String? = nil, body: String? = nil, appearance: String? = nil,
-    wikiVisibility: StoredEnum<EntityWikiVisibility> = .known(.default)
+    wikiVisibility: StoredEnum<EntityWikiVisibility> = .known(.default), age: Int? = nil
   ) {
     let entity = entity.precomposedStringWithCanonicalMapping
     self.entity = entity
@@ -60,6 +61,7 @@ public struct EntityRecord: RemovableRecord {
     self.body = body
     self.appearance = appearance
     self.wikiVisibility = wikiVisibility
+    self.age = age
   }
 
   public init(key: NovelForgeKey, reading reader: FieldReader<EntityField>) throws(UnreadableReason) {
@@ -68,7 +70,7 @@ public struct EntityRecord: RemovableRecord {
       novel: key.novel, entity: entity, type: try reader.required(.type), name: try reader.required(.name), attributes: try reader.optional(.attributes),
       significance: try reader.optional(.significance), status: try reader.optional(.status), origin: try reader.optional(.origin), notes: try reader.optional(.notes),
       motivation: try reader.optional(.motivation), body: try reader.optional(.body), appearance: try reader.optional(.appearance),
-      wikiVisibility: try reader.required(.wikiVisibility))
+      wikiVisibility: try reader.required(.wikiVisibility), age: try reader.optional(.age))
   }
 
   public var fields: RecordFields<EntityField> {
@@ -84,6 +86,7 @@ public struct EntityRecord: RemovableRecord {
     fields.put(.body, body)
     fields.put(.appearance, appearance)
     fields.put(.wikiVisibility, wikiVisibility)
+    fields.put(.age, age)
     return fields
   }
 }
@@ -100,6 +103,7 @@ public struct EntityEdit: Sendable, Equatable {
   public var body: FieldChange<String?> = .keep
   public var appearance: FieldChange<String?> = .keep
   public var wikiVisibility: FieldChange<StoredEnum<EntityWikiVisibility>> = .keep
+  public var age: FieldChange<Int?> = .keep
 
   public init() {}
 
@@ -116,6 +120,7 @@ public struct EntityEdit: Sendable, Equatable {
     fields.put(.body, body)
     fields.put(.appearance, appearance)
     fields.put(.wikiVisibility, wikiVisibility)
+    fields.put(.age, age)
     return fields
   }
 }

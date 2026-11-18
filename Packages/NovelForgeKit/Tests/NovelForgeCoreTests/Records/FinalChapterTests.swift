@@ -46,6 +46,9 @@ private func canonText(_ canon: Canon) -> FinalChapterText {
   FinalChapterText(title: canon.title, body: canon.body, note: canon.note, summary: canon.summary)
 }
 
+private let recordedMembers = Set([FinalChapterCanonMember.disclosed, .review, .knowledge].map(\.rawValue))
+private let review = SchemaFixture.uuid("6f0c4d1e-0000-4000-8000-0000000000c1")
+
 private let learning = ChapterContract(
   pov: ["aria"], learns: [ContractLearn(KnowledgeReveal(entityKey: "aria", factKey: "heir"))], claimedMilestones: ["rank-two"], isEnding: false)
 private let otherLearning = ChapterContract(
@@ -226,8 +229,10 @@ struct FinalChapterTests {
       var corrupt = canon
       corrupt[name] = wrong
       let afterCorruption = try await readCanon(try next(), .object(corrupt), in: store)
-      if name == FinalChapterCanonMember.disclosed.rawValue {
-        #expect(afterCorruption.entry?.record.canon.disclosed == nil, "wrong type \(name)")
+      if recordedMembers.contains(name) {
+        let read = try #require(afterCorruption.entry?.record.canon, "wrong type \(name)")
+        #expect(read.disclosed == nil && read.review == nil && read.knowledge == nil, "wrong type \(name)")
+        #expect(read.json.objectValue?[name] == wrong, "wrong type \(name)")
       } else {
         #expect(afterCorruption == .unreadable(.invalid(field: "canon")), "wrong type \(name)")
       }
@@ -284,6 +289,64 @@ struct FinalChapterTests {
     let none = try FinalChapterRecord(novel: novel, chapter: 10, canon: canon)
     _ = try await finalize(none, in: store)
     #expect(try await read(none.ref, in: store)?.canon.disclosed == [])
+  }
+
+  @Test func shouldRoundTripTheReviewBindingAndTheCommittedKnowledgeThroughFinalize() async throws {
+    let store = try SchemaFixture.store()
+    let kept: [[String: JSONValue]] = [["category": "appearance", "entityKey": "aria"], ["category": "milestone", "milestoneKey": "rank-two", "reached": true]]
+    let pairs = [
+      KnowledgeReveal(entityKey: "brook", factKey: "heir"), KnowledgeReveal(entityKey: "aria", factKey: "heir"), KnowledgeReveal(entityKey: "aria", factKey: "fire"),
+      KnowledgeReveal(entityKey: "Ame\u{301}lie", factKey: "heir"), KnowledgeReveal(entityKey: "aria", factKey: "heir"),
+    ]
+    let canon = Canon(body: "Salt.", review: CanonReview(id: review, kept: kept, unreached: ["rank-three", "rank-one", "rank-three"]), knowledge: pairs)
+    let record = try FinalChapterRecord(novel: novel, chapter: 13, canon: canon)
+    guard case .finalized = try await finalize(record, in: store) else { throw SchemaFixtureError(description: "the chapter was not finalized") }
+    let stored = try #require(try await read(record.ref, in: store))
+    #expect(stored.canon.review == CanonReview(id: review, kept: kept, unreached: ["rank-one", "rank-three"]))
+    #expect(
+      stored.canon.knowledge == [
+        KnowledgeReveal(entityKey: "aria", factKey: "fire"), KnowledgeReveal(entityKey: "Am\u{E9}lie", factKey: "heir"), KnowledgeReveal(entityKey: "aria", factKey: "heir"),
+        KnowledgeReveal(entityKey: "brook", factKey: "heir"),
+      ])
+    #expect(stored.canonDigest == record.canonDigest)
+    let none = try FinalChapterRecord(novel: novel, chapter: 14, canon: Canon(body: "Salt.", knowledge: []))
+    _ = try await finalize(none, in: store)
+    let empty = try #require(try await read(none.ref, in: store))
+    #expect(empty.canon.knowledge == [])
+    #expect(empty.canon.review == nil)
+  }
+
+  @Test(
+    arguments: [
+      ("knowledge", "heir"), ("knowledge", [["entity": "aria"]]), ("knowledge", [["entity": "aria", "fact": "heir", "since": 2]]),
+      ("knowledge", [["entity": 1, "fact": "heir"]]), ("knowledge", [.null]), ("review", "r"), ("review", ["id": "x", "kept": [], "unreached": []]),
+      ("review", ["id": "6f0c4d1e-0000-4000-8000-0000000000c1", "kept": ["appearance"], "unreached": []]),
+      ("review", ["id": "6f0c4d1e-0000-4000-8000-0000000000c1", "kept": [], "unreached": [1]]), ("review", ["kept": [], "unreached": []]),
+    ] as [(String, JSONValue)])
+  func shouldReadAMalformedReviewBindingOrKnowledgeAsNotRecordedAndKeepTheCanonAsStored(_ member: String, _ value: JSONValue) async throws {
+    let store = try SchemaFixture.store()
+    let record = try finalChapter(15)
+    var canon = try #require(record.canon.json.objectValue)
+    canon[member] = value
+    let stored = try #require(try await readCanon(record, .object(canon), in: store).entry?.record)
+    #expect(stored.canon.review == nil)
+    #expect(stored.canon.knowledge == nil)
+    #expect(stored.canon.body == "Salt.")
+    #expect(stored.canon.json == .object(canon))
+    #expect(stored.canonDigest == FinalChapterRecord.digest(.object(canon)))
+  }
+
+  @Test func shouldKeepNewerMembersOfTheReviewBindingAndWriteEveryKnownOne() async throws {
+    let store = try SchemaFixture.store()
+    let binding = try #require(CanonReview(id: review).json.objectValue)
+    #expect(Set(binding.keys) == Set(CanonReviewMember.allCases.map(\.rawValue)))
+    let record = try finalChapter(16)
+    var canon = try #require(record.canon.json.objectValue)
+    canon["review"] = ["id": .string(review.uuidString.lowercased()), "kept": [], "unreached": ["b", "a"], "reverted_by": "later"]
+    let stored = try #require(try await readCanon(record, .object(canon), in: store).entry?.record)
+    #expect(stored.canon.review?.unreached == ["a", "b"])
+    #expect(stored.canon.review?.unrecognised == ["reverted_by": "later"])
+    #expect(stored.canon.json.objectValue?["review"]?.objectValue?["reverted_by"] == "later")
   }
 
   @Test func shouldReadAnUnnormalisedDisclosureNormalised() async throws {

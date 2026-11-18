@@ -16,7 +16,7 @@ extension Library {
     let volumes = try transaction.completeListing(VolumeRecord.self, novel: source)
     let record = NovelRecord(
       id: id, name: copy.name.jsTrim(), title: original.title, contentMode: copy.contentMode.map { .known($0) } ?? original.contentMode, costTier: original.costTier,
-      wordTarget: copy.wordTarget ?? original.wordTarget, writingStyle: original.writingStyle)
+      wordTarget: copy.wordTarget ?? original.wordTarget, writingStyle: original.writingStyle, autoKeep: original.autoKeep)
     try transaction.create(record)
     for page in pages { try transaction.create(PageRecord(novel: id, section: page.section, slug: page.slug, content: page.content)) }
     for entity in entities { try transaction.create(relocated(entity, to: id)) }
@@ -30,7 +30,8 @@ extension Library {
   private static func relocated(_ entity: EntityRecord, to novel: UUID) -> EntityRecord {
     EntityRecord(
       novel: novel, entity: entity.entity, type: entity.type, name: entity.name, attributes: entity.attributes, significance: entity.significance, status: entity.status,
-      origin: entity.origin, notes: entity.notes, motivation: entity.motivation, body: entity.body, appearance: entity.appearance, wikiVisibility: entity.wikiVisibility)
+      origin: entity.origin, notes: entity.notes, motivation: entity.motivation, body: entity.body, appearance: entity.appearance, wikiVisibility: entity.wikiVisibility,
+      age: entity.age)
   }
 }
 

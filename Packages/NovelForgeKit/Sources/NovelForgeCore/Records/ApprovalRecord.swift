@@ -5,9 +5,10 @@ import ShadowStore
 extension ApprovalMember: FieldName {}
 
 // apps/novel-forge-server/src/database/schemas/generation.ts:53 keeps one approved revision per draft; here every approval is an item and the one in force is derived
-public struct ApprovalRecord: AppendedRecord {
+public struct ApprovalRecord: ChapterAppendedRecord {
   public static let kind = NovelForgeKind.approval
   public static let novelMember = ApprovalMember.novel
+  public static let chapterMember = ApprovalMember.chapter
 
   public let id: UUID
   public let novel: UUID
@@ -52,16 +53,5 @@ public struct ApprovalRecord: AppendedRecord {
     fields.put(.planTermsDigest, planTermsDigest)
     fields.put(.upstreamDigest, upstreamDigest)
     return fields
-  }
-}
-
-extension ApprovalRecord {
-  public static func listing<Transaction: StateReading & ~Copyable>(novel: UUID, chapter: Int, in transaction: borrowing Transaction) throws(StoreError)
-    -> AppendedListing<ApprovalRecord>
-  {
-    collecting(try transaction.states(ofKind: kind.entityKind, scope: .vault), owner: novel) { reader in
-      let stored: Int? = try? reader.required(.chapter)
-      return stored.map { $0 == chapter } ?? true
-    }
   }
 }

@@ -149,6 +149,7 @@ struct BibleRecordTests {
       case .body: edit.body = .set(nil)
       case .appearance: edit.appearance = .set(nil)
       case .wikiVisibility: edit.wikiVisibility = .set(.known(.hidden))
+      case .age: edit.age = .set(16)
       }
       return edit.fields
     }

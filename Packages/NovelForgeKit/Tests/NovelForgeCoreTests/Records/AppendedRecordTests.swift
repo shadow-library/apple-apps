@@ -1,5 +1,6 @@
 import Foundation
 import ShadowCore
+import ShadowJobs
 import ShadowStore
 import ShadowTestSupport
 import Testing
@@ -30,6 +31,63 @@ extension Gen {
 
   static func withdrawal(_ generator: inout SeededGenerator, novel: UUID, entry: UUID? = nil) -> NotebookWithdrawalRecord {
     NotebookWithdrawalRecord(id: generator.uuid(), novel: novel, entry: entry ?? generator.uuid(), reason: text(&generator))
+  }
+
+  static func attempt(_ generator: inout SeededGenerator) -> AttemptID {
+    do {
+      return try AttemptID(UUID.v7(at: Date(timeIntervalSince1970: 1_800_000_000), using: &generator))
+    } catch {
+      preconditionFailure("UUID.v7 makes a version 7 UUID")
+    }
+  }
+
+  static func jobKey(_ generator: inout SeededGenerator) -> EntityKey { EntityKey(uuid: generator.uuid()) }
+
+  static func object(_ generator: inout SeededGenerator) -> [String: JSONValue] {
+    ["category": .string(text(&generator)), "entityKey": .string(text(&generator)), "nested": [.int(Int64(int(&generator))), .null]]
+  }
+
+  static func finding(_ generator: inout SeededGenerator, id: String) -> ReviewFinding {
+    ReviewFinding(
+      id: id, severity: stored(&generator), category: stored(&generator), text: text(&generator), evidence: optionalText(&generator), fingerprint: revision(&generator))
+  }
+
+  static func chapterReview(_ generator: inout SeededGenerator, novel: UUID, chapter: Int? = nil) -> ChapterReviewRecord {
+    let findings = (0..<generator.int(in: 0...3)).map { index in finding(&generator, id: "f\(index)") }
+    do {
+      return try ChapterReviewRecord(
+        id: generator.uuid(), novel: novel, chapter: chapter ?? generator.int(in: 1...40), reviewKind: stored(&generator), draftRevision: optionalText(&generator),
+        bodyHash: revision(&generator), disposition: stored(&generator), verdict: optionalText(&generator), findings: findings, isolated: bool(&generator),
+        note: optionalText(&generator), checked: texts(&generator), generationPass: bool(&generator), job: generator.chance(0.5) ? nil : jobKey(&generator),
+        attempt: generator.chance(0.5) ? nil : attempt(&generator), calls: generator.chance(0.5) ? nil : [generator.uuid(), generator.uuid()])
+    } catch {
+      preconditionFailure("the finding ids are distinct")
+    }
+  }
+
+  static func finalizeItem(_ generator: inout SeededGenerator, key: String, position: Int) -> StoredFinalizeItem {
+    StoredFinalizeItem(
+      key: key, position: position, category: stored(&generator), triage: stored(&generator), basis: stored(&generator), subject: text(&generator), claim: text(&generator),
+      evidence: optionalText(&generator), proposed: object(&generator), flag: optionalStored(&generator), dependents: optionalTexts(&generator),
+      autoDecision: optionalStored(&generator))
+  }
+
+  static func finalizeReview(_ generator: inout SeededGenerator, novel: UUID, chapter: Int? = nil) -> FinalizeReviewRecord {
+    let items = (0..<generator.int(in: 0...3)).map { position in finalizeItem(&generator, key: "entity:e\(position)", position: position) }
+    do {
+      return try FinalizeReviewRecord(
+        attempt: attempt(&generator), job: jobKey(&generator), novel: novel, chapter: chapter ?? generator.int(in: 1...40), draftRevision: revision(&generator),
+        sourceHash: revision(&generator), planHash: optionalText(&generator), isolated: bool(&generator), items: items)
+    } catch {
+      preconditionFailure("the item keys are distinct")
+    }
+  }
+
+  static func refreshReport(_ generator: inout SeededGenerator, novel: UUID, chapter: Int? = nil) -> RefreshReportRecord {
+    RefreshReportRecord(
+      id: generator.uuid(), novel: novel, chapter: chapter ?? generator.int(in: 1...40), canonDigest: revision(&generator),
+      findings: (0..<generator.int(in: 0...2)).map { _ in object(&generator) }, checked: object(&generator), copy: text(&generator),
+      proposal: generator.chance(0.5) ? nil : generator.uuid(), attempt: generator.chance(0.5) ? nil : attempt(&generator))
   }
 }
 
@@ -176,6 +234,9 @@ struct AppendedRecordTests {
   @Test func shouldAppendAndReadAnApproval() async throws { try await appendedRoundTrip({ Gen.approval(&$0, novel: $1) }, seed: 0x3A1) }
   @Test func shouldAppendAndReadANotebookEntry() async throws { try await appendedRoundTrip({ Gen.notebookEntry(&$0, novel: $1) }, seed: 0x3A2) }
   @Test func shouldAppendAndReadANotebookWithdrawal() async throws { try await appendedRoundTrip({ Gen.withdrawal(&$0, novel: $1) }, seed: 0x3A3) }
+  @Test func shouldAppendAndReadAChapterReview() async throws { try await appendedRoundTrip({ Gen.chapterReview(&$0, novel: $1) }, seed: 0x3A4) }
+  @Test func shouldAppendAndReadAFinalizeReview() async throws { try await appendedRoundTrip({ Gen.finalizeReview(&$0, novel: $1) }, seed: 0x3A5) }
+  @Test func shouldAppendAndReadARefreshReport() async throws { try await appendedRoundTrip({ Gen.refreshReport(&$0, novel: $1) }, seed: 0x3A6) }
 
   @Test func shouldReadAnApprovalTotally() async throws {
     try await appendedTotality(
@@ -189,10 +250,26 @@ struct AppendedRecordTests {
   @Test func shouldReadANotebookWithdrawalTotally() async throws {
     try await appendedTotality({ Gen.withdrawal(&$0, novel: $1) }, required: ["novel", "entry", "reason"], seed: 0x3B3)
   }
+  @Test func shouldReadAChapterReviewTotally() async throws {
+    try await appendedTotality(
+      { Gen.chapterReview(&$0, novel: $1) }, required: ["novel", "chapter", "kind", "body_hash", "disposition", "findings", "isolated", "checked", "generation_pass"],
+      seed: 0x3B4)
+  }
+  @Test func shouldReadAFinalizeReviewTotally() async throws {
+    try await appendedTotality(
+      { Gen.finalizeReview(&$0, novel: $1) }, required: ["novel", "chapter", "draft_revision", "source_hash", "isolated", "job", "attempt", "items"], seed: 0x3B5)
+  }
+  @Test func shouldReadARefreshReportTotally() async throws {
+    try await appendedTotality(
+      { Gen.refreshReport(&$0, novel: $1) }, required: ["novel", "chapter", "canon_digest", "findings", "checked", "copy"], seed: 0x3B6)
+  }
 
   @Test func shouldListOnlyTheApprovalsOfTheNovel() async throws { try await appendedListing({ Gen.approval(&$0, novel: $1) }, seed: 0x3C1) }
   @Test func shouldListOnlyTheNotebookEntriesOfTheNovel() async throws { try await appendedListing({ Gen.notebookEntry(&$0, novel: $1) }, seed: 0x3C2) }
   @Test func shouldListOnlyTheNotebookWithdrawalsOfTheNovel() async throws { try await appendedListing({ Gen.withdrawal(&$0, novel: $1) }, seed: 0x3C3) }
+  @Test func shouldListOnlyTheChapterReviewsOfTheNovel() async throws { try await appendedListing({ Gen.chapterReview(&$0, novel: $1) }, seed: 0x3C4) }
+  @Test func shouldListOnlyTheFinalizeReviewsOfTheNovel() async throws { try await appendedListing({ Gen.finalizeReview(&$0, novel: $1) }, seed: 0x3C5) }
+  @Test func shouldListOnlyTheRefreshReportsOfTheNovel() async throws { try await appendedListing({ Gen.refreshReport(&$0, novel: $1) }, seed: 0x3C6) }
 
   @Test func shouldSettleApprovalsToTheSameListingOnEveryReplica() async throws { try await appendedConvergence({ Gen.approval(&$0, novel: $1) }, seed: 0x3D1) }
   @Test func shouldSettleNotebookEntriesToTheSameListingOnEveryReplica() async throws {
@@ -201,6 +278,9 @@ struct AppendedRecordTests {
   @Test func shouldSettleNotebookWithdrawalsToTheSameListingOnEveryReplica() async throws {
     try await appendedConvergence({ Gen.withdrawal(&$0, novel: $1) }, seed: 0x3D3)
   }
+  @Test func shouldSettleChapterReviewsToTheSameListingOnEveryReplica() async throws { try await appendedConvergence({ Gen.chapterReview(&$0, novel: $1) }, seed: 0x3D4) }
+  @Test func shouldSettleFinalizeReviewsToTheSameListingOnEveryReplica() async throws { try await appendedConvergence({ Gen.finalizeReview(&$0, novel: $1) }, seed: 0x3D5) }
+  @Test func shouldSettleRefreshReportsToTheSameListingOnEveryReplica() async throws { try await appendedConvergence({ Gen.refreshReport(&$0, novel: $1) }, seed: 0x3D6) }
 
   @Test func shouldWriteEveryMemberOfAnAppendedItemAndOfNotebookLinks() throws {
     let approval = ApprovalRecord(novel: novel, chapter: 1, draftRevision: "v:d", planRevision: "v:p")

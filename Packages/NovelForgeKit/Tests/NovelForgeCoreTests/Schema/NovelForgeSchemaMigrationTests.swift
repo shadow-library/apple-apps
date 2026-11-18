@@ -28,6 +28,11 @@ struct NovelForgeSchemaMigrationTests {
     return try VaultStore.open(.file(url), registry: registry, migrations: reconciler.migrations, reconciler: reconciler)
   }
 
+  private static func createNovelAsAnEarlierVersion(in transaction: inout WriteTransaction) throws -> ChangeRecord {
+    let record = NovelRecord(id: novel, name: "Ember")
+    return try transaction.set(record.ref, record.storedMembers.filter { $0.key != NovelField.autoKeep.rawValue })
+  }
+
   private static func temporaryVault() throws -> URL {
     let directory = FileManager.default.temporaryDirectory.appending(path: "NovelForgeSchemaMigrationTests-\(UUID().uuidString)")
     try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
@@ -49,7 +54,7 @@ struct NovelForgeSchemaMigrationTests {
     let sent = try await newer.pendingChanges(limit: Int.max).map(\.line)
     do {
       let old = try Self.openAtVersionOne(url)
-      _ = try await old.write { transaction in try NovelRecord(id: Self.novel, name: "Ember").create(in: &transaction) }
+      _ = try await old.write { transaction in try Self.createNovelAsAnEarlierVersion(in: &transaction) }
       _ = try await old.applyRemote(sent)
       for ref in [session, message, call] { #expect(try await SchemaFixture.state(ref, in: old) == nil) }
     }
@@ -95,7 +100,7 @@ struct NovelForgeSchemaMigrationTests {
     do {
       let old = try Self.openAtVersionTwo(url)
       _ = try await old.write { transaction in
-        _ = try NovelRecord(id: Self.novel, name: "Ember").create(in: &transaction)
+        _ = try Self.createNovelAsAnEarlierVersion(in: &transaction)
         _ = try transaction.set(session, ["novel": Self.novelID, "title": "Openings", "mode": "auto", "status": "active", "removed": false])
         _ = try transaction.set(proposal, ["card": ["novel": Self.novelID], "decision": "applied"])
       }

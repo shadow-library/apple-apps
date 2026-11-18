@@ -264,6 +264,57 @@ enum ProjectionOperations {
 
   static let standard = novels + volumes + notebook + chapters
 
+  /// Chapter reviews, remedies, finalize reviews and answers, refresh reports (schema v3), unreadable shapes and purges included.
+  static let reviews: [ProjectionOperation] = [
+    ProjectionOperation(name: "append chapter review", weight: 2) { generator, universe in
+      let record = Gen.chapterReview(&generator, novel: universe.novel(&generator), chapter: universe.chapter(&generator))
+      return { transaction in _ = try record.append(in: &transaction) }
+    },
+    ProjectionOperation(name: "append finalize review", weight: 2) { generator, universe in
+      let record = Gen.finalizeReview(&generator, novel: universe.novel(&generator), chapter: universe.chapter(&generator))
+      return { transaction in _ = try record.append(in: &transaction) }
+    },
+    ProjectionOperation(name: "append refresh report", weight: 1) { generator, universe in
+      let record = Gen.refreshReport(&generator, novel: universe.novel(&generator), chapter: universe.chapter(&generator))
+      return { transaction in _ = try record.append(in: &transaction) }
+    },
+    ProjectionOperation(name: "append an unreadable review", weight: 1) { generator, universe in
+      let record = Gen.chapterReview(&generator, novel: universe.novel(&generator), chapter: universe.chapter(&generator))
+      var item = record.item
+      item[generator.pick(from: ["disposition", "chapter", "findings"])] = .array([.null])
+      let (ref, broken) = (record.ref, item)
+      return { transaction in _ = try transaction.append(ref, item: broken) }
+    },
+    ProjectionOperation(name: "set remedy", weight: 2) { generator, universe in
+      let (novel, finding) = (universe.novel(&generator), generator.pick(from: ["f0", "f1"]))
+      let remedy = ReviewRemedy(action: Gen.stored(&generator), fingerprint: universe.text(&generator))
+      return { transaction in _ = try ReviewRemedyRecord.set(novel: novel, review: SchemaFixture.review, finding: finding, remedy, in: &transaction) }
+    },
+    ProjectionOperation(name: "clear remedy", weight: 1) { generator, universe in
+      let (novel, finding) = (universe.novel(&generator), generator.pick(from: ["f0", "f1"]))
+      return { transaction in _ = try ReviewRemedyRecord.clear(novel: novel, review: SchemaFixture.review, finding: finding, in: &transaction) }
+    },
+    ProjectionOperation(name: "answer finalize item", weight: 2) { generator, universe in
+      let (novel, chapter) = (universe.novel(&generator), universe.chapter(&generator))
+      let (revision, item) = (generator.pick(from: ["v:one", "v:two"]), generator.pick(from: ["entity:aria", "summary"]))
+      let answer = StoredFinalizeAnswer(decision: Gen.stored(&generator), proposalDigest: universe.text(&generator), auto: Gen.bool(&generator))
+      return { transaction in
+        _ = try FinalizeDecisionRecord(novel: novel, chapter: chapter, draftRevision: revision, item: item, answer: answer).create(in: &transaction)
+      }
+    },
+    ProjectionOperation(name: "write an unreadable answer", weight: 1) { generator, universe in
+      let (novel, chapter) = (universe.novel(&generator), universe.chapter(&generator))
+      return { transaction in
+        let key = try NovelForgeKey.finalizeDecisionKey(novel: novel, chapter: chapter, draftRevision: "v:one", item: "summary")
+        _ = try transaction.set(key.ref, [CommonField.naturalKey.rawValue: key.stored, FinalizeDecisionField.decision.rawValue: "kept"])
+      }
+    },
+    ProjectionOperation(name: "purge answer", weight: 1) { generator, universe in
+      let (novel, chapter) = (universe.novel(&generator), universe.chapter(&generator))
+      return { transaction in _ = try transaction.purge(try FinalizeDecisionRecord.ref(novel: novel, chapter: chapter, draftRevision: "v:one", item: "summary")) }
+    },
+  ]
+
   /// Chat sessions, messages, summaries, proposals and their changes (Reconcile/Chat), raw shapes and purges included.
   static let chat = ChatOperations.all
 

@@ -1,5 +1,6 @@
 import Foundation
 import ShadowCore
+import ShadowJobs
 import ShadowStore
 import ShadowTestSupport
 import Testing
@@ -72,7 +73,7 @@ struct ChapterDocumentTests {
     try await bodyTotality(PlanSubject.self, required: ["body", "contract", "write_mode", "hand_edited", "inserted"], seed: 0x1E1)
   }
   @Test func shouldReadADraftBodyTotally() async throws {
-    try await bodyTotality(DraftSubject.self, required: ["body", "source", "generator", "isolated"], lenient: ["upstream"], seed: 0x1E2)
+    try await bodyTotality(DraftSubject.self, required: ["body", "source", "generator", "isolated"], lenient: ["upstream", "state", "run", "job"], seed: 0x1E2)
   }
 
   @Test func shouldDeriveEachRefFromTheKeyAndRefuseAChapterBelowOne() throws {
@@ -188,6 +189,40 @@ struct ChapterDocumentTests {
     #expect(edited.json.objectValue?["upstream"] == ["chapters": []])
   }
 
+  @Test func shouldRoundTripTheContinuationStateRunAndJobOfADraftRevision() async throws {
+    let store = try SchemaFixture.store()
+    let job = try JobKey(scope: novel.uuidString.lowercased(), kind: "generate", target: "chapter:5", fingerprint: "f0", run: 1).ref.key
+    let content = DraftContent(body: "d", source: .known(.generated), isolated: true, state: ["location": "harbour", "open": ["the locket"]], run: "run-7", job: job)
+    let draft = try DraftRecord(novel: novel, chapter: 5, content: content)
+    _ = try await Harness.create(draft, in: store)
+    let read = try #require(try await Harness.read(draft.ref, as: DraftRecord.self, in: store).entry?.record.content)
+    #expect(read == content)
+    #expect(read.state == ["location": "harbour", "open": ["the locket"]])
+    #expect(read.run == "run-7")
+    #expect(read.job == job)
+    let ref = draft.ref
+    var next = read
+    next.body = "edited"
+    next.state = nil
+    _ = try await store.write { [next] transaction in try DraftRecord.revise(ref, next, in: &transaction) }
+    let revised = try #require(try await Harness.read(draft.ref, as: DraftRecord.self, in: store).entry?.record.content)
+    #expect(revised.state == nil)
+    #expect(revised.json.objectValue?["state"] == .null)
+    #expect(revised.job == job)
+  }
+
+  @Test(arguments: [("state", ["harbour"]), ("state", "harbour"), ("run", 7), ("job", "not a key"), ("job", ["id": "x"])] as [(String, JSONValue)])
+  func shouldKeepADraftReadableAndAMemberAsStoredWhenThisVersionCannotReadIt(_ member: String, _ stored: JSONValue) async throws {
+    let store = try SchemaFixture.store()
+    let draft = try DraftRecord(novel: novel, chapter: 5, content: DraftContent(body: "d", source: .known(.generated)))
+    var body = try #require(draft.content.json.objectValue)
+    body[member] = stored
+    let read = try #require(try await readBody(draft, .object(body), in: store).entry?.record.content)
+    #expect(read.body == "d")
+    #expect(read.state == nil && read.run == nil && read.job == nil)
+    #expect(read.json == .object(body))
+  }
+
   @Test func shouldCarryNewerMembersOfADraftThroughARevision() async throws {
     let store = try SchemaFixture.store()
     let draft = try DraftRecord(novel: novel, chapter: 5, content: DraftContent(body: "d", source: .known(.generated)))
@@ -196,7 +231,7 @@ struct ChapterDocumentTests {
     #expect(
       stored == [
         "body": "edited", "source": "x_dictated", "generator": "human", "isolated": true, "rating": ["violence": "mild"], "title": nil, "summary": nil, "restored_from": nil,
-        "upstream": nil,
+        "upstream": nil, "state": nil, "run": nil, "job": nil,
       ])
   }
 

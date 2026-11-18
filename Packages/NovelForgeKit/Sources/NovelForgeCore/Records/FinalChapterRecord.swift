@@ -4,6 +4,7 @@ import ShadowStore
 
 extension FinalChapterField: FieldName {}
 extension FinalChapterCanonMember: FieldName {}
+extension CanonReviewMember: FieldName {}
 
 enum FinalChapterAmendmentMember: String, CaseIterable, FieldName {
   case canon
@@ -11,6 +12,43 @@ enum FinalChapterAmendmentMember: String, CaseIterable, FieldName {
   case body
   case note
   case summary
+}
+
+/// The finalize review a commit applied (apps/novel-forge-server/src/modules/finalize-review/finalize-review-gate.ts:143-181): the effective change of every kept
+/// item in the review's order, in the shape `ProposedChange` reads, and the milestone keys the plan claims that the answers leave unreached.
+public struct CanonReview: Sendable, Equatable {
+  public var id: UUID
+  public var kept: [[String: JSONValue]]
+  public var unreached: [String]
+  public private(set) var unrecognised: [String: JSONValue]
+
+  public init(id: UUID, kept: [[String: JSONValue]] = [], unreached: [String] = []) {
+    self.id = id
+    self.kept = kept
+    self.unreached = unreached
+    unrecognised = [:]
+  }
+}
+
+extension CanonReview: JSONRepresentable {
+  public init?(json: JSONValue) {
+    guard let reader = FieldReader<CanonReviewMember>(object: json) else { return nil }
+    do throws(UnreadableReason) {
+      let unreached: [String] = try reader.required(.unreached)
+      self.init(id: try reader.required(.id), kept: try reader.required(.kept), unreached: Canon.normalisedKeys(unreached))
+    } catch {
+      return nil
+    }
+    unrecognised = reader.unrecognised
+  }
+
+  public var json: JSONValue {
+    var fields = RecordFields<CanonReviewMember>()
+    fields.put(.id, id)
+    fields.put(.kept, kept)
+    fields.put(.unreached, Canon.normalisedKeys(unreached))
+    return .object(unrecognised.merging(fields.members) { _, known in known })
+  }
 }
 
 // apps/novel-forge-server/src/modules/ai/graphs/chapter-finalization.graph.ts:140
@@ -27,12 +65,15 @@ public struct Canon: Sendable, Equatable {
   public var volume: String?
   public var contract: ChapterContract
   public var disclosed: [String]?
+  public var review: CanonReview?
+  /// What the reference ledgers at approval (apps/novel-forge-server/src/common/provisional-knowledge.ts:51-96), frozen here at finalize.
+  public var knowledge: [KnowledgeReveal]?
   public private(set) var unrecognised: [String: JSONValue]
 
   public init(
     draftRevision: String? = nil, planRevision: String? = nil, approval: UUID? = nil, title: String? = nil, body: String, summary: String? = nil, note: String? = nil,
     generator: StoredEnum<ContentGenerator> = .known(.standard), isolated: Bool = false, volume: String? = nil, contract: ChapterContract = ChapterContract(),
-    disclosed: [String]? = nil
+    disclosed: [String]? = nil, review: CanonReview? = nil, knowledge: [KnowledgeReveal]? = nil
   ) {
     self.draftRevision = draftRevision
     self.planRevision = planRevision
@@ -46,18 +87,67 @@ public struct Canon: Sendable, Equatable {
     self.volume = volume
     self.contract = contract
     self.disclosed = disclosed
+    self.review = review
+    self.knowledge = knowledge
     unrecognised = [:]
   }
 
-  static func normalisedDisclosure(_ keys: [String]) -> [String] {
+  static func normalisedKeys(_ keys: [String]) -> [String] {
     Set(keys.map(\.precomposedStringWithCanonicalMapping)).sorted { $0.utf16.lexicographicallyPrecedes($1.utf16) }
   }
 
-  private static func disclosure(in json: JSONValue) -> [String]? {
+  static func normalisedKnowledge(_ pairs: [KnowledgeReveal]) -> [KnowledgeReveal] {
+    let precomposed = pairs.map { KnowledgeReveal(entityKey: $0.entityKey.precomposedStringWithCanonicalMapping, factKey: $0.factKey.precomposedStringWithCanonicalMapping) }
+    let unique = Dictionary(precomposed.map { (KnowledgePair(fact: $0.factKey, entity: $0.entityKey), $0) }) { first, _ in first }
+    return unique.keys.sorted().compactMap { unique[$0] }
+  }
+
+  private static func keys(in json: JSONValue) -> [String]? {
     guard case .array(let items) = json else { return nil }
     let keys = items.compactMap(\.stringValue)
     guard keys.count == items.count else { return nil }
-    return normalisedDisclosure(keys)
+    return normalisedKeys(keys)
+  }
+
+  private static func knowledge(in json: JSONValue) -> [KnowledgeReveal]? {
+    guard case .array(let items) = json else { return nil }
+    let pairs = items.compactMap { item -> KnowledgeReveal? in
+      guard let reader = FieldReader<CanonLearnMember>(object: item), reader.unrecognised.isEmpty,
+        let entity: String = try? reader.required(.entity), let fact: String = try? reader.required(.fact)
+      else { return nil }
+      return KnowledgeReveal(entityKey: entity, factKey: fact)
+    }
+    guard pairs.count == items.count else { return nil }
+    return normalisedKnowledge(pairs)
+  }
+
+  private static func json(of pairs: [KnowledgeReveal]) -> JSONValue {
+    .array(normalisedKnowledge(pairs).map { [CanonLearnMember.entity.rawValue: .string($0.entityKey), CanonLearnMember.fact.rawValue: .string($0.factKey)] })
+  }
+
+  /// A malformed member reads as not recorded and is kept as found, so the canon still encodes to what was stored.
+  private mutating func recorded<Value>(_ member: FinalChapterCanonMember, in json: JSONValue, _ read: (JSONValue) -> Value?) -> Value? {
+    guard let stored = json.objectValue?[member.rawValue], !stored.isNull else { return nil }
+    guard let value = read(stored) else {
+      unrecognised[member.rawValue] = stored
+      return nil
+    }
+    return value
+  }
+
+  private func putRecorded(_ member: FinalChapterCanonMember, _ value: JSONValue?, into fields: inout RecordFields<FinalChapterCanonMember>) {
+    guard value != nil || unrecognised[member.rawValue] == nil else { return }
+    fields.put(member, value)
+  }
+}
+
+private struct KnowledgePair: Hashable, Comparable {
+  let fact: String
+  let entity: String
+
+  static func < (left: KnowledgePair, right: KnowledgePair) -> Bool {
+    guard left.fact == right.fact else { return left.fact.utf16.lexicographicallyPrecedes(right.fact.utf16) }
+    return left.entity.utf16.lexicographicallyPrecedes(right.entity.utf16)
   }
 }
 
@@ -73,10 +163,9 @@ extension Canon: JSONRepresentable {
       return nil
     }
     unrecognised = reader.unrecognised
-    let disclosure = json.objectValue?[FinalChapterCanonMember.disclosed.rawValue]
-    disclosed = disclosure.flatMap(Self.disclosure(in:))
-    // A malformed list reads as not recorded and is kept as found, so the canon still encodes to what was stored.
-    if let disclosure, !disclosure.isNull, disclosed == nil { unrecognised[FinalChapterCanonMember.disclosed.rawValue] = disclosure }
+    disclosed = recorded(.disclosed, in: json, Self.keys(in:))
+    review = recorded(.review, in: json, CanonReview.init(json:))
+    knowledge = recorded(.knowledge, in: json, Self.knowledge(in:))
   }
 
   public var json: JSONValue {
@@ -92,7 +181,9 @@ extension Canon: JSONRepresentable {
     fields.put(.isolated, isolated)
     fields.put(.volume, volume)
     fields.put(.contract, contract)
-    if disclosed != nil || unrecognised[FinalChapterCanonMember.disclosed.rawValue] == nil { fields.put(.disclosed, disclosed.map(Self.normalisedDisclosure)) }
+    putRecorded(.disclosed, disclosed.map { Self.normalisedKeys($0).json }, into: &fields)
+    putRecorded(.review, review?.json, into: &fields)
+    putRecorded(.knowledge, knowledge.map(Self.json(of:)), into: &fields)
     return .object(unrecognised.merging(fields.members) { _, known in known })
   }
 }

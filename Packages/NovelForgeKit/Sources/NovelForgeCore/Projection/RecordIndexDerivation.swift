@@ -10,20 +10,23 @@ public enum IndexedStatus: String, Sendable, DatabaseValueConvertible {
   case unreadable
 }
 
-/// `digest` changes with every change to the entity's merged state, so a per-novel aggregate subscribes here and filters by kind.
+/// `digest` changes with every change to the entity's merged state, so a per-novel or per-chapter aggregate subscribes here and filters by kind; `chapter` is
+/// the chapter a chapter-keyed or chapter-stamped kind names, when it can be read.
 public struct IndexedRecord: Hashable, Sendable, FetchableRecord, PersistableRecord {
   public static let databaseTableName = "nf_derived_record"
 
   public let kind: NovelForgeKind
   public let key: EntityKey
   public let novel: UUID?
+  public let chapter: Int?
   public let status: IndexedStatus
   public let digest: String
 
-  init(kind: NovelForgeKind, key: EntityKey, novel: UUID?, status: IndexedStatus, digest: String) {
+  init(kind: NovelForgeKind, key: EntityKey, novel: UUID?, chapter: Int?, status: IndexedStatus, digest: String) {
     self.kind = kind
     self.key = key
     self.novel = novel
+    self.chapter = chapter
     self.status = status
     self.digest = digest
   }
@@ -32,7 +35,8 @@ public struct IndexedRecord: Hashable, Sendable, FetchableRecord, PersistableRec
     guard let key = EntityKey(try row.decode(String.self, forColumn: "key")) else { throw StoreError.corruptStore("an indexed record holds an invalid key") }
     self.init(
       kind: try row.decode(NovelForgeKind.self, forColumn: "kind"), key: key, novel: try row.decode(UUID?.self, forColumn: "novel"),
-      status: try row.decode(IndexedStatus.self, forColumn: "status"), digest: try row.decode(String.self, forColumn: "digest"))
+      chapter: try row.decode(Int?.self, forColumn: "chapter"), status: try row.decode(IndexedStatus.self, forColumn: "status"),
+      digest: try row.decode(String.self, forColumn: "digest"))
   }
 
   public var ref: EntityRef { EntityRef(kind: kind.entityKind, key: key) }
@@ -41,6 +45,7 @@ public struct IndexedRecord: Hashable, Sendable, FetchableRecord, PersistableRec
     container["kind"] = kind
     container["key"] = key.rawValue
     container["novel"] = novel
+    container["chapter"] = chapter
     container["status"] = status
     container["digest"] = digest
   }
@@ -51,12 +56,12 @@ public enum ProjectionDerivations {
 }
 
 public struct RecordIndexDerivation: Derivation {
-  public static let version = 1
+  public static let version = 2
   public static let definition = """
     CREATE TABLE nf_derived_record (
-      kind TEXT NOT NULL, key TEXT NOT NULL, novel BLOB, status TEXT NOT NULL, digest TEXT NOT NULL, PRIMARY KEY (kind, key)
+      kind TEXT NOT NULL, key TEXT NOT NULL, novel BLOB, chapter INTEGER, status TEXT NOT NULL, digest TEXT NOT NULL, PRIMARY KEY (kind, key)
     ) STRICT, WITHOUT ROWID;
-    CREATE INDEX nf_derived_record_novel ON nf_derived_record (novel, kind);
+    CREATE INDEX nf_derived_record_novel ON nf_derived_record (novel, kind, chapter);
     """
 
   public init() {}
@@ -79,8 +84,8 @@ public struct RecordIndexDerivation: Derivation {
 
   public func outputs(for ref: EntityRef, in context: DerivationContext) throws(StoreError) -> [IndexedRecord] {
     guard let kind = NovelForgeKind(ref.kind), let state = try context.records.state(of: ref, scope: .vault) else { return [] }
-    guard let (novel, status) = Self.classify(kind, ref, state) else { return [] }
-    return [IndexedRecord(kind: kind, key: ref.key, novel: novel, status: status, digest: Self.digest(of: state))]
+    guard let (novel, chapter, status) = Self.classify(kind, ref, state) else { return [] }
+    return [IndexedRecord(kind: kind, key: ref.key, novel: novel, chapter: chapter, status: status, digest: Self.digest(of: state))]
   }
 
   static func digest(of state: EntityState) -> String {
@@ -117,7 +122,7 @@ public struct RecordIndexDerivation: Derivation {
     members.sorted { $0.key.value.utf8.lexicographicallyPrecedes($1.key.value.utf8) }
   }
 
-  private static func classify(_ kind: NovelForgeKind, _ ref: EntityRef, _ state: EntityState) -> (UUID?, IndexedStatus)? {
+  private static func classify(_ kind: NovelForgeKind, _ ref: EntityRef, _ state: EntityState) -> (UUID?, Int?, IndexedStatus)? {
     switch kind {
     case .novel: kept(NovelRecord.self, ref, state)
     case .volume: kept(VolumeRecord.self, ref, state)
@@ -130,28 +135,43 @@ public struct RecordIndexDerivation: Derivation {
     case .page: kept(PageRecord.self, ref, state)
     case .chapterPlan: kept(ChapterPlanRecord.self, ref, state)
     case .draft: kept(DraftRecord.self, ref, state)
-    case .approval: appended(ApprovalRecord.self, ref, state)
+    case .approval: chapterAppended(ApprovalRecord.self, ref, state)
     case .finalChapter: kept(FinalChapterRecord.self, ref, state)
     case .notebookEntry: appended(NotebookEntryRecord.self, ref, state)
     case .notebookWithdrawal: appended(NotebookWithdrawalRecord.self, ref, state)
     case .authorNotes: kept(AuthorNotesRecord.self, ref, state)
-    case .chatSession, .chatMessage, .chatSummary, .proposal, .proposalChange, .chapterReview, .reviewRemedy, .finalizeReview, .finalizeDecision, .refreshReport: nil
+    case .chapterReview: chapterAppended(ChapterReviewRecord.self, ref, state)
+    case .reviewRemedy: kept(ReviewRemedyRecord.self, ref, state)
+    case .finalizeReview: chapterAppended(FinalizeReviewRecord.self, ref, state)
+    case .finalizeDecision: kept(FinalizeDecisionRecord.self, ref, state)
+    case .refreshReport: chapterAppended(RefreshReportRecord.self, ref, state)
+    case .chatSession, .chatMessage, .chatSummary, .proposal, .proposalChange: nil
     }
   }
 
-  private static func kept<Record: NovelForgeRecord>(_: Record.Type, _ ref: EntityRef, _ state: EntityState) -> (UUID?, IndexedStatus)? {
+  private static func kept<Record: NovelForgeRecord>(_: Record.Type, _ ref: EntityRef, _ state: EntityState) -> (UUID?, Int?, IndexedStatus)? {
+    let key = try? NovelForgeKey(reading: state, of: ref)
+    let chapter = key?.components.chapters.first
     switch Record.reading(state, of: ref) {
-    case .absent: nil
-    case .readable(let entry): (entry.record.novel, entry.isRemoved ? .removed : .live)
-    case .unreadable: (Record.kind == .novel ? novelID(of: ref) : try? NovelForgeKey(reading: state, of: ref).novel, .unreadable)
+    case .absent: return nil
+    case .readable(let entry): return (entry.record.novel, chapter, entry.isRemoved ? .removed : .live)
+    case .unreadable: return (Record.kind == .novel ? novelID(of: ref) : key?.novel, chapter, .unreadable)
     }
   }
 
-  private static func appended<Record: AppendedRecord>(_: Record.Type, _ ref: EntityRef, _ state: EntityState) -> (UUID?, IndexedStatus)? {
+  private static func appended<Record: AppendedRecord>(_: Record.Type, _ ref: EntityRef, _ state: EntityState) -> (UUID?, Int?, IndexedStatus)? {
     switch Record.reading(state, of: ref) {
     case .absent: nil
-    case .readable(let entry): (entry.record.novel, .live)
-    case .unreadable: (Record.attributedNovel(in: state), .unreadable)
+    case .readable(let entry): (entry.record.novel, nil, .live)
+    case .unreadable: (Record.attributedNovel(in: state), nil, .unreadable)
+    }
+  }
+
+  private static func chapterAppended<Record: ChapterAppendedRecord>(_: Record.Type, _ ref: EntityRef, _ state: EntityState) -> (UUID?, Int?, IndexedStatus)? {
+    switch Record.reading(state, of: ref) {
+    case .absent: nil
+    case .readable(let entry): (entry.record.novel, entry.record.chapter, .live)
+    case .unreadable: (Record.attributedNovel(in: state), Record.attributedChapter(in: state), .unreadable)
     }
   }
 }

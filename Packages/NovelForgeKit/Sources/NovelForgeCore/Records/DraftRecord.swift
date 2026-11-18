@@ -34,9 +34,12 @@ enum DraftContentMember: String, CaseIterable, FieldName {
   case isolated
   case restoredFrom = "restored_from"
   case upstream
+  case state
+  case run
+  case job
 }
 
-// apps/novel-forge-server/src/database/schemas/ai.ts:267; the review status, stale reason and word count are derived, never stored
+// apps/novel-forge-server/src/database/schemas/ai.ts:267-291; the review status, stale reason and word count are derived, never stored
 public struct DraftContent: RevisionBody, Sendable {
   public var title: String?
   public var body: String
@@ -48,10 +51,13 @@ public struct DraftContent: RevisionBody, Sendable {
   public private(set) var unrecognised: [String: JSONValue]
   /// Kept as stored, so a shape this version cannot read still round-trips and never hides the prose.
   private var storedUpstream: JSONValue
+  private var storedState: JSONValue
+  private var storedRun: JSONValue
+  private var storedJob: JSONValue
 
   public init(
     title: String? = nil, body: String, summary: String? = nil, source: StoredEnum<DraftSource>, generator: StoredEnum<ContentGenerator> = .known(.standard),
-    isolated: Bool = false, restoredFrom: String? = nil, upstream: DraftUpstream? = nil
+    isolated: Bool = false, restoredFrom: String? = nil, upstream: DraftUpstream? = nil, state: [String: JSONValue]? = nil, run: String? = nil, job: EntityKey? = nil
   ) {
     self.title = title
     self.body = body
@@ -61,6 +67,9 @@ public struct DraftContent: RevisionBody, Sendable {
     self.isolated = isolated
     self.restoredFrom = restoredFrom
     storedUpstream = upstream.json
+    storedState = state.json
+    storedRun = run.json
+    storedJob = job.json
     unrecognised = [:]
   }
 
@@ -68,6 +77,24 @@ public struct DraftContent: RevisionBody, Sendable {
   public var upstream: DraftUpstream? {
     get { DraftUpstream(json: storedUpstream) }
     set { storedUpstream = newValue.json }
+  }
+
+  /// The continuation state a generation run wrote (apps/novel-forge-server/src/modules/ai/graphs/chapter-generation.graph.ts:209), which CHP_005 requires of an
+  /// isolated chapter (common/finalize-gate.ts:21); nil when it records none this version can read.
+  public var state: [String: JSONValue]? {
+    get { storedState.objectValue }
+    set { storedState = newValue.json }
+  }
+
+  /// The generation run that wrote the revision (chapter-generation.graph.ts:210).
+  public var run: String? {
+    get { storedRun.stringValue }
+    set { storedRun = newValue.json }
+  }
+
+  public var job: EntityKey? {
+    get { EntityKey(json: storedJob) }
+    set { storedJob = newValue.json }
   }
 
   public init?(json: JSONValue) {
@@ -79,8 +106,10 @@ public struct DraftContent: RevisionBody, Sendable {
     } catch {
       return nil
     }
-    let upstream: JSONValue? = try? reader.optional(.upstream)
-    storedUpstream = upstream ?? .null
+    storedUpstream = Self.stored(.upstream, in: reader)
+    storedState = Self.stored(.state, in: reader)
+    storedRun = Self.stored(.run, in: reader)
+    storedJob = Self.stored(.job, in: reader)
     unrecognised = reader.unrecognised
   }
 
@@ -94,7 +123,15 @@ public struct DraftContent: RevisionBody, Sendable {
     fields.put(.isolated, isolated)
     fields.put(.restoredFrom, restoredFrom)
     fields.put(.upstream, storedUpstream)
+    fields.put(.state, storedState)
+    fields.put(.run, storedRun)
+    fields.put(.job, storedJob)
     return .object(unrecognised.merging(fields.members) { _, known in known })
+  }
+
+  private static func stored(_ member: DraftContentMember, in reader: FieldReader<DraftContentMember>) -> JSONValue {
+    let value: JSONValue? = try? reader.optional(member)
+    return value ?? .null
   }
 }
 
