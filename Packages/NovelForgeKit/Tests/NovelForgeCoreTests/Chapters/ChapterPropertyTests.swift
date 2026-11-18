@@ -331,14 +331,14 @@ private func expectedLifecycle(_ novel: UUID, _ world: OracleNovel) -> [Int: Cha
     if let final = world.finals[chapter] {
       entries[chapter] = ChapterLifecycleEntry(
         novel: novel, chapter: chapter, isFinal: true, draft: draft?.head, resting: final.draft, canonDigest: final.digest,
-        taught: nil, review: .final, approval: nil, approvalKind: nil, stale: nil, planStale: nil, differences: nil)
+        taught: nil, review: .final, approval: nil, approvalKind: nil, stale: nil, planStale: nil, differences: nil, judge: nil, openBlocking: 0)
       continue
     }
     let reveal = world.reveals[chapter].map(StaleCause.reveal(violations:))
     guard let draft else {
       entries[chapter] = ChapterLifecycleEntry(
         novel: novel, chapter: chapter, isFinal: false, draft: nil, resting: nil, canonDigest: nil, taught: nil, review: nil, approval: nil, approvalKind: nil, stale: nil,
-        planStale: reveal, differences: nil)
+        planStale: reveal, differences: nil, judge: nil, openBlocking: 0)
       continue
     }
     var causes = [(StaleCause, JSONValue)]()
@@ -402,7 +402,7 @@ private func expectedLifecycle(_ novel: UUID, _ world: OracleNovel) -> [Int: Cha
     entries[chapter] = ChapterLifecycleEntry(
       novel: novel, chapter: chapter, isFinal: false, draft: draft.head, resting: draft.head, canonDigest: nil, taught: taught,
       review: approval == nil ? .needsReview : .approved, approval: approval?.record.id, approvalKind: approval?.record.approvalKind.known, stale: stale,
-      planStale: reveal, differences: differences)
+      planStale: reveal, differences: differences, judge: nil, openBlocking: 0)
   }
   return entries
 }

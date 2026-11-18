@@ -27,6 +27,8 @@ extension ChatPack {
     case final
     case approved
     case readyToRead = "ready to read"
+    case changed = "changed — needs a look"
+    case beingWritten = "being written"
   }
 
   private struct IndexedChapter {
@@ -40,7 +42,9 @@ extension ChatPack {
   // novel-chat-context.ts:414
   private static func standing(of review: DraftReviewState) -> Standing {
     switch review {
+    case .generating: .beingWritten
     case .needsReview: .readyToRead
+    case .contradiction: .changed
     case .approved: .approved
     case .final: .final
     }

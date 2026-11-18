@@ -15,7 +15,10 @@ struct DomainProperty: Sendable {
   static let replaySeed = ProcessInfo.processInfo.environment["NOVELFORGE_DOMAIN_REPLAY"].flatMap(parseSeed)
 
   static let areas = [DomainOperations.library, DomainOperations.story, DomainOperations.bible, DomainOperations.notebook, DomainChapterOperations.all]
-  static let operations = Array(areas.joined())
+  /// The chapter operations with the generate jobs, judge reviews and remedies the lifecycle reads.
+  static let lifecycleAreas = [DomainChapterOperations.all, DomainReviewOperations.all]
+
+  var areas = Self.areas
 
   var iterations = 6
   var steps = 80
@@ -23,6 +26,8 @@ struct DomainProperty: Sendable {
   var partition = 8
   var checkRate = 0.1
   let tally = DomainTally()
+
+  var operations: [DomainOperation] { Array(areas.joined()) }
 
   func check(order: CausalReplicaOrder, seed: UInt64) async throws {
     let reconciler = try Projection.reconciler()
@@ -49,11 +54,11 @@ struct DomainProperty: Sendable {
       var touched: Int?
       let partitioned = (step - 1) % settleEvery < partition
       if partitioned || generator.chance(0.5) {
-        let (operation, index) = (DomainOperation.pick(from: Self.operations, &generator), generator.int(in: 0...2))
+        let (operation, index) = (DomainOperation.pick(from: operations, &generator), generator.int(in: 0...2))
         try await perform(operation, on: index, in: replicas, universe, &generator)
         touched = index
         if partitioned, generator.chance(0.6) {
-          let area = Self.areas.first { $0.contains { $0.name == operation.name } } ?? Self.operations
+          let area = areas.first { $0.contains { $0.name == operation.name } } ?? operations
           let partner = generator.chance(0.5) ? operation : DomainOperation.pick(from: area, &generator)
           try await perform(partner, on: (index + generator.int(in: 1...2)) % 3, in: replicas, universe, &generator)
         }
@@ -133,6 +138,12 @@ enum DomainReach {
     "accepted differences": "SELECT 1 FROM nf_derived_chapter_lifecycle WHERE differences IS NOT NULL AND stale IS NULL AND NOT final",
   ]
 
+  /// What the lifecycle property must reach, at `DomainPropertyTests.minimumReach` settle points.
+  static let lifecycle: KeyValuePairs = [
+    "a generating chapter": "SELECT 1 FROM nf_derived_chapter_lifecycle WHERE review = 'generating'",
+    "a draft held as a contradiction": "SELECT 1 FROM nf_derived_chapter_lifecycle WHERE review = 'contradiction'",
+  ]
+
   /// Reached at fewer settle points than the gate asks within the time budget, so each is pinned by the scenario named instead. A draft stale as `unrecorded`
   /// is not listed: every revision a domain operation writes records its upstream, so Chapters/LifecycleScenarioTests covers it with stored shapes.
   static let scenarioOnly: KeyValuePairs = [
@@ -145,7 +156,7 @@ enum DomainReach {
 
   static func record(in store: VaultStore, into tally: DomainTally) async throws {
     let reached = try await store.read { transaction in
-      try features.filter { _, sql in try Bool.fetchOne(transaction.database, sql: "SELECT EXISTS (\(sql))") ?? false }.map(\.key)
+      try (Array(features) + Array(lifecycle)).filter { _, sql in try Bool.fetchOne(transaction.database, sql: "SELECT EXISTS (\(sql))") ?? false }.map(\.key)
     }
     for feature in reached { tally.record("reached \(feature)") }
   }

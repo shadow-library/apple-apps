@@ -21,6 +21,7 @@ enum DomainReadModelChecks {
     let notebook: [LedgerEntryStatus: Int]
     let shownEntries: Int
     let knowledge: Set<CharacterKnowledgeEntry>
+    let reviews: [Int: DraftReviewState?]
   }
 
   static func check(_ novel: UUID, expecting expected: Expected, in transaction: ReadTransaction) throws -> [String] {
@@ -80,6 +81,13 @@ enum DomainReadModelChecks {
       let counts = [LedgerEntryStatus.active: contents.counts.active, .superseded: contents.counts.superseded, .withdrawn: contents.counts.withdrawn].filter { $0.value > 0 }
       expect(counts == expected.notebook, "the Notebook counts each status")
       expect(contents.entries.count == expected.shownEntries, "the Notebook shows the active entries")
+    }
+
+    for (chapter, review) in expected.reviews {
+      let readiness = try FinalizeReadiness.load(FinalizeReadinessQuery(novel: novel, chapter: chapter), in: transaction)
+      guard let blockers = available(readiness.blockers, "the finalize readiness of chapter \(chapter)") else { continue }
+      let refused = blockers.contains(.notApproved(chapter: chapter)) || blockers.contains(.draftNotFound) || blockers.contains(.draftFinal(chapter: chapter))
+      expect(refused == (review != .approved), "finalize readiness refuses chapter \(chapter) unless it is approved")
     }
 
     let ledger = try KnowledgeLedger.load(novel, in: transaction)

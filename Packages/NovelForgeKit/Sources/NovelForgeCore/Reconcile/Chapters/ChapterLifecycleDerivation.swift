@@ -5,7 +5,8 @@ import ShadowStore
 
 /// One chapter of a novel that has a canon, a draft that is not removed, or a plan that is not removed. `resting`, `canonDigest` and `taught` are what a later
 /// chapter's draft records about this one (`taught` only for an unfinalized chapter; a final one teaches its canon's learns); `differences` is the digest an
-/// `as_written` approval of the head records to accept them.
+/// `as_written` approval of the head records to accept them. `judge` is the latest judge review of the chapter while it read the head as it stands, and
+/// `openBlocking` how many of its blocking findings no remedy settled (FIN_004, finalize-refusals.ts:38).
 public struct ChapterLifecycleEntry: Hashable, Sendable, FetchableRecord, PersistableRecord {
   public static let databaseTableName = "nf_derived_chapter_lifecycle"
 
@@ -22,17 +23,19 @@ public struct ChapterLifecycleEntry: Hashable, Sendable, FetchableRecord, Persis
   public let stale: StaleCause?
   public let planStale: StaleCause?
   public let differences: String?
+  public let judge: UUID?
+  public let openBlocking: Int
 
   init(novel: UUID, _ state: ChapterState) {
     self.init(
       novel: novel, chapter: state.chapter, isFinal: state.isFinal, draft: state.draft, resting: state.resting, canonDigest: state.canonDigest, taught: state.taught,
       review: state.review, approval: state.approval?.id, approvalKind: state.approval?.approvalKind, stale: state.stale, planStale: state.planStale,
-      differences: state.differences)
+      differences: state.differences, judge: state.judgement?.review, openBlocking: state.judgement?.openBlocking ?? 0)
   }
 
   init(
     novel: UUID, chapter: Int, isFinal: Bool, draft: String?, resting: String?, canonDigest: String?, taught: String?, review: DraftReviewState?, approval: UUID?,
-    approvalKind: ApprovalKind?, stale: StaleCause?, planStale: StaleCause?, differences: String?
+    approvalKind: ApprovalKind?, stale: StaleCause?, planStale: StaleCause?, differences: String?, judge: UUID?, openBlocking: Int
   ) {
     self.novel = novel
     self.chapter = chapter
@@ -47,6 +50,8 @@ public struct ChapterLifecycleEntry: Hashable, Sendable, FetchableRecord, Persis
     self.stale = stale
     self.planStale = planStale
     self.differences = differences
+    self.judge = judge
+    self.openBlocking = openBlocking
   }
 
   public init(row: Row) throws {
@@ -70,7 +75,12 @@ public struct ChapterLifecycleEntry: Hashable, Sendable, FetchableRecord, Persis
       novel: try row.decode(UUID.self, forColumn: "novel"), chapter: try row.decode(Int.self, forColumn: "chapter"), isFinal: try row.decode(Bool.self, forColumn: "final"),
       draft: try text("draft"), resting: try text("resting"), canonDigest: try text("canon"), taught: try text("taught"), review: review,
       approval: try text("approval").flatMap(ApprovalColumn.decode), approvalKind: approvalKind, stale: try cause("stale"), planStale: try cause("plan_stale"),
-      differences: try text("differences"))
+      differences: try text("differences"), judge: try text("judge").map(Self.review), openBlocking: try row.decode(Int.self, forColumn: "open_blocking"))
+  }
+
+  private static func review(_ text: String) throws -> UUID {
+    guard let id = UUID(uuidString: text), EntityKey(uuid: id).rawValue == text else { throw StoreError.corruptStore("a chapter lifecycle entry holds an invalid review id") }
+    return id
   }
 
   public func encode(to container: inout PersistenceContainer) throws {
@@ -90,17 +100,20 @@ public struct ChapterLifecycleEntry: Hashable, Sendable, FetchableRecord, Persis
       container["\(prefix)_detail"] = cause?.detail
     }
     container["differences"] = differences
+    container["judge"] = judge.map { ChapterReviewRecord.ref($0).key.rawValue }
+    container["open_blocking"] = openBlocking
   }
 }
 
-// ChapterFingerprint's rules over one novel: final chapters from the canon layer, drafts and approvals from theirs, plan terms and reveal verdicts from D20's plan world.
+// ChapterFingerprint's rules over one novel: final chapters from the canon layer, drafts and approvals from theirs, plan terms and reveal verdicts from D20's plan
+// world, open generate jobs from the job activity, and the judge reviews with their remedies, read for the chapters whose head the latest one read.
 public struct ChapterLifecycleDerivation: Derivation {
-  public static let version = 1
+  public static let version = 2
   public static let definition = """
     CREATE TABLE nf_derived_chapter_lifecycle (
       novel BLOB NOT NULL, chapter INTEGER NOT NULL, final INTEGER NOT NULL, draft TEXT, resting TEXT, canon TEXT, taught TEXT, review TEXT, approval TEXT,
       approval_kind TEXT, stale TEXT, stale_chapter INTEGER, stale_detail TEXT, plan_stale TEXT, plan_stale_chapter INTEGER, plan_stale_detail TEXT, differences TEXT,
-      PRIMARY KEY (novel, chapter)
+      judge TEXT, open_blocking INTEGER NOT NULL, PRIMARY KEY (novel, chapter)
     ) STRICT, WITHOUT ROWID;
     """
 
@@ -113,6 +126,9 @@ public struct ChapterLifecycleDerivation: Derivation {
       .outputs(of: ChapterApprovalDerivation.self) { [$0.novel] },
       .outputs(of: PlanWorldDerivation.self) { [$0.novel] },
       .outputs(of: PlanRevealDerivation.self) { [$0.novel] },
+      .outputs(of: JobActivityDerivation.self) { [$0.novel] },
+      .outputs(of: ChapterReviewDerivation.self) { [$0.novel] },
+      .outputs(of: RecordIndexDerivation.self) { row in row.kind == .reviewRemedy ? row.novel.map { [$0] } ?? [] : [] },
     ]
   }
 
@@ -170,7 +186,85 @@ public struct ChapterLifecycleDerivation: Derivation {
         inputs.approvals[approval.chapter, default: []].append(approval)
       }
     }
+    for job in try context.fetchAll(JobActivityRow.filter(Column("novel") == novel)) where job.jobKind == .known(.generate) {
+      if let chapter = job.chapter { inputs.generating.insert(chapter) }
+    }
+    try judge(novel, open: open, into: &inputs, in: context)
     return inputs
+  }
+
+  private static func judge(_ novel: UUID, open: Set<Int>, into inputs: inout LifecycleInputs, in context: DerivationContext) throws(StoreError) {
+    guard !open.isEmpty else { return }
+    let reviews = try context.fetchAll(ChapterReviewEntry.filter(Column("novel") == novel && Column("kind") == ChapterReviewKind.judge.rawValue))
+    var byChapter = [Int: [ChapterReviewEntry]]()
+    for review in reviews where open.contains(review.chapter) { byChapter[review.chapter, default: []].append(review) }
+    for (chapter, rows) in byChapter {
+      let ordered = rows.sorted(by: ChapterReviewEntry.precedes)
+      guard let draft = inputs.drafts[chapter], let head = draft.head, ordered.contains(where: { $0.draft == head }),
+        case .readable(let current) = try DraftRecord.read(draft.ref, in: context.records)
+      else { continue }
+      let text = ReviewedText(draftRevision: head, body: current.record.content.body)
+      if let latest = ordered.last, latest.draft == head, let read = try reviewOfHead(latest, text, in: context) {
+        inputs.judgements[chapter] = try judgement(of: read, text, novel: novel, in: context)
+      }
+      guard let approved = inputs.approvals[chapter]?.filter({ $0.draft == head }).map(\.clock).min() else { continue }
+      for row in ordered.reversed() where row.draft == head && row.clock > approved {
+        guard let read = try reviewOfHead(row, text, in: context), try heldWhenRecorded(read, text, novel: novel, in: context) else { continue }
+        inputs.resets[chapter] = row.clock
+        break
+      }
+    }
+  }
+
+  /// The review when it read the head as it stands (review-records.ts:151); a review or head this version cannot read is not judged, so an unreadable newer
+  /// review leaves an older readable one to gate.
+  private static func reviewOfHead(_ entry: ChapterReviewEntry, _ text: ReviewedText, in context: DerivationContext) throws(StoreError)
+    -> AppendedEntry<ChapterReviewRecord>?
+  {
+    guard case .readable(let reading) = try ChapterReviewRecord.read(entry.ref, in: context.records) else { return nil }
+    let reviewed = ReviewedText(draftRevision: reading.record.draftRevision, bodyHash: reading.record.bodyHash)
+    return ReviewFindings.isStale(reviewed, current: text) ? nil : reading
+  }
+
+  /// A remedy record this version cannot read counts as an answer, which ends a generation pass's own hold, and leaves its finding open.
+  private static func judgement(of reading: AppendedEntry<ChapterReviewRecord>, _ text: ReviewedText, novel: UUID, in context: DerivationContext) throws(StoreError)
+    -> HeadJudgement
+  {
+    let review = reading.record
+    var remedies = [ReviewRemedyRecord]()
+    var answered = false
+    for finding in review.findings {
+      switch try ReviewRemedyRecord.read(novel: novel, review: review.id, finding: finding.id, in: context.records) {
+      case .absent: continue
+      case .readable(let remedy): remedies.append(remedy.record)
+      case .unreadable: break
+      }
+      answered = true
+    }
+    let reviewed = ReviewedText(draftRevision: review.draftRevision, bodyHash: review.bodyHash)
+    let open = ReviewFindings.openBlocking(latest: LatestJudgeReview(reviewed: reviewed, findings: review.findings, remedies: remedies), draft: text)
+    let outcome = review.generationPass && !answered ? ChapterLifecycle.outcomeHolds(verdict: review.verdict, findings: review.findings) : nil
+    return HeadJudgement(review: review.id, clock: reading.clock, openBlocking: open.count, outcome: outcome)
+  }
+
+  /// Whether recording the review held the draft (chapter-review.service.ts:498-520): a blocking finding open on the remedies written up to the review's own
+  /// clock, so a remedy carried onto it before its append counts. A generation pass is recorded without the gate and over no approval (review-records.ts:47-72,
+  /// chapter-generation.graph.ts:226).
+  private static func heldWhenRecorded(_ reading: AppendedEntry<ChapterReviewRecord>, _ text: ReviewedText, novel: UUID, in context: DerivationContext)
+    throws(StoreError) -> Bool
+  {
+    let review = reading.record
+    guard !review.generationPass else { return false }
+    var remedies = [ReviewRemedyRecord]()
+    for finding in review.findings {
+      let ref = ReviewRemedyRecord.ref(novel: novel, review: review.id, finding: finding.id)
+      guard case .record(let state)? = try context.records.state(of: ref, scope: .vault), let field = state[field: ReviewRemedyField.remedy.rawValue],
+        field.clock <= reading.clock, let remedy = ReviewRemedy(json: field.value)
+      else { continue }
+      remedies.append(ReviewRemedyRecord(novel: novel, review: review.id, finding: finding.id, remedy: remedy))
+    }
+    let reviewed = ReviewedText(draftRevision: review.draftRevision, bodyHash: review.bodyHash)
+    return !ReviewFindings.openBlocking(latest: LatestJudgeReview(reviewed: reviewed, findings: review.findings, remedies: remedies), draft: text).isEmpty
   }
 }
 

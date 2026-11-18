@@ -169,7 +169,7 @@ const KINDS = ['decision', 'direction', 'rejected', 'backlog', 'system'] as cons
 const SCOPES = ['never', 'not_now', 'not_this_version'] as const;
 const VOLUME_STATES = ['not_started', 'active', 'goal_met'] as const;
 const MILESTONE_STATES = ['open', 'planned', 'reached'] as const;
-const REVIEWS = ['needs_review', 'approved', 'final'] as const;
+const REVIEWS = ['generating', 'needs_review', 'contradiction', 'approved', 'final'] as const;
 const fixture: Record<string, unknown> = {};
 
 const LABEL_KEYS = [...sectionsModule.CORE_SECTION_KEYS, 'plugin_extra', 'x', 'two_words_here', 'ünï_key', 'a__b'];

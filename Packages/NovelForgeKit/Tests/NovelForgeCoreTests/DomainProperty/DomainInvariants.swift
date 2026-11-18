@@ -106,8 +106,9 @@ struct DomainInvariants {
       let shown = "\(at): \(String(describing: derived.inForce[chapter]?.approval)) vs \(String(describing: oracle.inForce))"
       expect(derived.inForce[chapter]?.approval == oracle.inForce, "the approval in force names the current heads and matching plan terms", shown)
       expect(entry?.approval == oracle.inForce, "the lifecycle holds the approval in force", shown)
-      let review: DraftReviewState? = oracle.isFinal ? .final : records.heads[chapter] == nil ? nil : oracle.inForce == nil ? .needsReview : .approved
-      expect(entry?.review == review, "a draft is approved iff an approval is in force", at)
+      expect(
+        entry?.review == oracle.review, "a chapter is final, then generating while a generate job is open, then held by its head's latest judge review, then approved",
+        "\(at): \(String(describing: entry?.review)) vs \(String(describing: oracle.review))")
     }
   }
 
@@ -314,7 +315,7 @@ struct DomainInvariants {
       volumes: Dictionary(uniqueKeysWithValues: derived.volumes.map { ($0.volume, $0.state) }), secrets: records.secrets.count, promises: records.promises,
       pages: records.pages, entities: records.entities.count, notebook: Dictionary(grouping: derived.notebook.values, by: \.status).mapValues(\.count),
       shownEntries: records.entries.filter { derived.notebook[$0.record.id]?.status == .active && NotebookTopics.isVisibleInNotebook($0.record.topic) }.count,
-      knowledge: Set(derived.knowledge))
+      knowledge: Set(derived.knowledge), reviews: chapters.mapValues(\.review))
     found.list += try DomainReadModelChecks.check(novel, expecting: expectations, in: transaction).map { "novel \(novel.uuidString.prefix(8)): \($0)" }
   }
 }

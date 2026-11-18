@@ -1,9 +1,17 @@
 import Foundation
 import GRDB
 import ShadowCore
+import ShadowJobs
 import ShadowStore
 
 @testable import NovelForgeCore
+
+/// The latest readable judge review of a chapter with the remedy records of its findings; `answered` when any of them exists, readable or not.
+struct JudgeRecord {
+  let entry: AppendedEntry<ChapterReviewRecord>
+  let remedies: [String: ReviewRemedy]
+  let answered: Bool
+}
 
 /// One novel as its synced records say, read without any derived table: what the invariants are judged against.
 struct NovelRecords {
@@ -15,6 +23,13 @@ struct NovelRecords {
   var sources: [Int: String] = [:]
   /// What each live draft's head revision records it was written against; nil when it records nothing readable.
   var upstreams: [Int: DraftUpstream?] = [:]
+  var bodies: [Int: String] = [:]
+  var judges: [Int: JudgeRecord] = [:]
+  /// Every judge review per chapter, with each finding's remedy register as stored: its value (nil when cleared) and clock.
+  var judgeReviews: [Int: [AppendedEntry<ChapterReviewRecord>]] = [:]
+  var remedyRegisters: [UUID: [String: (remedy: ReviewRemedy?, clock: HLCTimestamp)]] = [:]
+  /// Chapters with a generate job requested and neither cancelled nor finished.
+  var generating: Set<Int> = []
   var plans: [Int: ChapterContract] = [:]
   var approvals: [AppendedEntry<ApprovalRecord>] = []
   var secrets: [String: SecretRecord] = [:]
@@ -59,6 +74,7 @@ struct NovelRecords {
       records.heads[entry.record.chapter] = head
       records.sources[entry.record.chapter] = entry.record.content.source.rawValue
       records.upstreams[entry.record.chapter] = .some(entry.record.content.upstream)
+      records.bodies[entry.record.chapter] = entry.record.content.body
     }
     for entry in try ChapterPlanRecord.listing(novel: novel, in: transaction).entries {
       records.note("plan", entry.record.ref, try ChapterPlanRecord.ref(novel: novel, chapter: entry.record.chapter), "\(entry.record.chapter)")
@@ -101,9 +117,45 @@ struct NovelRecords {
       records.note("mystery", entry.record.ref, MysteryRecord.ref(novel: novel, mystery: entry.record.mystery), entry.record.mystery)
       if !entry.isRemoved { records.promises += 1 }
     }
+    try records.readJudges(in: transaction)
+    try records.readJobs(in: transaction)
     records.entries = try NotebookEntryRecord.listing(novel: novel, in: transaction).entries
     records.withdrawals = try NotebookWithdrawalRecord.listing(novel: novel, in: transaction).entries
     return records
+  }
+
+  private mutating func readJudges(in transaction: ReadTransaction) throws {
+    let judges = try ChapterReviewRecord.listing(novel: novel, in: transaction).entries.filter { $0.record.reviewKind == .known(.judge) }
+    for review in judges {
+      for finding in review.record.findings {
+        let ref = ReviewRemedyRecord.ref(novel: novel, review: review.record.id, finding: finding.id)
+        guard case .record(let state)? = try transaction.state(of: ref, scope: .vault), let field = state[field: ReviewRemedyField.remedy.rawValue] else { continue }
+        remedyRegisters[review.record.id, default: [:]][finding.id] = (ReviewRemedy(json: field.value), field.clock)
+      }
+    }
+    for (chapter, reviews) in Dictionary(grouping: judges, by: \.record.chapter) {
+      judgeReviews[chapter] = reviews
+      guard let latest = reviews.max(by: { ($0.clock, $0.record.ref) < ($1.clock, $1.record.ref) }) else { continue }
+      var remedies = [String: ReviewRemedy]()
+      var answered = false
+      for finding in latest.record.findings {
+        let reading = try ReviewRemedyRecord.read(novel: novel, review: latest.record.id, finding: finding.id, in: transaction)
+        if reading != .absent { answered = true }
+        if let remedy = reading.entry?.record.remedy { remedies[finding.id] = remedy }
+      }
+      self.judges[chapter] = JudgeRecord(entry: latest, remedies: remedies, answered: answered)
+    }
+  }
+
+  private mutating func readJobs(in transaction: ReadTransaction) throws {
+    let attempts = try transaction.states(ofKind: JobSchema.attemptKind).compactMap { AttemptRecords.reading($0.state, of: $0.ref).record }
+    let ended = Set(attempts.filter { $0.outcome == .succeeded || $0.outcome == .cancelled }.map(\.start.job))
+    for (ref, state) in try transaction.states(ofKind: JobSchema.jobKind) {
+      guard case .readable(let job) = JobRecords.reading(state, of: ref), job.request.key.scope == NovelJobAddress.scope(of: novel),
+        job.request.key.kind == NovelJobKind.generate.rawValue, let chapter = NovelJobAddress.chapter(ofTarget: job.request.key.target)
+      else { continue }
+      if job.cancel != .requested, !ended.contains(ref) { generating.insert(chapter) }
+    }
   }
 
   private mutating func note(_ kind: String, _ stored: EntityRef, _ rebuilt: EntityRef, _ key: String) {

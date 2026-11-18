@@ -4,6 +4,7 @@ public enum ChapterDerivations {
     StoryCursorDerivation(),
     ChapterDraftDerivation(),
     ChapterApprovalDerivation(),
+    ChapterReviewDerivation(),
     ChapterLifecycleDerivation(),
     ApprovalInForceDerivation(),
     CharacterKnowledgeDerivation(),
