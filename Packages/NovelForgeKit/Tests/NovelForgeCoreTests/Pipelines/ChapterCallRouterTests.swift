@@ -59,6 +59,12 @@ private enum RouteWorld {
       request: { $0.request(system: [ContextSegment(text: "Write the chapter.")], messages: [ModelMessage(role: .user, text: "Chapter 3.")]) }, name: "chapter-draft",
       schema: schema)
   }
+
+  static func runText(_ route: ChapterCallRoute, router: TaskRouter, sections: [ContextSection] = []) async throws(ChapterCallFailure) -> ChapterTextResult {
+    try await route.runText(
+      router, pace: .steady, consent: CompactionWorld.consent, screening: input(), sections: sections, lexicon: .standard,
+      request: { $0.request(system: [ContextSegment(text: "Judge the chapter.")], messages: [ModelMessage(role: .user, text: "Chapter 3.")]) })
+  }
 }
 
 @Suite("Chapter call router", .timeLimit(.minutes(3)))
@@ -256,5 +262,48 @@ struct ChapterCallRouterTests {
     #expect(throws: ChapterCallError.self) { try route.screenOutput(output, lexicon: lexicon) }
     try route.screenInputs(RouteWorld.input(), sections: [section], lexicon: .standard)
     try route.screenOutput(output, lexicon: .standard)
+  }
+
+  @Test func shouldSendATextCallAsWrittenAndReturnItsReplyAndCallID() async throws {
+    let route = try ChapterCallRouter.route(RouteWorld.source(.judge, plan: RouteWorld.plan(.unrestricted)), unrestrictedAvailable: true)
+    let provider = ScriptedModelProvider(calls: [ScriptedModelProvider.reply("not json: the river is cold")])
+    let result = try await RouteWorld.runText(route, router: try await RouteWorld.router(provider))
+    #expect(result.text == "not json: the river is cold" && result.callIDs.count == 1)
+    let request = try #require(provider.requests.first)
+    #expect(request.messages.map(\.text) == ["Chapter 3."] && request.format == .text && request.system.first?.text == hardLineSystemLine)
+  }
+
+  @Test func shouldRefuseAHardLineInputOfATextCallBeforeSending() async throws {
+    let route = try ChapterCallRouter.route(RouteWorld.source(.judge, plan: RouteWorld.plan(.unrestricted)), unrestrictedAvailable: true)
+    let provider = ScriptedModelProvider(calls: [ScriptedModelProvider.reply("The river is cold.")])
+    let section = ContextSection(key: "characters", rendered: "Mara: \(RouteWorld.explicitBackground).", sourceRefs: ["entity:Mara"])
+    let router = try await RouteWorld.router(provider)
+    do throws(ChapterCallFailure) {
+      _ = try await RouteWorld.runText(route, router: router, sections: [section])
+      Issue.record("expected a refusal")
+    } catch {
+      guard case .hardLine(let hit) = error.error else {
+        Issue.record("expected a hard-line refusal, got \(error.error)")
+        return
+      }
+      #expect(hit.sourceRefs == ["entity:Mara"] && error.callIDs.isEmpty)
+    }
+    #expect(provider.requests.isEmpty)
+  }
+
+  @Test func shouldRefuseATextReplyTheHardLineFindsAndKeepItsCallID() async throws {
+    let route = try ChapterCallRouter.route(RouteWorld.source(.judge, plan: RouteWorld.plan(.unrestricted)), unrestrictedAvailable: true)
+    let provider = ScriptedModelProvider(calls: [ScriptedModelProvider.reply("nothing but loli art")])
+    let router = try await RouteWorld.router(provider)
+    do throws(ChapterCallFailure) {
+      _ = try await RouteWorld.runText(route, router: router)
+      Issue.record("expected a refusal")
+    } catch {
+      guard case .hardLine(let hit) = error.error else {
+        Issue.record("expected a hard-line refusal, got \(error.error)")
+        return
+      }
+      #expect(hit == HardLineHit(rule: .standaloneTerm, source: "The generated text", sourceRefs: []) && error.callIDs.count == 1)
+    }
   }
 }

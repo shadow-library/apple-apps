@@ -7,7 +7,8 @@ import ShadowStore
 import Synchronization
 
 /// A request for a novel's job. The same request made on two devices is one job (plan, Jobs and attempts); `rerun` asks for the next run of it, as a
-/// regenerate does (orchestrator decision 8: re-run = highest run + 1).
+/// regenerate does (orchestrator decision 8: re-run = highest run + 1). `rerunOnceSucceeded` asks for the next run only when the highest has succeeded, decided
+/// in the request's own write, so asks made together share one run, as a review asked again after it was stored does.
 public struct NovelJobRequest: Sendable, Hashable {
   public let kind: NovelJobKind
   public let novel: UUID
@@ -16,8 +17,12 @@ public struct NovelJobRequest: Sendable, Hashable {
   public let payload: JSONValue
   public let origin: JSONValue
   public let rerun: Bool
+  public let rerunOnceSucceeded: Bool
 
-  public init(kind: NovelJobKind, novel: UUID, chapter: Int, fingerprint: String, payload: JSONValue = .null, origin: JSONValue = .null, rerun: Bool = false) {
+  public init(
+    kind: NovelJobKind, novel: UUID, chapter: Int, fingerprint: String, payload: JSONValue = .null, origin: JSONValue = .null, rerun: Bool = false,
+    rerunOnceSucceeded: Bool = false
+  ) {
     self.kind = kind
     self.novel = novel
     self.chapter = chapter
@@ -25,6 +30,7 @@ public struct NovelJobRequest: Sendable, Hashable {
     self.payload = payload
     self.origin = origin
     self.rerun = rerun
+    self.rerunOnceSucceeded = rerunOnceSucceeded
   }
 }
 
@@ -132,7 +138,12 @@ public final class JobEngine: Sendable {
       var run = 1
       while try transaction.state(of: try self.key(request, run: run).ref) != nil { run += 1 }
       let highest = run > 1 ? try JobSnapshot.load(try self.key(request, run: run - 1).ref, in: transaction) : nil
-      let stale = highest.map { request.rerun || JobStatus($0, at: now) == .cancelled } ?? (run > 1)
+      let stale =
+        highest.map { snapshot in
+          let status = JobStatus(snapshot, at: now)
+          guard case .succeeded = status else { return request.rerun || status == .cancelled }
+          return request.rerun || request.rerunOnceSucceeded
+        } ?? (run > 1)
       let key = run == 1 ? first : try self.key(request, run: stale ? run : run - 1)
       _ = try JobRecords.request(JobRequest(key: key, payload: request.payload, origin: request.origin, replica: replica), in: &transaction)
       return key

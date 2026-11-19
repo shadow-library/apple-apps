@@ -185,7 +185,7 @@ struct JobEngineTests {
     } catch {
       #expect(error.code == JobEngineError.pipelineNotYetAvailable(.generate).code)
     }
-    for kind in NovelJobKind.allCases {
+    for kind in NovelJobKind.allCases where kind != .review {
       guard case .notYetAvailable(let named) = PipelineCatalog.definition(for: kind) else {
         Issue.record("\(kind) has a pipeline")
         continue
@@ -245,16 +245,17 @@ struct JobEngineTests {
     try await world.expectOutputsWrittenOnce(job, steps: ["draft"])
   }
 
-  @Test(arguments: [UnrestrictedMinorStep.Placement.screenedInput, .request])
-  func shouldRefuseAnUnrestrictedCallNamingAMinorBeforeAnythingIsSent(_ placement: UnrestrictedMinorStep.Placement) async throws {
-    let (world, handle) = try await Self.runMinorStep(placement, replies: [JobEngineWorld.reply()])
+  @Test(arguments: [UnrestrictedMinorStep.Placement.screenedInput, .request], [false, true])
+  func shouldRefuseAnUnrestrictedCallNamingAMinorBeforeAnythingIsSent(_ placement: UnrestrictedMinorStep.Placement, asText: Bool) async throws {
+    let (world, handle) = try await Self.runMinorStep(placement, asText: asText, replies: [JobEngineWorld.reply()])
     #expect(try await Self.hardLineFailure(handle))
     #expect(world.provider.requests.isEmpty)
     #expect(try await world.ledgerIDs().isEmpty)
   }
 
-  @Test func shouldRefuseAnUnrestrictedReplyNamingAMinorAndSaveNothing() async throws {
-    let (world, handle) = try await Self.runMinorStep(.output, replies: [JobEngineWorld.reply(UnrestrictedMinorStep.text)])
+  @Test(arguments: [false, true])
+  func shouldRefuseAnUnrestrictedReplyNamingAMinorAndSaveNothing(asText: Bool) async throws {
+    let (world, handle) = try await Self.runMinorStep(.output, asText: asText, replies: [JobEngineWorld.reply(UnrestrictedMinorStep.text)])
     #expect(try await Self.hardLineFailure(handle))
     #expect(world.provider.requests.count == 1)
     let ledger = try await world.ledgerIDs()
@@ -264,14 +265,14 @@ struct JobEngineTests {
   }
 
   private static func runMinorStep(
-    _ placement: UnrestrictedMinorStep.Placement, replies: [[ScriptedModelProvider.Step]]
+    _ placement: UnrestrictedMinorStep.Placement, asText: Bool, replies: [[ScriptedModelProvider.Step]]
   ) async throws -> (JobEngineWorld, JobRunHandle) {
     let world = try await JobEngineWorld(provider: ScriptedModelProvider(calls: replies))
     let novel = world.novel
     try await world.store.write { transaction in
       _ = try EntityRecord(novel: novel, entity: "pip", type: .known(.character), name: "Pip", age: 15).create(in: &transaction)
     }
-    let pipeline = NovelPipeline(version: JobEngineWorld.pipelineVersion, first: "draft", steps: ["draft": UnrestrictedMinorStep(placement: placement)])
+    let pipeline = NovelPipeline(version: JobEngineWorld.pipelineVersion, first: "draft", steps: ["draft": UnrestrictedMinorStep(placement: placement, asText: asText)])
     let engine = try world.engine(catalog: { _ in .ready(pipeline) })
     let job = try await world.request(engine).ref
     return (world, try await engine.run(job: job))
@@ -301,8 +302,8 @@ struct JobEngineTests {
   }
 }
 
-/// One unrestricted chapter call whose minor's name and sexual act sit in exactly one place: the screened input, the request the route's guard reads, or the
-/// reply the output screen reads.
+/// One unrestricted chapter call, structured or text, whose minor's name and sexual act sit in exactly one place: the screened input, the request the route's
+/// guard reads, or the reply the output screen reads.
 struct UnrestrictedMinorStep: JobStep {
   enum Placement: Sendable {
     case screenedInput
@@ -313,6 +314,7 @@ struct UnrestrictedMinorStep: JobStep {
   static let text = "Pip and the orgasm."
 
   let placement: Placement
+  let asText: Bool
 
   func run(_ state: JSONValue, in context: JobStepContext) async throws -> AttemptStepOutput {
     let route = try ChapterCallRouter.route(
@@ -321,11 +323,12 @@ struct UnrestrictedMinorStep: JobStep {
         isolated: false), unrestrictedAvailable: true)
     let input = OrderedJSONObject([("guidance", .string(placement == .screenedInput ? Self.text : "Keep it quiet."))])
     let sent = placement == .request ? Self.text : "Write."
-    let result = try await context.call(
-      route, pace: .steady, screening: input, request: { $0.request(system: [ContextSegment(text: "Write.")], messages: [.user(sent)]) }, name: "minor",
-      schema: FakeChapterStep.schema)
-    let entry = NotebookEntryRecord(
-      novel: context.target.novel, entryKind: .known(.decision), topic: "minor", statement: String(decoding: result.json, as: UTF8.self), stepKey: "draft")
+    let request = { (call: RoutedCall) in call.request(system: [ContextSegment(text: "Write.")], messages: [.user(sent)]) }
+    let statement =
+      asText
+      ? try await context.callText(route, pace: .steady, screening: input, request: request).text
+      : String(decoding: try await context.call(route, pace: .steady, screening: input, request: request, name: "minor", schema: FakeChapterStep.schema).json, as: UTF8.self)
+    let entry = NotebookEntryRecord(novel: context.target.novel, entryKind: .known(.decision), topic: "minor", statement: statement, stepKey: "draft")
     return AttemptStepOutput(state: state, next: nil) { transaction in _ = try entry.append(in: &transaction) }
   }
 }

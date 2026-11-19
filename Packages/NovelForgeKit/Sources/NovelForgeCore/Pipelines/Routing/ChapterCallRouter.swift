@@ -43,6 +43,11 @@ struct ChapterCallRoute: Sendable, Equatable {
   var task: ModelTask { role.modelTask }
 }
 
+struct ChapterTextResult: Sendable, Equatable {
+  let text: String
+  let callIDs: [UUID]
+}
+
 enum ChapterCallRouter {
   static let logger = Logger(category: "chapter.route")
 
@@ -128,6 +133,35 @@ extension ChapterCallRoute {
       throw ChapterCallFailure(error: error, callIDs: result.callIDs)
     }
     return result
+  }
+
+  /// `run` for a call whose reply is text the caller parses, as the reference's chat clients answer (model-router.service.ts:383-391): one request, screened,
+  /// guarded and ledgered as `run`'s are, with nothing added to it; the whole reply is screened before it returns.
+  func runText(
+    _ router: TaskRouter, pace: Pace, thinksDeeper: Bool = false, consent: AIConsentRequirement, screening input: OrderedJSONObject, sections: [ContextSection] = [],
+    lexicon: HardLineLexicon, request: (RoutedCall) -> ModelRequest
+  ) async throws(ChapterCallFailure) -> ChapterTextResult {
+    let call: RoutedCall
+    do throws(ChapterCallError) {
+      try screenInputs(input, sections: sections, lexicon: lexicon)
+      call = try await prepare(router, pace: pace, thinksDeeper: thinksDeeper, consent: consent)
+    } catch {
+      throw ChapterCallFailure(error: error, callIDs: [])
+    }
+    let response: ModelResponse
+    do throws(ModelError) {
+      response = try await call.provider.stream(request(call)).collect()
+    } catch {
+      await call.settled()
+      throw ChapterCallFailure(error: error.hardLineHit.map(refused) ?? .model(.model(error, responses: [])), callIDs: call.callIDs)
+    }
+    await call.settled()
+    do throws(ChapterCallError) {
+      try screenOutput(Data(response.text.utf8), lexicon: lexicon)
+    } catch {
+      throw ChapterCallFailure(error: error, callIDs: call.callIDs)
+    }
+    return ChapterTextResult(text: response.text, callIDs: call.callIDs)
   }
 
   /// Prose this call drafts takes the route's generator and isolation. Prose revised from `previous` stays isolated if that was, and a standard revision keeps

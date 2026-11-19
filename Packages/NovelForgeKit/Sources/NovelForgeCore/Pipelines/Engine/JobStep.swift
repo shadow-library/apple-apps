@@ -66,38 +66,22 @@ struct JobStepContext: Sendable {
   var unrestrictedAvailable: Bool { services.unrestrictedAvailable }
   var payload: JSONValue { attempt.job.request.payload }
 
-  /// The hard line with the novel's live minor characters, read at each call so an age or name changed since the last step holds from this one (G19).
-  func hardLine() async throws(JobEngineError) -> HardLineLexicon {
-    do {
-      return try await services.hardLines.lexicon(for: target.novel, in: services.store)
-    } catch {
-      throw .store(error)
-    }
-  }
-
-  /// A router whose unrestricted routes screen every request with `lexicon`.
-  func router(screening lexicon: HardLineLexicon) async -> TaskRouter {
-    await services.router { route in RequestGuard.hardLine(for: route, lexicon: lexicon)?.modelRequestGuard }
-  }
-
   /// `route.run` with one read of the novel's minor names behind its input screen, its request guard and its output screen alike.
   func call(
     _ route: ChapterCallRoute, pace: Pace, thinksDeeper: Bool = false, screening input: OrderedJSONObject, sections: [ContextSection] = [],
     request: (RoutedCall) -> ModelRequest, name: String, schema: JSONValue, review: StructuredReview = .none, observer: (StructuredStreamEvent) -> Void = { _ in }
   ) async throws(JobStepCallError) -> StructuredResult {
-    let lexicon: HardLineLexicon
-    do {
-      lexicon = try await hardLine()
-    } catch {
-      throw .engine(error)
-    }
-    do {
-      return try await route.run(
-        await router(screening: lexicon), pace: pace, thinksDeeper: thinksDeeper, consent: consent, screening: input, sections: sections, lexicon: lexicon,
-        request: request, name: name, schema: schema, review: review, observer: observer)
-    } catch {
-      throw .call(error)
-    }
+    try await services.call(
+      route, pace: pace, thinksDeeper: thinksDeeper, screening: input, sections: sections, request: request, name: name, schema: schema, review: review,
+      observer: observer)
+  }
+
+  /// `route.runText` behind the same screens, for a reply the step parses itself.
+  func callText(
+    _ route: ChapterCallRoute, pace: Pace, thinksDeeper: Bool = false, screening input: OrderedJSONObject, sections: [ContextSection] = [],
+    request: (RoutedCall) -> ModelRequest
+  ) async throws(JobStepCallError) -> ChapterTextResult {
+    try await services.callText(route, pace: pace, thinksDeeper: thinksDeeper, screening: input, sections: sections, request: request)
   }
 
   /// The attempt's writer pack under `options`, built once and kept on this device for the attempt's later steps and its resumes, with the disclosure policy
@@ -132,6 +116,48 @@ struct JobStepContext: Sendable {
       }
     } catch {
       throw .store(error)
+    }
+  }
+}
+
+extension JobServices {
+  /// The one way a chapter call leaves the engine, in a job step or not: the novel's minor names are read at each call, so an age or name changed since the
+  /// last one holds from this one (G19), and that one read is behind the input screen, the request guard and the output screen alike.
+  private func sending<Result>(
+    _ route: ChapterCallRoute, _ send: (TaskRouter, HardLineLexicon) async throws(ChapterCallFailure) -> Result
+  ) async throws(JobStepCallError) -> Result {
+    let lexicon: HardLineLexicon
+    do {
+      lexicon = try await hardLines.lexicon(for: route.novel, in: store)
+    } catch {
+      throw .engine(.store(error))
+    }
+    let router = await self.router { route in RequestGuard.hardLine(for: route, lexicon: lexicon)?.modelRequestGuard }
+    do {
+      return try await send(router, lexicon)
+    } catch {
+      throw .call(error)
+    }
+  }
+
+  func call(
+    _ route: ChapterCallRoute, pace: Pace, thinksDeeper: Bool = false, screening input: OrderedJSONObject, sections: [ContextSection] = [],
+    request: (RoutedCall) -> ModelRequest, name: String, schema: JSONValue, review: StructuredReview = .none, observer: (StructuredStreamEvent) -> Void = { _ in }
+  ) async throws(JobStepCallError) -> StructuredResult {
+    try await sending(route) { router, lexicon throws(ChapterCallFailure) in
+      try await route.run(
+        router, pace: pace, thinksDeeper: thinksDeeper, consent: consent, screening: input, sections: sections, lexicon: lexicon, request: request, name: name,
+        schema: schema, review: review, observer: observer)
+    }
+  }
+
+  func callText(
+    _ route: ChapterCallRoute, pace: Pace, thinksDeeper: Bool = false, screening input: OrderedJSONObject, sections: [ContextSection] = [],
+    request: (RoutedCall) -> ModelRequest
+  ) async throws(JobStepCallError) -> ChapterTextResult {
+    try await sending(route) { router, lexicon throws(ChapterCallFailure) in
+      try await route.runText(
+        router, pace: pace, thinksDeeper: thinksDeeper, consent: consent, screening: input, sections: sections, lexicon: lexicon, request: request)
     }
   }
 }
