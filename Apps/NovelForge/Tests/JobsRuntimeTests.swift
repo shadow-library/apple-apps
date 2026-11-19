@@ -107,7 +107,8 @@ private struct JobsWorld {
   let runtime: JobRuntime
 
   static func make(
-    _ calls: [[ScriptedModelProvider.Step]] = [], at location: StoreLocation = .inMemory, granted: Bool = true, starter: JobRuntime.Starter? = nil
+    _ calls: [[ScriptedModelProvider.Step]] = [], at location: StoreLocation = .inMemory, granted: Bool = true, starter: JobRuntime.Starter? = nil,
+    settler: ((VaultStore) -> CostSettler)? = nil
   ) async throws -> JobsWorld {
     let store =
       switch location {
@@ -130,11 +131,12 @@ private struct JobsWorld {
         }, consent: consent.requirement, clock: clock)
     }
     let assertion = JobPowerAssertion(activity: power.activity)
+    let settler = settler?(store)
     let runtime =
       if let starter {
-        JobRuntime(store: store, clock: clock, power: assertion, takeOverDelay: .milliseconds(20), starter: starter, makeEngine: makeEngine)
+        JobRuntime(store: store, clock: clock, power: assertion, takeOverDelay: .milliseconds(20), settler: settler, starter: starter, makeEngine: makeEngine)
       } else {
-        JobRuntime(store: store, clock: clock, power: assertion, takeOverDelay: .milliseconds(20), makeEngine: makeEngine)
+        JobRuntime(store: store, clock: clock, power: assertion, takeOverDelay: .milliseconds(20), settler: settler, makeEngine: makeEngine)
       }
     let world = JobsWorld(store: store, novel: novel, provider: provider, power: power, host: binding.host, makeEngine: makeEngine, runtime: runtime)
     if granted { try await world.decideConsent(.granted, at: 1) }
@@ -212,6 +214,24 @@ struct JobsRuntimeTests {
     #expect(again.job == line.job && world.provider.requests.count == 2)
     try await JobsWait.until("the power assertion is released again") { world.power.begun == 2 && world.power.ended == 2 }
     #expect(!world.runtime.isHoldingPower)
+  }
+
+  @Test func shouldPriceAPendingEntryOnceAnAttemptEndsAndLeftoversAtLaunch() async throws {
+    let (transport, passes) = (CostWorld.reply(200), PassCount())
+    let world = try await JobsWorld.make(settler: { CostWorld.settler(store: $0, transport: transport, passes: passes) })
+    let costs = CostWorld(store: world.store, transport: transport, passes: passes)
+    let leftover = try await costs.addPending(generation: "gen-left")
+    await world.runtime.launch()
+    try await JobsWait.until("the leftover is priced at launch") { try await costs.source(of: leftover) == .reported }
+    try await JobsWait.until("the launch pass ends") { passes.count == 1 }
+
+    let engine = try #require(world.runtime.engine)
+    let late = try await costs.addPending(generation: "gen-late")
+    let job = try await engine.request(world.generation()).ref
+    _ = try await world.failedLine()
+    try await JobsWait.until("the attempt's entry is priced") { try await costs.source(of: late) == .reported }
+    #expect(try await world.attempts(of: job) == 1)
+    #expect(transport.requests.count == 2)
   }
 
   @Test func shouldStartNothingWithoutConsentAndRunTheJobOnceItIsGiven() async throws {

@@ -13,6 +13,7 @@ final class ChatRuntimes {
 
   func runtime(for store: VaultStore, services: AIServices) -> ChatRuntime {
     if let current, current.store == ObjectIdentifier(store) { return current.runtime }
+    current?.runtime.shutDown()
     let created = ChatRuntime.live(store: store, services: services)
     current = (ObjectIdentifier(store), created)
     return created
@@ -31,28 +32,35 @@ final class ChatRuntime {
   let store: VaultStore
   let engine: ChatTurnEngine
   private var novels: [UUID: ChatNovelModel] = [:]
+  private let settler: CostSettler?
   private var launching: Task<Void, Never>?
 
-  init(store: VaultStore, engine: ChatTurnEngine) {
+  init(store: VaultStore, engine: ChatTurnEngine, settler: CostSettler? = nil) {
     self.store = store
     self.engine = engine
+    self.settler = settler
   }
 
   static func live(store: VaultStore, services: AIServices) -> ChatRuntime {
     let engine = ChatTurnEngine(store: store, router: { await services.router(store: store) }, consent: ConsentDisclosure.novelText.requirement)
-    return ChatRuntime(store: store, engine: engine)
+    return ChatRuntime(store: store, engine: engine, settler: services.settler(for: store))
   }
 
   func model(for context: NovelContext) -> ChatNovelModel {
-    if let existing = novels[context.novel] { return existing }
-    let created = ChatNovelModel(context: context, engine: engine)
-    novels[context.novel] = created
-    return created
+    let model = novels[context.novel] ?? ChatNovelModel(context: context, engine: engine)
+    model.turnEnded = { [settler] in settler?.settle() }
+    novels[context.novel] = model
+    return model
+  }
+
+  func shutDown() {
+    settler?.shutDown()
   }
 
   /// Once per vault open: pending card actions run, interrupted turns resume or end, and every open chat and Waiting on you then read their turns again.
   func launch() async {
     if let launching { return await launching.value }
+    settler?.settleLeftovers()
     let engine = engine
     let task = Task { [weak self] in
       do throws(StoreError) {

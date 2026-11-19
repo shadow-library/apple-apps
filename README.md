@@ -197,6 +197,10 @@ Waiting on you (`Chat/Changes/ChatWaitingTray`) also lists conflicted cards, whi
 
 Observe reads with `ReadObserver` (`Shared/ReadObserver.swift`; `run(_:onValue:)` hands every emitted value to a hook, and an equal value is not republished) and surface failures through `PresentedError` (a localized headline with the error code as detail, never developer text). Markdown prose is rendered by `Shared/ProseView`, which the Reader and the Story Bible share. Strings are per area (`Library`, `Navigation`, `Notebook`, `Story`, `StoryBible`, `Reader`, `Settings`, `Jobs` for the job runtime and chapter strip, and for chat `Chat`, `ChatComposer`, `ChatCards` and `ChatChanges`, each its own `<Area>.xcstrings`) and are used with `Text(_:tableName:)` and `LocalizedStringResource(_:table:)`; an area adds its own `<Area>.xcstrings` and never edits another's. `Localizable.xcstrings` holds only the vault-opening strings.
 
+Pending OpenRouter costs settle at launch, when a job attempt ends and when a chat turn ends (`Shared/CostSettler`; one batch at a time, then a 60 s cooldown after a batch that priced nothing).
+
+The cost lookup sends only the generation id with the user's own key; novel-text consent covers content sent to a model, not metered-cost lookups.
+
 ## Catalog app
 
 `Apps/Catalog` is a gallery of every component and token page in light and dark, with the presentation and device-screen demos. It is also the pipeline's smoke test and the subject of the screenshot harness. Run the `Catalog` scheme from the workspace, or `Catalog -list-components` to print the page ids.

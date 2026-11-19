@@ -48,6 +48,7 @@ final class ChatSessionModel {
   /// What a message with no recorded mode follows: the novel's, standard unless known unrestricted (chat-selection.ts:22).
   var novelMode = ContentMode.standard
   var replyOffer = ChatReplyOffer.none
+  @ObservationIgnored var turnEnded: (() -> Void)?
   let composer = ChatComposerState()
   private(set) var activity = ChatTurnActivity.idle
   private(set) var live: StreamedTurn?
@@ -280,6 +281,7 @@ final class ChatSessionModel {
       }
       guard let self, !Task.isCancelled else { return }
       if live?.turn == turn { live?.finish() }
+      turnEnded?()
       await refreshActivity()
     }
   }

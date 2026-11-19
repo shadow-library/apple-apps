@@ -76,6 +76,7 @@ final class JobRuntime {
   @ObservationIgnored private let makeEngine: EngineFactory
   @ObservationIgnored private let starter: Starter
   @ObservationIgnored private let power: JobPowerAssertion
+  @ObservationIgnored private let settler: CostSettler?
   @ObservationIgnored private let takeOverDelay: Duration
   @ObservationIgnored private var launching: Task<Void, Never>?
   @ObservationIgnored private var takingOver: Task<Void, Never>?
@@ -83,13 +84,14 @@ final class JobRuntime {
   @ObservationIgnored private var following: Set<AttemptID> = []
 
   init(
-    store: VaultStore, clock: LeaseClock, power: JobPowerAssertion = JobPowerAssertion(), takeOverDelay: Duration = .seconds(30),
+    store: VaultStore, clock: LeaseClock, power: JobPowerAssertion = JobPowerAssertion(), takeOverDelay: Duration = .seconds(30), settler: CostSettler? = nil,
     starter: @escaping Starter = { engine, job throws(JobEngineError) in try await engine.run(job: job) }, makeEngine: @escaping EngineFactory
   ) {
     self.store = store
     self.clock = clock
     self.power = power
     self.takeOverDelay = takeOverDelay
+    self.settler = settler
     self.starter = starter
     self.makeEngine = makeEngine
   }
@@ -97,7 +99,7 @@ final class JobRuntime {
   static func live(store: VaultStore, services: AIServices) -> JobRuntime {
     let clock = LeaseClock(trusted: nil)
     let consent = ConsentDisclosure.novelText.requirement
-    return JobRuntime(store: store, clock: clock) { () throws(JobEngineError) -> JobEngine in
+    return JobRuntime(store: store, clock: clock, settler: services.settler(for: store)) { () throws(JobEngineError) -> JobEngine in
       try JobEngine(store: store, router: { requestGuard in await services.router(store: store, requestGuard: requestGuard) }, consent: consent, clock: clock)
     }
   }
@@ -118,6 +120,7 @@ final class JobRuntime {
   /// Once per vault open; another call waits for the first.
   func launch() async {
     if let launching { return await launching.value }
+    settler?.settleLeftovers()
     let task = Task { await claim() }
     launching = task
     await task.value
@@ -127,6 +130,7 @@ final class JobRuntime {
     for task in [launching, takingOver, draining] { task?.cancel() }
     (launching, takingOver, draining, engine) = (nil, nil, nil, nil)
     following = []
+    settler?.shutDown()
     power.release()
   }
 
@@ -186,6 +190,7 @@ final class JobRuntime {
   private func ended(_ attempt: AttemptID) {
     guard following.remove(attempt) != nil else { return }
     power.end()
+    settler?.settle()
   }
 
   private func act(on job: EntityRef, _ start: (JobEngine) async throws(JobEngineError) -> JobRunHandle) async -> PresentedError? {

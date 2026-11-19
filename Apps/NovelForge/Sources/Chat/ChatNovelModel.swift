@@ -59,6 +59,9 @@ final class ChatNovelModel {
   private(set) var isStarting = false
   private let engine: ChatTurnEngine
   private let observer = ReadObserver<ChatSessionsSnapshot>()
+  @ObservationIgnored var turnEnded: (() -> Void)? {
+    didSet { for session in sessions.values { session.turnEnded = turnEnded } }
+  }
   @ObservationIgnored private var sessions: [UUID: ChatSessionModel] = [:]
   @ObservationIgnored private var created: UUID?
   @ObservationIgnored private var startRequest = 0
@@ -100,6 +103,7 @@ final class ChatNovelModel {
     if let existing = sessions[id] { return existing }
     let model = ChatSessionModel(session: id, context: context, engine: engine)
     model.novelMode = novelMode
+    model.turnEnded = turnEnded
     model.replyOffer = replyOffer
     sessions[id] = model
     return model

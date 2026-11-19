@@ -93,6 +93,8 @@ final class AIServices {
   private let validation: CredentialValidation
   private let listing: ModelListing
   private let now: @Sendable () -> Date
+  private let costLookup: OpenRouterGenerationLookup
+  private var settlers: [ObjectIdentifier: CostSettler] = [:]
 
   init(
     keys: ProviderKeys, settingsStore: AISettingsStore, transport: any HTTPTransport & HTTPStreamingTransport, validation: CredentialValidation? = nil,
@@ -102,6 +104,8 @@ final class AIServices {
     self.settingsStore = settingsStore
     self.settings = settingsStore.load()
     self.now = now
+    costLookup = OpenRouterGenerationLookup(
+      configuration: Self.openRouterConfiguration, credential: keys.credentialLoader(for: .openRouter), transport: transport)
     anthropic = ProviderBinding(anthropic: AnthropicProvider(credential: keys.credentialLoader(for: .anthropic), transport: transport))
     openRouter = ProviderBinding(
       openRouter: OpenRouterProvider(configuration: Self.openRouterConfiguration, credential: keys.credentialLoader(for: .openRouter), transport: transport))
@@ -124,6 +128,15 @@ final class AIServices {
     let configuration = TaskRouterConfiguration(
       provider: settings.provider, assignments: settings.assignments, openRouterModels: openRouterModels, spendLimits: settings.limits)
     return TaskRouter(configuration: configuration, anthropic: anthropic, openRouter: openRouter, credentials: keys, store: store, requestGuard: requestGuard)
+  }
+
+  func settler(for store: VaultStore) -> CostSettler {
+    let key = ObjectIdentifier(store)
+    if let existing = settlers[key] { return existing }
+    for stale in settlers.values { stale.shutDown() }
+    let created = CostSettler(store: store, lookup: costLookup)
+    settlers = [key: created]
+    return created
   }
 
   func update(_ change: (inout AISettings) -> Void) {
