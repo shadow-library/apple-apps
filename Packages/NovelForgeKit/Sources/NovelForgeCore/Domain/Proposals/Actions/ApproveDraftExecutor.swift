@@ -16,7 +16,7 @@ enum ApproveDraftExecutor: ProposalActionExecutor {
       throw .domain(.draftConflict(chapter: chapter, head: head.revision))
     }
     try handlerDomain { () throws(DomainError) in
-      _ = try ChapterApprovals.approve(novel: novel, chapter: chapter, revision: head.revision, in: &transaction)
+      _ = try ChapterApprovals.approve(novel: novel, chapter: chapter, revision: head.revision, requester: action.requester, in: &transaction)
     }
     return "approved chapter \(chapter)'s draft"
   }

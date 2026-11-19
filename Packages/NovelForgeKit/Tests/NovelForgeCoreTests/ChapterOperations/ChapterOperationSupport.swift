@@ -114,9 +114,9 @@ struct ChapterBook: Sendable {
 
   @discardableResult
   func approve(_ chapter: Int, as intent: ApprovalIntent = .standard, id: UUID = UUID()) async throws -> UUID {
-    let novel = novel
+    let (novel, requester) = (novel, store.replica)
     guard let head = try await head(chapter) else { throw ChapterBookError.noDraft }
-    return try await run { try ChapterApprovals.approve(novel: novel, chapter: chapter, revision: head, as: intent, id: id, in: &$0) }
+    return try await run { try ChapterApprovals.approve(novel: novel, chapter: chapter, revision: head, as: intent, id: id, requester: requester, in: &$0) }
   }
 
   func finalize(_ chapter: Int? = nil) async throws {

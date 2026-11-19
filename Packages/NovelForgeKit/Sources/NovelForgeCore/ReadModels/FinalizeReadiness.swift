@@ -127,16 +127,7 @@ public struct FinalizeReadiness: ReadModel {
       reads.append(read)
     }
     let chain = FinalizeReviewChain.chain(reads, head: head.revision)
-    var answers = [String: [String: StoredFinalizeAnswer]]()
-    for read in chain {
-      let revision = read.record.draftRevision
-      for item in read.record.items {
-        guard let ref = try? FinalizeDecisionRecord.ref(novel: novel, chapter: chapter, draftRevision: revision, item: item.key),
-          case .readable(let answer) = try FinalizeDecisionRecord.read(ref, in: transaction), !answer.isRemoved
-        else { continue }
-        answers[revision, default: [:]][item.key] = answer.record.answer
-      }
-    }
+    let answers = try FinalizeReviewChain.answers(to: chain, novel: novel, chapter: chapter, in: transaction)
     return FinalizeReviewChain.blocker(chain: chain, answers: answers, head: head)
   }
 }
@@ -149,32 +140,80 @@ enum FinalizeReviewChain {
   }
 
   /// One read per revision, its latest, oldest first and ending with the head's: a read stored after the head's last one never flows into it, as the reference
-  /// carries answers only from the reviews before the one it stores (finalize-review.service.ts:518-561). Empty when the head has no read.
+  /// carries answers only from the reviews before the one it stores (finalize-review.service.ts:518-561). Empty when the head has no read. A job keeps its first
+  /// read of its revision (the pipeline appends no second), so a duplicate another device's attempt appended later never replaces the review the author answered.
   static func chain(_ reads: [AppendedEntry<FinalizeReviewRecord>], head: String) -> [AppendedEntry<FinalizeReviewRecord>] {
+    var kept = Set<[String]>()
     var latest = [String: AppendedEntry<FinalizeReviewRecord>]()
-    for read in reads.sorted(by: precedes) { latest[read.record.draftRevision] = read }
+    for read in reads.sorted(by: precedes) where kept.insert([read.record.job.rawValue, read.record.draftRevision]).inserted {
+      latest[read.record.draftRevision] = read
+    }
     guard let last = latest[head] else { return [] }
     return latest.values.filter { $0.record.draftRevision == head || precedes($0, last) }.sorted(by: precedes)
   }
 
-  /// An item of the head's read that this version cannot understand stays open unless it is answered or was kept on its own.
-  static func blocker(chain: [AppendedEntry<FinalizeReviewRecord>], answers: [String: [String: StoredFinalizeAnswer]], head: ReviewedRevision) -> FinalizeBlocker? {
-    guard let last = chain.last, last.record.draftRevision == head.revision else { return .reviewPreparing }
+  /// The answers given at each revision of the chain, by item key.
+  static func answers<Transaction: StateReading & ~Copyable>(
+    to chain: [AppendedEntry<FinalizeReviewRecord>], novel: UUID, chapter: Int, in transaction: borrowing Transaction
+  ) throws(StoreError) -> [String: [String: StoredFinalizeAnswer]] {
+    var answers = [String: [String: StoredFinalizeAnswer]]()
+    for read in chain {
+      let revision = read.record.draftRevision
+      for item in read.record.items {
+        guard let ref = try? FinalizeDecisionRecord.ref(novel: novel, chapter: chapter, draftRevision: revision, item: item.key),
+          case .readable(let answer) = try FinalizeDecisionRecord.read(ref, in: transaction), !answer.isRemoved
+        else { continue }
+        answers[revision, default: [:]][item.key] = answer.record.answer
+      }
+    }
+    return answers
+  }
+
+  /// The head's read with each item as the answers along the chain leave it; `item` is nil for one this version cannot read.
+  struct Resolved: Sendable {
+    struct Item: Sendable {
+      let stored: StoredFinalizeItem
+      let item: FinalizeReviewItem?
+
+      /// The digest of the change it proposes, read from its stored shape when this version cannot parse it.
+      var proposalDigest: String {
+        item?.proposed.digest ?? sha256Hex(String(decoding: CanonicalJSON.encode(.object(stored.proposed)), as: UTF8.self))
+      }
+    }
+
+    let read: AppendedEntry<FinalizeReviewRecord>
+    let items: [Item]
+    /// Items this version cannot read that no answer or automatic keep settles.
+    let opaque: Int
+
+    var resolved: [FinalizeReviewItem] { items.compactMap(\.item) }
+  }
+
+  /// Nil when the chain is empty; the chain ends with the head's read.
+  static func resolve(chain: [AppendedEntry<FinalizeReviewRecord>], answers: [String: [String: StoredFinalizeAnswer]]) -> Resolved? {
+    guard let last = chain.last else { return nil }
     var opaque = 0
+    var headItems = [Resolved.Item]()
     let reviews = chain.map { read in
       let revision = read.record.draftRevision
       let answered = answers[revision] ?? [:]
-      var items = [FinalizeReviewItem]()
-      for stored in read.record.items {
-        if let item = item(of: stored) {
-          items.append(item)
-        } else if read == last, stored.autoDecision?.known == nil, answered[stored.key]?.decision.known == nil {
-          opaque += 1
-        }
+      let parsed = read.record.items.map { Resolved.Item(stored: $0, item: item(of: $0)) }
+      if read == last {
+        opaque = parsed.filter { $0.item == nil && $0.stored.autoDecision?.known == nil && answered[$0.stored.key]?.decision.known == nil }.count
+        headItems = parsed
       }
-      return RevisionReview(revision: revision, items: items, answers: answered.sorted { $0.key < $1.key }.compactMap(answer))
+      return RevisionReview(revision: revision, items: parsed.compactMap(\.item), answers: answered.sorted { $0.key < $1.key }.compactMap(answer))
     }
-    let snapshot = FinalizeReviewSnapshot(draftRevision: head.revision, sourceHash: last.record.sourceHash, status: .ready, items: resolveReviewChain(reviews))
+    var resolved = resolveReviewChain(reviews).makeIterator()
+    let items = headItems.map { Resolved.Item(stored: $0.stored, item: $0.item == nil ? nil : resolved.next()) }
+    return Resolved(read: last, items: items, opaque: opaque)
+  }
+
+  /// An item of the head's read that this version cannot understand stays open unless it is answered or was kept on its own.
+  static func blocker(chain: [AppendedEntry<FinalizeReviewRecord>], answers: [String: [String: StoredFinalizeAnswer]], head: ReviewedRevision) -> FinalizeBlocker? {
+    guard let review = resolve(chain: chain, answers: answers), review.read.record.draftRevision == head.revision else { return .reviewPreparing }
+    let opaque = review.opaque
+    let snapshot = FinalizeReviewSnapshot(draftRevision: head.revision, sourceHash: review.read.record.sourceHash, status: .ready, items: review.resolved)
     switch reviewRefusal([snapshot], head) {
     case nil: return opaque > 0 ? .unanswered(count: opaque) : nil
     case .preparing?: return .reviewPreparing

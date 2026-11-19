@@ -25,6 +25,7 @@ enum SchemaFixture {
   static let proposal = uuid("6f0c4d1e-0000-4000-8000-0000000000a1")
   static let review = uuid("6f0c4d1e-0000-4000-8000-0000000000b1")
   static let draftRevision = "v:00112233445566778899aabbccddeeff00112233"
+  static let requester = ReplicaID(uuid("6f0c4d1e-0000-4000-8000-0000000000c1"))
 
   static func uuid(_ text: String) -> UUID {
     guard let id = UUID(uuidString: text) else { preconditionFailure("\(text) is a valid UUID") }

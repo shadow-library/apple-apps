@@ -76,7 +76,7 @@ struct ActionCrash: Sendable, CustomTestStringConvertible {
         continue
       }
       do throws(StoreError) {
-        _ = try await book.store.write { try ProposalApply.runAction(proposal: card, index: index, novel: novel, in: &$0) }
+        _ = try await book.store.write { try ProposalApply.runAction(proposal: card, index: index, novel: novel, requester: SchemaFixture.requester, in: &$0) }
       } catch {
         guard case .aborted(let cause) = error, case .action(_, let refusal)? = cause as? ProposalApplyError else { throw error }
         _ = try await book.run { try ProposalApply.failAction(proposal: card, index: index, novel: novel, failure: ProposalChangeFailure(refusal), in: &$0) }
@@ -155,7 +155,7 @@ struct ChatCardActionCrashTests {
     let head = try #require(try await book.head(3))
     try await appliedContentOnly(card, in: book)
     let novel = book.novel
-    let approved = try await book.run { try ProposalApply.runAction(proposal: card, index: 0, novel: novel, in: &$0) }
+    let approved = try await book.run { try ProposalApply.runAction(proposal: card, index: 0, novel: novel, requester: SchemaFixture.requester, in: &$0) }
     #expect(approved == .ran(summary: "approved chapter 3's draft"))
 
     let launched = try vault.open()

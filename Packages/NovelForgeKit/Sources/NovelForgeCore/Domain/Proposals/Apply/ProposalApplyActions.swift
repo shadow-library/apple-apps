@@ -21,7 +21,9 @@ extension ProposalApply {
   /// proposal-apply.service.ts:261-281 for one selected action, in a transaction of its own after the content committed, so its guards read the lifecycle
   /// the content left. A thrown `.action` abandons the transaction; the caller then settles the change as failed in another. The action's effect and its
   /// settled change commit together, so a change read as settled is an action that took effect and never runs again.
-  static func runAction(proposal id: UUID, index: Int, novel: UUID, in transaction: inout WriteTransaction) throws(ProposalApplyError) -> ProposalActionStep {
+  static func runAction(
+    proposal id: UUID, index: Int, novel: UUID, requester: ReplicaID, in transaction: inout WriteTransaction
+  ) throws(ProposalApplyError) -> ProposalActionStep {
     let (proposal, op, ref, change) = try actionChange(id, index: index, novel: novel, in: transaction)
     guard change.actionOutcome == .known(.pending) else {
       try settlePending(id, index: index, in: transaction)
@@ -30,7 +32,7 @@ extension ProposalApply {
     guard let executor = ProposalActionRegistry.executor(for: op.type) else { return .unavailable }
     let summary: String
     do throws(ApplyError) {
-      summary = try executor.execute(ProposalAction(proposal: proposal, index: index, op: op), in: &transaction)
+      summary = try executor.execute(ProposalAction(proposal: proposal, index: index, op: op, requester: requester), in: &transaction)
     } catch {
       throw .action(index: index, error)
     }
@@ -252,7 +254,10 @@ extension VaultStore {
     if afterFailure { return try await failProposalAction(id, index: index, novel: novel, failure: .previousActionFailed) }
     let step: ProposalActionStep
     do throws(ProposalApplyError) {
-      step = try await writeProposal { transaction throws(ProposalApplyError) in try ProposalApply.runAction(proposal: id, index: index, novel: novel, in: &transaction) }
+      let requester = replica
+      step = try await writeProposal { transaction throws(ProposalApplyError) in
+        try ProposalApply.runAction(proposal: id, index: index, novel: novel, requester: requester, in: &transaction)
+      }
     } catch {
       guard case .action(_, let cause) = error, !cause.isStoreFailure else { throw error }
       return try await failProposalAction(id, index: index, novel: novel, failure: ProposalChangeFailure(cause))

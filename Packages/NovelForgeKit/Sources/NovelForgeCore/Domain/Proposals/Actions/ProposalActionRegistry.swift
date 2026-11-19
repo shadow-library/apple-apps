@@ -7,6 +7,8 @@ struct ProposalAction: Sendable {
   let proposal: ProposalRecord
   let index: Int
   let op: ChangeOp
+  /// The replica applying the card, which requests any job the action asks for.
+  let requester: ReplicaID
 
   var novel: UUID { proposal.novel }
 }

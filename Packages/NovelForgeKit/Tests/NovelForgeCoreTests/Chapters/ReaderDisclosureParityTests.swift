@@ -99,12 +99,13 @@ private func step(_ done: Int, _ books: [Book], in store: VaultStore) async thro
     }
     return books
   }
+  let replica = store.replica
   let approved = try await Projection.write(store) { transaction in
     var books = drafted
     for index in books.indices {
       guard let chapter = books[index].next, let head = books[index].head else { continue }
       do throws(DomainError) {
-        try ChapterApprovals.approve(novel: books[index].novel, chapter: chapter, revision: head, in: &transaction)
+        try ChapterApprovals.approve(novel: books[index].novel, chapter: chapter, revision: head, requester: replica, in: &transaction)
       } catch {
         books[index].stopped = true
       }

@@ -12,8 +12,9 @@ extension VaultStore {
       guard let copy, copy.base.utf8.elementsEqual(revision.utf8) else { return nil }
       return try ChapterDrafts.commitWorkingCopy(novel: novel, chapter: chapter, in: &transaction)
     }
+    let replica = replica
     return try await writeDomain { transaction throws(DomainError) in
-      try ChapterApprovals.approve(novel: novel, chapter: chapter, revision: committed ?? revision, as: intent, id: id, in: &transaction)
+      try ChapterApprovals.approve(novel: novel, chapter: chapter, revision: committed ?? revision, as: intent, id: id, requester: replica, in: &transaction)
     }
   }
 }

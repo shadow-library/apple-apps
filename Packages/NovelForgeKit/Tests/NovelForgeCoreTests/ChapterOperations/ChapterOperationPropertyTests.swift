@@ -49,7 +49,7 @@ enum ChapterDomainOperations {
         guard let head = try draftHead(novel: novel, chapter: chapter, in: transaction) else { return }
         let stale = try ChapterLifecycleEntry.read(novel: novel, chapter: chapter, in: transaction.database)?.stale
         let intent: ApprovalIntent = asWritten ? .asWritten(seen: stale ?? .unrecorded) : .standard
-        _ = try ChapterApprovals.approve(novel: novel, chapter: chapter, revision: head, as: intent, id: id, in: &transaction)
+        _ = try ChapterApprovals.approve(novel: novel, chapter: chapter, revision: head, as: intent, id: id, requester: SchemaFixture.requester, in: &transaction)
       }
     },
     ProjectionOperation(name: "finalize a chapter", weight: 4) { generator, universe in

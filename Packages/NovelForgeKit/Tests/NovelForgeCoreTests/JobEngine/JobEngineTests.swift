@@ -185,7 +185,8 @@ struct JobEngineTests {
     } catch {
       #expect(error.code == JobEngineError.pipelineNotYetAvailable(.generate).code)
     }
-    for kind in NovelJobKind.allCases where ![.review, .plan].contains(kind) {
+    if case .notYetAvailable = PipelineCatalog.definition(for: .finalizeReview) { Issue.record("finalize_review has no pipeline") }
+    for kind in NovelJobKind.allCases where ![.review, .plan, .finalizeReview].contains(kind) {
       guard case .notYetAvailable(let named) = PipelineCatalog.definition(for: kind) else {
         Issue.record("\(kind) has a pipeline")
         continue

@@ -21,7 +21,7 @@ struct DomainProperty: Sendable {
   var areas = Self.areas
 
   var iterations = 6
-  var steps = 80
+  var steps = 100
   var settleEvery = 20
   var partition = 8
   var checkRate = 0.1

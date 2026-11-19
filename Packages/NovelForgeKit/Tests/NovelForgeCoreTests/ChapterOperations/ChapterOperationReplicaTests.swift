@@ -32,8 +32,8 @@ private func head(_ replicas: CausalReplicas, _ index: Int) async throws -> Stri
 }
 
 private func approve(_ replicas: CausalReplicas, on index: Int, id: UUID) async throws {
-  let revision = try await head(replicas, index)
-  _ = try await replicas.write(index) { try ChapterApprovals.approve(novel: novel, chapter: 1, revision: revision, id: id, in: &$0) }
+  let (revision, requester) = (try await head(replicas, index), await replicas.store(index).replica)
+  _ = try await replicas.write(index) { try ChapterApprovals.approve(novel: novel, chapter: 1, revision: revision, id: id, requester: requester, in: &$0) }
 }
 
 private func agreed(_ replicas: CausalReplicas) async throws -> LifecycleView? {

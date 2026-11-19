@@ -56,7 +56,7 @@ struct ChatPendingActionStandingTests {
     let book = try await StagingWorld.workspace()
     let id = try await book.contentOnly()
     let novel = book.novel
-    for index in [0, 1] { _ = try await book.run { try ProposalApply.runAction(proposal: id, index: index, novel: novel, in: &$0) } }
+    for index in [0, 1] { _ = try await book.run { try ProposalApply.runAction(proposal: id, index: index, novel: novel, requester: SchemaFixture.requester, in: &$0) } }
     try await book.run { try PendingActions.record(proposal: id, novel: novel, actions: [1], at: Date(), in: $0.database) }
     try await book.tamper("UPDATE nf_local_pending_action SET actions = '1,x'")
 

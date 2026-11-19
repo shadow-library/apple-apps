@@ -49,11 +49,14 @@ struct PendingActionsTests {
     let book = try await StagingWorld.workspace()
     let id = try await book.contentOnly()
     let novel = book.novel
-    #expect(try await book.run { try ProposalApply.runAction(proposal: id, index: 0, novel: novel, in: &$0) } == .ran(summary: "approved chapter 3's draft"))
+    #expect(
+      try await book.run { try ProposalApply.runAction(proposal: id, index: 0, novel: novel, requester: SchemaFixture.requester, in: &$0) }
+        == .ran(summary: "approved chapter 3's draft"))
     #expect(try await book.pendingActionRows().map(\.actions) == [[1]])
-    #expect(try await book.run { try ProposalApply.runAction(proposal: id, index: 0, novel: novel, in: &$0) } == .settled(.known(.applied)))
+    #expect(try await book.run { try ProposalApply.runAction(proposal: id, index: 0, novel: novel, requester: SchemaFixture.requester, in: &$0) } == .settled(.known(.applied)))
     #expect(try await book.pendingActionRows().map(\.actions) == [[1]])
-    #expect(try await book.run { try ProposalApply.runAction(proposal: id, index: 1, novel: novel, in: &$0) } == .ran(summary: "finalized chapter 3"))
+    #expect(
+      try await book.run { try ProposalApply.runAction(proposal: id, index: 1, novel: novel, requester: SchemaFixture.requester, in: &$0) } == .ran(summary: "finalized chapter 3"))
     #expect(try await book.pendingActionRows().isEmpty)
   }
 
@@ -63,7 +66,9 @@ struct PendingActionsTests {
     let id = try await book.contentOnly()
     _ = try await book.save(3, "Mine.\n\n\(StagingText.body)", summary: "It turns.", base: head)
     let novel = book.novel
-    await #expect(throws: (any Error).self) { try await book.run { try ProposalApply.runAction(proposal: id, index: 0, novel: novel, in: &$0) } }
+    await #expect(throws: (any Error).self) {
+      try await book.run { try ProposalApply.runAction(proposal: id, index: 0, novel: novel, requester: SchemaFixture.requester, in: &$0) }
+    }
     #expect(try await book.pendingActionRows().map(\.actions) == [[0, 1]])
     let failure = ProposalChangeFailure(.domain(.draftConflict(chapter: 3, head: head)))
     #expect(try await book.run { try ProposalApply.failAction(proposal: id, index: 0, novel: novel, failure: failure, in: &$0) } == .known(.failed))
@@ -87,7 +92,7 @@ struct PendingActionsTests {
     try await book.tamper("INSERT INTO nf_local_pending_action (proposal, novel, actions, recorded_at, attempts) VALUES (X'00', X'00', '0', 0, 0)")
     try await book.tamper("UPDATE nf_local_pending_action SET actions = '1,x' WHERE length(proposal) = 16")
     #expect(try await book.pendingActionRows() == [PendingActionRow(proposal: id, novel: novel, actions: nil, attempts: 0, fault: nil)])
-    _ = try await book.run { try ProposalApply.runAction(proposal: id, index: 0, novel: novel, in: &$0) }
+    _ = try await book.run { try ProposalApply.runAction(proposal: id, index: 0, novel: novel, requester: SchemaFixture.requester, in: &$0) }
     #expect(try await book.pendingActionRows().map(\.actions) == [nil])
     try await book.run { try PendingActions.attempt(proposal: id, in: $0.database) }
     try await book.run { try PendingActions.fault(proposal: id, code: "store.failed", in: $0.database) }
@@ -105,9 +110,9 @@ struct PendingActionsTests {
     let book = try await StagingWorld.workspace()
     let id = try await book.contentOnly()
     let novel = book.novel
-    for index in [0, 1] { _ = try await book.run { try ProposalApply.runAction(proposal: id, index: index, novel: novel, in: &$0) } }
+    for index in [0, 1] { _ = try await book.run { try ProposalApply.runAction(proposal: id, index: index, novel: novel, requester: SchemaFixture.requester, in: &$0) } }
     try await book.run { try PendingActions.record(proposal: id, novel: novel, actions: [0], at: Date(), in: $0.database) }
-    #expect(try await book.run { try ProposalApply.runAction(proposal: id, index: 0, novel: novel, in: &$0) } == .settled(.known(.applied)))
+    #expect(try await book.run { try ProposalApply.runAction(proposal: id, index: 0, novel: novel, requester: SchemaFixture.requester, in: &$0) } == .settled(.known(.applied)))
     #expect(try await book.pendingActionRows().isEmpty)
   }
 
@@ -123,7 +128,7 @@ struct PendingActionsTests {
     let book = try await StagingWorld.workspace()
     let id = try await book.contentOnly()
     let novel = book.novel
-    for index in [0, 1] { _ = try await book.run { try ProposalApply.runAction(proposal: id, index: index, novel: novel, in: &$0) } }
+    for index in [0, 1] { _ = try await book.run { try ProposalApply.runAction(proposal: id, index: index, novel: novel, requester: SchemaFixture.requester, in: &$0) } }
     try await book.run { try PendingActions.record(proposal: id, novel: novel, actions: [1], at: Date(), in: $0.database) }
     try await book.tamper("UPDATE nf_local_pending_action SET actions = '1,x'")
     let settled = [ProposalActionResult(index: 0, outcome: .known(.applied)), ProposalActionResult(index: 1, outcome: .known(.applied))]

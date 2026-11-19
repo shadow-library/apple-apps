@@ -4,7 +4,7 @@ import Testing
 
 @testable import NovelForgeCore
 
-@Suite("Three-replica domain property", .timeLimit(.minutes(4)))
+@Suite("Three-replica domain property", .timeLimit(.minutes(8)))
 struct DomainPropertyTests {
   /// The operations a default run must see succeed at least once, over both delivery orders.
   static let mustSucceed = [

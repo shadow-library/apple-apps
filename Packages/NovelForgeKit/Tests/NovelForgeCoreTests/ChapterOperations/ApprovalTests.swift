@@ -10,8 +10,8 @@ private let rewritten = StaleCause.ancestorDraft(chapter: 1, change: .rewritten(
 @Suite("Draft approval", .timeLimit(.minutes(2)))
 struct ApprovalTests {
   private func approving(_ book: ChapterBook, _ chapter: Int, revision: String, as intent: ApprovalIntent = .standard) -> BookWrite<UUID> {
-    let novel = book.novel
-    return { try ChapterApprovals.approve(novel: novel, chapter: chapter, revision: revision, as: intent, in: &$0) }
+    let (novel, requester) = (book.novel, book.store.replica)
+    return { try ChapterApprovals.approve(novel: novel, chapter: chapter, revision: revision, as: intent, requester: requester, in: &$0) }
   }
 
   private func planRevision(_ book: ChapterBook, _ chapter: Int) async throws -> String? {
