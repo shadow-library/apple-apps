@@ -105,7 +105,7 @@ private func write(_ fixture: StalenessFixture.LedgerCase, novel: UUID, in trans
   for pair in fixture.retracted { try ChapterWrites.retract(novel: novel, fact: pair[0], entity: pair[1], in: &transaction) }
 }
 
-@Suite("Chapter lifecycle parity with the reference", .timeLimit(.minutes(5)))
+@Suite("Chapter lifecycle parity with the reference", TestTimeLimit.standard)
 struct ChapterParityTests {
   @Test func shouldResetAndMarkExactlyAsResetApprovalForPlanChangeDoes() throws {
     let cases = try fixture().termCases

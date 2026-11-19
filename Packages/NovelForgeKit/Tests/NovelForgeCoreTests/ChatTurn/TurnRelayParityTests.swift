@@ -46,7 +46,7 @@ private struct TurnReplay {
   }
 }
 
-@Suite("Turn relay parity", .timeLimit(.minutes(2)))
+@Suite("Turn relay parity", TestTimeLimit.standard)
 struct TurnRelayParityTests {
   @Test func shouldEmitWhatTheReferenceRelayEmitterAndEventLogEmitForEveryScriptedTurn() throws {
     let fixture = try TurnRelayFixture.load()

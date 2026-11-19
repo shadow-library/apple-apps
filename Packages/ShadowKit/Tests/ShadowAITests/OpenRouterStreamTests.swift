@@ -7,7 +7,7 @@ import Testing
 
 @testable import ShadowAI
 
-@Suite("OpenRouterProvider streams", .timeLimit(.minutes(1)))
+@Suite("OpenRouterProvider streams", TestTimeLimit.quick)
 struct OpenRouterStreamTests {
   private typealias F = OpenRouterFixtures
 

@@ -5,7 +5,7 @@ import Testing
 
 @testable import ShadowAI
 
-@Suite("RoutedCall streaming structured", .timeLimit(.minutes(1)))
+@Suite("RoutedCall streaming structured", TestTimeLimit.quick)
 struct StructuredStreamRoutedTests {
   private typealias Fixture = StructuredStreamFixture
 

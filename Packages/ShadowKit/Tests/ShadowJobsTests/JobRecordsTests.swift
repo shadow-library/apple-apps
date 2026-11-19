@@ -6,7 +6,7 @@ import Testing
 
 @testable import ShadowJobs
 
-@Suite("JobRecords", .timeLimit(.minutes(1)))
+@Suite("JobRecords", TestTimeLimit.quick)
 struct JobRecordsTests {
   private static func requested(_ store: VaultStore, _ key: JobKey) async throws -> JobRequestOutcome {
     let request = JobFixture.request(key, replica: store.replica)

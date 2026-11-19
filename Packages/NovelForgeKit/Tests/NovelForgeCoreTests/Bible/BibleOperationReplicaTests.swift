@@ -29,7 +29,7 @@ private func versions(_ replicas: CausalReplicas, _ section: BiblePageSection, _
   try await readEach(replicas) { try Pages.versions(novel: novel, section: section, slug: slug, in: $0) }
 }
 
-@Suite("Bible operations across replicas", .timeLimit(.minutes(2)))
+@Suite("Bible operations across replicas", TestTimeLimit.standard)
 struct BibleOperationReplicaTests {
   @Test
   func shouldMergeDifferentEntityFieldsEditedOnTwoDevices() async throws {

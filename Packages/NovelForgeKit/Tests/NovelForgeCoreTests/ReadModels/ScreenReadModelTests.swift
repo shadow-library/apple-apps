@@ -6,7 +6,7 @@ import Testing
 
 @testable import NovelForgeCore
 
-@Suite("Screen read models", .timeLimit(.minutes(3)))
+@Suite("Screen read models", TestTimeLimit.standard)
 struct ScreenReadModelTests {
   @Test func shouldListEveryNotebookEntryWithItsSuccessorPredecessorAndWithdrawalReason() async throws {
     let store = try await ReadWorld.seeded()

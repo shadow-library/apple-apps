@@ -63,7 +63,7 @@ private let secondPage = #"""
 
 private let emptyPage = #"{"data": [], "first_id": null, "has_more": false, "last_id": null}"#
 
-@Suite("AnthropicProvider models and validation", .timeLimit(.minutes(1)))
+@Suite("AnthropicProvider models and validation", TestTimeLimit.quick)
 struct AnthropicModelsTests {
   private static func plain(status: Int = 200, json: String, headers: [String: String] = [:]) -> StubHTTPExchangeTransport {
     StubHTTPExchangeTransport(

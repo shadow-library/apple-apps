@@ -20,7 +20,7 @@ private func volumes(_ book: ChapterBook) async throws {
 }
 
 // apps/novel-forge-server/src/modules/refinement/proposal-apply.service.ts:220-290 and the executors of hub-action.registrar.ts, volume-action.registrar.ts
-@Suite("Proposal actions", .timeLimit(.minutes(3)))
+@Suite("Proposal actions", TestTimeLimit.standard)
 struct ProposalActionTests {
   // proposal-draft-ops.spec.ts:254: the approval binds exactly the revision the card was staged against
   @Test func shouldApproveExactlyTheRevisionTheCardWasStagedAgainst() async throws {

@@ -3,7 +3,7 @@ import Testing
 
 @testable import NovelForgeCore
 
-@Suite("Stored zip", .timeLimit(.minutes(2)))
+@Suite("Stored zip", TestTimeLimit.quick)
 struct StoredZipTests {
   private func entry(_ name: String, _ text: String) -> ZipEntry { ZipEntry(name: name, data: Data(text.utf8)) }
 

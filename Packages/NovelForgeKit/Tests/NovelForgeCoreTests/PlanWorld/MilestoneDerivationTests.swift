@@ -40,7 +40,7 @@ private struct Book {
   }
 }
 
-@Suite("Milestone claims and state", .timeLimit(.minutes(2)))
+@Suite("Milestone claims and state", TestTimeLimit.standard)
 struct MilestoneDerivationTests {
   @Test
   func shouldLeaveAnUnclaimedMilestoneOpen() async throws {

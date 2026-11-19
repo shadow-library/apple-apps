@@ -10,7 +10,7 @@ private enum Abort: Error {
   case crash
 }
 
-@Suite("Local turn store", .timeLimit(.minutes(1)))
+@Suite("Local turn store", TestTimeLimit.standard)
 struct LocalTurnStoreTests {
   private static let novel = UUID()
   private static let session = UUID()

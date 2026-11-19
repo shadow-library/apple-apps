@@ -17,7 +17,7 @@ private func expectConsistent(_ reconciler: NovelForgeReconciler, in store: Vaul
 
 private func keys(_ messages: [ChatMessageRecord]) -> [EntityKey] { messages.map(\.ref.key) }
 
-@Suite("Chat session derivations", .timeLimit(.minutes(3)))
+@Suite("Chat session derivations", TestTimeLimit.standard)
 struct ChatSessionDerivationTests {
   @Test func shouldRecordEachMessageWithItsSessionRoleLinksAndClock() async throws {
     let (reconciler, store) = try World.store()

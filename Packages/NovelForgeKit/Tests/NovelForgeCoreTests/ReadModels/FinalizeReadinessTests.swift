@@ -91,7 +91,7 @@ private enum ReadinessWorld {
   }
 }
 
-@Suite("Finalize readiness read model", .timeLimit(.minutes(2)))
+@Suite("Finalize readiness read model", TestTimeLimit.standard)
 struct FinalizeReadinessTests {
   // generation.service.ts:635 reads the draft first (DRF_001) and finalize-refusals.ts:13 answers a final chapter with DRF_002 alone.
   @Test func shouldRefuseAChapterWithoutADraftAndAFinalOneAlone() async throws {

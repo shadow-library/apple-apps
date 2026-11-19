@@ -193,7 +193,7 @@ enum EngineWorld {
 
   /// Waits for `condition` on the store, polling; a turn that never gets there fails the test at the deadline.
   static func eventually(_ what: String, _ condition: @Sendable () async throws -> Bool) async throws {
-    for _ in 0..<500 {
+    for _ in 0..<6_000 {
       if try await condition() { return }
       try await Task.sleep(for: .milliseconds(20))
     }

@@ -20,7 +20,7 @@ private func foreignKindKey<S: RemovableSubject>(_: S.Type, foreign: NovelForgeK
   }
 }
 
-@Suite("Bible record totality", .timeLimit(.minutes(3)))
+@Suite("Bible record totality", TestTimeLimit.property)
 struct BibleTotalityTests {
   @Test func shouldReadASecretTotally() async throws { try await totality(SecretSubject.self, seed: 0xE6, anyJSON: ["unlock"]) }
   @Test func shouldReadAnEntityTotally() async throws { try await totality(EntitySubject.self, seed: 0xE7, anyJSON: ["attributes"]) }

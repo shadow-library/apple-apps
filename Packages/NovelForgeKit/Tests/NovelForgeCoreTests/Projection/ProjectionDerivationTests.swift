@@ -10,7 +10,7 @@ import Testing
 private let novel = SchemaFixture.novel
 private let other = SchemaFixture.otherNovel
 
-@Suite("Projection derivations", .timeLimit(.minutes(2)))
+@Suite("Projection derivations", TestTimeLimit.standard)
 struct ProjectionDerivationTests {
   @Test func shouldPutTheCursorOnTheFirstChapterThatIsNotFinal() async throws {
     let reconciler = try Projection.reconciler()

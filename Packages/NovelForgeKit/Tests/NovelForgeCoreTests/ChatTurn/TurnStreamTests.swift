@@ -3,7 +3,7 @@ import Testing
 
 @testable import NovelForgeCore
 
-@Suite("Turn stream", .timeLimit(.minutes(1)))
+@Suite("Turn stream", TestTimeLimit.quick)
 struct TurnStreamTests {
   private static func element(_ source: String) throws -> ChangeSetElement {
     try #require(ChangeSetElement(source: source))

@@ -5,7 +5,7 @@ import Testing
 
 @testable import ShadowAI
 
-@Suite("OpenRouterProvider requests", .timeLimit(.minutes(1)))
+@Suite("OpenRouterProvider requests", TestTimeLimit.quick)
 struct OpenRouterRequestTests {
   private static let success = OpenRouterFixtures.sse(OpenRouterFixtures.chunk("ok", finish: "stop"), "[DONE]")
 

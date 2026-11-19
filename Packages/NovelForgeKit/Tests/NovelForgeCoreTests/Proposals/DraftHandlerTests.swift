@@ -82,7 +82,7 @@ private func inverseJSON(_ text: String) throws -> OrderedJSONObject {
 }
 
 // apps/novel-forge-server/tests/refinement/proposal-draft-ops.spec.ts and apply/draft.handler.ts:37-108
-@Suite("Draft handlers", .timeLimit(.minutes(3)))
+@Suite("Draft handlers", TestTimeLimit.standard)
 struct DraftHandlerTests {
   // proposal-draft-ops.spec.ts:29, :62
   @Test func shouldWriteAChatEditAsAChatEditedRevisionKeepingTheFieldsItLeavesOut() async throws {
@@ -355,7 +355,7 @@ extension DraftHandlerTests {
 }
 
 // D23's working copy (nf_local_draft_working_copy) before a draft write: RULES F14 (e)
-@Suite("Draft handlers and the working copy", .timeLimit(.minutes(3)))
+@Suite("Draft handlers and the working copy", TestTimeLimit.standard)
 struct DraftWorkingCopyTests {
   /// Chapter 1 committed as "A", with "AB unsynced" held over it on this device; returns the committed revision.
   private func held(_ book: ChapterBook) async throws -> String {

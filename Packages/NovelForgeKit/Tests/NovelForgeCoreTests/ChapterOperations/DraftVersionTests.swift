@@ -5,7 +5,7 @@ import Testing
 
 @testable import NovelForgeCore
 
-@Suite("Draft versions", .timeLimit(.minutes(2)))
+@Suite("Draft versions", TestTimeLimit.standard)
 struct DraftVersionTests {
   private func versions(_ book: ChapterBook, _ chapter: Int) async throws -> [DraftVersion] {
     let novel = book.novel

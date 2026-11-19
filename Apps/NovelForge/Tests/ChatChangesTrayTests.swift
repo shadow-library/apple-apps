@@ -58,7 +58,7 @@ private struct TrayWorld {
 }
 
 @MainActor
-@Suite("Chat waiting tray", .timeLimit(.minutes(3)))
+@Suite("Chat waiting tray", TestTimeLimit.standard)
 struct ChatChangesTrayTests {
   @Test func shouldListPendingCardsQuestionsAndWaitingMessagesAcrossChatsAndUpdateLive() async throws {
     let world = try await TrayWorld.make()

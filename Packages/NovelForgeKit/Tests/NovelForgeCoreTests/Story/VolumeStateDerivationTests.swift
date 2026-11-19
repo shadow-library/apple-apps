@@ -56,7 +56,7 @@ private func setGoalMet(_ key: String, _ met: Bool, of owner: UUID = novel, in s
   _ = try await Projection.write(store) { transaction in try VolumeRecord.edit(novel: owner, volume: key, changes, in: &transaction) }
 }
 
-@Suite("Volume state derivation", .timeLimit(.minutes(2)))
+@Suite("Volume state derivation", TestTimeLimit.standard)
 struct VolumeStateDerivationTests {
   @Test
   func shouldHoldNothingForANovelWithoutVolumes() async throws {
@@ -248,7 +248,7 @@ private func volumeOracle(_ reconciler: NovelForgeReconciler, _ store: VaultStor
   }
 }
 
-@Suite("Volume state property", .timeLimit(.minutes(5)))
+@Suite("Volume state property", TestTimeLimit.property)
 struct VolumeStatePropertyTests {
   @Test(arguments: [CausalReplicaOrder.causal, .writerOrderOnly])
   func shouldMatchARebuildAndTheOracleAcrossReplicas(order: CausalReplicaOrder) async throws {

@@ -5,7 +5,7 @@ import Testing
 @testable import NovelForgeCore
 
 // Fixtures/chat-turns/generate.ts
-@Suite("Chat scenarios against the reference", .timeLimit(.minutes(5)))
+@Suite("Chat scenarios against the reference", TestTimeLimit.standard)
 struct ChatScenarioTests {
   @Test func shouldHoldEveryScenarioWithAnOutcomePerStep() throws {
     let scenarios = try ChatScenarioFixture.load().scenarios

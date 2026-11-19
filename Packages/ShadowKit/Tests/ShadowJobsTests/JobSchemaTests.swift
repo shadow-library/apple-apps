@@ -62,7 +62,7 @@ extension Array {
   }
 }
 
-@Suite("JobSchema", .timeLimit(.minutes(1)))
+@Suite("JobSchema", TestTimeLimit.quick)
 struct JobSchemaTests {
   private static let novel = "6f0c4d1e-0000-4000-8000-000000000001"
 

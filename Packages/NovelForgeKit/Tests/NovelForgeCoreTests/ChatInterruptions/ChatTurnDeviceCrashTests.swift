@@ -12,7 +12,7 @@ private typealias Crash = CrashWorld
 
 // Orchestrator decision 6: device A crashes after staging its turn, device B answers the same message with `Answer here`, and A's relaunch finishes its own
 // turn from what it staged: both replies stand, and A's resume applies nothing again
-@Suite("Chat turns killed on one device and answered on another", .serialized, .timeLimit(.minutes(3)))
+@Suite("Chat turns killed on one device and answered on another", .serialized, TestTimeLimit.standard)
 struct ChatTurnDeviceCrashTests {
   @Test(arguments: [false, true])
   func shouldKeepBothRepliesAndNeverApplyTwiceWhenAnotherDeviceAnswersACrashedTurn(sameChanges: Bool) async throws {

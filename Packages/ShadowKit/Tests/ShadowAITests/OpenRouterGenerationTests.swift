@@ -6,7 +6,7 @@ import Testing
 
 @testable import ShadowAI
 
-@Suite("OpenRouter generation lookup", .timeLimit(.minutes(1)))
+@Suite("OpenRouter generation lookup", TestTimeLimit.quick)
 struct OpenRouterGenerationTests {
   private static func lookup(_ transport: StubHTTPTransport, origin: String = OpenRouterFixtures.origin) throws -> OpenRouterGenerationLookup {
     let credential = try makeCredential(origin, secret: OpenRouterFixtures.secret)

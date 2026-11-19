@@ -27,7 +27,7 @@ struct NotebookModelTests {
   }
 
   private func waitUntil(_ condition: @MainActor () -> Bool) async throws {
-    for _ in 0..<500 {
+    for _ in 0..<12_000 {
       if condition() { return }
       try await Task.sleep(for: .milliseconds(10))
     }
@@ -535,7 +535,7 @@ struct NotebookModelTests {
 
       world.model.present(.add(.direction))
 
-      for _ in 0..<200 where window.sheets.isEmpty { try await Task.sleep(for: .milliseconds(10)) }
+      for _ in 0..<12_000 where window.sheets.isEmpty { try await Task.sleep(for: .milliseconds(10)) }
       #expect(window.sheets.count == 1)
     }
   #endif

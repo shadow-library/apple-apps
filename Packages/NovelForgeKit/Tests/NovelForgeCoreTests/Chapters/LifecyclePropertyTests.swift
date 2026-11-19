@@ -9,7 +9,7 @@ import Testing
 /// The chapter writes that rewrite or finalize what the lifecycle judges, without random upstreams that would leave every draft stale.
 private let chapterWrites = ProjectionOperations.chapters.filter { ["finalize chapter", "purge final chapter", "revise a draft that has no key"].contains($0.name) }
 
-@Suite("Chapter lifecycle property", .serialized, .timeLimit(.minutes(4)))
+@Suite("Chapter lifecycle property", .serialized, TestTimeLimit.property)
 struct LifecyclePropertyTests {
   /// Both delivery orders in one test, one after the other, so each run's gates count only its own operations.
   @Test func shouldKeepTheLifecycleOverJobsReviewsAndRemediesEqualToARebuildOnEveryReplica() async throws {

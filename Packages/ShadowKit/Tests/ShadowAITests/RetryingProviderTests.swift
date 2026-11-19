@@ -4,7 +4,7 @@ import Testing
 
 @testable import ShadowAI
 
-@Suite("RetryingProvider", .timeLimit(.minutes(1)))
+@Suite("RetryingProvider", TestTimeLimit.quick)
 struct RetryingProviderTests {
   private static let request = ModelRequest(model: "m", system: [], messages: [.user("Hi")], maxOutputTokens: 64)
   private static let policy = RetryPolicy(maxAttempts: 4, baseDelay: .seconds(1), maxDelay: .seconds(60), jitter: 0.2)

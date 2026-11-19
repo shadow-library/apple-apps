@@ -39,7 +39,7 @@ private let malformedChanges: [(String, JSONValue)] = [
   ("result", "failed"), ("result", ["error": 4]), ("undone_state", ["premise", "gone"]), ("status", 1),
 ]
 
-@Suite("Proposal change records", .timeLimit(.minutes(2)))
+@Suite("Proposal change records", TestTimeLimit.standard)
 struct ProposalChangeRecordTests {
   @Test func shouldCreateAChangeWithItsKeyStatusAndUndoAndNoFirstWriterValueAsNull() async throws {
     let store = try SchemaFixture.store()

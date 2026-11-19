@@ -34,7 +34,7 @@ private func decision(chapter: Int = 3, draftRevision: String = revision, item: 
   try FinalizeDecisionRecord(novel: novel, chapter: chapter, draftRevision: draftRevision, item: item, answer: answer)
 }
 
-@Suite("Review and finalize records", .timeLimit(.minutes(3)))
+@Suite("Review and finalize records", TestTimeLimit.standard)
 struct ReviewRecordTests {
   @Test func shouldRefuseRepeatedFindingIdsAndItemKeysAndReadStoredRepeatsAsUnreadable() async throws {
     let store = try SchemaFixture.store()

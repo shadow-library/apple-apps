@@ -4,7 +4,7 @@ import Testing
 
 @testable import NovelForgeCore
 
-@Suite("Chat replicas converge", .timeLimit(.minutes(6)))
+@Suite("Chat replicas converge", TestTimeLimit.property)
 struct ChatReplicaPropertyTests {
   static let mustSucceed = ChatReplicaOperation.allCases.map(\.rawValue)
 

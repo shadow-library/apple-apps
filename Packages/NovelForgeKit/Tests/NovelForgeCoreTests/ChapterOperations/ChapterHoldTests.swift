@@ -5,7 +5,7 @@ import Testing
 
 @testable import NovelForgeCore
 
-@Suite("Holding text a save would refuse", .timeLimit(.minutes(2)))
+@Suite("Holding text a save would refuse", TestTimeLimit.standard)
 struct ChapterHoldTests {
   private func hold(_ book: ChapterBook, _ body: String, title: String? = nil, base: String) async throws {
     let novel = book.novel

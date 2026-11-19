@@ -42,7 +42,7 @@ private func entries(_ proposal: ProposalRecord, on index: Int, in replicas: Cau
   try await World.entries(proposal.id, in: await replicas.store(index))
 }
 
-@Suite("Chat replicas", .timeLimit(.minutes(3)))
+@Suite("Chat replicas", TestTimeLimit.standard)
 struct ChatReplicaTests {
   @Test func shouldConvergeOnOneTranscriptWhenTwoDevicesAppendToOneSessionConcurrently() async throws {
     try await forAll(iterations: 6, seed: 0xF23A3) { generator in

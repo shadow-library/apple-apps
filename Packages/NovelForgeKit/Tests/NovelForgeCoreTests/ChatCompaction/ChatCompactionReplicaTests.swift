@@ -38,7 +38,7 @@ private func expectEveryMessageAccountedFor(_ replicas: CausalReplicas, messages
   return windows[0]
 }
 
-@Suite("Chat compaction replicas", .timeLimit(.minutes(3)))
+@Suite("Chat compaction replicas", TestTimeLimit.standard)
 struct ChatCompactionReplicaTests {
   @Test func shouldKeepTheWiderOfTwoConcurrentFoldsAndLeaveTheOtherDevicesMessagesInTheWindow() async throws {
     let (reconciler, replicas) = try await makeReplicas(seed: 0xF21A1)

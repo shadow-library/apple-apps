@@ -25,7 +25,7 @@ private func restaged(_ card: ProposalCard, replacing index: Int, with stored: S
 }
 
 // apps/novel-forge-server/src/modules/refinement/proposal-apply.service.ts:109-247
-@Suite("Proposal apply", .timeLimit(.minutes(3)))
+@Suite("Proposal apply", TestTimeLimit.standard)
 struct ProposalApplyTests {
   @Test func shouldApplyEveryContentOpOfAWholeCardAndRecordEachChangeWithItsOwnUndo() async throws {
     let book = try await StagingWorld.workspace()

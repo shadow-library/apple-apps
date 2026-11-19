@@ -18,3 +18,7 @@ final class RunCounter: Sendable {
     count.withLock { $0 += 1 }
   }
 }
+
+enum TestTimeLimit {
+  static let quick = TimeLimitTrait.timeLimit(.minutes(5))
+}

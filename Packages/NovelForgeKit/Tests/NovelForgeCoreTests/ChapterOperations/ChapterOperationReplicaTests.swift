@@ -43,7 +43,7 @@ private func agreed(_ replicas: CausalReplicas) async throws -> LifecycleView? {
   return views.first ?? nil
 }
 
-@Suite("Chapter operations across replicas", .timeLimit(.minutes(2)))
+@Suite("Chapter operations across replicas", TestTimeLimit.standard)
 struct ChapterOperationReplicaTests {
   @Test func shouldHoldTheLaterOfTwoApprovalsOfTheSameHeadMadeOnTwoDevices() async throws {
     let replicas = try await book(seed: 0xD230)

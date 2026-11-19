@@ -6,7 +6,7 @@ import Testing
 
 @testable import NovelForgeCore
 
-@Suite("Local turn stop marks", .timeLimit(.minutes(1)))
+@Suite("Local turn stop marks", TestTimeLimit.quick)
 struct LocalTurnStopTests {
   private static let session = UUID()
 

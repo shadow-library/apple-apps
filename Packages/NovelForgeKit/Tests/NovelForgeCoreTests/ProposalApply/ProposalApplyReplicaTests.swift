@@ -38,7 +38,7 @@ private func apply(_ id: UUID, _ selection: [Int], sources: [OpSource], on index
 }
 
 // Concurrent applies of one card on two devices keep every change either recorded, and the first applier's provenance
-@Suite("Proposal apply replicas", .timeLimit(.minutes(3)))
+@Suite("Proposal apply replicas", TestTimeLimit.standard)
 struct ProposalApplyReplicaTests {
   @Test func shouldConvergeOnTheUnionOfTwoDevicesSelectionsAndTheFirstAppliersSources() async throws {
     for seed in [UInt64(0xF16A), 0xF16B] {

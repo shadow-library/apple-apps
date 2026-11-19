@@ -67,7 +67,7 @@ func expectContentRoundTrip(_ book: ChapterBook, _ call: ContentCall, through ro
 private let world = BiblePageSection.world
 
 // apps/novel-forge-server/src/modules/refinement/apply/bible-document.handler.ts, entity.handler.ts and tests/refinement/proposal-apply-op-undo.spec.ts
-@Suite("Bible handlers", .timeLimit(.minutes(3)))
+@Suite("Bible handlers", TestTimeLimit.standard)
 struct BibleHandlerTests {
   // bible-document.handler.ts:27-33
   @Test func shouldCreateAPageAsGivenWithoutDerivingATitle() async throws {
@@ -337,7 +337,7 @@ private func unvalidatedCall(_ json: String) throws -> ContentCall {
 }
 
 // The members every handler's inverse is read through: a value the vault cannot hold exactly is malformed, never collapsed
-@Suite("Apply handler support", .timeLimit(.minutes(3)))
+@Suite("Apply handler support", TestTimeLimit.standard)
 struct ApplyHandlerSupportTests {
   @Test func shouldRefuseAStoryInverseWhoseUnlockKeysDifferOnlyInTheirUnicodeForm() async throws {
     let book = try await ChapterBook.make()

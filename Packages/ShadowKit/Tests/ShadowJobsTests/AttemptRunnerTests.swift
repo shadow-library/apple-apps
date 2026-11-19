@@ -6,7 +6,7 @@ import Testing
 
 @testable import ShadowJobs
 
-@Suite("AttemptRunner", .timeLimit(.minutes(1)))
+@Suite("AttemptRunner", TestTimeLimit.quick)
 struct AttemptRunnerTests {
   @Test func shouldRunEveryStepCommittingEachOutputOnceAndSucceedWithTheLastOne() async throws {
     let world = try await JobWorld()

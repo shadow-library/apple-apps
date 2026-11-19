@@ -53,7 +53,7 @@ extension ChapterBook {
 }
 
 // apps/novel-forge-server/src/modules/refinement/idea-rejection.service.ts:36-82
-@Suite("Idea rejections", .timeLimit(.minutes(3)))
+@Suite("Idea rejections", TestTimeLimit.standard)
 struct IdeaRejectionTests {
   // idea-rejection.service.spec.ts:45
   @Test func shouldRecordNeverWithNoAnchorUnderTheIdeaTopicAndALabelThatNamesTheRecord() async throws {

@@ -10,7 +10,7 @@ private func errorBody(type: String, message: String) -> String {
   #"{"type": "error", "error": {"type": "\#(type)", "message": "\#(message)"}, "request_id": "req_011CSHoEeqs5C35K2UUqR7Fy"}"#
 }
 
-@Suite("AnthropicProvider failures", .timeLimit(.minutes(1)))
+@Suite("AnthropicProvider failures", TestTimeLimit.quick)
 struct AnthropicFailureTests {
   private static let startThenError = #"""
     event: message_start

@@ -8,7 +8,7 @@ import Testing
 @testable import NovelForge
 
 @MainActor
-@Suite("ChatSessionModel", .timeLimit(.minutes(3)))
+@Suite("ChatSessionModel", TestTimeLimit.standard)
 struct ChatSessionModelTests {
   @Test("should stream the reply as it is written, then show it in the transcript with its cost")
   func shouldStreamTheReplyThenShowItInTheTranscript() async throws {

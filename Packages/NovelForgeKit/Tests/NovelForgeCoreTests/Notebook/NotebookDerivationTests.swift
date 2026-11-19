@@ -39,7 +39,7 @@ private func record(_ entry: NewNotebookEntry, novel: UUID = Fixture.novel, in s
   try await Projection.write(store) { transaction in try Notebook.record(entry, novel: novel, in: &transaction) }
 }
 
-@Suite("Notebook derivation", .timeLimit(.minutes(2)))
+@Suite("Notebook derivation", TestTimeLimit.standard)
 struct NotebookDerivationTests {
   @Test func shouldKeepAnEntryActiveUntilItIsSupersededOrWithdrawn() async throws {
     let (store, _) = try derivedStore()

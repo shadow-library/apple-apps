@@ -13,7 +13,7 @@ private typealias World = StagingWorld
 private let maraEdit = #"{"op":"entity.upsert","entityKey":"mara","type":"character","name":"Mara","notes":"Left-handed."}"#
 
 // apps/novel-forge-server/src/modules/refinement/proposal.service.ts:214-234; apps/novel-forge-server/tests/refinement/passage-rewrite.spec.ts:347-386
-@Suite("Proposal supersession", .timeLimit(.minutes(3)))
+@Suite("Proposal supersession", TestTimeLimit.standard)
 struct ProposalSupersessionTests {
   @Test func shouldKeepAnEarlierCardThatRewritesAnotherPassageOfTheSameChapter() async throws {
     let book = try await World.workspace()
@@ -138,7 +138,7 @@ struct ProposalSupersessionTests {
 }
 
 // proposal.service.ts:72, :398-409; apps/novel-forge-server/tests/refinement/proposal-discard.spec.ts
-@Suite("Proposal discard", .timeLimit(.minutes(3)))
+@Suite("Proposal discard", TestTimeLimit.standard)
 struct ProposalDiscardTests {
   @Test func shouldDiscardAPendingCard() async throws {
     let book = try await World.book()

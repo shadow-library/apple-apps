@@ -92,7 +92,7 @@ struct ChatPackSpecTests {
   }
 }
 
-@Suite("Chat pack facts from the reader disclosure", .timeLimit(.minutes(2)))
+@Suite("Chat pack facts from the reader disclosure", TestTimeLimit.standard)
 struct ChatPackDisclosureTests {
   @Test func shouldShowSinceWhichChapterTheReaderKnowsAndLeaveTheRestSecret() async throws {
     let store = try await ReadWorld.seeded()

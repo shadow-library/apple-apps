@@ -46,7 +46,7 @@ private func changeCount(in store: VaultStore) async throws -> Int {
   try await store.read { transaction in try Int.fetchOne(transaction.database, sql: "SELECT COUNT(*) FROM change_log") ?? 0 }
 }
 
-@Suite("Job derivations", .timeLimit(.minutes(3)))
+@Suite("Job derivations", TestTimeLimit.standard)
 struct JobDerivationTests {
   @Test func shouldTurnARunningJobQueuedWhenItsLeaseLapsesWithNoWrite() async throws {
     let (reconciler, store) = try World.store()

@@ -48,7 +48,7 @@ private func isDataFailure(_ error: any Error) -> Bool {
   }
 }
 
-@Suite("Projection totality", .timeLimit(.minutes(3)))
+@Suite("Projection totality", TestTimeLimit.property)
 struct ProjectionTotalityTests {
   @Test func shouldCountACanonThisVersionCannotReadAsFinal() async throws {
     let reconciler = try Projection.reconciler()
@@ -203,6 +203,8 @@ struct ProjectionTotalityTests {
             default: _ = try transaction.set(ref, fields.isEmpty ? ["natural_key": value] : fields)
             }
           }
+        } catch is CancellationError {
+          throw CancellationError()
         } catch {
           #expect(!isDataFailure(error), "\(error)")
         }

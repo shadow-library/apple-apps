@@ -14,7 +14,7 @@ private func lastUser(_ request: ModelRequest) -> String {
 }
 
 // apps/novel-forge-server/src/modules/refinement/chat.service.ts:268-411 over the store, against a scripted model
-@Suite("Chat turn engine", .timeLimit(.minutes(3)))
+@Suite("Chat turn engine", TestTimeLimit.standard)
 struct ChatTurnEngineTests {
   @Test func shouldRunATurnWithALookupRoundAndStageItsChangesInOneReply() async throws {
     let book = try await World.book()

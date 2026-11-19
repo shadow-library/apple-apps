@@ -8,7 +8,7 @@ import Testing
 @testable import NovelForgeCore
 @testable import ShadowJobs
 
-@Suite("Chapter reviews", .timeLimit(.minutes(3)))
+@Suite("Chapter reviews", TestTimeLimit.standard)
 struct ChapterReviewTests {
   @Test func shouldStoreAJudgeContradictionThatHoldsTheChapterUntilTheAuthorAnswersIt() async throws {
     let world = try await ReviewWorld(calls: [ReviewWorld.contradiction])

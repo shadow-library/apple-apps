@@ -35,7 +35,7 @@ private func agreed(_ replicas: CausalReplicas) async throws -> [Int: LifecycleV
   return results[0]
 }
 
-@Suite("Chapter lifecycle across replicas", .timeLimit(.minutes(2)))
+@Suite("Chapter lifecycle across replicas", TestTimeLimit.standard)
 struct ChapterReplicaTests {
   @Test
   func shouldHoldTheLatestOfTwoConcurrentApprovalsOfTheSameHead() async throws {

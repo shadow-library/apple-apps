@@ -10,7 +10,7 @@ import Testing
 
 /// apps/novel-forge-server/tests/finalize-review/finalize-review.service.spec.ts, through the engine: approval requests the job, the pipeline reads the review,
 /// and the author answers it with the decision operations.
-@Suite("Finalize review pipeline", .timeLimit(.minutes(3)))
+@Suite("Finalize review pipeline", TestTimeLimit.standard)
 struct FinalizeReviewServiceSpecTests {
   // finalize-review.service.spec.ts:86
   @Test func shouldReadTheApprovedRevisionIntoConsequentialAndRoutineItemsAndAppendTheReview() async throws {

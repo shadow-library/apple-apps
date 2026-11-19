@@ -42,7 +42,7 @@ private enum ChecklistWorld {
   }
 }
 
-@Suite("Progress checklist read model", .timeLimit(.minutes(3)))
+@Suite("Progress checklist read model", TestTimeLimit.standard)
 struct ProgressChecklistTests {
   // apps/novel-forge-server/src/common/progress.ts:73,125
   @Test func shouldAnswerFromTheNovelTheFirstVolumeAndTheNextChapterPlan() async throws {
@@ -147,7 +147,7 @@ struct ProgressChecklistTests {
   }
 }
 
-@Suite("Checklist overrides", .timeLimit(.minutes(3)))
+@Suite("Checklist overrides", TestTimeLimit.standard)
 struct ChecklistOverrideTests {
   // new-novel.service.ts:81-88
   @Test func shouldRecordAFirstOverrideAsASystemEntry() async throws {
@@ -256,7 +256,7 @@ private func expectEveryReplica(
   }
 }
 
-@Suite("Checklist override replicas", .timeLimit(.minutes(2)))
+@Suite("Checklist override replicas", TestTimeLimit.standard)
 struct ChecklistOverrideReplicaTests {
   @Test func shouldKeepTheLaterOfTwoConcurrentSetsOverTheSameOverride() async throws {
     let replicas = try await makeReplicas(seed: 0xC4E1)

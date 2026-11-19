@@ -26,7 +26,7 @@ private func fault(_ table: String, _ key: String, in store: VaultStore) async t
   }
 }
 
-@Suite("Chat read models", .timeLimit(.minutes(2)))
+@Suite("Chat read models", TestTimeLimit.standard)
 struct ChatReadModelTests {
   @Test func shouldPageTheTranscriptNewestFirstAndReturnEachPageOldestFirst() async throws {
     let (_, store) = try World.store()

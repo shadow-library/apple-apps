@@ -162,7 +162,7 @@ private func oracle(_ reconciler: NovelForgeReconciler, _ store: VaultStore, _ u
   guard actual == expected else { throw ProjectionPropertyFailure.oracle("Notebook states \(actual) differ from \(expected)") }
 }
 
-@Suite("Notebook projection property", .timeLimit(.minutes(5)))
+@Suite("Notebook projection property", TestTimeLimit.property)
 struct NotebookProjectionPropertyTests {
   @Test(arguments: [CausalReplicaOrder.causal, .writerOrderOnly])
   func shouldMatchARebuildAtEveryStepAndAgreeWithTheOracleOnEveryReplica(order: CausalReplicaOrder) async throws {

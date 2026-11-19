@@ -7,7 +7,7 @@ import Testing
 
 @testable import NovelForgeCore
 
-@Suite("NovelForgeSchema version 3", .timeLimit(.minutes(1)))
+@Suite("NovelForgeSchema version 3", TestTimeLimit.standard)
 struct NovelForgeSchemaVersionThreeTests {
   private static let novel = SchemaFixture.novel
   private static let novelID = JSONValue.string(SchemaFixture.novel.uuidString.lowercased())

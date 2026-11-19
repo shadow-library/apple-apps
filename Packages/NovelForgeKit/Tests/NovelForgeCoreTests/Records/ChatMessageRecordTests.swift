@@ -55,7 +55,7 @@ private func read(_ ref: EntityRef, in store: VaultStore) async throws -> Append
   try await store.read { transaction in try ChatMessageRecord.read(ref, in: transaction) }
 }
 
-@Suite("Chat message records", .timeLimit(.minutes(2)))
+@Suite("Chat message records", TestTimeLimit.standard)
 struct ChatMessageRecordTests {
   @Test func shouldRoundTripMessagesUnderTheRefOfTheirId() async throws {
     let store = try SchemaFixture.store()

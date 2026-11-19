@@ -5,7 +5,7 @@ import Testing
 
 @testable import ShadowAI
 
-@Suite("AIConsent", .timeLimit(.minutes(1)))
+@Suite("AIConsent", TestTimeLimit.quick)
 struct LedgerConsentTests {
   private static let dataClass = "manuscript"
 

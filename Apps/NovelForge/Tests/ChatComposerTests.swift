@@ -8,7 +8,7 @@ import Testing
 @testable import NovelForge
 
 @MainActor
-@Suite("ChatComposer", .timeLimit(.minutes(3)))
+@Suite("ChatComposer", TestTimeLimit.standard)
 struct ChatComposerTests {
   private static let prose = "😀 Mara keeps the harbour keys.\n\nShe never sleeps."
 

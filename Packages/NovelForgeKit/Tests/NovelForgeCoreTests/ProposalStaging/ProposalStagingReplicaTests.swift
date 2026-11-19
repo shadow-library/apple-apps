@@ -49,7 +49,7 @@ private func card(_ id: UUID, on index: Int, in replicas: CausalReplicas) async 
 }
 
 // Concurrent staging, discard and apply across devices settle on the monotone decision (pending < superseded < discarded < applied)
-@Suite("Proposal staging replicas", .timeLimit(.minutes(3)))
+@Suite("Proposal staging replicas", TestTimeLimit.standard)
 struct ProposalStagingReplicaTests {
   @Test func shouldSupersedeTheSameCardFromTwoDevicesAndConvergeWithBothNewCardsPending() async throws {
     let (reconciler, replicas) = try await makeReplicas(seed: 0xF15A)

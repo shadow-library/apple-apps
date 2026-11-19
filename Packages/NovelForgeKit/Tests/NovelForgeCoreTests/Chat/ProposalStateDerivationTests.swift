@@ -19,7 +19,7 @@ private func pending(_ novel: UUID, in store: VaultStore) async throws -> ChatPe
   try await store.load(ChatPendingProposals.self, novel)
 }
 
-@Suite("Proposal state derivation", .timeLimit(.minutes(2)))
+@Suite("Proposal state derivation", TestTimeLimit.standard)
 struct ProposalStateDerivationTests {
   @Test func shouldListAStagedProposalAsPendingWithEveryIndexNotApplied() async throws {
     let (reconciler, store) = try World.store()

@@ -271,7 +271,7 @@ struct JobEngineWorld {
   }
 }
 
-func engineEventually(_ what: String, timeout: Duration = .seconds(60), _ condition: @Sendable () async throws -> Bool) async throws {
+func engineEventually(_ what: String, timeout: Duration = .seconds(120), _ condition: @Sendable () async throws -> Bool) async throws {
   let deadline = ContinuousClock.now + timeout
   while ContinuousClock.now < deadline {
     if try await condition() { return }

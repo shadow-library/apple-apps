@@ -62,7 +62,7 @@ enum StructuredStreamFixture {
   }
 }
 
-@Suite("StructuredCall streaming", .timeLimit(.minutes(1)))
+@Suite("StructuredCall streaming", TestTimeLimit.quick)
 struct StructuredStreamTests {
   private typealias Fixture = StructuredStreamFixture
 

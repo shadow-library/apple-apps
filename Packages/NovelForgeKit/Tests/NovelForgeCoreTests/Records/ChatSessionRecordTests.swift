@@ -61,7 +61,7 @@ private func edit(_ record: ChatSessionRecord, in store: VaultStore, _ build: (i
   return try await store.write { transaction in try ChatSessionRecord.edit(id: id, applied, in: &transaction) }
 }
 
-@Suite("Chat session records", .timeLimit(.minutes(2)))
+@Suite("Chat session records", TestTimeLimit.standard)
 struct ChatSessionRecordTests {
   @Test func shouldCreateASessionUnderTheRefOfItsKeyAndReadItBack() async throws {
     let store = try SchemaFixture.store()

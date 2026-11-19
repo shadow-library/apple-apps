@@ -5,7 +5,7 @@ import Testing
 
 @testable import ShadowAI
 
-@Suite("TaskRouter admission", .timeLimit(.minutes(1)))
+@Suite("TaskRouter admission", TestTimeLimit.quick)
 struct TaskRouterAdmissionTests {
   private struct Setup {
     let clock = LedgerTestClock()

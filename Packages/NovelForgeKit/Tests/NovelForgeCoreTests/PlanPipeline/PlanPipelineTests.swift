@@ -8,7 +8,7 @@ import Testing
 @testable import NovelForgeCore
 @testable import ShadowJobs
 
-@Suite("Plan pipeline", .timeLimit(.minutes(3)))
+@Suite("Plan pipeline", TestTimeLimit.standard)
 struct PlanPipelineTests {
   // plan-job.service.ts:23-27 (PLN_006)
   @Test func shouldRefuseToPlanAChapterOtherThanTheNextWritableOne() async throws {

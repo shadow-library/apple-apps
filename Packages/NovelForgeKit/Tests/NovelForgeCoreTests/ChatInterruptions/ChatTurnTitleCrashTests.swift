@@ -44,7 +44,7 @@ private func owedNamings(in store: VaultStore) async throws -> [ChatSessionNamin
 }
 
 // chat.service.ts:331: the opening message names its session beside the turn, and a crash on either side of the naming leaves the session named once
-@Suite("Chat turns killed around the session's naming", .serialized, .timeLimit(.minutes(3)))
+@Suite("Chat turns killed around the session's naming", .serialized, TestTimeLimit.standard)
 struct ChatTurnTitleCrashTests {
   @Test func shouldNeitherNameAgainNorAskAgainWhenKilledAfterTheTitleWasWritten() async throws {
     let vault = try await CrashVault.make()

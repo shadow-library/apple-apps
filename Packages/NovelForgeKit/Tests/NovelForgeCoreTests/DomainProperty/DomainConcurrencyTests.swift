@@ -17,7 +17,7 @@ private func ledger(_ scenario: DomainScenario, on index: Int) async throws -> S
   Set(try await scenario.fetch(CharacterKnowledgeDerivation.request(for: scenario.novel), on: index).map(LedgerView.init))
 }
 
-@Suite("Domain operations racing on three devices", .timeLimit(.minutes(2)))
+@Suite("Domain operations racing on three devices", TestTimeLimit.property)
 struct DomainConcurrencyTests {
   @Test func shouldKeepTheFirstCanonAndCommitItsKnowledgeOnceWhenTwoDevicesFinalizeTheSameChapter() async throws {
     let scenario = try await DomainScenario.make(seed: 0xD25_1001)

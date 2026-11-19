@@ -43,7 +43,7 @@ private func derivedOnEach(_ replicas: CausalReplicas) async throws -> [Derived]
   return results
 }
 
-@Suite("Plan world across replicas", .timeLimit(.minutes(2)))
+@Suite("Plan world across replicas", TestTimeLimit.standard)
 struct PlanWorldReplicaTests {
   @Test
   func shouldLetTheEarliestChapterHoldWhenTwoDevicesClaimTheSameMilestone() async throws {

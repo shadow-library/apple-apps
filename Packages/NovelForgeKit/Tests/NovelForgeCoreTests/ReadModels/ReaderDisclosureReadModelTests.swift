@@ -5,7 +5,7 @@ import Testing
 
 @testable import NovelForgeCore
 
-@Suite("Reader disclosure read model", .timeLimit(.minutes(2)))
+@Suite("Reader disclosure read model", TestTimeLimit.standard)
 struct ReaderDisclosureReadModelTests {
   @Test func shouldTellWhenTheReaderLearnedEachSecret() async throws {
     let store = try await ReadWorld.seeded()

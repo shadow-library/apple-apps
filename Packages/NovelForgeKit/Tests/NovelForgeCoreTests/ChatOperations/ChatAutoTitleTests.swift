@@ -38,7 +38,7 @@ private func name(
   return try await store.nameChatSession(session, novel: World.novel, opening: message, turn: turn, router: router)
 }
 
-@Suite("Chat auto-title", .timeLimit(.minutes(2)))
+@Suite("Chat auto-title", TestTimeLimit.standard)
 struct ChatAutoTitleTests {
   @Test func shouldNameAnUntitledSessionFromItsOpeningMessageOnce() async throws {
     let store = try await World.store()

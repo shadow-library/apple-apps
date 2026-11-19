@@ -12,7 +12,7 @@ private func waiting(in store: VaultStore) async throws -> ChatWaitingContents {
   try #require(try await store.load(ChatWaitingOnYou.self, World.novel).contents.value)
 }
 
-@Suite("Waiting on you", .timeLimit(.minutes(2)))
+@Suite("Waiting on you", TestTimeLimit.standard)
 struct ChatWaitingOnYouTests {
   @Test func shouldListAPendingCardThatStillAppliesAsStaged() async throws {
     let store = try await World.store()

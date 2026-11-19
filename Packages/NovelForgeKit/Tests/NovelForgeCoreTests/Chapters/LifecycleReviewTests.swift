@@ -51,7 +51,7 @@ private func approved(_ store: VaultStore) async throws -> UUID {
   return approval
 }
 
-@Suite("Chapter lifecycle: generating and contradiction", .timeLimit(.minutes(2)))
+@Suite("Chapter lifecycle: generating and contradiction", TestTimeLimit.standard)
 struct LifecycleReviewTests {
   // generation.service.ts:242-243 counts pending and in-progress jobs alike; persistDraft sets generating over an approval and revokes its reveals
   // (chapter-generation.graph.ts:184, 197).

@@ -9,7 +9,7 @@ import Testing
 @testable import ShadowJobs
 
 /// The judge job killed at every runner write and around its one call; a relaunched engine resumes it to one review, stored under the attempt's id.
-@Suite("Review job crashes", .timeLimit(.minutes(3)))
+@Suite("Review job crashes", TestTimeLimit.standard)
 struct ReviewCrashTests {
   static let points: [AttemptRunner.Faults.Point] =
     (0..<3).map { .committed(write: $0) } + [.call(step: 1), .beforeCommit(step: 0), .afterCommit(step: 0), .beforeCommit(step: 1), .afterCommit(step: 1)]

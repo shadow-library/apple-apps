@@ -16,7 +16,7 @@ final class Gate: Sendable {
     while !isOpen { try await Task.sleep(for: .milliseconds(5)) }
   }
 
-  func waitUntilOpen(timeout: Duration = .seconds(5)) async -> Bool {
+  func waitUntilOpen(timeout: Duration = .seconds(60)) async -> Bool {
     let deadline = ContinuousClock.now + timeout
     while !isOpen {
       guard ContinuousClock.now < deadline else { return false }

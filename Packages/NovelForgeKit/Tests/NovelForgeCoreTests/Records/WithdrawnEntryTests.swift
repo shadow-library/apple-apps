@@ -8,7 +8,7 @@ import Testing
 
 private let novel = SchemaFixture.novel
 
-@Suite("Withdrawn Notebook entries", .timeLimit(.minutes(2)))
+@Suite("Withdrawn Notebook entries", TestTimeLimit.standard)
 struct WithdrawnEntryTests {
   @Test func shouldTellWhichNotebookEntriesAreWithdrawnByTheEarliestWithdrawalOfTheirNovel() async throws {
     let store = try SchemaFixture.store()

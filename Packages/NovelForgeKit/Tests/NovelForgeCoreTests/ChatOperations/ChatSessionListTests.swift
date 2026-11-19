@@ -12,7 +12,7 @@ private func list(_ filter: ChatSessionFilter, startedOnly: Bool = false, in sto
   try await store.load(ChatSessionList.self, ChatSessionListQuery(novel: World.novel, filter: filter, startedOnly: startedOnly)).sessions.value?.map(\.state.session)
 }
 
-@Suite("Chat session list", .timeLimit(.minutes(2)))
+@Suite("Chat session list", TestTimeLimit.standard)
 struct ChatSessionListTests {
   @Test func shouldListActiveAndArchivedChatsApartMostRecentlyUpdatedFirstAndNeverADeletedOne() async throws {
     let store = try await World.store()

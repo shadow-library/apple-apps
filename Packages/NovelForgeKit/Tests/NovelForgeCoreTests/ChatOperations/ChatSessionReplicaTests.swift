@@ -33,7 +33,7 @@ private func converged(_ replicas: CausalReplicas) async throws -> RecordReading
   return third
 }
 
-@Suite("Chat session operations across devices", .timeLimit(.minutes(3)))
+@Suite("Chat session operations across devices", TestTimeLimit.standard)
 struct ChatSessionReplicaTests {
   private let session = ChatWorld.session
   private let novel = World.novel

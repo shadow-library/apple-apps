@@ -8,7 +8,7 @@ import Testing
 @testable import NovelForgeCore
 @testable import ShadowJobs
 
-@Suite("Chapter summary", .timeLimit(.minutes(3)))
+@Suite("Chapter summary", TestTimeLimit.standard)
 struct ChapterSummaryTests {
   static let reply = ReviewWorld.reply(["summary": "Mara finds the torn logbook.", "state": ["lastBeat": "Mara stares at the torn page."]])
 

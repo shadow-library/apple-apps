@@ -94,7 +94,7 @@ private func write(_ fixture: ReconcileFixture.Case, novel: UUID, in transaction
   }
 }
 
-@Suite("Plan world parity with the reference", .timeLimit(.minutes(5)))
+@Suite("Plan world parity with the reference", TestTimeLimit.standard)
 struct PlanWorldParityTests {
   @Test(arguments: 0..<4)
   func shouldMatchReconcilePlanStateOnEveryReferenceCase(shard: Int) async throws {

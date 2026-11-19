@@ -67,7 +67,7 @@ private func expectedHistory(in store: VaultStore) async throws -> [ProposalHist
   }
 }
 
-@Suite("Change history", .timeLimit(.minutes(3)))
+@Suite("Change history", TestTimeLimit.standard)
 struct ChatChangeHistoryTests {
   @Test func shouldListAppliedProposalsNewestApplyFirstWithEveryChange() async throws {
     let store = try await World.store()

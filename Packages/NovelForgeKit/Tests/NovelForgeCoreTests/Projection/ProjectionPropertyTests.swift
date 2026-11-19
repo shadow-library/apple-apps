@@ -82,7 +82,7 @@ private func reviewIndexOracle(_ reconciler: NovelForgeReconciler, _ store: Vaul
   guard projected == expected else { throw ProjectionPropertyFailure.oracle("indexed review and finalize records") }
 }
 
-@Suite("Projection property", .timeLimit(.minutes(5)))
+@Suite("Projection property", TestTimeLimit.property)
 struct ProjectionPropertyTests {
   @Test(arguments: [CausalReplicaOrder.causal, .writerOrderOnly])
   func shouldMatchARebuildAtEveryStepAndConvergeOnEveryReplica(order: CausalReplicaOrder) async throws {

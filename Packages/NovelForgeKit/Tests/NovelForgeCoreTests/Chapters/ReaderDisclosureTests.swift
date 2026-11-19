@@ -59,7 +59,7 @@ private func reschedule(_ key: String, revealChapter: Int?, in store: VaultStore
   try await write(store) { transaction in _ = try SecretRecord.edit(SecretRecord.ref(novel: novel, secret: key), changes.fields, in: &transaction) }
 }
 
-@Suite("Reader disclosure", .timeLimit(.minutes(2)))
+@Suite("Reader disclosure", TestTimeLimit.standard)
 struct ReaderDisclosureTests {
   @Test func shouldDiscloseALearnedSecretAtTheFirstFinalChapterThatTeachesItAndNeverFromAPlan() async throws {
     let store = try book()

@@ -8,7 +8,7 @@ import Testing
 @testable import NovelForgeCore
 @testable import ShadowJobs
 
-@Suite("Job engine", .timeLimit(.minutes(2)))
+@Suite("Job engine", TestTimeLimit.standard)
 struct JobEngineTests {
   @Test func shouldRunATwoStepPipelineToSuccessWithEveryCallOnTheAttempt() async throws {
     let world = try await JobEngineWorld(provider: ScriptedModelProvider(calls: [JobEngineWorld.reply(), JobEngineWorld.reply()]))

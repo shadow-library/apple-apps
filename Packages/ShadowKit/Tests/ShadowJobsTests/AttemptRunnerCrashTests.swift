@@ -8,7 +8,7 @@ import Testing
 
 /// A run is killed at every boundary of a three-step pipeline and a new runner on the same store resumes it, as a relaunched app does: the attempt ends
 /// with the outputs of an uninterrupted run, each written once, and a call cut off by the crash stays in the attempt's call ids.
-@Suite("AttemptRunner crashes", .timeLimit(.minutes(1)))
+@Suite("AttemptRunner crashes", TestTimeLimit.quick)
 struct AttemptRunnerCrashTests {
   struct Case: Sendable, CustomTestStringConvertible {
     let point: AttemptRunner.Faults.Point

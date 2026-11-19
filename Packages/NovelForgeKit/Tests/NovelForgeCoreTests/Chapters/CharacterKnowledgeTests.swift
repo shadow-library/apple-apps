@@ -55,7 +55,7 @@ private func restore(secret key: String, in store: VaultStore) async throws {
   }
 }
 
-@Suite("Character knowledge", .timeLimit(.minutes(2)))
+@Suite("Character knowledge", TestTimeLimit.standard)
 struct CharacterKnowledgeTests {
   @Test func shouldLedgerEachPairAtItsEarliestApprovedChapterAndCommitItAtFinalize() async throws {
     let store = try await seeded()

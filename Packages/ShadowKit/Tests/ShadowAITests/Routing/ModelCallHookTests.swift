@@ -9,7 +9,7 @@ import Testing
 
 private struct HookRefusal: Error {}
 
-@Suite("Model call begin hook", .timeLimit(.minutes(1)))
+@Suite("Model call begin hook", TestTimeLimit.quick)
 struct ModelCallHookTests {
   private static func prepare(_ provider: any ModelProvider) async throws -> (call: RoutedCall, store: VaultStore) {
     let clock = LedgerTestClock()

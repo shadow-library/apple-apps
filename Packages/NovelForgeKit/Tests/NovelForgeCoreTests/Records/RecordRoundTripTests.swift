@@ -76,7 +76,7 @@ func createOverLiveRecord<S: RemovableSubject>(_: S.Type, seed: UInt64) async th
   }
 }
 
-@Suite("Typed record round trip", .timeLimit(.minutes(3)))
+@Suite("Typed record round trip", TestTimeLimit.standard)
 struct RecordRoundTripTests {
   @Test func shouldCreateAndEditANovelWithoutTouchingOtherFields() async throws { try await createAndEdit(NovelSubject.self, seed: 0xA1) }
   @Test func shouldCreateAndEditAVolumeWithoutTouchingOtherFields() async throws { try await createAndEdit(VolumeSubject.self, seed: 0xA2) }

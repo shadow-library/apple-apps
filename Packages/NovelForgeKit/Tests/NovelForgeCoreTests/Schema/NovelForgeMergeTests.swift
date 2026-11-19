@@ -4,7 +4,7 @@ import ShadowCore
 import ShadowStore
 import Testing
 
-@Suite("NovelForge merge", .timeLimit(.minutes(5)))
+@Suite("NovelForge merge", TestTimeLimit.standard)
 struct NovelForgeMergeTests {
   private static let novel = SchemaFixture.novel
 

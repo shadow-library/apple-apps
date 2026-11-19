@@ -27,7 +27,7 @@ private let malformedCards: [(String, JSONValue?)] = [
   ("session", 3),
 ]
 
-@Suite("Proposal records", .timeLimit(.minutes(2)))
+@Suite("Proposal records", TestTimeLimit.standard)
 struct ProposalRecordTests {
   @Test func shouldCreateTheCardWithAPendingDecisionAndNoAppliedObject() async throws {
     let store = try SchemaFixture.store()

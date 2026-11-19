@@ -10,7 +10,7 @@ import Testing
 
 /// apps/novel-forge-server/src/modules/generation/generation.service.ts:457-512: approving requests the revision's finalize review, answers the open blocking
 /// findings and is refused while the chapter generates.
-@Suite("Finalize review on approval", .timeLimit(.minutes(3)))
+@Suite("Finalize review on approval", TestTimeLimit.standard)
 struct FinalizeReviewApprovalTests {
   @Test func shouldRequestTheFinalizeReviewOfTheApprovedRevisionOnceForTheSameProseAndPlan() async throws {
     let world = try await FinalizeReviewWorld()

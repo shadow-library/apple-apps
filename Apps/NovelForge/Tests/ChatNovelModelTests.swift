@@ -7,7 +7,7 @@ import Testing
 @testable import NovelForge
 
 @MainActor
-@Suite("ChatNovelModel", .timeLimit(.minutes(3)))
+@Suite("ChatNovelModel", TestTimeLimit.standard)
 struct ChatNovelModelTests {
   @Test("should start a chat from its first message and open it")
   func shouldStartAChatFromItsFirstMessage() async throws {

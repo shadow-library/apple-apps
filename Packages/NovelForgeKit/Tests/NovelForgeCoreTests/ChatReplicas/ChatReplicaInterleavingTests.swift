@@ -96,7 +96,7 @@ private func names(_ device: Int, _ serial: Int) -> (key: String, name: String) 
   ChatTurnScript.key(device: device, serial: serial)
 }
 
-@Suite("Chat replica interleavings", .timeLimit(.minutes(3)))
+@Suite("Chat replica interleavings", TestTimeLimit.property)
 struct ChatReplicaInterleavingTests {
   @Test func shouldStandAppliedEverywhereWhenOneDeviceAppliesACardAnotherDiscards() async throws {
     let chat = try await Chat(devices: 3, seed: 0xF26_A1)

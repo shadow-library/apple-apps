@@ -24,7 +24,7 @@ private func merged(_ events: [TurnStreamEvent]) -> [TurnStreamEvent] {
 }
 
 // From the F22b review, round 2: a second Resume while one runs, and a resumed turn shows live exactly what it stores
-@Suite("Chat turn resume cases", .timeLimit(.minutes(3)))
+@Suite("Chat turn resume cases", TestTimeLimit.standard)
 struct ChatTurnResumeCaseTests {
   @Test func shouldKeepAResumedTurnPendingWhenResumeIsTappedTwice() async throws {
     let book = try await World.book()

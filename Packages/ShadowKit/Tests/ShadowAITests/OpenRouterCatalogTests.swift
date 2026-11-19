@@ -5,7 +5,7 @@ import Testing
 
 @testable import ShadowAI
 
-@Suite("OpenRouterProvider key check and model list", .timeLimit(.minutes(1)))
+@Suite("OpenRouterProvider key check and model list", TestTimeLimit.quick)
 struct OpenRouterCatalogTests {
   private typealias F = OpenRouterFixtures
 

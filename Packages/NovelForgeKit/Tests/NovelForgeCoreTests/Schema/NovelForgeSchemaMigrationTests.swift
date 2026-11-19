@@ -7,7 +7,7 @@ import Testing
 
 @testable import NovelForgeCore
 
-@Suite("NovelForgeSchema migration", .timeLimit(.minutes(1)))
+@Suite("NovelForgeSchema migration", TestTimeLimit.standard)
 struct NovelForgeSchemaMigrationTests {
   private static let novel = SchemaFixture.novel
   private static let novelID = JSONValue.string(SchemaFixture.novel.uuidString.lowercased())

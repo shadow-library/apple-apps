@@ -10,7 +10,7 @@ private func editCoverage<Field: FieldName>(_: Field.Type, _ build: (Field) -> R
   for field in Field.allCases { #expect(Set(build(field).members.keys) == [field.rawValue], "\(field.rawValue)") }
 }
 
-@Suite("Bible record round trip", .timeLimit(.minutes(3)))
+@Suite("Bible record round trip", TestTimeLimit.standard)
 struct BibleRecordTests {
   @Test func shouldCreateAndEditASecretWithoutTouchingOtherFields() async throws { try await createAndEdit(SecretSubject.self, seed: 0xA6) }
   @Test func shouldCreateAndEditAnEntityWithoutTouchingOtherFields() async throws { try await createAndEdit(EntitySubject.self, seed: 0xA7) }

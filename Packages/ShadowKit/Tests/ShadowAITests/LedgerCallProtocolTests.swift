@@ -4,7 +4,7 @@ import Testing
 
 @testable import ShadowAI
 
-@Suite("Ledger begin and finish", .timeLimit(.minutes(1)))
+@Suite("Ledger begin and finish", TestTimeLimit.quick)
 struct LedgerCallProtocolTests {
   private static let usage = TokenUsage(input: 100, output: 20)
   private static let catalog = CatalogFixtures.catalog(models: [CatalogFixtures.model("model-a")])

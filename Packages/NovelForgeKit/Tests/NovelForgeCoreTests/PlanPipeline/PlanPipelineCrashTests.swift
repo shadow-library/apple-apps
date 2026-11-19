@@ -9,7 +9,7 @@ import Testing
 @testable import ShadowJobs
 
 /// A plan job killed at every runner write, inside its call and around each commit, then resumed by a new engine as a relaunch does, stages exactly one card.
-@Suite("Plan pipeline crashes", .timeLimit(.minutes(3)))
+@Suite("Plan pipeline crashes", TestTimeLimit.standard)
 struct PlanPipelineCrashTests {
   struct Case: Sendable, CustomTestStringConvertible {
     let point: AttemptRunner.Faults.Point

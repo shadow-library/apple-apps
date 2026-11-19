@@ -4,7 +4,7 @@ import Testing
 
 @testable import ShadowAI
 
-@Suite("ScriptedModelProvider", .timeLimit(.minutes(1)))
+@Suite("ScriptedModelProvider", TestTimeLimit.quick)
 struct ScriptedModelProviderTests {
   private static func request(_ text: String) -> ModelRequest {
     ModelRequest(model: "m", system: [], messages: [.user(text)], maxOutputTokens: 32)

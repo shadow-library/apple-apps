@@ -91,7 +91,7 @@ private let cases: [(name: String, change: UndoneChange, dependents: [UndoDepend
   ("a record nothing relies on lists nothing", created("entity:aldo", "premise"), [], 0),
 ]
 
-@Suite("Undo impact", .timeLimit(.minutes(3)))
+@Suite("Undo impact", TestTimeLimit.standard)
 struct UndoImpactTests {
   // undo-impact.spec.ts:158-164
   @Test(arguments: cases.indices)

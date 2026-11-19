@@ -64,7 +64,7 @@ private struct CompactionFixture: Decodable {
   }
 }
 
-@Suite("Chat compaction parity", .timeLimit(.minutes(3)))
+@Suite("Chat compaction parity", TestTimeLimit.standard)
 struct ChatCompactionParityTests {
   private static let fixture: CompactionFixture? = try? ReferenceFixture.decode(from: "chat-compaction/chat-compaction.json")
 

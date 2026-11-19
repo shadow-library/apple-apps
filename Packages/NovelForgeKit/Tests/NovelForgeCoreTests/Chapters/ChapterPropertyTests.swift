@@ -555,7 +555,7 @@ private func oracle(_ coverage: ChapterCoverage) -> @Sendable (NovelForgeReconci
   }
 }
 
-@Suite("Chapter lifecycle projection property", .timeLimit(.minutes(10)))
+@Suite("Chapter lifecycle projection property", TestTimeLimit.property)
 struct ChapterPropertyTests {
   @Test(arguments: [CausalReplicaOrder.causal, .writerOrderOnly])
   func shouldMatchARebuildAtEveryStepAndAgreeWithTheOracleOnEveryReplica(order: CausalReplicaOrder) async throws {

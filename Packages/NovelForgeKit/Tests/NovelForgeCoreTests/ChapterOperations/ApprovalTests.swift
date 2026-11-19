@@ -7,7 +7,7 @@ import Testing
 
 private let rewritten = StaleCause.ancestorDraft(chapter: 1, change: .rewritten(source: DraftSource.handEdited.rawValue))
 
-@Suite("Draft approval", .timeLimit(.minutes(2)))
+@Suite("Draft approval", TestTimeLimit.standard)
 struct ApprovalTests {
   private func approving(_ book: ChapterBook, _ chapter: Int, revision: String, as intent: ApprovalIntent = .standard) -> BookWrite<UUID> {
     let (novel, requester) = (book.novel, book.store.replica)

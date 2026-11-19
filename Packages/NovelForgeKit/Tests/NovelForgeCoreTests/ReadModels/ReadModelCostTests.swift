@@ -75,7 +75,7 @@ private let models: [(name: String, perRecord: Bool, load: Load)] = [
   ("ChapterHeadings", false, { _ = try ChapterHeadings.load(readNovel, in: $0) }),
 ]
 
-@Suite("Read model cost", .timeLimit(.minutes(3)))
+@Suite("Read model cost", TestTimeLimit.standard)
 struct ReadModelCostTests {
   @Test func shouldKeepStatementCountsIndependentOfTheNumberOfChaptersForDerivedModels() async throws {
     let small = try await Scaled.store(records: 4, revisions: 1)

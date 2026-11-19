@@ -6,7 +6,7 @@ import Testing
 @testable import NovelForgeCore
 
 /// A working copy held over a revision another device has since replaced is kept as a version, never lost to the next write.
-@Suite("Working copies over a replaced head", .timeLimit(.minutes(2)))
+@Suite("Working copies over a replaced head", TestTimeLimit.standard)
 struct WorkingCopyPreservationTests {
   /// Chapter 1 drafted, "AB unsynced" held over it, then another device's revision made the head; returns (held over, the other's head).
   private func orphaned(_ book: ChapterBook) async throws -> (String, String) {
@@ -80,7 +80,7 @@ struct WorkingCopyPreservationTests {
 }
 
 /// Guards that read derived rows refuse when those rows cannot be trusted.
-@Suite("Chapter guards over missing or faulted derived rows", .timeLimit(.minutes(2)))
+@Suite("Chapter guards over missing or faulted derived rows", TestTimeLimit.standard)
 struct DerivedRowGuardTests {
   private static func fault(_ table: String, key: String = ProjectionFaults.wholeDerivation) -> String {
     "INSERT INTO \(ProjectionFaults.table) (derivation, key, version, message) VALUES ('\(table)', '\(key)', 1, 'probe')"

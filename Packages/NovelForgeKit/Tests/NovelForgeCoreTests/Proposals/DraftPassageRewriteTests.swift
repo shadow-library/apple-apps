@@ -129,7 +129,7 @@ private func both(_ book: ChapterBook) async throws -> [DraftRewritePassage] {
 }
 
 // passage-rewrite.spec.ts:388-554 (ProposalApplyService passage rewrites), through the frame
-@Suite("Passage rewrites applied", .timeLimit(.minutes(3)))
+@Suite("Passage rewrites applied", TestTimeLimit.standard)
 struct DraftPassageRewriteTests {
   @Test func shouldWriteEverySelectedRewriteOfAChapterAsOnePassageRewrittenRevision() async throws {
     let book = try await workspace()

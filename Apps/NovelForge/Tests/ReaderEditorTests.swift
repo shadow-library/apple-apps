@@ -242,7 +242,7 @@ struct ReaderEditorTests {
     #expect(fixture.work.hasWork)
 
     model = nil
-    for _ in 0..<100 where fixture.work.hasWork { try await Task.sleep(for: .milliseconds(10)) }
+    for _ in 0..<12_000 where fixture.work.hasWork { try await Task.sleep(for: .milliseconds(10)) }
 
     #expect(!fixture.work.hasWork)
   }

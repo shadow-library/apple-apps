@@ -22,7 +22,7 @@ private func ledger(_ scenario: DomainScenario, on index: Int) async throws -> S
   Set(try await scenario.fetch(CharacterKnowledgeDerivation.request(for: scenario.novel), on: index).map(LedgerView.init))
 }
 
-@Suite("Domain oracle gaps", .timeLimit(.minutes(5)))
+@Suite("Domain oracle gaps", TestTimeLimit.standard)
 struct DomainOracleScenarioTests {
   @Test func shouldTeachAFactBehindAMilestoneOnceAnotherDeviceFinalizesAChapterClaimingIt() async throws {
     let scenario = try await DomainScenario.make(seed: 0xD25B_0001)

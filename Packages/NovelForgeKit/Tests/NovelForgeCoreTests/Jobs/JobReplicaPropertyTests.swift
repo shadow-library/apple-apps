@@ -117,7 +117,7 @@ private func costOracle(_ snapshots: [JobSnapshot], _ universe: ProjectionUniver
   }
 }
 
-@Suite("Job replicas", .timeLimit(.minutes(10)))
+@Suite("Job replicas", TestTimeLimit.property)
 struct JobReplicaPropertyTests {
   @Test(arguments: [CausalReplicaOrder.causal, .writerOrderOnly])
   func shouldDeriveJobStatusActivityAndCostEqualAcrossReplicasAndToTheSnapshotsAtEveryMoment(order: CausalReplicaOrder) async throws {

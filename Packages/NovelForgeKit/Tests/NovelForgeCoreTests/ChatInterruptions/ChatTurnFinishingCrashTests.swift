@@ -74,7 +74,7 @@ struct NotedStaging: Sendable, CustomTestStringConvertible {
 
 // The finishing half of a turn, each boundary killed on a vault in a file and resumed by a relaunched app: the answer is never asked for again and nothing
 // is staged or applied twice, so the vault ends as an uninterrupted turn leaves it
-@Suite("Chat turns killed while finishing", .serialized, .timeLimit(.minutes(3)))
+@Suite("Chat turns killed while finishing", .serialized, TestTimeLimit.standard)
 struct ChatTurnFinishingCrashTests {
   @Test(arguments: [ChatTurnEngine.Faults.Point.settled, .staged, .appending])
   func shouldFinishAKilledTurnFromWhatItSavedAsIfNeverStopped(_ point: ChatTurnEngine.Faults.Point) async throws {

@@ -44,7 +44,7 @@ private func exchanges(in store: VaultStore) async throws -> [UUID: ChatExchange
   try await store.read { transaction in try ChatContextExchangeLog.load(session: ChatWorld.session, in: transaction.database) }
 }
 
-@Suite("Chat compaction window", .timeLimit(.minutes(3)))
+@Suite("Chat compaction window", TestTimeLimit.standard)
 struct ChatCompactionWindowTests {
   @Test func shouldKeepSixMessagesAndTwelveWithinTheBudgetAndFoldBeyond() async throws {
     for (count, folds) in [(6, false), (12, false), (13, true)] {
@@ -217,7 +217,7 @@ struct ChatCompactionWindowTests {
   }
 }
 
-@Suite("Chat compaction", .timeLimit(.minutes(3)))
+@Suite("Chat compaction", TestTimeLimit.standard)
 struct ChatCompactionTests {
   @Test func shouldAppendACumulativeSummaryForgetTheExchangeLogAndReturnTheKeptWindow() async throws {
     let (_, store) = try ChatWorld.store()

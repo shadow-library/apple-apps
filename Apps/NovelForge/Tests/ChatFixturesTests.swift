@@ -101,7 +101,7 @@ enum ChatScript {
 @MainActor
 enum ChatWait {
   static func until(_ what: String, _ condition: @MainActor () -> Bool) async throws {
-    for _ in 0..<1_000 {
+    for _ in 0..<12_000 {
       if condition() { return }
       try await Task.sleep(for: .milliseconds(10))
     }

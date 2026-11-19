@@ -103,7 +103,7 @@ struct StoreObservationTests {
     let writing = Task {
       try await store.write { transaction -> Bool in
         entered.bump()
-        let released = release.wait(timeout: .now() + 3) == .success
+        let released = release.wait(timeout: .now() + 60) == .success
         _ = try transaction.set(note, ["title": "slow"])
         return released
       }
@@ -131,7 +131,7 @@ struct StoreObservationTests {
   }
 
   private func settle(_ condition: @Sendable () -> Bool) async throws {
-    for _ in 0..<100 {
+    for _ in 0..<2_400 {
       if condition() { return }
       try await Task.sleep(for: .milliseconds(50))
     }

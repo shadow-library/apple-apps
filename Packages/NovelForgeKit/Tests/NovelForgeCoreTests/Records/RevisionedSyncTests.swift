@@ -17,7 +17,7 @@ private func writeUnknownSectionPage(_ key: NovelForgeKey, body: JSONValue, in s
   _ = try await SchemaFixture.revise(key.ref, body, in: store)
 }
 
-@Suite("Revisioned records over time and replicas", .timeLimit(.minutes(5)))
+@Suite("Revisioned records over time and replicas", TestTimeLimit.standard)
 struct RevisionedSyncTests {
   @Test func shouldReadAPageAsNotYetPresentUntilBothHalvesOfItsCreateHaveArrived() async throws {
     let record = PageRecord(novel: novel, section: .world, slug: "split", content: PageContent(body: "whole"))

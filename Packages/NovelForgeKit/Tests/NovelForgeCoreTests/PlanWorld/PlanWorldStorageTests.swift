@@ -68,7 +68,7 @@ private let goldenWorld = """
 
 private let goldenTerms = #"{"claims":["rise"],"learns":[{"entity":"mara","fact":"ledger"}],"pov":["mara"]}"#
 
-@Suite("Plan world storage", .timeLimit(.minutes(2)))
+@Suite("Plan world storage", TestTimeLimit.standard)
 struct PlanWorldStorageTests {
   // A failure here means a stored shape changed: raise PlanWorldDerivation.version or ChapterContractDerivation.version, then update the golden text.
   @Test

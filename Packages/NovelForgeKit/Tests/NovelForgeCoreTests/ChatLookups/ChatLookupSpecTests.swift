@@ -31,7 +31,7 @@ private func richStore(allowingFaults: Bool = false) async throws -> VaultStore 
   try await ChatLookupWorlds.store(try #require(try ChatLookupFixture.load().worlds["rich"]), allowingFaults: allowingFaults)
 }
 
-@Suite("Chat lookups", .timeLimit(.minutes(5)))
+@Suite("Chat lookups", TestTimeLimit.standard)
 struct ChatLookupSpecTests {
   @Test(arguments: unoffered) func shouldRefuseALookupThisBuildDoesNotAnswer(_ tool: String) async throws {
     let round = await run(try await richStore(), try call(tool, #"{"query":"x","chapter":1,"entityKey":"mara","category":"c","url":"https://example.com"}"#))

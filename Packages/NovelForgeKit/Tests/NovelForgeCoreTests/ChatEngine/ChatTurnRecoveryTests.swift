@@ -52,7 +52,7 @@ private func expectOneAnsweredTurn(_ book: ChapterBook, reply: UUID) async throw
   #expect(try await book.store.pendingLocalTurns().isEmpty)
 }
 
-@Suite("Chat turn recovery", .timeLimit(.minutes(3)))
+@Suite("Chat turn recovery", TestTimeLimit.standard)
 struct ChatTurnRecoveryTests {
   @Test func shouldEndACancelledTurnWithoutAReplyAndAnswerItOnceOnRetry() async throws {
     let book = try await World.book()

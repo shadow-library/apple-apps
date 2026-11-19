@@ -29,7 +29,7 @@ private func failure(of outcome: ChatTurnOutcome) -> TurnFailure? {
 }
 
 // Every step boundary of the finishing half of a turn, with the answer saved by the engine itself
-@Suite("Chat turn faults", .timeLimit(.minutes(3)))
+@Suite("Chat turn faults", TestTimeLimit.standard)
 struct ChatTurnFaultTests {
   @Test func shouldNeverStageTwiceAfterACrashOnceTheEngineSavedItsAnswer() async throws {
     for point in [ChatTurnEngine.Faults.Point.settled, .staged, .appending] {

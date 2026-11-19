@@ -55,7 +55,7 @@ private func medianRevision(in store: VaultStore) async throws -> Duration {
   return durations.sorted()[durations.count / 2]
 }
 
-@Suite("Plan world write cost", .serialized, .timeLimit(.minutes(5)))
+@Suite("Plan world write cost", .serialized, TestTimeLimit.standard)
 struct PlanWorldCostTests {
   @Test(.enabled(if: isRelease, "a time budget holds only for an optimised build: swift test -c release -Xswiftc -enable-testing"))
   func shouldReviseAPlanOfALargeNovelWithinTheBudget() async throws {

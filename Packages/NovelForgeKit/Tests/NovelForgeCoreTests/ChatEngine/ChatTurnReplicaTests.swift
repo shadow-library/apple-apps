@@ -12,7 +12,7 @@ private typealias World = EngineWorld
 private let stalled: [ScriptedModelProvider.Step] = [.event(.started(requestID: "req", generationID: nil)), .text(#"{"reply":"Thinking it"#), .delay(.seconds(120))]
 
 // Orchestrator decision 6: a device that sees a message being answered elsewhere can answer it here, and both replies stand.
-@Suite("Chat turns on two devices", .timeLimit(.minutes(3)))
+@Suite("Chat turns on two devices", TestTimeLimit.standard)
 struct ChatTurnReplicaTests {
   @Test func shouldKeepBothRepliesWhenTwoDevicesAnswerOneMessage() async throws {
     let reconciler = try ChatWorld.reconciler()

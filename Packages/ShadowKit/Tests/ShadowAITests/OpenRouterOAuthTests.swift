@@ -6,7 +6,7 @@ import Testing
 
 @testable import ShadowAI
 
-@Suite("OpenRouterOAuth", .timeLimit(.minutes(1)))
+@Suite("OpenRouterOAuth", TestTimeLimit.quick)
 struct OpenRouterOAuthTests {
   private static let registered = OpenRouterOAuth(configuration: OpenRouterConfiguration(callbackSchemes: ["ShadowLibrary"]), transport: StubHTTPTransport(json: "{}"))
   private static let rfc7636Verifier = "dBjftJeZ4CVP-mB92K27uhbUJU1p1r_wW1gFWFOEjXk"

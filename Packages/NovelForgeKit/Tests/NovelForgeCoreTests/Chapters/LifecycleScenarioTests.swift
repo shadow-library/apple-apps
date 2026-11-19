@@ -39,7 +39,7 @@ private func stale(_ store: VaultStore, _ chapter: Int) async throws -> String? 
   try await views(store)[chapter]?.stale
 }
 
-@Suite("Chapter lifecycle", .timeLimit(.minutes(2)))
+@Suite("Chapter lifecycle", TestTimeLimit.standard)
 struct LifecycleScenarioTests {
   @Test func shouldHoldAnApprovalOfTheHeadUnderTheCurrentPlanTerms() async throws {
     let store = try await seeded()

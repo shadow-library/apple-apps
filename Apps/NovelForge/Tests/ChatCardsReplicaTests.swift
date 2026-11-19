@@ -10,7 +10,7 @@ import Testing
 private typealias Script = ChatCardsScript
 
 @MainActor
-@Suite("Chat cards across devices", .timeLimit(.minutes(3)))
+@Suite("Chat cards across devices", TestTimeLimit.standard)
 struct ChatCardsReplicaTests {
   private func entityExists(_ key: String, on store: VaultStore, novel: UUID) async throws -> Bool {
     try await store.read { transaction in try EntityRecord.read(EntityRecord.ref(novel: novel, entity: key), in: transaction).entry?.isRemoved == false }

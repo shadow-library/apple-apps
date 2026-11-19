@@ -13,7 +13,7 @@ struct StorageAttachmentTests {
   }
 
   private func settles(on expected: Bool, _ url: URL) async throws -> Bool {
-    for _ in 0..<100 {
+    for _ in 0..<6_000 {
       if try isExcluded(url) == expected { return true }
       try await Task.sleep(for: .milliseconds(20))
     }

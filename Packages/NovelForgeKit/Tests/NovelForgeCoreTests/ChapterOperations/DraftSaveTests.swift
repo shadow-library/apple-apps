@@ -5,7 +5,7 @@ import Testing
 
 @testable import NovelForgeCore
 
-@Suite("Hand-written draft saves", .timeLimit(.minutes(2)))
+@Suite("Hand-written draft saves", TestTimeLimit.standard)
 struct DraftSaveTests {
   @Test func shouldStartTheNextChapterWithAHandWrittenRevisionThatRecordsItsUpstream() async throws {
     let book = try await ChapterBook.make()

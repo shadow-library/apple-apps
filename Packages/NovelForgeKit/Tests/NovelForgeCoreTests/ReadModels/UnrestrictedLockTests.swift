@@ -38,7 +38,7 @@ private func loadLock(_ novel: UUID = novel, in store: VaultStore) async throws 
   try await store.load(UnrestrictedLock.self, novel)
 }
 
-@Suite("Unrestricted lock", .timeLimit(.minutes(3)))
+@Suite("Unrestricted lock", TestTimeLimit.standard)
 struct UnrestrictedLockTests {
   @Test func shouldStayOpenWhileTheNovelHoldsOnlyStandardText() async throws {
     let store = try store()

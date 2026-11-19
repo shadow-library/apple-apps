@@ -4,7 +4,7 @@ import Testing
 
 @testable import ShadowAI
 
-@Suite("ModelStream", .timeLimit(.minutes(1)))
+@Suite("ModelStream", TestTimeLimit.quick)
 struct ModelStreamTests {
   private static let usage = TokenUsage(input: 12, output: 3, cacheRead: 100)
   private static let script: [ModelEvent] = [

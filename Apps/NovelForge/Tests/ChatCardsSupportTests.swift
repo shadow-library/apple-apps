@@ -228,3 +228,7 @@ final class ScriptedProposalWriter: ChatProposalWriting {
     try await base?.impact(of: proposal, index: index, novel: novel) ?? .none
   }
 }
+
+enum TestTimeLimit {
+  static let standard = TimeLimitTrait.timeLimit(.minutes(10))
+}

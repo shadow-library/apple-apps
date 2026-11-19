@@ -27,7 +27,7 @@ extension ChapterBook {
 }
 
 // RULE E07: an apply records its pending actions beside the vault in its content transaction, and each action's transaction takes its index out
-@Suite("Pending card actions", .timeLimit(.minutes(3)))
+@Suite("Pending card actions", TestTimeLimit.standard)
 struct PendingActionsTests {
   @Test func shouldRecordTheSelectedActionsInTheContentTransaction() async throws {
     let book = try await StagingWorld.workspace()

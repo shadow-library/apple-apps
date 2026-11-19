@@ -5,7 +5,7 @@ import Testing
 
 @testable import NovelForgeCore
 
-@Suite("Finalize and final chapters", .timeLimit(.minutes(2)))
+@Suite("Finalize and final chapters", TestTimeLimit.standard)
 struct FinalizeTests {
   private func finalizing(_ book: ChapterBook, _ chapter: Int?) -> BookWrite<Int> {
     let novel = book.novel

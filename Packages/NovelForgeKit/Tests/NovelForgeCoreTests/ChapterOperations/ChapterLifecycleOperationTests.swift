@@ -6,7 +6,7 @@ import Testing
 
 @testable import NovelForgeCore
 
-@Suite("Chapter lifecycle through the operations", .timeLimit(.minutes(2)))
+@Suite("Chapter lifecycle through the operations", TestTimeLimit.standard)
 struct ChapterLifecycleOperationTests {
   @Test func shouldCarryAChapterFromPlanToAmendedFinalTextInTheDerivedTables() async throws {
     let book = try await ChapterBook.make()

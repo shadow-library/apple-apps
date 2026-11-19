@@ -56,7 +56,7 @@ private func costs(_ replies: [ChatReplyCalls], in store: VaultStore) async thro
   try await store.load(ChatReplyCosts.self, replies).costs
 }
 
-@Suite("Cost per reply", .timeLimit(.minutes(2)))
+@Suite("Cost per reply", TestTimeLimit.standard)
 struct ChatReplyCostTests {
   @Test func shouldSumTheCallsAReplyNamesWithTheEstimatedShareApart() async throws {
     let store = try await World.store()

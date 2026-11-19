@@ -4,7 +4,7 @@ import Testing
 
 @testable import ShadowAI
 
-@Suite("TaskRouter routes", .timeLimit(.minutes(1)))
+@Suite("TaskRouter routes", TestTimeLimit.quick)
 struct TaskRouterRouteTests {
   private static func router(_ configuration: TaskRouterConfiguration) throws -> TaskRouter {
     let clock = LedgerTestClock()

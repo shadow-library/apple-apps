@@ -6,7 +6,7 @@ import Testing
 @testable import NovelForge
 
 @MainActor
-@Suite("Chat shared follow-ups", .timeLimit(.minutes(3)))
+@Suite("Chat shared follow-ups", TestTimeLimit.standard)
 struct ChatChangesSharedTests {
   /// Every catalog value whose plural substitution is followed by another argument: that argument needs its own index, or it reads the first one again.
   @Test func shouldFormatEverySubstitutionWithTheArgumentsThatFollowIt() {

@@ -37,7 +37,7 @@ private func readNotes(in store: VaultStore, _ mutate: (inout [String: JSONValue
   return try await Harness.read(record.ref, as: AuthorNotesRecord.self, in: store)
 }
 
-@Suite("Revisioned record totality", .timeLimit(.minutes(3)))
+@Suite("Revisioned record totality", TestTimeLimit.property)
 struct RevisionedTotalityTests {
   @Test func shouldReadAPageWithoutANaturalKeyAsNotYetPresentAndWithoutARemovedFlagAsUnreadable() async throws {
     let store = try SchemaFixture.store()

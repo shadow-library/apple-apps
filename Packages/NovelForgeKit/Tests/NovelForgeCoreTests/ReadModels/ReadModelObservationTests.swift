@@ -5,7 +5,7 @@ import Testing
 
 @testable import NovelForgeCore
 
-@Suite("Read model observation", .timeLimit(.minutes(3)))
+@Suite("Read model observation", TestTimeLimit.standard)
 struct ReadModelObservationTests {
   @Test func shouldEmitTheCurrentValueThenAgainAfterARelevantWrite() async throws {
     let store = try await ReadWorld.seeded()

@@ -29,7 +29,7 @@ private func carries(_ pack: WriterPack, _ text: String) -> Bool {
   pack.rendered.contains(text) || pack.sections.contains { $0.rendered.contains(text) }
 }
 
-@Suite("Canon in the writer pack", .timeLimit(.minutes(2)))
+@Suite("Canon in the writer pack", TestTimeLimit.standard)
 struct CanonWriterPackTests {
   // apps/novel-forge-server/src/modules/ai/context/context-assembler.service.ts:538 reads the character_states and entity_relationships the kept items wrote
   @Test func shouldHandTheWriterTheStatesAndRelationshipsTheWinningCanonKept() async throws {

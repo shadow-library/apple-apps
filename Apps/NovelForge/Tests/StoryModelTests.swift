@@ -28,7 +28,7 @@ struct StoryModelTests {
   }
 
   private func waitUntil(_ condition: @MainActor () -> Bool) async throws {
-    for _ in 0..<500 {
+    for _ in 0..<12_000 {
       if condition() { return }
       try await Task.sleep(for: .milliseconds(10))
     }

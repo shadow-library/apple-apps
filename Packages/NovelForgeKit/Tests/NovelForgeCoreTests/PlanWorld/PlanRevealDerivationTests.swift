@@ -31,7 +31,7 @@ private struct Book {
 
 private let learnsLedger = contract(learns: [Learn("mara", "ledger")])
 
-@Suite("Plan reveal derivation", .timeLimit(.minutes(2)))
+@Suite("Plan reveal derivation", TestTimeLimit.standard)
 struct PlanRevealDerivationTests {
   @Test
   func shouldHoldWhenTheFactIsDatedAtOrBeforeTheChapter() async throws {

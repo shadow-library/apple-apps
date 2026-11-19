@@ -61,7 +61,7 @@ private func expectRebuilt(_ reconciler: NovelForgeReconciler, _ store: VaultSto
   guard comparison.incremental == comparison.rebuilt else { throw ProjectionPropertyFailure.notARebuild(comparison) }
 }
 
-@Suite("Canon review across devices", .timeLimit(.minutes(5)))
+@Suite("Canon review across devices", TestTimeLimit.standard)
 struct CanonReplicaTests {
   @Test(arguments: [CausalReplicaOrder.causal, .writerOrderOnly])
   func shouldApplyTheItemsOfTheCanonThatWonOnEveryReplica(order: CausalReplicaOrder) async throws {
@@ -224,7 +224,7 @@ private func milestoneOracle(_ reconciler: NovelForgeReconciler, _ store: VaultS
   }
 }
 
-@Suite("Canon projection property", .timeLimit(.minutes(5)))
+@Suite("Canon projection property", TestTimeLimit.property)
 struct CanonPropertyTests {
   @Test(arguments: [CausalReplicaOrder.causal, .writerOrderOnly])
   func shouldKeepEveryCanonDerivedTableEqualToARebuildAndConvergeOnEveryReplica(order: CausalReplicaOrder) async throws {

@@ -4,7 +4,7 @@ import Testing
 
 @testable import NovelForgeCore
 
-@Suite("Pending card action standings", .timeLimit(.minutes(3)))
+@Suite("Pending card action standings", TestTimeLimit.standard)
 struct ChatPendingActionStandingTests {
   @Test func shouldReadTheNovelsRowsWithTheirAttemptsAndFault() async throws {
     let book = try await StagingWorld.workspace()

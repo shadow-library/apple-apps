@@ -25,7 +25,7 @@ private func novels(_ replicas: CausalReplicas, _ id: UUID = novel) async throws
   try await readEach(replicas) { try Library.novel(id, in: $0) }
 }
 
-@Suite("Library operations across replicas", .timeLimit(.minutes(2)))
+@Suite("Library operations across replicas", TestTimeLimit.standard)
 struct LibraryReplicaTests {
   @Test
   func shouldMergeDifferentNovelFieldsEditedOnTwoDevices() async throws {

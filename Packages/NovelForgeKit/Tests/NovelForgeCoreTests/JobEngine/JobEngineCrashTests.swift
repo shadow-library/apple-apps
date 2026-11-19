@@ -11,7 +11,7 @@ import Testing
 /// A two-step pipeline of real chapter calls is killed at every runner write, inside each call's opening transaction, around each commit and around a
 /// heartbeat during a call; a new engine on the same vault resumes it as a relaunch does. The attempt ends with the outputs of an uninterrupted run, each
 /// written once, its pack built once, and every ledger call, the killed one included, on the attempt.
-@Suite("Job engine crashes", .timeLimit(.minutes(3)))
+@Suite("Job engine crashes", TestTimeLimit.standard)
 struct JobEngineCrashTests {
   struct Case: Sendable, CustomTestStringConvertible {
     let point: AttemptRunner.Faults.Point

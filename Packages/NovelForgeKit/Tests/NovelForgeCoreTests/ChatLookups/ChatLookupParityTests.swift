@@ -19,7 +19,7 @@ private let descriptionDeviations: [String: String] = [
 
 private let argumentDeviations: [String: [String]] = ["get_usage": ["period"]]
 
-@Suite("Chat lookups against the reference", .timeLimit(.minutes(5)))
+@Suite("Chat lookups against the reference", TestTimeLimit.standard)
 struct ChatLookupParityTests {
   private static let fixture = Result { try ChatLookupFixture.load() }
 

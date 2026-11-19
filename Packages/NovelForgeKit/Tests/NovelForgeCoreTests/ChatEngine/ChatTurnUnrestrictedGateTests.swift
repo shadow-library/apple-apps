@@ -12,7 +12,7 @@ private let stalled: [ScriptedModelProvider.Step] = [.event(.started(requestID: 
 private let unrestricted = ChatTurnChoices(contentMode: .unrestricted)
 
 /// Orchestrator decision 5: while the build cannot write unrestricted text, no turn runs unrestricted, whichever way it starts.
-@Suite("Chat turn unrestricted gate", .timeLimit(.minutes(3)))
+@Suite("Chat turn unrestricted gate", TestTimeLimit.standard)
 struct ChatTurnUnrestrictedGateTests {
   private struct Novel {
     let store: VaultStore

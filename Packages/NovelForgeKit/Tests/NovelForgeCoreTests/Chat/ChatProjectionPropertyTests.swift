@@ -248,7 +248,7 @@ private func oracle(_ reconciler: NovelForgeReconciler, _ store: VaultStore, _ u
   guard actualProposals == proposals else { throw ProjectionPropertyFailure.oracle("proposals \(actualProposals) differ from \(proposals)") }
 }
 
-@Suite("Chat projection property", .timeLimit(.minutes(5)))
+@Suite("Chat projection property", TestTimeLimit.property)
 struct ChatProjectionPropertyTests {
   @Test(arguments: [CausalReplicaOrder.causal, .writerOrderOnly])
   func shouldMatchARebuildAtEveryStepAndAgreeWithTheOracleOnEveryReplica(order: CausalReplicaOrder) async throws {

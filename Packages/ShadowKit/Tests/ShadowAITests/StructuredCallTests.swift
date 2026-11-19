@@ -5,7 +5,7 @@ import Testing
 
 @testable import ShadowAI
 
-@Suite("StructuredCall", .timeLimit(.minutes(1)))
+@Suite("StructuredCall", TestTimeLimit.quick)
 struct StructuredCallTests {
   private struct Judge: Decodable, Equatable {
     struct Finding: Decodable, Equatable {

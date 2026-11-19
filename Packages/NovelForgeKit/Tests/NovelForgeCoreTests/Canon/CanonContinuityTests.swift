@@ -30,7 +30,7 @@ private func expectRebuilt(_ store: VaultStore) async throws {
 }
 
 /// apps/novel-forge-server/tests/ai/apply-continuity.spec.ts, with each delta a kept item of a winning canon's review (review-event-apply.ts:190-201).
-@Suite("Canon character events", .timeLimit(.minutes(2)))
+@Suite("Canon character events", TestTimeLimit.standard)
 struct CanonCharacterEventTests {
   // apply-continuity.spec.ts:87
   @Test func shouldRecordAStateEventWithThePriorStateAsBeforeAndTheReportedStateAsAfter() async throws {
@@ -165,7 +165,7 @@ private func promises(_ record: ThreadRecord?, then kept: [ProposedChange], at c
 
 /// apps/novel-forge-server/tests/ai/apply-continuity-promises.spec.ts; its row lock (:61) has no counterpart, as the author's register and the canon's observation
 /// never share a write.
-@Suite("Canon promise observations", .timeLimit(.minutes(2)))
+@Suite("Canon promise observations", TestTimeLimit.standard)
 struct CanonPromiseTests {
   // apply-continuity-promises.spec.ts:74
   @Test func shouldNeverReopenADroppedThread() async throws {

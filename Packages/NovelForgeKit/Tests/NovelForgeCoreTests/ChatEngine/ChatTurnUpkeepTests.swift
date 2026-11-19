@@ -29,7 +29,7 @@ private func begunTurn(_ content: String, engine: ChatTurnEngine, book: ChapterB
 }
 
 // The session upkeep the engine runs through Domain/Chat: naming beside the turn (chat.service.ts:331), clearing deleted chats at launch.
-@Suite("Chat turn session upkeep", .timeLimit(.minutes(3)))
+@Suite("Chat turn session upkeep", TestTimeLimit.standard)
 struct ChatTurnUpkeepTests {
   @Test func shouldNameTheSessionFromItsOpeningMessageAndCarryTheTitlesCallsWhenItFinishesFirst() async throws {
     let book = try await World.book()

@@ -78,7 +78,7 @@ private func milestoneExists(_ key: String, on replica: Int, in replicas: Causal
   try await replicas.store(replica).read { try MilestoneRecord.listing(novel: novel, in: $0).live.contains { $0.milestone == key } }
 }
 
-@Suite("Proposal revert replicas", .timeLimit(.minutes(3)))
+@Suite("Proposal revert replicas", TestTimeLimit.standard)
 struct ProposalRevertReplicaTests {
   // Two devices undoing, then redoing, one change at once converge on the same content and status; the later `undone_state` wins, and both equal the prior
   @Test func shouldConvergeWhenTwoDevicesUndoAndRedoAChangeConcurrently() async throws {

@@ -78,7 +78,7 @@ enum ChapterDomainOperations {
   ]
 }
 
-@Suite("Chapter operations projection property", .timeLimit(.minutes(4)))
+@Suite("Chapter operations projection property", TestTimeLimit.property)
 struct ChapterOperationPropertyTests {
   @Test(arguments: [CausalReplicaOrder.causal, .writerOrderOnly])
   func shouldKeepTheChapterAreaARebuildUnderTheOperations(order: CausalReplicaOrder) async throws {

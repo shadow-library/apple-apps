@@ -55,7 +55,7 @@ private struct Scene {
   }
 }
 
-@Suite("Notebook replicas", .timeLimit(.minutes(2)))
+@Suite("Notebook replicas", TestTimeLimit.standard)
 struct NotebookReplicaTests {
   @Test func shouldMakeTheLaterClockTheSuccessorWhenTwoDevicesSupersedeTheSameEntry() async throws {
     try await forAll(iterations: 6, seed: 0xD17A) { generator in

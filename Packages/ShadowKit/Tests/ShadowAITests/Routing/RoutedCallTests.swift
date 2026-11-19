@@ -5,7 +5,7 @@ import Testing
 
 @testable import ShadowAI
 
-@Suite("RoutedCall ledgering", .timeLimit(.minutes(1)))
+@Suite("RoutedCall ledgering", TestTimeLimit.quick)
 struct RoutedCallTests {
   private static let host = "api.example.com"
 

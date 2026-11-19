@@ -27,7 +27,7 @@ private func expectRebuilt(_ reconciler: NovelForgeReconciler, _ store: VaultSto
   #expect(comparison.incremental == comparison.rebuilt)
 }
 
-@Suite("Reader disclosure across devices", .timeLimit(.minutes(2)))
+@Suite("Reader disclosure across devices", TestTimeLimit.standard)
 struct ReaderDisclosureReplicaTests {
   @Test func shouldDiscloseWhatTheCanonThatWonAConcurrentFinalizeTeaches() async throws {
     let reconciler = try Projection.reconciler(chapterAreaDerivations)

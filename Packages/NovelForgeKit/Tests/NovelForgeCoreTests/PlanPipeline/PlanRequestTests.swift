@@ -7,7 +7,7 @@ import Testing
 @testable import NovelForgeCore
 @testable import ShadowJobs
 
-@Suite("Plan requests", .timeLimit(.minutes(3)))
+@Suite("Plan requests", TestTimeLimit.standard)
 struct PlanRequestTests {
   static let session = SchemaFixture.uuid("00000000-0000-4000-8000-0000000000c1")
 

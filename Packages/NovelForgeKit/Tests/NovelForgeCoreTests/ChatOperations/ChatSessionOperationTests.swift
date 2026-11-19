@@ -9,7 +9,7 @@ import Testing
 
 private typealias World = ChatOperationsWorld
 
-@Suite("Chat session operations", .timeLimit(.minutes(2)))
+@Suite("Chat session operations", TestTimeLimit.standard)
 struct ChatSessionOperationTests {
   @Test func shouldCreateAnUntitledSessionInAutoModeUnlessAModeIsGiven() async throws {
     let store = try await World.store()
@@ -151,7 +151,7 @@ struct ChatSessionOperationTests {
   }
 }
 
-@Suite("Leaving unrestricted", .timeLimit(.minutes(2)))
+@Suite("Leaving unrestricted", TestTimeLimit.standard)
 struct ChatUnrestrictedSwitchTests {
   private func setMode(_ mode: ContentMode, in store: VaultStore) async throws {
     var changes = NovelChanges()

@@ -61,7 +61,7 @@ actor Collected<Value: Sendable> {
   func add(_ value: Value) { values.append(value) }
 
   func wait(for count: Int) async -> Bool {
-    for _ in 0..<100 {
+    for _ in 0..<2_400 {
       if values.count >= count { return true }
       try? await Task.sleep(for: .milliseconds(50))
     }

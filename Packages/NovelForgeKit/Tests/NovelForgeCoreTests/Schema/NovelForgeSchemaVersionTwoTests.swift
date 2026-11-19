@@ -6,7 +6,7 @@ import Testing
 
 @testable import NovelForgeCore
 
-@Suite("NovelForgeSchema version 2", .timeLimit(.minutes(1)))
+@Suite("NovelForgeSchema version 2", TestTimeLimit.standard)
 struct NovelForgeSchemaVersionTwoTests {
   private static let novel = SchemaFixture.novel
   private static let proposal = SchemaFixture.proposal

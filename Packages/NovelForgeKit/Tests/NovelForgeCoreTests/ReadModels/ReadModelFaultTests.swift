@@ -5,7 +5,7 @@ import Testing
 
 @testable import NovelForgeCore
 
-@Suite("Read model faults", .timeLimit(.minutes(3)))
+@Suite("Read model faults", TestTimeLimit.standard)
 struct ReadModelFaultTests {
   @Test func shouldReportAWholeDerivationFaultAsUnavailableNotEmpty() async throws {
     let store = try await ReadWorld.seeded(allowingFaults: true)

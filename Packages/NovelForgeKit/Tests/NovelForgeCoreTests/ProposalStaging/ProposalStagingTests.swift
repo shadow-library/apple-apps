@@ -21,7 +21,7 @@ private func number(_ value: OrderedJSON?) -> Int? {
 }
 
 // apps/novel-forge-server/src/modules/refinement/proposal.service.ts:138-182
-@Suite("Proposal staging", .timeLimit(.minutes(3)))
+@Suite("Proposal staging", TestTimeLimit.standard)
 struct ProposalStagingTests {
   @Test func shouldCaptureABaselineEqualToTheArtifactStatesOfTheCurrentRecords() async throws {
     let book = try await World.workspace()

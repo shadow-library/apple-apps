@@ -25,7 +25,7 @@ private let replyAndCountSchema: JSONValue = [
   "properties": ["reply": ["type": "string"], "n": ["type": "integer"]],
 ]
 
-@Suite("Reply stream relay", .timeLimit(.minutes(1)))
+@Suite("Reply stream relay", TestTimeLimit.quick)
 struct ReplyStreamRelayTests {
   @Test func shouldStreamTheReplyAsItIsDecodedAcrossEscapeAndSurrogateBoundaries() {
     var relay = ReplyStreamRelay()

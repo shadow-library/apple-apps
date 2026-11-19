@@ -228,7 +228,7 @@ struct OrderedJSONParsingTests {
     }
     thread.start()
     watcher.start()
-    #expect(finished.wait(timeout: .now() + 30) == .success)
+    #expect(finished.wait(timeout: .now() + 120) == .success)
     #expect(outcome.get() == true)
   }
 

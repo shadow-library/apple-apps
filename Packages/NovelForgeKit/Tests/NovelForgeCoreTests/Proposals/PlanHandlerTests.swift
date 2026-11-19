@@ -105,7 +105,7 @@ private struct PlanFields: Equatable {
 }
 
 // apps/novel-forge-server/src/modules/refinement/apply/brief.handler.ts, brief-merge.ts and the plan cases of tests/refinement/proposal-apply-plan-*.spec.ts
-@Suite("Plan handlers", .timeLimit(.minutes(3)))
+@Suite("Plan handlers", TestTimeLimit.standard)
 struct PlanHandlerTests {
   // brief-merge.spec.ts:8
   @Test func shouldGiveAPlanItCreatesTheDefaultsItDoesNotName() throws {
@@ -514,7 +514,7 @@ struct PlanHandlerTests {
 }
 
 // apps/novel-forge-server/src/modules/refinement/apply/apply-rules.ts:46 over the plan edits the handlers return, and tests/refinement/proposal-apply-plan-rules.spec.ts
-@Suite("Plan handlers: the plan rules over the written plans", .timeLimit(.minutes(3)))
+@Suite("Plan handlers: the plan rules over the written plans", TestTimeLimit.standard)
 struct PlanHandlerRuleTests {
   // proposal-apply-plan-rules.spec.ts:33
   @Test func shouldRefuseAPlanThatRevealsALockedFactAsPLN001() async throws {

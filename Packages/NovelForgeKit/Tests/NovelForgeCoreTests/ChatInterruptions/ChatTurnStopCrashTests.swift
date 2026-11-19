@@ -23,7 +23,7 @@ private struct StalledCredentials: ModelCredentialSource {
 
 // RULE E07 (F27 follow-up 1a): the author's Stop is stored as it is asked for, so a process that ends before the turn records its end leaves a turn the next
 // launch ends cancelled with what it showed, never one it resumes; an answer that had settled is still appended, as Stop leaves it
-@Suite("Chat turns stopped and killed", .serialized, .timeLimit(.minutes(3)))
+@Suite("Chat turns stopped and killed", .serialized, TestTimeLimit.standard)
 struct ChatTurnStopCrashTests {
   @Test func shouldEndAStoppedTurnCancelledWithItsTextWhenKilledBeforeItsEnd() async throws {
     let vault = try await CrashVault.make()

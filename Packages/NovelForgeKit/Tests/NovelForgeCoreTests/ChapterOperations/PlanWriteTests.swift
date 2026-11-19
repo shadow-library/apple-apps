@@ -5,7 +5,7 @@ import Testing
 
 @testable import NovelForgeCore
 
-@Suite("Chapter plan writes", .timeLimit(.minutes(2)))
+@Suite("Chapter plan writes", TestTimeLimit.standard)
 struct PlanWriteTests {
   @Test func shouldCreateAPlanInTheNovelsContentModeAndNearestVolume() async throws {
     let book = try await ChapterBook.make()

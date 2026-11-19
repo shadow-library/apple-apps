@@ -6,7 +6,7 @@ import Testing
 
 @testable import NovelForgeCore
 
-@Suite("Read models", .timeLimit(.minutes(3)))
+@Suite("Read models", TestTimeLimit.standard)
 struct ReadModelTests {
   @Test func shouldListTheLibraryWithChapterProgressAndTheArchiveApart() async throws {
     let store = try await ReadWorld.seeded()

@@ -5,7 +5,7 @@ import Testing
 
 @testable import ShadowJobs
 
-@Suite("JobsLocal", .timeLimit(.minutes(1)))
+@Suite("JobsLocal", TestTimeLimit.quick)
 struct JobsLocalTests {
   private static func run(_ id: AttemptID, replica: ReplicaID, at seconds: Int64 = 0) throws -> LocalRun {
     LocalRun(attempt: id, job: try JobFixture.key().ref, replica: replica, startedAt: JobFixture.instant(seconds).date, stop: nil)

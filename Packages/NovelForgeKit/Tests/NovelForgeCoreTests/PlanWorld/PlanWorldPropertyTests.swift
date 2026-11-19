@@ -375,7 +375,7 @@ private func check(_ store: VaultStore, _ universe: ProjectionUniverse, _ covera
 
 private let areaDerivations = ProjectionDerivations.all + PlanWorldDerivations.all
 
-@Suite("Plan world projection property", .timeLimit(.minutes(10)))
+@Suite("Plan world projection property", TestTimeLimit.property)
 struct PlanWorldPropertyTests {
   @Test(arguments: [CausalReplicaOrder.causal, .writerOrderOnly])
   func shouldMatchARebuildAtEveryStepAndAgreeWithTheOracleOnEveryReplica(order: CausalReplicaOrder) async throws {

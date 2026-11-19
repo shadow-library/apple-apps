@@ -33,7 +33,7 @@ private struct HistoryWorld {
 }
 
 @MainActor
-@Suite("Chat change history", .timeLimit(.minutes(3)))
+@Suite("Chat change history", TestTimeLimit.standard)
 struct ChatChangesHistoryTests {
   @Test func shouldPageTheHistoryNewestFirst() async throws {
     let history = try await HistoryWorld.make(3)

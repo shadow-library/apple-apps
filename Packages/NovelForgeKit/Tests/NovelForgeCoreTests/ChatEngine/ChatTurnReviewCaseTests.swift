@@ -15,7 +15,7 @@ private func lookupReply(_ n: Int) -> [ScriptedModelProvider.Step] {
 
 // From the F22b review: the lookup cap, the voided output, a cancel after the answer settled or before the first call, and no unrestricted text in a
 // later standard turn
-@Suite("Chat turn review cases", .timeLimit(.minutes(3)))
+@Suite("Chat turn review cases", TestTimeLimit.standard)
 struct ChatTurnReviewCaseTests {
   @Test func shouldCapLookupsAtThreeRoundsAndDropLateLookups() async throws {
     let book = try await World.book()

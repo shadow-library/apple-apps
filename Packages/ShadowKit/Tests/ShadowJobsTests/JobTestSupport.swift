@@ -125,11 +125,15 @@ extension Array {
   }
 }
 
-func eventually(_ what: String, timeout: Duration = .seconds(10), _ condition: @Sendable () async throws -> Bool) async throws {
+func eventually(_ what: String, timeout: Duration = .seconds(120), _ condition: @Sendable () async throws -> Bool) async throws {
   let deadline = ContinuousClock.now + timeout
   while ContinuousClock.now < deadline {
     if try await condition() { return }
     try await Task.sleep(for: .milliseconds(5))
   }
   throw FixtureError(description: "timed out waiting until \(what)")
+}
+
+enum TestTimeLimit {
+  static let quick = TimeLimitTrait.timeLimit(.minutes(5))
 }

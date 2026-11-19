@@ -72,7 +72,7 @@ struct AskingCrash: Sendable, CustomTestStringConvertible {
 
 // Orchestrator decision 6 at every boundary of the asking half: the process ends with a model call in flight, the next launch resumes the turn from its
 // last saved round, and a second crash after the resumed run settled its answer leaves it to a third launch that asks nothing
-@Suite("Chat turns killed while asking", .serialized, .timeLimit(.minutes(3)))
+@Suite("Chat turns killed while asking", .serialized, TestTimeLimit.standard)
 struct ChatTurnAskingCrashTests {
   @Test(arguments: AskingCrash.cases)
   func shouldResumeAKilledTurnFromItsLastSavedRoundWithOneReplyAndNothingAppliedTwice(_ crash: AskingCrash) async throws {

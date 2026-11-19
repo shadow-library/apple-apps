@@ -9,7 +9,7 @@ import Testing
 
 /// One review per attempt (G11): the job keeps the first ready one, and a duplicate another device appended later takes the author's answers with it, since an
 /// answer names its revision, item and proposal, never a review (decision 4).
-@Suite("Finalize review in force", .timeLimit(.minutes(3)))
+@Suite("Finalize review in force", TestTimeLimit.standard)
 struct FinalizeReviewInForceTests {
   @Test func shouldKeepTheFirstReadyReviewOfTheJobAndCallNoModelForASecond() async throws {
     let world = try await FinalizeReviewWorld(replies: [])
@@ -90,7 +90,7 @@ struct FinalizeReviewInForceTests {
 }
 
 /// The pipeline killed at every runner boundary resumes, as a relaunch does, to one review and one finalize.
-@Suite("Finalize review crashes", .timeLimit(.minutes(3)))
+@Suite("Finalize review crashes", TestTimeLimit.standard)
 struct FinalizeReviewCrashTests {
   static let points: [AttemptRunner.Faults.Point] =
     (0..<4).map { .committed(write: $0) } + [.call(step: 0)] + (0..<3).flatMap { [AttemptRunner.Faults.Point.beforeCommit(step: $0), .afterCommit(step: $0)] }

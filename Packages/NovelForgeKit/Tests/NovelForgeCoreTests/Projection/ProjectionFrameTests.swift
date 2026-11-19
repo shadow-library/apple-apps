@@ -142,7 +142,7 @@ private func expectConsistent(_ reconciler: NovelForgeReconciler, in store: Vaul
   #expect(comparison.incremental == comparison.rebuilt)
 }
 
-@Suite("Projection frame", .timeLimit(.minutes(2)))
+@Suite("Projection frame", TestTimeLimit.standard)
 struct ProjectionFrameTests {
   @Test func shouldProjectALocalWriteInItsTransactionAndAbortItOnADatabaseError() async throws {
     let reconciler = try Projection.reconciler(NovelForgeDerivations.standard + [ProbeDerivation<ProbeTableName>(behaviour: .abortOnNovelNamedFail)])

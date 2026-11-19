@@ -115,7 +115,7 @@ private func pendingActions(in store: VaultStore) async throws -> [PendingAction
 }
 
 // RULE F16/F27: a card's actions run after its content, each in its own transaction, and a launch resumes the ones still pending, each once
-@Suite("Card actions killed mid-apply", .serialized, .timeLimit(.minutes(3)))
+@Suite("Card actions killed mid-apply", .serialized, TestTimeLimit.standard)
 struct ChatCardActionCrashTests {
   @Test func shouldRunBothActionsOnceWhenKilledAfterTheReplyAndTheCardsContent() async throws {
     let vault = try await CrashVault.make(workspace: true)

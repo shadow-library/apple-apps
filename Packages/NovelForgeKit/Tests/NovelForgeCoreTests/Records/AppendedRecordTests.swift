@@ -229,7 +229,7 @@ private func appendedConvergence<R: AppendedRecord>(_ make: @escaping @Sendable 
   }
 }
 
-@Suite("Appended records", .timeLimit(.minutes(2)))
+@Suite("Appended records", TestTimeLimit.standard)
 struct AppendedRecordTests {
   @Test func shouldAppendAndReadAnApproval() async throws { try await appendedRoundTrip({ Gen.approval(&$0, novel: $1) }, seed: 0x3A1) }
   @Test func shouldAppendAndReadANotebookEntry() async throws { try await appendedRoundTrip({ Gen.notebookEntry(&$0, novel: $1) }, seed: 0x3A2) }

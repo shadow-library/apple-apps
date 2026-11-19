@@ -5,7 +5,7 @@ import Testing
 
 @testable import ShadowAI
 
-@Suite("AnthropicProvider requests", .timeLimit(.minutes(1)))
+@Suite("AnthropicProvider requests", TestTimeLimit.quick)
 struct AnthropicRequestTests {
   private static let allowedMembers: Set<String> = ["model", "max_tokens", "stream", "system", "messages", "output_config", "cache_control"]
 

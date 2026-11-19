@@ -8,7 +8,7 @@ import Testing
 private typealias Script = ChatCardsScript
 
 @MainActor
-@Suite("Chat cards", .timeLimit(.minutes(3)))
+@Suite("Chat cards", TestTimeLimit.standard)
 struct ChatCardsModelTests {
   private static let places = Script.reply("Two places.", ops: [Script.idea("hall", "Saltgate Hall"), Script.idea("quay", "Ember Quay")])
 

@@ -29,7 +29,7 @@ private func milestones(_ store: VaultStore) async throws -> [String: MilestoneS
   try await PlanWorldTables.milestones(novel, in: store)
 }
 
-@Suite("Canon milestones", .timeLimit(.minutes(2)))
+@Suite("Canon milestones", TestTimeLimit.standard)
 struct CanonMilestoneTests {
   // chapter-finalization.graph.ts:177: a chapter finalized without a review reaches what its plan claims
   @Test func shouldReachWhatAnUnreviewedCanonClaims() async throws {
@@ -101,7 +101,7 @@ private func moveReveal(of secret: String, to chapter: Int, in store: VaultStore
 }
 
 /// E04 option A with the freeze: a canon that recorded its knowledge commits those pairs whatever the world says later, subject to the live-since cutoff.
-@Suite("Canon knowledge", .timeLimit(.minutes(2)))
+@Suite("Canon knowledge", TestTimeLimit.standard)
 struct CanonKnowledgeTests {
   @Test func shouldKeepFrozenKnowledgeWhenTheRevealChapterMovesAfterFinalize() async throws {
     let store = try await knowledgeStore()

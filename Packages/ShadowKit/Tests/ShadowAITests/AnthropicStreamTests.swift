@@ -6,7 +6,7 @@ import Testing
 
 @testable import ShadowAI
 
-@Suite("AnthropicProvider streams", .timeLimit(.minutes(1)))
+@Suite("AnthropicProvider streams", TestTimeLimit.quick)
 struct AnthropicStreamTests {
   private static func run(_ transcript: String, headers: [String: String] = ["request-id": "req_1"]) async throws -> (events: [ModelEvent], error: ModelError?) {
     let transport = StubHTTPExchangeTransport(headers: headers, transcript: transcript)

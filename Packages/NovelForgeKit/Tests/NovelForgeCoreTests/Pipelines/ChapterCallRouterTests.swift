@@ -67,7 +67,7 @@ private enum RouteWorld {
   }
 }
 
-@Suite("Chapter call router", .timeLimit(.minutes(3)))
+@Suite("Chapter call router", TestTimeLimit.standard)
 struct ChapterCallRouterTests {
   @Test func shouldRouteAnUnrestrictedChapterStrictlyThroughTheHardLineGuard() async throws {
     let route = try ChapterCallRouter.route(RouteWorld.source(plan: RouteWorld.plan(.unrestricted)), unrestrictedAvailable: true)

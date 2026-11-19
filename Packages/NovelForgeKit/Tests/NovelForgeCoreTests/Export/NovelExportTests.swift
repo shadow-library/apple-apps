@@ -64,7 +64,7 @@ private struct ExportFixture: Decodable {
   let cases: [Case]
 }
 
-@Suite("Novel export", .timeLimit(.minutes(5)))
+@Suite("Novel export", TestTimeLimit.standard)
 struct NovelExportTests {
   private let cases = (try? ReferenceFixture.decode(ExportFixture.self, from: "export/export.json").cases) ?? []
 

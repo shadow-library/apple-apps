@@ -8,7 +8,7 @@ import Testing
 @testable import NovelForgeCore
 @testable import ShadowJobs
 
-@Suite("Review remedies", .timeLimit(.minutes(3)))
+@Suite("Review remedies", TestTimeLimit.standard)
 struct ReviewRemedyTests {
   @Test func shouldRefuseAnswersTheReferenceRefuses() async throws {
     let soft = ReviewWorld.judgeReply(verdict: "consistent", findings: [("soft", "A small wrinkle.")])

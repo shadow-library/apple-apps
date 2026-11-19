@@ -60,7 +60,7 @@ private func seeded() async throws -> VaultStore {
   return store
 }
 
-@Suite("Chapter headings", .timeLimit(.minutes(3)))
+@Suite("Chapter headings", TestTimeLimit.standard)
 struct ChapterHeadingTests {
   @Test func shouldHeadAChapterFromItsPlanThenItsDraftThenItsFinalChapterAndItsBoundAmendment() async throws {
     let store = try await seeded()
@@ -162,7 +162,7 @@ struct ChapterHeadingTests {
   }
 }
 
-@Suite("Chapter heading faults", .timeLimit(.minutes(2)))
+@Suite("Chapter heading faults", TestTimeLimit.standard)
 struct ChapterHeadingFaultTests {
   private func faulted(_ derivation: String, key: String) async throws -> ChapterHeadings {
     let store = try Projection.store(try Projection.reconciler(), allowingFaults: true)
@@ -313,7 +313,7 @@ private func oracle(_ coverage: HeadingCoverage) -> @Sendable (NovelForgeReconci
   }
 }
 
-@Suite("Chapter heading projection property", .timeLimit(.minutes(5)))
+@Suite("Chapter heading projection property", TestTimeLimit.property)
 struct ChapterHeadingPropertyTests {
   @Test(arguments: [CausalReplicaOrder.causal, .writerOrderOnly])
   func shouldMatchARebuildAtEveryStepAndAgreeWithTheOracleOnEveryReplica(order: CausalReplicaOrder) async throws {

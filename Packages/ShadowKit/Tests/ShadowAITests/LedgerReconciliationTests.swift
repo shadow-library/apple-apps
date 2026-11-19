@@ -8,7 +8,7 @@ import Testing
 
 @testable import ShadowAI
 
-@Suite("Ledger reconciliation", .timeLimit(.minutes(1)))
+@Suite("Ledger reconciliation", TestTimeLimit.quick)
 struct LedgerReconciliationTests {
   private static let host = "openrouter.ai"
   private static let now = Date(timeIntervalSince1970: 1_700_100_000)

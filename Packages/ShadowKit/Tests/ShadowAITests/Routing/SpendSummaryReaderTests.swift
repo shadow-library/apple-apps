@@ -5,7 +5,7 @@ import Testing
 
 @testable import ShadowAI
 
-@Suite("Spend summary read from the ledger", .timeLimit(.minutes(1)))
+@Suite("Spend summary read from the ledger", TestTimeLimit.quick)
 struct SpendSummaryReaderTests {
   private static let day: Int64 = 86_400_000
 

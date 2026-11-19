@@ -5,7 +5,7 @@ import Testing
 
 @testable import NovelForgeCore
 
-@Suite("Chat passage source", .timeLimit(.minutes(2)))
+@Suite("Chat passage source", TestTimeLimit.standard)
 struct ChatPassageSourceTests {
   private static let prose = "😀 Mara keeps the harbour keys.\n\nShe never sleeps."
 

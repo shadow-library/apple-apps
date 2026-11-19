@@ -21,7 +21,7 @@ private func revise(_ record: PageRecord, _ content: PageContent, in store: Vaul
   return try await store.write { transaction in try PageRecord.revise(novel: record.novel, section: section, slug: slug, content, in: &transaction) }
 }
 
-@Suite("Revisioned records", .timeLimit(.minutes(3)))
+@Suite("Revisioned records", TestTimeLimit.standard)
 struct RevisionedRecordTests {
   @Test func shouldCreateAPageWithItsDocumentFieldsAndAFirstRevision() async throws {
     let store = try SchemaFixture.store()

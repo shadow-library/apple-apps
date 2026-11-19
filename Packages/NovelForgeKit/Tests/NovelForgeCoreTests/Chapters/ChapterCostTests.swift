@@ -54,7 +54,7 @@ private func median(in store: VaultStore, _ write: @escaping @Sendable (Int, ino
   return durations.sorted()[durations.count / 2]
 }
 
-@Suite("Chapter lifecycle write cost", .serialized, .timeLimit(.minutes(5)))
+@Suite("Chapter lifecycle write cost", .serialized, TestTimeLimit.standard)
 struct ChapterCostTests {
   @Test(.enabled(if: isRelease, "a time budget holds only for an optimised build: swift test -c release -Xswiftc -enable-testing"))
   func shouldReviseAPlanOrADraftOfALargeNovelWithinTheBudget() async throws {

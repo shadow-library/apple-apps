@@ -31,7 +31,7 @@ private func historyChange(in store: VaultStore) async throws -> ChatChange {
 }
 
 // CarriedRewrites over the changes every applier recorded, not the first applier's selection alone
-@Suite("Carried rewrites in the change history", .timeLimit(.minutes(3)))
+@Suite("Carried rewrites in the change history", TestTimeLimit.standard)
 struct CarriedRewriteHistoryTests {
   @Test func shouldCarryASecondAppliersRewriteByEveryChangeThatMayHaveCarriedIt() async throws {
     let store = try await ChatOperationsWorld.store()

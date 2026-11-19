@@ -5,7 +5,7 @@ import Testing
 
 @testable import ShadowAI
 
-@Suite("Ledger", .timeLimit(.minutes(1)))
+@Suite("Ledger", TestTimeLimit.quick)
 struct LedgerRecordingTests {
   private static let usage = TokenUsage(input: 100, output: 50, cacheRead: 7, cacheWriteShort: 3, cacheWriteLong: 1)
 

@@ -20,7 +20,7 @@ extension ChapterBook {
 }
 
 // apps/novel-forge-server/tests/refinement/proposal-apply-op-undo.spec.ts over proposal-revert.service.ts and proposal-op-undo.service.ts
-@Suite("Proposal revert", .timeLimit(.minutes(3)))
+@Suite("Proposal revert", TestTimeLimit.standard)
 struct ProposalRevertTests {
   // proposal-apply-op-undo.spec.ts:105
   @Test func shouldUndoOneChangeAndLeaveTheRestOfTheTurnApplied() async throws {

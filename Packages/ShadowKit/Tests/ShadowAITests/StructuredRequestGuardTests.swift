@@ -89,7 +89,7 @@ struct ModelRequestRefusalTests {
   }
 }
 
-@Suite("StructuredCall request guard", .timeLimit(.minutes(1)))
+@Suite("StructuredCall request guard", TestTimeLimit.quick)
 struct StructuredRequestGuardTests {
   private typealias Fixture = StructuredStreamFixture
 
@@ -275,7 +275,7 @@ struct StructuredRequestGuardTests {
   }
 }
 
-@Suite("RoutedCall request guard", .timeLimit(.minutes(1)))
+@Suite("RoutedCall request guard", TestTimeLimit.quick)
 struct RoutedRequestGuardTests {
   private typealias Fixture = StructuredStreamFixture
 

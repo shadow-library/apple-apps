@@ -149,7 +149,7 @@ private func referenceWorld(_ fixture: ReaderDisclosureFixture.Case, finalizing 
     facts: facts, plans: plans, milestones: milestones, volumes: fixture.volumes.map { DisclosureVolume(volumeKey: $0.volume, ordinal: $0.ordinal) })
 }
 
-@Suite("Reader disclosure parity with the reference", .timeLimit(.minutes(5)))
+@Suite("Reader disclosure parity with the reference", TestTimeLimit.standard)
 struct ReaderDisclosureParityTests {
   @Test func shouldComputeWhatEachChapterDisclosesAtFinalizeAsTheReferenceDoesInEveryWorld() throws {
     let fixture = try ReferenceFixture.decode(ReaderDisclosureFixture.self, from: "reader-disclosure/disclosure.json")
