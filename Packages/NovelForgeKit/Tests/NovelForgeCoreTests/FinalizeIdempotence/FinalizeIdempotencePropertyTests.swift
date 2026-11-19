@@ -143,8 +143,7 @@ private func check(_ finalizeCase: FinalizeCase, reconciler: NovelForgeReconcile
   for (index, book) in books.enumerated() {
     try await Projection.expectNoFaults(in: book.store)
     let synced = try await FinalizeFootprint.read(book, chapter: finalizeCase.chapter)
-    let (one, held) = finalizeCase.createsEntity ? (footprint.recorded, synced.recorded) : (footprint, synced)
-    try expect(held == one, "replica \(index) after syncing holds other values than one commit: \(held.difference(from: one))")
+    try expect(synced == footprint, "replica \(index) after syncing holds other values than one commit: \(synced.difference(from: footprint))")
     try await expectCommitted(finalizeCase, book, synced)
     try await expectRebuilt(reconciler, book, "replica \(index) after syncing")
     try expect(try await Projection.derived(reconciler, in: book.store) == derived, "replica \(index)'s derived tables are not replica 0's")

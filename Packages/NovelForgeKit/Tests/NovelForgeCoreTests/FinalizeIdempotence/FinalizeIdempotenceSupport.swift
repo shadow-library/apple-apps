@@ -110,15 +110,6 @@ struct FinalizeCase: Sendable, CustomStringConvertible {
     }
   }
 
-  /// A committed review that keeps an entity the novel has no record of, which the commit creates.
-  var createsEntity: Bool {
-    open == 0
-      && kept.contains { item in
-        guard case .entity(let entity) = item.change else { return false }
-        return entity.entityKey != "mara"
-      }
-  }
-
   /// The first commit's answer: every item answered or kept on its own commits, an open one refuses FRV_005 (finalize-review-gate.ts:55).
   var first: FinalizeAttempt {
     open > 0 ? .refused(FinalizeRefusal.unanswered(count: open).code) : .finalized(chapter)
@@ -316,10 +307,6 @@ struct FinalizeFootprint: Equatable, CustomStringConvertible {
       canon: stored.map(CanonicalText.of), digest: stored.map(FinalChapterRecord.digest), values: try await VaultDump.values(in: store), jobs: jobs.sorted(),
       derived: derived)
   }
-
-  /// Without the derived views, which a commit that creates an entity on two devices loses part of once they sync (the disabled
-  /// `shouldKeepTheNewEntitysAppearanceWhenTwoDevicesFinalizeTheSameState`).
-  var recorded: FinalizeFootprint { FinalizeFootprint(canon: canon, digest: digest, values: values, jobs: jobs, derived: []) }
 
   private static func event(_ event: EventView) -> String {
     let json = { (value: JSONValue?) in value.map(CanonicalText.of) ?? "null" }

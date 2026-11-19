@@ -99,10 +99,8 @@ struct FinalizeIdempotenceExampleTests {
     #expect(try await FinalizeReviews.refreshJobs(in: store).count == 1)
   }
 
-  // G27 x G26 across devices: each device that finalizes creates the kept entity, so its `removed` register ends at the latest create while the canon keeps
-  // the earliest write; CanonCharacters then reads the entity as created after the canon and drops what the canon keeps of it
-  @Test(.disabled("BUG: two devices finalizing one reviewed chapter lose the kept new entity's appearance, states and relationships once they sync"))
-  func shouldKeepTheNewEntitysAppearanceWhenTwoDevicesFinalizeTheSameState() async throws {
+  // Each device that finalizes creates the kept entity, so its `removed` register ends at the later create while the canon that wins is the earlier write
+  @Test func shouldKeepTheNewEntitysAppearanceWhenTwoDevicesFinalizeTheSameState() async throws {
     let reconciler = try Projection.reconciler()
     let replicas = try await CausalReplicas(
       CausalReplicaSetup(count: 2, registry: Projection.registry, migrations: reconciler.migrations, reconciler: { _ in reconciler }, seed: 0x635_B1))
@@ -114,10 +112,17 @@ struct FinalizeIdempotenceExampleTests {
     #expect(await here.finalizeDirectly(1) == .finalized(1))
     await replicas.advanceClock(of: 1, by: .seconds(5))
     #expect(await there.finalizeDirectly(1) == .finalized(1))
-    for book in [here, there] { #expect(try await CanonTables.appearances(book.novel, in: book.store) == ["kael@1"]) }
+    let kept = (appearances: Set(["kael@1"]), knowledge: LedgerView("heir", "kael", 1, .generated, .committed))
+    for book in [here, there] {
+      #expect(try await CanonTables.appearances(book.novel, in: book.store) == kept.appearances)
+      #expect(try await ChapterTables.knowledge(book.novel, in: book.store).contains(kept.knowledge))
+    }
     _ = try await replicas.write(0) { _ in }
     _ = try await replicas.write(1) { _ in }
     try await replicas.settle()
-    for book in [here, there] { #expect(try await CanonTables.appearances(book.novel, in: book.store) == ["kael@1"]) }
+    for book in [here, there] {
+      #expect(try await CanonTables.appearances(book.novel, in: book.store) == kept.appearances)
+      #expect(try await ChapterTables.knowledge(book.novel, in: book.store).contains(kept.knowledge))
+    }
   }
 }

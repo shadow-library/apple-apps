@@ -101,10 +101,9 @@ extension DisclosureVolume {
 }
 
 // Committed knowledge from final chapters (the pairs a canon recorded at finalize, else its contract's learns, then the knowledge items its review kept) and
-// provisional knowledge from approvals in force, over the author's manual reveals; a removed secret or entity hides its rows, and one restored or created again
-// starts with none, as the reference's delete cascades them (database/schemas/knowledge.ts:188-191).
+// provisional knowledge from approvals in force, over manual reveals; a removed secret or entity hides its rows, and a learner counts from `CanonBinding.liveSince`.
 public struct CharacterKnowledgeDerivation: Derivation {
-  public static let version = 4
+  public static let version = 5
   public static let definition = """
     CREATE TABLE nf_derived_character_knowledge (
       novel BLOB NOT NULL, fact TEXT NOT NULL, entity TEXT NOT NULL, chapter INTEGER NOT NULL, source TEXT NOT NULL, status TEXT NOT NULL, draft TEXT,
@@ -143,7 +142,8 @@ public struct CharacterKnowledgeDerivation: Derivation {
     var revisions = [Int: String?]()
     var contributors = [KnowledgeContributor]()
     let finals = try context.fetchAll(FinalChapterEntry.filter(Column("novel") == novel))
-    let bindings = Dictionary(try CanonBinding.all(of: novel, in: context).map { ($0.chapter, $0) }) { first, _ in first }
+    let canons = try CanonBinding.all(of: novel, in: context)
+    let bindings = Dictionary(canons.map { ($0.chapter, $0) }) { first, _ in first }
     let bound = Set(finals.compactMap(\.approval))
     var approved = [UUID: HLCTimestamp]()
     if !bound.isEmpty {
@@ -209,18 +209,20 @@ public struct CharacterKnowledgeDerivation: Derivation {
     }
     var entities = [String]()
     var entityLive = [JSString: HLCTimestamp]()
+    let keptAsNew = CanonBinding.keptAsNew(in: canons)
     for key in named.sorted() {
       let ref = EntityRecord.ref(novel: novel, entity: key.value)
       let state = try context.records.state(of: ref, scope: .vault)
       guard case .readable(let entry) = EntityRecord.reading(state, of: ref), !entry.isRemoved else { continue }
       entities.append(key.value)
-      entityLive[key] = state?.liveSince
+      entityLive[key] = CanonBinding.liveSince(key.value, record: state?.liveSince, keptAsNew: keptAsNew)
     }
     var factLive = [JSString: HLCTimestamp]()
     for key in facts { factLive[key] = try context.records.state(of: SecretRecord.ref(novel: novel, secret: key.value), scope: .vault)?.liveSince }
 
     // provisional-knowledge.ts:73-79 skips a learn whose fact or learner did not exist when the chapter was approved, and finalize commits only what was
-    // ledgered; a record removed and then restored or created again is a new row there (fact.handler.ts:61), so it counts from its latest create or restore.
+    // ledgered; a record removed and then restored or created again is a new row there (fact.handler.ts:61), so it counts from its latest create or restore,
+    // and a learner a canon keeps as new from the earliest such canon (`CanonBinding.liveSince`).
     // The reference's re-ledgering of a revoked pair (provisional-knowledge.ts:183-232) skips this check at the earliest other claimant; here it holds there too.
     let wasLive = { (fact: String, entity: String, cutoff: HLCTimestamp?) -> Bool in
       guard let cutoff, let since = factLive[JSString(fact)], let learner = entityLive[JSString(entity)] else { return false }

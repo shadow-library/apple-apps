@@ -159,4 +159,24 @@ struct CanonBinding: Sendable {
     for entry in try context.fetchAll(CanonBindingEntry.filter(Column("novel") == novel).order(Column("chapter"))) { bindings.append(try CanonBinding(entry)) }
     return bindings
   }
+
+  /// By NFC key, the earliest winning canon keeping the entity as new; each device committing a chapter creates it, so `removed` ends at the latest create.
+  static func keptAsNew(in bindings: [CanonBinding]) -> [JSString: HLCTimestamp] {
+    var since = [JSString: HLCTimestamp]()
+    for binding in bindings {
+      for case .entity(let entity) in binding.kept {
+        let key = JSString(entity.entityKey.jsNormalize(.nfc))
+        since[key] = since[key].map { min($0, binding.clock) } ?? binding.clock
+      }
+    }
+    return since
+  }
+
+  /// Deviation: once re-created, a `keptAsNew` entity regains every canon and approval since that clock, even those made while removed; the reference starts fresh.
+  /// Still lost until an earliest-create clock exists: on three devices, a losing ch1 canon's create of the entity re-created after ch2 drops ch2's rows of it.
+  static func liveSince(_ key: String, record: HLCTimestamp?, keptAsNew: [JSString: HLCTimestamp]) -> HLCTimestamp? {
+    guard let record else { return nil }
+    guard let kept = keptAsNew[JSString(key.jsNormalize(.nfc))] else { return record }
+    return min(record, kept)
+  }
 }

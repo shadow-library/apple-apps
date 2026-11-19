@@ -89,8 +89,8 @@ private func text(_ value: String?) -> JSONValue { value.map(JSONValue.string) ?
 
 /// The appearances, character states, relationships and character events the novel's winning canons keep, replayed in chapter order as
 /// apps/novel-forge-server/src/modules/finalize-review/review-event-apply.ts:190-201 applies each kept change through applyContinuityDelta
-/// (apps/novel-forge-server/src/modules/ai/graphs/apply-continuity.ts:72-354). An entity counts for a chapter only when it is live now and was live when that canon
-/// was written: the reference resolves it at commit and deletes its rows with it, so one removed, or removed and created again since, starts with none.
+/// (apps/novel-forge-server/src/modules/ai/graphs/apply-continuity.ts:72-354).
+/// An entity counts for a chapter only when it is live now and its `CanonBinding.liveSince` is at or before that canon's clock.
 struct CanonCharacters: Equatable {
   var appearances: [CanonAppearanceEntry] = []
   var states: [CharacterStateEntry] = []
@@ -112,11 +112,14 @@ struct CanonCharacters: Equatable {
     let bindings = try CanonBinding.all(of: novel, in: context)
     var named = Set<JSString>()
     for change in bindings.flatMap(\.kept) { named.formUnion(entityKeys(of: change).map { JSString(nfc($0)) }) }
+    let keptAsNew = CanonBinding.keptAsNew(in: bindings)
     var liveSince = [JSString: HLCTimestamp]()
     for key in named {
       let ref = EntityRecord.ref(novel: novel, entity: key.value)
       let state = try context.records.state(of: ref, scope: .vault)
-      guard case .readable(let entry) = EntityRecord.reading(state, of: ref), !entry.isRemoved, let since = state?.liveSince else { continue }
+      guard case .readable(let entry) = EntityRecord.reading(state, of: ref), !entry.isRemoved,
+        let since = CanonBinding.liveSince(key.value, record: state?.liveSince, keptAsNew: keptAsNew)
+      else { continue }
       liveSince[key] = since
     }
     return replay(novel: novel, bindings: bindings, liveSince: liveSince)
@@ -250,7 +253,7 @@ struct CanonCharacters: Equatable {
 }
 
 public struct CanonAppearanceDerivation: Derivation {
-  public static let version = 1
+  public static let version = 2
   public static let definition = """
     CREATE TABLE nf_derived_canon_appearance (novel BLOB NOT NULL, entity TEXT NOT NULL, chapter INTEGER NOT NULL, PRIMARY KEY (novel, entity, chapter)) STRICT, WITHOUT ROWID;
     """
@@ -271,7 +274,7 @@ public struct CanonAppearanceDerivation: Derivation {
 }
 
 public struct CharacterStateDerivation: Derivation {
-  public static let version = 1
+  public static let version = 2
   public static let definition = """
     CREATE TABLE nf_derived_character_state (
       novel BLOB NOT NULL, entity TEXT NOT NULL, location TEXT, conditions TEXT, immediate_goal TEXT, status_note TEXT, chapter INTEGER NOT NULL,
@@ -293,7 +296,7 @@ public struct CharacterStateDerivation: Derivation {
 }
 
 public struct CanonRelationshipDerivation: Derivation {
-  public static let version = 1
+  public static let version = 2
   public static let definition = """
     CREATE TABLE nf_derived_canon_relationship (
       novel BLOB NOT NULL, entity TEXT NOT NULL, target TEXT NOT NULL, kind TEXT NOT NULL, chapter INTEGER NOT NULL, note TEXT,
@@ -317,7 +320,7 @@ public struct CanonRelationshipDerivation: Derivation {
 }
 
 public struct CharacterEventDerivation: Derivation {
-  public static let version = 1
+  public static let version = 2
   public static let definition = """
     CREATE TABLE nf_derived_character_event (
       novel BLOB NOT NULL, entity TEXT NOT NULL, chapter INTEGER NOT NULL, kind TEXT NOT NULL, detail TEXT NOT NULL, before TEXT, after TEXT,
