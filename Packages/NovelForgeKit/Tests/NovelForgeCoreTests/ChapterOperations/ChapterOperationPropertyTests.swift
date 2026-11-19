@@ -54,7 +54,7 @@ enum ChapterDomainOperations {
     },
     ProjectionOperation(name: "finalize a chapter", weight: 4) { generator, universe in
       let (novel, chapter) = (universe.novel(&generator), generator.chance(0.5) ? nil : universe.chapter(&generator))
-      return { transaction in _ = try ChapterFinalize.finalize(novel: novel, chapter: chapter, in: &transaction) }
+      return { transaction in _ = try FinalizeReviews.finalize(novel: novel, chapter: chapter, in: &transaction) }
     },
     ProjectionOperation(name: "restore a draft version", weight: 1) { generator, universe in
       let (novel, chapter, pick) = (universe.novel(&generator), universe.chapter(&generator), generator.int(in: 0...3))

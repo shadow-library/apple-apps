@@ -74,10 +74,10 @@ struct ChapterOperationReplicaTests {
     let replicas = try await book(seed: 0xD231)
     let (first, second) = (UUID(), UUID())
     try await approve(replicas, on: 1, id: first)
-    _ = try await replicas.write(1) { try ChapterFinalize.finalize(novel: novel, chapter: 1, in: &$0) }
+    _ = try await replicas.write(1) { try FinalizeReviews.finalize(novel: novel, chapter: 1, in: &$0) }
     await replicas.advanceClock(of: 2, by: .seconds(5))
     try await approve(replicas, on: 2, id: second)
-    _ = try await replicas.write(2) { try ChapterFinalize.finalize(novel: novel, chapter: 1, in: &$0) }
+    _ = try await replicas.write(2) { try FinalizeReviews.finalize(novel: novel, chapter: 1, in: &$0) }
     _ = try await replicas.write(2) { try FinalChapters.amend(novel: novel, chapter: 1, ChapterAmendment(content: "Theirs."), in: &$0) }
     try await replicas.settle()
     #expect(try await agreed(replicas)?.review == .final)
@@ -107,7 +107,7 @@ struct ChapterOperationReplicaTests {
     let heads = try await [head(replicas, 0), head(replicas, 1), head(replicas, 2)]
     #expect(Set(heads).count == 1 && heads[0] != base)
     do {
-      _ = try await replicas.write(1) { try ChapterFinalize.finalize(novel: novel, chapter: 1, in: &$0) }
+      _ = try await replicas.write(1) { try FinalizeReviews.finalize(novel: novel, chapter: 1, in: &$0) }
       Issue.record("finalize succeeded without an approval in force")
     } catch StoreError.aborted(let cause) {
       #expect(cause as? DomainError == .draftNotApproved(1))

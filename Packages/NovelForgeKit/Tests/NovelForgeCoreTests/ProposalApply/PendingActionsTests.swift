@@ -19,6 +19,7 @@ extension ChapterBook {
 
   /// The content of a card approving and finalizing chapter 3, committed without running either action.
   func contentOnly() async throws -> UUID {
+    try await reviewRead(3)
     let id = try await stage(World.approve3, World.finalize3).proposal.id
     let context = context()
     _ = try await run { try ProposalApply.apply(proposal: id, selection: .indexes([0, 1]), context: context, in: &$0) }
@@ -80,6 +81,7 @@ struct PendingActionsTests {
 
   @Test func shouldLeaveNoRowAfterAnUninterruptedApply() async throws {
     let book = try await StagingWorld.workspace()
+    try await book.reviewRead(3)
     let id = try await book.stage(World.approve3, World.finalize3).proposal.id
     #expect(try await book.applied(id, .indexes([0, 1])).map(\.status) == [.applied, .applied])
     #expect(try await book.pendingActionRows().isEmpty)

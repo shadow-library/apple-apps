@@ -30,11 +30,12 @@ enum FinalizeReviewPipelineError: ShadowError {
 enum FinalizeReviewPipeline {
   static let version = 1
 
-  /// What finalizing on approval commits; G26 puts the gated commit behind this seam, and it must refuse everything `FinalizeReadiness` refuses, since settling
-  /// checks only the review.
+  /// What finalizing on approval commits: the gated commit, as approval asks for it, so it refuses everything `FinalizeReadiness` refuses and an isolated chapter.
   typealias Finalize = @Sendable (_ novel: UUID, _ chapter: Int, _ transaction: inout WriteTransaction) throws(DomainError) -> Void
 
-  static let commit: Finalize = { novel, chapter, transaction throws(DomainError) in _ = try ChapterFinalize.finalize(novel: novel, chapter: chapter, in: &transaction) }
+  static let commit: Finalize = { novel, chapter, transaction throws(DomainError) in
+    _ = try ChapterFinalize.finalize(novel: novel, chapter: chapter, by: .approval, in: &transaction)
+  }
 
   static let definition = NovelPipelineDefinition.ready(pipeline())
 

@@ -66,6 +66,7 @@ struct ProposalActionTests {
     let book = try await StagingWorld.workspace()
     try await book.save(3, "Mine.\n\n\(Text.body)", summary: "It turns.", base: try await book.head(3))
     try await book.approve(3)
+    try await book.reviewRead(3)
     let id = try await book.stage(World.finalize3).proposal.id
     #expect(try await book.workingCopy(3) != nil)
     #expect(try only(try await book.applied(id, .indexes([0])), 0).failure == ProposalChangeFailure(.domain(.draftNotApproved(3))))
@@ -140,6 +141,7 @@ struct ProposalActionTests {
   @Test func shouldFinalizeTheApprovedChapter() async throws {
     let book = try await StagingWorld.workspace()
     try await book.approve(3)
+    try await book.reviewRead(3)
     let id = try await book.stage(World.finalize3).proposal.id
     let outcome = try only(try await book.applied(id, .indexes([0])), 0)
     #expect(outcome.status == .applied)
@@ -285,6 +287,7 @@ struct ProposalActionTests {
   // N3: a store failure under an action after the content committed leaves it and the actions after it pending, reported, never thrown; a resume runs them
   @Test func shouldLeaveTheActionsPendingWhenTheStoreFailsAfterTheContentCommitted() async throws {
     let book = try await StagingWorld.workspace()
+    try await book.reviewRead(3)
     let id = try await book.stage(World.kael, World.approve3, World.finalize3).proposal.id
     try await book.run { transaction in
       try transaction.database.execute(sql: "DROP TABLE IF EXISTS nf_local_draft_working_copy")

@@ -121,7 +121,7 @@ struct ChapterBook: Sendable {
 
   func finalize(_ chapter: Int? = nil) async throws {
     let novel = novel
-    try await run { try ChapterFinalize.finalize(novel: novel, chapter: chapter, in: &$0) }
+    try await run { try FinalizeReviews.finalize(novel: novel, chapter: chapter, in: &$0) }
   }
 
   /// Plans, drafts, approves and finalizes chapters 1 through `last`.

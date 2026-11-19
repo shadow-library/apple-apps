@@ -260,6 +260,7 @@ extension VaultStore {
       }
     } catch {
       guard case .action(_, let cause) = error, !cause.isStoreFailure else { throw error }
+      if case .domain(let refusal) = cause { try? await requestFinalizeReview(after: refusal, novel: novel) }
       return try await failProposalAction(id, index: index, novel: novel, failure: ProposalChangeFailure(cause))
     }
     switch step {

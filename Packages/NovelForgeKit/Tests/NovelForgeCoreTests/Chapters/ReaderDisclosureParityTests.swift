@@ -117,7 +117,7 @@ private func step(_ done: Int, _ books: [Book], in store: VaultStore) async thro
     for index in books.indices {
       guard let chapter = books[index].next else { continue }
       do throws(DomainError) {
-        try ChapterFinalize.finalize(novel: books[index].novel, chapter: chapter, in: &transaction)
+        try FinalizeReviews.finalizeDomain(novel: books[index].novel, chapter: chapter, in: &transaction)
         books[index].finalized = chapter
       } catch {
         books[index].stopped = true

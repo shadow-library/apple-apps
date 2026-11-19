@@ -64,7 +64,7 @@ struct DomainScenario {
   }
 
   func finalize(_ chapter: Int, on index: Int) async throws {
-    try await on(index) { transaction, novel in _ = try ChapterFinalize.finalize(novel: novel, chapter: chapter, in: &transaction) }
+    try await on(index) { transaction, novel in _ = try FinalizeReviews.finalize(novel: novel, chapter: chapter, in: &transaction) }
   }
 
   func head(_ chapter: Int, on index: Int) async throws -> String? {

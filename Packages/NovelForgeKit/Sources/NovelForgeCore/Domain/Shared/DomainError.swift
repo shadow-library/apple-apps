@@ -82,6 +82,7 @@ public enum DomainError: ShadowError, Equatable {
   case planStateUnavailable(Int)
   case unreadable(EntityRef)
   case unrestrictedLocked
+  case finalizeRefused(FinalizeRefusal)
   case store(StoreError)
 
   public var code: String {
@@ -147,6 +148,7 @@ public enum DomainError: ShadowError, Equatable {
     case .planStateUnavailable: "chapters.plan_state_unavailable"
     case .unreadable: "domain.unreadable"
     case .unrestrictedLocked: "library.unrestricted_locked"
+    case .finalizeRefused(let refusal): refusal.code
     case .store(let error): error.code
     }
   }
@@ -218,6 +220,7 @@ public enum DomainError: ShadowError, Equatable {
     case .planStateUnavailable(let chapter): "The plans of this novel are not up to date on this device, so the plan for chapter \(chapter) cannot be written now"
     case .unreadable(let ref): "\(ref.kind.rawValue)/\(ref.key.rawValue) is stored in a form this version cannot read"
     case .unrestrictedLocked: "This novel's chats, drafts, final chapters or reviews hold, or may hold, unrestricted text, so it stays unrestricted"
+    case .finalizeRefused(let refusal): refusal.message
     case .store(let error): error.errorDescription
     }
   }

@@ -136,7 +136,8 @@ struct DomainOracleScenarioTests {
       #expect(try await scenario.fetch(FinalChapterEntry.all(), on: index).map(\.chapter).sorted() == [1, 2, 3])
       #expect(try await scenario.fetch(FinalChapterEntry.all(), on: index).first { $0.chapter == 1 }?.approval == approval(13))
       #expect(try await scenario.fetch(MilestoneStateDerivation.request(for: scenario.novel), on: index).first { $0.milestone == "rise" }?.reachedChapter == 3)
-      #expect(try await ledger(scenario, on: index).isEmpty)
+      // E04 with G26: chapter 2's canon froze what its approval ledgered while chapter 1's losing canon reached the milestone
+      #expect(try await ledger(scenario, on: index) == [LedgerView("crown", "mara", 2, .brief, .committed)])
     }
   }
 

@@ -128,7 +128,7 @@ struct DerivedRowGuardTests {
     try await book.draft(1)
     try await book.approve(1)
     try await book.tamper(Self.entityFault(IndexedRecord.databaseTableName, SecretRecord.ref(novel: novel, secret: "heir")))
-    await book.expect(.planStateUnavailable(1)) { try ChapterFinalize.finalize(novel: novel, chapter: 1, in: &$0) }
+    await book.expect(.planStateUnavailable(1)) { try FinalizeReviews.finalize(novel: novel, chapter: 1, in: &$0) }
     #expect(try await book.final(1) == nil)
   }
 
@@ -138,7 +138,7 @@ struct DerivedRowGuardTests {
     try await book.draft(1)
     try await book.approve(1)
     try await book.tamper(Self.entityFault(IndexedRecord.databaseTableName, SecretRecord.ref(novel: novel, secret: "heir")))
-    _ = try await book.store.write { try ChapterFinalize.finalize(novel: novel, chapter: 1, in: &$0) }
+    _ = try await book.store.write { try FinalizeReviews.finalize(novel: novel, chapter: 1, in: &$0) }
     #expect(try await book.final(1)?.canon.disclosed == [])
   }
 

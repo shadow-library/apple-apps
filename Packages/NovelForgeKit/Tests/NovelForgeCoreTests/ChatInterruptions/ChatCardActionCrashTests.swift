@@ -13,6 +13,7 @@ private typealias Crash = CrashWorld
 
 /// A turn on the workspace vault whose reply cards an approval of chapter 3 and its finalize; answers the card.
 private func cardedActions(_ book: ChapterBook) async throws -> UUID {
+  try await book.reviewRead(3)
   let changeSet = "[\(ApplyWorld.approve3),\(ApplyWorld.finalize3)]"
   let provider = ScriptedModelProvider(calls: [World.reply(("reply", World.text("Ready to approve and finalize it.")), ("changeSet", changeSet))])
   let engine = try await Crash.engine(book.store, provider: provider)

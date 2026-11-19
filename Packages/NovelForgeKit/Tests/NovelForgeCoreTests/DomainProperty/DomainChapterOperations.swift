@@ -126,7 +126,7 @@ enum DomainChapterOperations {
     DomainOperation(name: "finalize a chapter", weight: 6) { generator, universe in
       let (novel, aim, lowest) = (universe.primary, ChapterAim(.approved, &generator, universe), generator.chance(0.3))
       return .write { transaction, _ in
-        _ = try ChapterFinalize.finalize(novel: novel, chapter: lowest ? nil : try aim.chapter(novel: novel, in: transaction.database), in: &transaction)
+        _ = try FinalizeReviews.finalize(novel: novel, chapter: lowest ? nil : try aim.chapter(novel: novel, in: transaction.database), in: &transaction)
       }
     },
     DomainOperation(name: "restore a draft version", weight: 1) { generator, universe in
@@ -180,7 +180,7 @@ enum DomainChapterOperations {
         try await store.approveChapter(novel: novel, chapter: chapter, revision: saved, id: id)
         if stage == 3 { _ = try await draft(chapter + 1) }
         guard stage != 3 else { return }
-        try await store.writeDomain { transaction throws(DomainError) in _ = try ChapterFinalize.finalize(novel: novel, chapter: chapter, in: &transaction) }
+        try await store.writeDomain { transaction throws(DomainError) in _ = try FinalizeReviews.finalizeDomain(novel: novel, chapter: chapter, in: &transaction) }
         if stage == 4 { _ = try await draft(chapter + 1) }
       }
     },

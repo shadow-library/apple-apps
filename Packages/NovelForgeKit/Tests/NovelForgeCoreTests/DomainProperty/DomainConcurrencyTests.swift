@@ -36,7 +36,7 @@ struct DomainConcurrencyTests {
       #expect(try await scenario.fetch(StoryCursor.all(), on: index).map(\.chapter) == [2])
       #expect(try await ledger(scenario, on: index) == [LedgerView("heir", "mara", 1, .brief, .committed)])
     }
-    await scenario.expectRefused(.draftFinal(1), on: 2) { transaction, novel in try ChapterFinalize.finalize(novel: novel, chapter: 1, in: &transaction) }
+    await scenario.expectRefused(.draftFinal(1), on: 2) { transaction, novel in try FinalizeReviews.finalize(novel: novel, chapter: 1, in: &transaction) }
   }
 
   @Test func shouldHoldTheLaterOfTwoApprovalsOfOneHeadAndBindItWhenTheChapterIsFinalized() async throws {
@@ -73,7 +73,7 @@ struct DomainConcurrencyTests {
       #expect(try await scenario.fetch(ApprovalInForceDerivation.request(for: scenario.novel), on: index).isEmpty)
       #expect(try await ChapterTables.lifecycle(scenario.novel, in: await scenario.store(index))[1]?.review == .needsReview)
     }
-    await scenario.expectRefused(.draftNotApproved(1), on: 1) { transaction, novel in try ChapterFinalize.finalize(novel: novel, chapter: 1, in: &transaction) }
+    await scenario.expectRefused(.draftNotApproved(1), on: 1) { transaction, novel in try FinalizeReviews.finalize(novel: novel, chapter: 1, in: &transaction) }
   }
 
   @Test func shouldRevokeALaterChaptersApprovalWhenAnotherDeviceRewritesTheChapterItRestsOn() async throws {
@@ -103,7 +103,7 @@ struct DomainConcurrencyTests {
     #expect(try await scenario.fetch(ApprovalInForceDerivation.request(for: novel), on: 2).map(\.approval) == [kept])
     let accepted = try await ChapterTables.lifecycle(novel, in: await scenario.store(0))[2]
     #expect(accepted?.stale == nil && accepted?.differences != nil)
-    await scenario.expectRefused(.finalizeOutOfOrder(2), on: 2) { transaction, novel in try ChapterFinalize.finalize(novel: novel, chapter: 2, in: &transaction) }
+    await scenario.expectRefused(.finalizeOutOfOrder(2), on: 2) { transaction, novel in try FinalizeReviews.finalize(novel: novel, chapter: 2, in: &transaction) }
   }
 
   @Test func shouldHoldNoApprovalOfAHeadThatAnotherDeviceRevisedMeanwhile() async throws {
@@ -119,7 +119,7 @@ struct DomainConcurrencyTests {
       #expect(try await scenario.fetch(ApprovalInForceDerivation.request(for: scenario.novel), on: index).isEmpty)
       #expect(try await ledger(scenario, on: index).isEmpty)
     }
-    await scenario.expectRefused(.draftNotApproved(1), on: 1) { transaction, novel in try ChapterFinalize.finalize(novel: novel, chapter: 1, in: &transaction) }
+    await scenario.expectRefused(.draftNotApproved(1), on: 1) { transaction, novel in try FinalizeReviews.finalize(novel: novel, chapter: 1, in: &transaction) }
   }
 
   @Test func shouldKeepARemovalOverAConcurrentEditAndHideWhatTheRemovedRecordCarried() async throws {

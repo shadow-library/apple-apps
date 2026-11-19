@@ -135,11 +135,15 @@ struct DomainInvariants {
       }
       expect(row.status == status, "a final chapter's knowledge is committed and an approved one's provisional", "\(pair) in chapter \(row.chapter)")
       expect(row.draftRevision == revision, "a contract row names the revision its chapter rests on", pair)
-      if let fact = records.secrets[row.fact] {
-        expect(isRevealed(fact, at: row.chapter), "a ledgered fact is revealed by the chapter that ledgers it", "\(pair) in chapter \(row.chapter)")
+      if let frozen = frozenKnowledge(of: row.chapter) {
+        expect(frozen.contains(pair), "a final chapter that recorded its knowledge commits only the pairs it recorded", "\(pair) in chapter \(row.chapter)")
+      } else {
+        if let fact = records.secrets[row.fact] {
+          expect(isRevealed(fact, at: row.chapter), "a ledgered fact is revealed by the chapter that ledgers it", "\(pair) in chapter \(row.chapter)")
+        }
+        let taught = contract.pov.contains { !$0.isEmpty } && contract.reveals.contains { $0.factKey == row.fact && $0.entityKey == row.entity }
+        expect(taught, "a contract row is taught by its chapter's contract", "\(pair) in chapter \(row.chapter)")
       }
-      let taught = contract.pov.contains { !$0.isEmpty } && contract.reveals.contains { $0.factKey == row.fact && $0.entityKey == row.entity }
-      expect(taught, "a contract row is taught by its chapter's contract", "\(pair) in chapter \(row.chapter)")
       let fact = records.liveSince[SecretRecord.ref(novel: novel, secret: row.fact)]
       let learner = records.liveSince[EntityRecord.ref(novel: novel, entity: row.entity)]
       let existed = cutoff.map { cutoff in fact.map { $0 <= cutoff } == true && learner.map { $0 <= cutoff } == true } ?? false
@@ -158,16 +162,24 @@ struct DomainInvariants {
   private func requiredKnowledge(manual: Set<String>) -> [String: (Int, KnowledgeStatus)] {
     var required = [String: (Int, KnowledgeStatus)]()
     for chapter in chapters.keys.sorted() {
-      guard let (contract, cutoff, _, status) = contributor(of: chapter), let cutoff, contract.pov.contains(where: { !$0.isEmpty }) else { continue }
-      for learn in contract.reveals {
+      guard let (contract, cutoff, _, status) = contributor(of: chapter), let cutoff else { continue }
+      let frozen = frozenKnowledge(of: chapter)
+      guard frozen != nil || contract.pov.contains(where: { !$0.isEmpty }) else { continue }
+      let learns = records.finals[chapter]?.canon.knowledge ?? contract.reveals
+      for learn in learns {
         let pair = NovelRecords.pair(learn.factKey, learn.entityKey)
-        guard let fact = records.secrets[learn.factKey], records.entities.contains(learn.entityKey), isRevealed(fact, at: chapter) else { continue }
+        guard let fact = records.secrets[learn.factKey], records.entities.contains(learn.entityKey), frozen != nil || isRevealed(fact, at: chapter) else { continue }
         let live = [SecretRecord.ref(novel: novel, secret: learn.factKey), EntityRecord.ref(novel: novel, entity: learn.entityKey)].map { records.liveSince[$0] }
         guard live.allSatisfy({ $0.map { $0 <= cutoff } == true }), !manual.contains(pair), !records.retracted.contains(pair), required[pair] == nil else { continue }
         required[pair] = (chapter, status)
       }
     }
     return required
+  }
+
+  /// E04 with G26: a final chapter's canon records the pairs its finalizing device committed, which the reveal rule is not asked about again.
+  private func frozenKnowledge(of chapter: Int) -> Set<String>? {
+    records.finals[chapter]?.canon.knowledge.map { Set($0.map { NovelRecords.pair($0.factKey, $0.entityKey) }) }
   }
 
   private func contributor(of chapter: Int) -> (ChapterContract, HLCTimestamp?, String?, KnowledgeStatus)? {

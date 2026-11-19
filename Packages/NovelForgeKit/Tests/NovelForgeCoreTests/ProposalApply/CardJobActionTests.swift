@@ -34,7 +34,8 @@ extension ChapterBook {
     let scope = NovelJobAddress.scope(of: novel)
     return try await store.read { transaction in
       try transaction.states(ofKind: JobSchema.jobKind).compactMap { entry in
-        guard case .readable(let job) = JobRecords.reading(entry.state, of: entry.ref), job.request.key.scope == scope, job.request.key.kind != NovelJobKind.finalizeReview.rawValue
+        guard case .readable(let job) = JobRecords.reading(entry.state, of: entry.ref), job.request.key.scope == scope,
+          ![NovelJobKind.finalizeReview, .canonRefresh].map(\.rawValue).contains(job.request.key.kind)
         else { return nil }
         return job
       }

@@ -9,7 +9,7 @@ import Testing
 struct FinalizeTests {
   private func finalizing(_ book: ChapterBook, _ chapter: Int?) -> BookWrite<Int> {
     let novel = book.novel
-    return { try ChapterFinalize.finalize(novel: novel, chapter: chapter, in: &$0) }
+    return { try FinalizeReviews.finalize(novel: novel, chapter: chapter, in: &$0) }
   }
 
   private func amending(_ book: ChapterBook, _ chapter: Int, _ amendment: ChapterAmendment) -> BookWrite<Void> {
@@ -69,7 +69,7 @@ struct FinalizeTests {
     _ = try await book.run { try ChapterDrafts.importDraft(novel: novel, chapter: 1, DraftImport(prose: "One.", isolated: true), base: nil, in: &$0) }
     try await book.approve(1)
     await book.expect(.isolatedWithoutSummary(1), finalizing(book, 1))
-    try await book.draft(1)
+    _ = try await book.run { try ChapterDrafts.importDraft(novel: novel, chapter: 1, DraftImport(prose: "One.", summary: "It turns.", isolated: false), base: nil, in: &$0) }
     try await book.draft(2)
     try await book.approve(2)
     await book.expect(.finalizeOutOfOrder(2), finalizing(book, 2))
