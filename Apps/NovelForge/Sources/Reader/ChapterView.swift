@@ -111,6 +111,7 @@ struct ChapterView: View {
     ScrollView {
       VStack(spacing: Spacing.space6) {
         missingNotice(MissingChapter(row: loaded.row, chapter: chapter, listing: chapterListing))
+        GenerationControls(context: context, chapter: chapter, row: loaded.row)
         keptCallout(loaded)
       }
       .padding(Spacing.space6)
@@ -172,6 +173,7 @@ struct ChapterView: View {
       VStack(alignment: .leading, spacing: Spacing.space6) {
         header(loaded, title: title, amended: amended)
         ChapterWorkspaceStrip(context: context, chapter: chapter, row: loaded.row)
+        GenerationControls(context: context, chapter: chapter, row: loaded.row)
         stateCallouts(loaded)
         keptCallout(loaded)
         ProseView(markdown: markdown)
@@ -203,10 +205,6 @@ struct ChapterView: View {
     VStack(alignment: .leading, spacing: Spacing.space2) {
       HStack(spacing: Spacing.space3) {
         ChapterDisplay.heading(chapter).shadowFont(.subheadline).foregroundStyle(ShadowColor.textSecondary)
-        if let row = loaded.row {
-          let stage = ChapterDisplay.stage(of: row)
-          Label(title: { stage.label }, icon: { Image(systemName: stage.systemImage) }).shadowFont(.caption).foregroundStyle(stage.color)
-        }
         if amended { Text("Amended", tableName: "Reader").shadowFont(.caption).foregroundStyle(ShadowColor.textSecondary) }
       }
       if let title = ChapterDisplay.title(title) {

@@ -8,11 +8,12 @@ struct VersionsView: View {
   let chapter: Int
   @Environment(ReaderModel.self) private var model
   @Environment(NovelNavigator.self) private var navigator
-  @State private var observer = ReadObserver<ChapterVersions>()
+  @State private var observer = ReadObserver<GenerationVersions>()
   @State private var generation = 0
   @State private var restoring: VersionEntry?
   @State private var isRestoring = false
   @State private var currentRevision: String?
+  @State private var comparing: ComparePair?
 
   var body: some View {
     content
@@ -20,7 +21,7 @@ struct VersionsView: View {
       .task(id: generation) {
         let store = context.store
         let locator = ChapterLocator(novel: context.novel, chapter: chapter)
-        await observer.run { store.observe(ChapterVersions.self, locator) }
+        await observer.run { store.observe(GenerationVersions.self, locator) }
       }
       .confirmationDialog(
         Text("Restore this version?", tableName: "Reader"), isPresented: Binding(get: { restoring != nil }, set: { if !$0 { restoring = nil } }), titleVisibility: .visible,
@@ -37,6 +38,10 @@ struct VersionsView: View {
         }
       } message: { _ in
         Text("Your current text is kept as a version. The restored text needs approving again.", tableName: "Reader")
+      }
+      .toolbar { compareToolbar }
+      .sheet(item: $comparing) { pair in
+        CompareVersionsSheet(context: context, chapter: chapter, entries: pair.entries, older: pair.older, newer: pair.newer)
       }
       .alert(
         Text(verbatim: model.failure?.error.headline ?? ""), isPresented: Binding(get: { model.failure != nil }, set: { if !$0 { model.failure = nil } })
@@ -64,7 +69,7 @@ struct VersionsView: View {
       }
       .fillingSurface()
     case .loaded(let loaded):
-      switch loaded.state {
+      switch loaded.versions.state {
       case .missing:
         ShadowContentUnavailable(
           Text("Chapter not found", tableName: "Reader"), systemImage: "text.book.closed", message: Text("It has no draft, so there are no versions.", tableName: "Reader")
@@ -76,20 +81,40 @@ struct VersionsView: View {
         )
         .fillingSurface()
       case .listed(let entries, let kept):
-        list(entries, kept: kept)
+        list(entries, kept: kept, loaded: loaded)
       }
     }
   }
 
-  private func list(_ entries: [VersionEntry], kept: ChapterText?) -> some View {
-    List {
+  private func list(_ entries: [VersionEntry], kept: ChapterText?, loaded: GenerationVersions) -> some View {
+    let current = entries.first { $0.version.isCurrent }?.version.revision
+    return List {
+      if loaded.generating {
+        Text("This chapter is being written. Versions can be compared now and restored once it has finished.", tableName: "Generation").shadowFont(.footnote)
+          .foregroundStyle(ShadowColor.textSecondary)
+      }
       if let kept { keptRow(kept) }
-      ForEach(entries) { entry in
-        row(entry, current: entries.first { $0.version.isCurrent }?.version.revision)
+      ForEach(VersionGrouping.group(entries, tags: loaded.tags)) { group in
+        Section {
+          ForEach(group.entries) { entry in row(entry, current: current, loaded: loaded, entries: entries) }
+        } header: {
+          groupHeader(group)
+        }
       }
     }
     .listStyle(.inset)
     .shadowScreen(.pushed)
+  }
+
+  private func groupHeader(_ group: VersionGroup) -> some View {
+    HStack(spacing: Spacing.space2) {
+      switch group.kind {
+      case .run(let number): Text("Run \(number)", tableName: "Generation")
+      case .other: Text("Other versions", tableName: "Generation")
+      }
+      Spacer()
+      Text("\(group.entries.count) versions", tableName: "Generation").monospacedDigit()
+    }
   }
 
   private func keptRow(_ kept: ChapterText) -> some View {
@@ -105,23 +130,29 @@ struct VersionsView: View {
     .padding(.vertical, Spacing.space1)
   }
 
-  private func row(_ entry: VersionEntry, current: String?) -> some View {
+  private func row(_ entry: VersionEntry, current: String?, loaded: GenerationVersions, entries: [VersionEntry]) -> some View {
     VStack(alignment: .leading, spacing: Spacing.space2) {
       HStack(spacing: Spacing.space3) {
         Text(entry.version.created.date, format: .dateTime.day().month().year().hour().minute()).shadowFont(.headline).foregroundStyle(ShadowColor.textPrimary)
         ChapterDisplay.source(entry.version.source?.known).shadowFont(.caption).foregroundStyle(ShadowColor.textSecondary)
         if entry.version.isCurrent { Text("Current", tableName: "Reader").shadowFont(.caption).foregroundStyle(ShadowColor.accent) }
+        if loaded.judged.contains(entry.version.revision) { Text("Judged", tableName: "Generation").shadowFont(.caption).foregroundStyle(ShadowColor.infoText) }
         if entry.version.isApproved { Text("Approved", tableName: "Reader").shadowFont(.caption).foregroundStyle(ShadowColor.successText) }
         Spacer()
         Text("\(entry.words) words", tableName: "Reader").shadowFont(.caption).foregroundStyle(ShadowColor.textSecondary).monospacedDigit()
         if !entry.version.isCurrent, let current {
+          Button {
+            comparing = ComparePair(entries: entries, older: entry.version.revision, newer: current)
+          } label: {
+            Text("Compare", tableName: "Generation")
+          }
           Button {
             restoring = entry
             currentRevision = current
           } label: {
             Text("Restore", tableName: "Reader")
           }
-          .disabled(isRestoring)
+          .disabled(isRestoring || !loaded.canRestore(entry))
         }
       }
       if let title = ChapterDisplay.title(entry.title) { Text(verbatim: title).shadowFont(.subheadline).foregroundStyle(ShadowColor.textPrimary) }
@@ -139,4 +170,31 @@ struct VersionsView: View {
     guard await model.restore(revision: entry.version.revision, in: chapter, current: currentRevision) else { return }
     navigator.pop(.reader)
   }
+
+  @ToolbarContentBuilder
+  private var compareToolbar: some ToolbarContent {
+    ToolbarItem {
+      Button {
+        guard case .loaded(let loaded) = observer.state, case .listed(let entries, _) = loaded.versions.state, entries.count > 1 else { return }
+        comparing = ComparePair(entries: entries, older: entries[1].version.revision, newer: entries[0].version.revision)
+      } label: {
+        Label(title: { Text("Compare Versions", tableName: "Generation") }, icon: { Image(systemName: "rectangle.split.2x1") })
+      }
+      .disabled(!canCompare)
+      .shadowBarItem()
+    }
+  }
+
+  private var canCompare: Bool {
+    guard case .loaded(let loaded) = observer.state, case .listed(let entries, _) = loaded.versions.state else { return false }
+    return entries.count > 1
+  }
+}
+
+struct ComparePair: Identifiable {
+  let entries: [VersionEntry]
+  let older: String
+  let newer: String
+
+  var id: String { older + "/" + newer }
 }

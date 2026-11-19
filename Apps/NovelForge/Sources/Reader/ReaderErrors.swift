@@ -6,6 +6,7 @@ enum ReaderErrors {
     switch error {
     case .novelNotFound: String(localized: "This novel could not be found. It may have been removed on another device.", table: "Reader")
     case .chapterNotFound, .draftNotFound: String(localized: "This chapter has no draft to change. It may have been removed on another device.", table: "Reader")
+    case .draftGenerating: String(localized: "This chapter is being written. Wait for it to finish, or stop it.", table: "Reader")
     case .draftFinal: String(localized: "This chapter is final, so its draft can no longer be changed.", table: "Reader")
     case .draftConflict: String(localized: "A newer version of this chapter was saved elsewhere. Choose which text to keep.", table: "Reader")
     case .notNextChapter(_, let next): String(localized: "The next chapter to write is chapter \(next).", table: "Reader")

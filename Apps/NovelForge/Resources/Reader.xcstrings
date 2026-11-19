@@ -1058,6 +1058,17 @@
         }
       }
     },
+    "This chapter is being written. Wait for it to finish, or stop it.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This chapter is being written. Wait for it to finish, or stop it."
+          }
+        }
+      }
+    },
     "This chapter is final": {
       "extractionState": "manual",
       "localizations": {
