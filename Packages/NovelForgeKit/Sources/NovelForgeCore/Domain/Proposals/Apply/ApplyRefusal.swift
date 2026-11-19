@@ -18,6 +18,7 @@ public enum ApplyRefusal: ShadowError, Equatable {
   case approvalOverMovedDraft(chapter: Int)
   case ledgered(fact: String)
   case ledgerUnavailable(fact: String)
+  case jobRefused(code: String, message: String?)
 
   public var code: String {
     switch self {
@@ -38,6 +39,7 @@ public enum ApplyRefusal: ShadowError, Equatable {
     case .approvalOverMovedDraft: "refinement.approval_over_moved_draft"
     case .ledgered: "FCT_003"
     case .ledgerUnavailable: "refinement.ledger_unavailable"
+    case .jobRefused(let code, _): code
     }
   }
 
@@ -60,6 +62,7 @@ public enum ApplyRefusal: ShadowError, Equatable {
       "Chapter \(chapter) has unsaved edits over an earlier version of its draft — save or close the chapter, then ask for the approval again"
     case .ledgered: "Canon fact has ledgered reveals — retract them before removing the fact"
     case .ledgerUnavailable(let fact): "What characters know of \(fact) cannot be read on this device, so it is not removed"
+    case .jobRefused(let code, let message): message ?? code
     }
   }
 }

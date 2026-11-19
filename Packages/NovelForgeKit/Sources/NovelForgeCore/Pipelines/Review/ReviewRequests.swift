@@ -52,25 +52,16 @@ extension JobEngine {
         throw .review(error)
       }
     }
-    let now = services.now()
-    let (source, plan): (ReviewSource, ChapterPlanContent?)
+    let (now, unrestrictedAvailable) = (services.now(), services.unrestrictedAvailable)
+    let request: NovelJobRequest
     do {
-      (source, plan) = try await store.reviewRead { transaction throws(ChapterReviewError) in
-        (try ChapterReviews.reviewable(novel: novel, chapter: chapter, at: now, in: transaction), try ChapterReviews.plan(novel: novel, chapter: chapter, in: transaction))
+      request = try await store.read { transaction in
+        try ReviewRequests.jobRequest(
+          novel: novel, chapter: chapter, kind: kind, unrestricted: unrestricted, pace: pace, at: now, unrestrictedAvailable: unrestrictedAvailable, in: transaction)
       }
     } catch {
-      throw .review(error)
+      throw ReviewRequestError(error)
     }
-    do {
-      _ = try ChapterCallRouter.route(
-        ChapterCallSource(novel: novel, chapter: chapter, role: kind == .judge ? .judge : .review, plan: plan, isolated: source.isolated, raised: unrestricted),
-        unrestrictedAvailable: services.unrestrictedAvailable)
-    } catch {
-      throw .route(code: error.code, description: error.errorDescription)
-    }
-    let payload = ReviewJobPayload(kind: kind.rawValue, revision: source.draftRevision, unrestricted: unrestricted, pace: pace)
-    let request = NovelJobRequest(
-      kind: .review, novel: novel, chapter: chapter, fingerprint: payload.fingerprint(source: source), payload: payload.json, rerunOnceSucceeded: true)
     do throws(JobEngineError) {
       let key = try await self.request(request)
       do throws(JobEngineError) {
@@ -81,6 +72,42 @@ extension JobEngine {
     } catch {
       throw .engine(error)
     }
+  }
+}
+
+enum ReviewRequests {
+  static func jobRequest(
+    novel: UUID, chapter: Int, kind: ChapterReviewKind, unrestricted: Bool, pace: Pace?, origin: JSONValue = .null, at now: Date, unrestrictedAvailable: Bool,
+    in transaction: ReadTransaction
+  ) throws(ReviewRequestError) -> NovelJobRequest {
+    let (source, plan): (ReviewSource, ChapterPlanContent?)
+    do {
+      (source, plan) = (
+        try ChapterReviews.reviewable(novel: novel, chapter: chapter, at: now, in: transaction), try ChapterReviews.plan(novel: novel, chapter: chapter, in: transaction)
+      )
+    } catch {
+      throw .review(error)
+    }
+    do {
+      _ = try ChapterCallRouter.route(
+        ChapterCallSource(novel: novel, chapter: chapter, role: kind == .judge ? .judge : .review, plan: plan, isolated: source.isolated, raised: unrestricted),
+        unrestrictedAvailable: unrestrictedAvailable)
+    } catch {
+      throw .route(code: error.code, description: error.errorDescription)
+    }
+    let payload = ReviewJobPayload(kind: kind.rawValue, revision: source.draftRevision, unrestricted: unrestricted, pace: pace)
+    return NovelJobRequest(
+      kind: .review, novel: novel, chapter: chapter, fingerprint: payload.fingerprint(source: source), payload: payload.json, origin: origin, rerunOnceSucceeded: true)
+  }
+}
+
+extension ReviewRequestError {
+  init(_ error: StoreError) {
+    guard case .aborted(let cause as ReviewRequestError) = error else {
+      self = .review(.store(error))
+      return
+    }
+    self = cause
   }
 }
 

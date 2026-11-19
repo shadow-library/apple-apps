@@ -116,21 +116,16 @@ extension JobEngine {
   private func requestGeneration(
     novel: UUID, chapter: Int, options: GenerationOptions, origin: JSONValue, refusingDraft: Bool
   ) async throws(GenerationRequestError) -> StartedGeneration {
-    guard chapter >= 1 else { throw .engine(.chapterOutOfRange(chapter)) }
-    guard options.maxFixes >= 0 else { throw .domain(.belowMinimum(field: "maxFixes", minimum: 0)) }
     let (now, unrestrictedAvailable) = (clock.now(), services.unrestrictedAvailable)
-    let fingerprint: String
+    let request: NovelJobRequest
     do {
-      fingerprint = try await store.write { transaction in
-        try GenerationRequests.gate(
-          novel: novel, chapter: chapter, refusingDraft: refusingDraft, at: now, unrestrictedAvailable: unrestrictedAvailable, in: transaction)
+      request = try await store.write { transaction in
+        try GenerationRequests.jobRequest(
+          novel: novel, chapter: chapter, options: options, origin: origin, refusingDraft: refusingDraft, at: now, unrestrictedAvailable: unrestrictedAvailable, in: transaction)
       }
     } catch {
       throw GenerationRequestError(error)
     }
-    let payload = GenerationJobPayload(guidance: options.guidance, autoFix: options.autoFix, maxFixes: options.maxFixes)
-    let request = NovelJobRequest(
-      kind: .generate, novel: novel, chapter: chapter, fingerprint: fingerprint, payload: payload.json, origin: origin, rerunOnceSucceeded: true)
     do throws(JobEngineError) {
       let key = try await self.request(request)
       do throws(JobEngineError) {
@@ -145,6 +140,19 @@ extension JobEngine {
 }
 
 enum GenerationRequests {
+  static func jobRequest(
+    novel: UUID, chapter: Int, options: GenerationOptions, origin: JSONValue, refusingDraft: Bool, at now: LeaseInstant, unrestrictedAvailable: Bool,
+    in transaction: borrowing WriteTransaction
+  ) throws(GenerationRequestError) -> NovelJobRequest {
+    guard chapter >= 1 else { throw .engine(.chapterOutOfRange(chapter)) }
+    guard options.maxFixes >= 0 else { throw .domain(.belowMinimum(field: "maxFixes", minimum: 0)) }
+    let fingerprint = try gate(
+      novel: novel, chapter: chapter, refusingDraft: refusingDraft, at: now, unrestrictedAvailable: unrestrictedAvailable, in: transaction)
+    let payload = GenerationJobPayload(guidance: options.guidance, autoFix: options.autoFix, maxFixes: options.maxFixes)
+    return NovelJobRequest(
+      kind: .generate, novel: novel, chapter: chapter, fingerprint: fingerprint, payload: payload.json, origin: origin, rerunOnceSucceeded: true)
+  }
+
   /// The gates of generation.service.ts:224-273 in their order, then the route (AI_024); returns the fingerprint of decision 8, plan revision and upstream.
   static func gate(
     novel: UUID, chapter: Int, refusingDraft: Bool, at now: LeaseInstant, unrestrictedAvailable: Bool, in transaction: borrowing WriteTransaction

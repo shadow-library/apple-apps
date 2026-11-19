@@ -127,27 +127,13 @@ public final class JobEngine: Sendable {
   @concurrent
   public func request(_ request: NovelJobRequest) async throws(JobEngineError) -> JobKey {
     guard request.chapter >= 1 else { throw .chapterOutOfRange(request.chapter) }
-    let first: JobKey
     do {
-      first = try key(request, run: 1)
+      _ = try request.key(run: 1)
     } catch {
       throw .key(error)
     }
     let (replica, now) = (store.replica, clock.now())
-    return try await engineWrite { transaction in
-      var run = 1
-      while try transaction.state(of: try self.key(request, run: run).ref) != nil { run += 1 }
-      let highest = run > 1 ? try JobSnapshot.load(try self.key(request, run: run - 1).ref, in: transaction) : nil
-      let stale =
-        highest.map { snapshot in
-          let status = JobStatus(snapshot, at: now)
-          guard case .succeeded = status else { return request.rerun || status == .cancelled }
-          return request.rerun || request.rerunOnceSucceeded
-        } ?? (run > 1)
-      let key = run == 1 ? first : try self.key(request, run: stale ? run : run - 1)
-      _ = try JobRecords.request(JobRequest(key: key, payload: request.payload, origin: request.origin, replica: replica), in: &transaction)
-      return key
-    }
+    return try await engineWrite { transaction in try request.enqueue(replica: replica, now: now, in: &transaction) }
   }
 
   /// Requests the job's cancel; an attempt running here stops at once and ends cancelled, its in-flight call aborted.
@@ -364,12 +350,6 @@ public final class JobEngine: Sendable {
     return stream
   }
 
-  private func key(_ request: NovelJobRequest, run: Int) throws(JobKeyError) -> JobKey {
-    try JobKey(
-      scope: NovelJobAddress.scope(of: request.novel), kind: request.kind.rawValue, target: NovelJobAddress.target(chapter: request.chapter),
-      fingerprint: request.fingerprint, run: run)
-  }
-
   private func engineRead<T: Sendable>(_ body: @Sendable (ReadTransaction) throws -> T) async throws(JobEngineError) -> T {
     do {
       return try await store.read(body)
@@ -395,6 +375,28 @@ public final class JobEngine: Sendable {
     case let inner as StoreError: return converting(inner)
     default: return .store(error)
     }
+  }
+}
+
+extension NovelJobRequest {
+  func key(run: Int) throws(JobKeyError) -> JobKey {
+    try JobKey(scope: NovelJobAddress.scope(of: novel), kind: kind.rawValue, target: NovelJobAddress.target(chapter: chapter), fingerprint: fingerprint, run: run)
+  }
+
+  /// Writes the request into the caller's transaction, so a card action's settling and its job commit together.
+  func enqueue(replica: ReplicaID, now: LeaseInstant, in transaction: inout WriteTransaction) throws -> JobKey {
+    var run = 1
+    while try transaction.state(of: try key(run: run).ref) != nil { run += 1 }
+    let highest = run > 1 ? try JobSnapshot.load(try key(run: run - 1).ref, in: transaction) : nil
+    let stale =
+      highest.map { snapshot in
+        let status = JobStatus(snapshot, at: now)
+        guard case .succeeded = status else { return rerun || status == .cancelled }
+        return rerun || rerunOnceSucceeded
+      } ?? (run > 1)
+    let requested = try key(run: run == 1 ? 1 : (stale ? run : run - 1))
+    _ = try JobRecords.request(JobRequest(key: requested, payload: payload, origin: origin, replica: replica), in: &transaction)
+    return requested
   }
 }
 

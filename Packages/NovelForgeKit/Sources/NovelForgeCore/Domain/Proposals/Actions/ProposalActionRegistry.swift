@@ -19,13 +19,18 @@ protocol ProposalActionExecutor {
   static func execute(_ action: ProposalAction, in transaction: inout WriteTransaction) throws(ApplyError) -> String
 }
 
-// action-registry.ts:27; phase 6 runs the actions the chapter operations already perform, and the job actions wait for chapters
-enum ProposalActionRegistry {
+// action-registry.ts:27: an action with no executor reads "not yet available" and keeps its card's apply refused
+public enum ProposalActionRegistry {
+  public static func isRunnable(_ type: OpType) -> Bool { executor(for: type) != nil }
+
   static func executor(for type: OpType) -> (any ProposalActionExecutor.Type)? {
     switch type {
     case .actionApproveDraft: ApproveDraftExecutor.self
     case .actionFinalize: FinalizeExecutor.self
     case .actionAdvanceVolume: AdvanceVolumeExecutor.self
+    case .actionGenerateChapter: GenerateChapterExecutor.self
+    case .actionPlanChapter: PlanChapterExecutor.self
+    case .actionJudgeDraft: JudgeDraftExecutor.self
     default: nil
     }
   }

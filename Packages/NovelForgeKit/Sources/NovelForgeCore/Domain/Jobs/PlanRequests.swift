@@ -65,6 +65,10 @@ public struct ChapterPlanOrigin: Sendable, Equatable {
   }
 }
 
+extension ChapterPlanOrigin {
+  var json: JSONValue { NovelJobOrigin.json(session: session, message: message, proposal: proposal, opIndex: opIndex) }
+}
+
 public enum ChapterPlanSteer: Sendable, Equatable {
   case none
   /// Words the author wrote for this plan themselves, read as their intent unless they hedge it.
@@ -148,11 +152,17 @@ struct PlanJobInput: Sendable, Equatable {
   }
 }
 
-private struct PlanAssessment: Sendable {
+struct PlanAssessment: Sendable {
   let input: PlanJobInput
   let droppedIntent: String?
   let open: JobKey?
   let settled: Bool
+
+  func jobRequest(for request: ChapterPlanJobRequest) -> NovelJobRequest {
+    NovelJobRequest(
+      kind: .plan, novel: request.novel, chapter: input.chapter, fingerprint: input.fingerprint, payload: input.payload, origin: PlanRequests.origin(of: request.steer),
+      rerun: settled)
+  }
 }
 
 extension JobEngine {
@@ -176,10 +186,7 @@ extension JobEngine {
     }
     let key: JobKey
     do {
-      key = try await self.request(
-        NovelJobRequest(
-          kind: .plan, novel: request.novel, chapter: input.chapter, fingerprint: input.fingerprint, payload: input.payload, origin: PlanRequests.origin(of: request.steer),
-          rerun: assessment.settled))
+      key = try await self.request(assessment.jobRequest(for: request))
     } catch {
       throw .engine(error)
     }
@@ -190,7 +197,7 @@ extension JobEngine {
 enum PlanRequests {
   static let logger = Logger(category: "plan.requests")
 
-  fileprivate static func assess(_ request: ChapterPlanJobRequest, at now: LeaseInstant, in transaction: ReadTransaction) throws(ChapterPlanError) -> PlanAssessment {
+  static func assess(_ request: ChapterPlanJobRequest, at now: LeaseInstant, in transaction: ReadTransaction) throws(ChapterPlanError) -> PlanAssessment {
     let next = try nextWritableChapter(novel: request.novel, in: transaction)
     let chapter = request.chapter ?? next
     guard chapter == next else { throw .notNextChapter(chapter: chapter, next: next) }
@@ -206,12 +213,9 @@ enum PlanRequests {
     return PlanAssessment(input: input, droppedIntent: steer.droppedIntent, open: nil, settled: highest != nil)
   }
 
-  fileprivate static func origin(of steer: ChapterPlanSteer) -> JSONValue {
+  static func origin(of steer: ChapterPlanSteer) -> JSONValue {
     guard case .card(_, _, let origin) = steer else { return .null }
-    return [
-      "sessionId": .string(origin.session.lowercasedString), "messageId": origin.message.map { .string($0.lowercasedString) } ?? .null,
-      "proposalId": .string(origin.proposal.lowercasedString), "opIndex": .int(Int64(origin.opIndex)),
-    ]
+    return origin.json
   }
 
   fileprivate static func unwrapping(_ error: StoreError) -> ChapterPlanError {
