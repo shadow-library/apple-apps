@@ -7,11 +7,13 @@ struct OverviewView: View {
   @Environment(LibraryModel.self) private var library
   @State private var observer = ReadObserver<NovelOverview>()
   @State private var checklist: ChecklistModel
+  @State private var exporter: ExportModel
   @State private var generation = 0
 
   init(context: NovelContext) {
     self.context = context
     _checklist = State(initialValue: ChecklistModel(context: context))
+    _exporter = State(initialValue: ExportModel(context: context))
   }
 
   var body: some View {
@@ -23,6 +25,7 @@ struct OverviewView: View {
         await observer.run { store.observe(NovelOverview.self, novel) }
       }
       .task(id: checklist.generation) { await checklist.observe() }
+      .novelExporter(exporter)
   }
 
   @ViewBuilder
@@ -78,6 +81,7 @@ struct OverviewView: View {
     }
     .shadowScreen(.root)
     .toolbar { ToolbarItemGroup { NovelActions(library: library, novel: novel, placement: .toolbar).shadowBarItem() } }
+    .toolbar { ToolbarItem { ExportMenu(model: exporter, title: novel.displayTitle).shadowBarItem() } }
   }
 
   private func header(_ novel: NovelRecord) -> some View {

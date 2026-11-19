@@ -186,6 +186,7 @@ struct ChapterView: View {
       .frame(maxWidth: .infinity, alignment: .center)
     }
     .shadowScreen(.pushed)
+    .chapterTextActions(context: context, chapter: chapter, body: loaded.body)
     .toolbar {
       ToolbarItem {
         Button {
