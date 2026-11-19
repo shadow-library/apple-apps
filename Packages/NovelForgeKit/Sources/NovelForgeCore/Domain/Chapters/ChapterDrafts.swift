@@ -99,10 +99,18 @@ public enum ChapterDrafts {
       draftChapters: entries.filter { $0.draft != nil }.map(\.chapter), finalizedChapters: entries.filter(\.isFinal).map(\.chapter))
   }
 
-  /// draft-save.ts:63-65: a final chapter takes no draft write, and a write made against a revision that is no longer the head is a conflict.
+  /// draft-save.ts:63-66: a final chapter takes no draft write, nor one the AI is writing, and a write against a revision that is not the head is a conflict.
   static func requireOpen(novel: UUID, chapter: Int, head: DraftHead, base: String?, in transaction: borrowing WriteTransaction) throws(DomainError) {
     guard try !transaction.isFinal(novel: novel, chapter: chapter) else { throw .draftFinal(chapter) }
+    try requireNotGenerating(novel: novel, chapter: chapter, in: transaction)
     if let base, !base.utf8.elementsEqual(head.revision.utf8) { throw .draftConflict(chapter: chapter, head: head.revision) }
+  }
+
+  /// draft-save.ts:185-191 (DRF_019); a faulted lifecycle refuses nothing, since a run keeps a head that moved under it as a version.
+  static func requireNotGenerating(novel: UUID, chapter: Int, in transaction: borrowing WriteTransaction) throws(DomainError) {
+    guard try !transaction.lifecycleFaulted(novel: novel) else { return }
+    let entry = try storeCall { () throws(StoreError) in try ChapterLifecycleEntry.read(novel: novel, chapter: chapter, in: transaction.database) }
+    if entry?.review == .generating { throw .draftGenerating(chapter) }
   }
 
   /// Commits the working copy made over `head` before another write replaces the text, and returns the head that write builds on.
@@ -137,6 +145,7 @@ public enum ChapterDrafts {
     let next = try nextWritableChapter(novel: novel, in: transaction)
     guard chapter == next else { throw .notNextChapter(chapter: chapter, next: next) }
     guard try !transaction.isFinal(novel: novel, chapter: chapter) else { throw .draftFinal(chapter) }
+    try requireNotGenerating(novel: novel, chapter: chapter, in: transaction)
     let presence = try transaction.draft(novel: novel, chapter: chapter)
     if case .live(let head) = presence { throw .draftConflict(chapter: chapter, head: head.revision) }
     let ref = try ChapterRefs.draft(novel: novel, chapter: chapter)

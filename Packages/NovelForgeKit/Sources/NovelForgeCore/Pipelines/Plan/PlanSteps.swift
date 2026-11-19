@@ -1,4 +1,3 @@
-import CryptoKit
 import Foundation
 import ShadowCore
 import ShadowJobs
@@ -21,10 +20,7 @@ enum PlanPipeline {
 /// the reference finds an earlier attempt's card by its run instead (action-jobs.ts:40-72).
 enum PlanCards {
   static func id(of job: EntityRef) -> UUID {
-    var bytes = Array(SHA256.hash(data: Data("com.shadow.library.novelforgekit.plan-card:\(job.key.rawValue)".utf8)).prefix(16))
-    bytes[6] = (bytes[6] & 0x0F) | 0x80
-    bytes[8] = (bytes[8] & 0x3F) | 0x80
-    return bytes.withUnsafeBytes { UUID(uuid: $0.load(as: uuid_t.self)) }
+    derivedID("com.shadow.library.novelforgekit.plan-card", job.key.rawValue)
   }
 
   /// A card already there, unreadable or decided ones included: the job staged it, so it is never staged again.

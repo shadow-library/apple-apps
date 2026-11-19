@@ -65,6 +65,7 @@ public enum DomainError: ShadowError, Equatable {
   case draftStale(chapter: Int, reason: String)
   case draftConflict(chapter: Int, head: String?)
   case draftRevealStale(Int)
+  case draftGenerating(Int)
   case notNextChapter(chapter: Int, next: Int)
   case finalizeOutOfOrder(Int)
   case planRevealsLocked(chapter: Int, violations: String)
@@ -129,6 +130,7 @@ public enum DomainError: ShadowError, Equatable {
     case .draftStale: "DRF_007"
     case .draftConflict: "DRF_013"
     case .draftRevealStale: "DRF_017"
+    case .draftGenerating: "DRF_019"
     case .notNextChapter: "DRF_018"
     case .finalizeOutOfOrder: "FIN_001"
     case .planRevealsLocked: "PLN_001"
@@ -195,6 +197,8 @@ public enum DomainError: ShadowError, Equatable {
     case .draftStale: "Draft is stale — something it was written against changed; regenerate or edit it, or approve it as written"
     case .draftConflict: "This chapter changed while you were working on it. Reload it and try again."
     case .draftRevealStale: "This draft is stale because a reveal in its plan no longer holds — fix the plan; it cannot be approved as written"
+    case .draftGenerating(let chapter):
+      "Chapter \(chapter) is being written by the AI right now — wait for it to finish, or cancel it to write the chapter yourself"
     case .notNextChapter(let chapter, let next):
       "Only chapter \(next) can be started now — chapters are written in order, so chapter \(chapter) cannot get a new draft"
     case .finalizeOutOfOrder: "Chapters must be finalized in order"
