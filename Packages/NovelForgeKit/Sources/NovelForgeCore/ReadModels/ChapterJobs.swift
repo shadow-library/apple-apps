@@ -22,6 +22,7 @@ public struct ChapterJob: Sendable, Equatable {
   public let run: Int
   public let requester: ReplicaID
   public let status: JobStatus
+  public let reviewKind: ChapterReviewKind?
   /// The attempt holding the live lease at `now`: which device runs it and at which step.
   public let runner: JobLeaseHolder?
   /// The attempt that started last, whatever its outcome.
@@ -40,6 +41,8 @@ public struct ChapterJobs: ReadModel {
 
   public func latest(_ kind: NovelJobKind) -> ChapterJob? { jobs.value?.last { $0.kind == .known(kind) } }
 
+  public func latest(review kind: ChapterReviewKind) -> ChapterJob? { jobs.value?.last { $0.reviewKind == kind } }
+
   public static func load(_ query: ChapterJobsQuery, in transaction: ReadTransaction) throws(StoreError) -> ChapterJobs {
     let report = try ReadFaults(novel: query.novel, reading: tables, in: transaction)
     var changes: Int64?
@@ -47,17 +50,26 @@ public struct ChapterJobs: ReadModel {
       let entries = try transaction.query { database in
         try JobEntry.filter(Column("novel") == query.novel && Column("chapter") == query.chapter).fetchAll(database)
       }
-      var latest = [String: JobEntry]()
-      for entry in entries where latest[entry.kind].map({ precedes($0, entry) }) ?? true { latest[entry.kind] = entry }
-      let kept = latest.values.sorted(by: precedes)
-      changes = kept.compactMap { $0.standing.changes(after: query.now) }.min()
-      return kept.map { entry in
+      var latest = [String: (entry: JobEntry, reviewKind: ChapterReviewKind?)]()
+      for entry in entries {
+        let reviewKind = try reviewKind(of: entry, in: transaction)
+        let group = reviewKind.map { "\(entry.kind):\($0.rawValue)" } ?? entry.kind
+        if latest[group].map({ precedes($0.entry, entry) }) ?? true { latest[group] = (entry, reviewKind) }
+      }
+      let kept = latest.values.sorted { precedes($0.entry, $1.entry) }.map { ($0.entry, $0.reviewKind) }
+      changes = kept.compactMap { $0.0.standing.changes(after: query.now) }.min()
+      return kept.map { entry, reviewKind in
         ChapterJob(
-          job: entry.ref, kind: entry.jobKind, run: entry.run, requester: entry.requester, status: entry.status(at: query.now), runner: entry.standing.holder(at: query.now),
-          latest: entry.latest)
+          job: entry.ref, kind: entry.jobKind, run: entry.run, requester: entry.requester, status: entry.status(at: query.now), reviewKind: reviewKind,
+          runner: entry.standing.holder(at: query.now), latest: entry.latest)
       }
     }
     return ChapterJobs(jobs: jobs, changesAt: changes.map { Date(timeIntervalSince1970: Double($0) / 1000) }, faults: report.relevant)
+  }
+
+  private static func reviewKind(of entry: JobEntry, in transaction: ReadTransaction) throws(StoreError) -> ChapterReviewKind? {
+    guard entry.jobKind == .known(.review), let state = try transaction.state(of: entry.ref, scope: .vault) else { return nil }
+    return JobRecords.reading(state, of: entry.ref).record?.request.payload["kind"]?.stringValue.flatMap { ChapterReviewKind(rawValue: $0) }
   }
 
   private static func precedes(_ first: JobEntry, _ second: JobEntry) -> Bool {

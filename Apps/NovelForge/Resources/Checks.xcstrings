@@ -1,0 +1,1052 @@
+{
+  "sourceLanguage": "en",
+  "strings": {
+    "%@ is queued — it starts in a moment.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ is queued — it starts in a moment."
+          }
+        }
+      }
+    },
+    "%@ is reading the chapter — this can take a minute.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ is reading the chapter — this can take a minute."
+          }
+        }
+      }
+    },
+    "%lld blocking": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld blocking"
+          }
+        }
+      }
+    },
+    "%lld open": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld open"
+          }
+        }
+      }
+    },
+    "%lld saved reviews can't be read by this version of Novel Forge.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld saved review can't be read by this version of Novel Forge."
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld saved reviews can't be read by this version of Novel Forge."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "A model does these checks. “No issue detected” means it found nothing, not that nothing is there.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A model does these checks. “No issue detected” means it found nothing, not that nothing is there."
+          }
+        }
+      }
+    },
+    "AI review": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "AI review"
+          }
+        }
+      }
+    },
+    "An editor's read against the plan, the canon and your style, with proofreading: grammar, spelling, punctuation, tense and point-of-view slips, names and references.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "An editor's read against the plan, the canon and your style, with proofreading: grammar, spelling, punctuation, tense and point-of-view slips, names and references."
+          }
+        }
+      }
+    },
+    "Another device is running this check.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Another device is running this check."
+          }
+        }
+      }
+    },
+    "Answered in a form this version does not understand": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Answered in a form this version does not understand"
+          }
+        }
+      }
+    },
+    "Blocking": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Blocking"
+          }
+        }
+      }
+    },
+    "Blocking · %lld": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Blocking · %lld"
+          }
+        }
+      }
+    },
+    "Cancel": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cancel"
+          }
+        }
+      }
+    },
+    "Chapter %lld": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Chapter %lld"
+          }
+        }
+      }
+    },
+    "Checks": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Checks"
+          }
+        }
+      }
+    },
+    "Continuity": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Continuity"
+          }
+        }
+      }
+    },
+    "Dismiss": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dismiss"
+          }
+        }
+      }
+    },
+    "Dismissed — won't be raised again for this text": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dismissed — won't be raised again for this text"
+          }
+        }
+      }
+    },
+    "Dismissed: %@ — won't be raised again for this text": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dismissed: %@ — won't be raised again for this text"
+          }
+        }
+      }
+    },
+    "Dismiss…": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dismiss…"
+          }
+        }
+      }
+    },
+    "Done": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Done"
+          }
+        }
+      }
+    },
+    "Editor's read": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Editor's read"
+          }
+        }
+      }
+    },
+    "Editorial": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Editorial"
+          }
+        }
+      }
+    },
+    "Findings · %lld open": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Findings · %lld open"
+          }
+        }
+      }
+    },
+    "I'll Fix It Myself": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "I'll Fix It Myself"
+          }
+        }
+      }
+    },
+    "Keep It": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Keep It"
+          }
+        }
+      }
+    },
+    "Length against the target, repeated paragraphs, reused phrases, stock phrases and dialogue tags. Measured at once, no model call.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Length against the target, repeated paragraphs, reused phrases, stock phrases and dialogue tags. Measured at once, no model call."
+          }
+        }
+      }
+    },
+    "Looks good · notes": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Looks good · notes"
+          }
+        }
+      }
+    },
+    "Mechanics": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mechanics"
+          }
+        }
+      }
+    },
+    "No %@ yet": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No %@ yet"
+          }
+        }
+      }
+    },
+    "No issue": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No issue"
+          }
+        }
+      }
+    },
+    "No issue detected": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No issue detected"
+          }
+        }
+      }
+    },
+    "Not assessed": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Not assessed"
+          }
+        }
+      }
+    },
+    "Not run": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Not run"
+          }
+        }
+      }
+    },
+    "Not run yet": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Not run yet"
+          }
+        }
+      }
+    },
+    "Note": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Note"
+          }
+        }
+      }
+    },
+    "Notes · %lld": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Notes · %lld"
+          }
+        }
+      }
+    },
+    "Novel's Pace": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Novel's Pace"
+          }
+        }
+      }
+    },
+    "OK": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "OK"
+          }
+        }
+      }
+    },
+    "Only a blocking finding can be overridden.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Only a blocking finding can be overridden."
+          }
+        }
+      }
+    },
+    "Out of date": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Out of date"
+          }
+        }
+      }
+    },
+    "Overridden — recorded as intended for this text": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Overridden — recorded as intended for this text"
+          }
+        }
+      }
+    },
+    "Overridden: %@ — recorded as intended for this text": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Overridden: %@ — recorded as intended for this text"
+          }
+        }
+      }
+    },
+    "Override": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Override"
+          }
+        }
+      }
+    },
+    "Override…": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Override…"
+          }
+        }
+      }
+    },
+    "Pace for this review": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pace for this review"
+          }
+        }
+      }
+    },
+    "Proofreading": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Proofreading"
+          }
+        }
+      }
+    },
+    "Queued": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Queued"
+          }
+        }
+      }
+    },
+    "Readability": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Readability"
+          }
+        }
+      }
+    },
+    "Reads the chapter against the Story Bible, the plan, the ending it should reach and the secrets kept from the reader.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reads the chapter against the Story Bible, the plan, the ending it should reach and the secrets kept from the reader."
+          }
+        }
+      }
+    },
+    "Review Permission…": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Review Permission…"
+          }
+        }
+      }
+    },
+    "Review the Current Text": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Review the Current Text"
+          }
+        }
+      }
+    },
+    "Reviewed an earlier version": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reviewed an earlier version"
+          }
+        }
+      }
+    },
+    "Reviewed the current text": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reviewed the current text"
+          }
+        }
+      }
+    },
+    "Reviewing…": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reviewing…"
+          }
+        }
+      }
+    },
+    "Revision suggested": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Revision suggested"
+          }
+        }
+      }
+    },
+    "Run a New Review": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Run a New Review"
+          }
+        }
+      }
+    },
+    "Run the %@": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Run the %@"
+          }
+        }
+      }
+    },
+    "Saved with the chapter": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Saved with the chapter"
+          }
+        }
+      }
+    },
+    "Say why you are dismissing this finding.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Say why you are dismissing this finding."
+          }
+        }
+      }
+    },
+    "Secrets": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Secrets"
+          }
+        }
+      }
+    },
+    "Sentence and paragraph length, reading grade and ornate phrasing. Measured at once, no model call.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sentence and paragraph length, reading grade and ornate phrasing. Measured at once, no model call."
+          }
+        }
+      }
+    },
+    "Something went wrong.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Something went wrong."
+          }
+        }
+      }
+    },
+    "Stop": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Stop"
+          }
+        }
+      }
+    },
+    "That finding is not part of this review.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "That finding is not part of this review."
+          }
+        }
+      }
+    },
+    "The chapter changed after this review. Review the current text again before answering its findings.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The chapter changed after this review. Review the current text again before answering its findings."
+          }
+        }
+      }
+    },
+    "The chapter has changed since this review. Its findings describe the older text.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The chapter has changed since this review. Its findings describe the older text."
+          }
+        }
+      }
+    },
+    "The ending": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The ending"
+          }
+        }
+      }
+    },
+    "The plan": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The plan"
+          }
+        }
+      }
+    },
+    "This chapter has no prose to review yet.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This chapter has no prose to review yet."
+          }
+        }
+      }
+    },
+    "This chapter is still being written. Review it once the draft is ready.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This chapter is still being written. Review it once the draft is ready."
+          }
+        }
+      }
+    },
+    "This review couldn't be read, so it checked nothing. Run it again.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This review couldn't be read, so it checked nothing. Run it again."
+          }
+        }
+      }
+    },
+    "This review is no longer there.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This review is no longer there."
+          }
+        }
+      }
+    },
+    "This withdraws your approval of this chapter. The finding holds the next chapter again until you answer it.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This withdraws your approval of this chapter. The finding holds the next chapter again until you answer it."
+          }
+        }
+      }
+    },
+    "Try Again": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Try Again"
+          }
+        }
+      }
+    },
+    "Unavailable": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Unavailable"
+          }
+        }
+      }
+    },
+    "Undo": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Undo"
+          }
+        }
+      }
+    },
+    "Undo and Withdraw Approval": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Undo and Withdraw Approval"
+          }
+        }
+      }
+    },
+    "Undo and reopen this blocking finding?": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Undo and reopen this blocking finding?"
+          }
+        }
+      }
+    },
+    "Warning": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Warning"
+          }
+        }
+      }
+    },
+    "Warnings · %lld": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Warnings · %lld"
+          }
+        }
+      }
+    },
+    "What was checked": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "What was checked"
+          }
+        }
+      }
+    },
+    "Why dismiss this finding?": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Why dismiss this finding?"
+          }
+        }
+      }
+    },
+    "Why is it intended?": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Why is it intended?"
+          }
+        }
+      }
+    },
+    "Why is it intended? (optional)": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Why is it intended? (optional)"
+          }
+        }
+      }
+    },
+    "Why? e.g. the repetition is deliberate": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Why? e.g. the repetition is deliberate"
+          }
+        }
+      }
+    },
+    "You'll fix it yourself — it still holds the next chapter until a new review finds it fixed": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You'll fix it yourself — it still holds the next chapter until a new review finds it fixed"
+          }
+        }
+      }
+    },
+    "You'll fix it yourself — rechecked on the next review": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You'll fix it yourself — rechecked on the next review"
+          }
+        }
+      }
+    },
+    "editor's read": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "editor's read"
+          }
+        }
+      }
+    },
+    "isolated chapter": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "isolated chapter"
+          }
+        }
+      }
+    },
+    "measured, no model call": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "measured, no model call"
+          }
+        }
+      }
+    },
+    "mechanics check": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "mechanics check"
+          }
+        }
+      }
+    },
+    "readability check": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "readability check"
+          }
+        }
+      }
+    },
+    "reviews never edit your text": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "reviews never edit your text"
+          }
+        }
+      }
+    }
+  },
+  "version": "1.0"
+}

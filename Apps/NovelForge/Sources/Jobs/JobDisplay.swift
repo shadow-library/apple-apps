@@ -29,6 +29,11 @@ enum JobDisplay {
     }
   }
 
+  static func title(_ line: ChapterJobLine) -> Text {
+    guard line.kind == .review, let reviewKind = line.reviewKind else { return title(line.kind) }
+    return Text(verbatim: ChecksDisplay.label(reviewKind))
+  }
+
   static func message(_ line: ChapterJobLine) -> Text {
     switch line.state {
     case .runningHere(let step?): Text(verbatim: progress(line.kind, step))

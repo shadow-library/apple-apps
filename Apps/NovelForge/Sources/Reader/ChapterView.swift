@@ -12,6 +12,7 @@ struct ChapterView: View {
   @State private var importing = false
   @State private var openedEmptyDraft = false
   @State private var commenting = false
+  @State private var checking = false
   @State private var listing = ReadObserver<ChapterList>()
 
   var body: some View {
@@ -183,6 +184,19 @@ struct ChapterView: View {
       .frame(maxWidth: .infinity, alignment: .center)
     }
     .shadowScreen(.pushed)
+    .toolbar {
+      ToolbarItem {
+        Button {
+          checking = true
+        } label: {
+          Label(title: { Text("Checks", tableName: "Checks") }, icon: { Image(systemName: "checklist") })
+        }
+        .shadowBarItem()
+      }
+    }
+    .sheet(isPresented: $checking) {
+      ChecksSheet(context: context, chapter: chapter, isApproved: loaded.row?.review == .approved, reloadToken: ChecksSheet.reloadToken(loaded.body))
+    }
   }
 
   private func header(_ loaded: ChapterContent, title: String?, amended: Bool) -> some View {

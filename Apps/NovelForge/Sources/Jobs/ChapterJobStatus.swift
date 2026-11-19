@@ -54,6 +54,7 @@ nonisolated struct ChapterJobLine: Equatable, Sendable, Identifiable {
   let kind: NovelJobKind
   let state: State
   let actions: [Action]
+  var reviewKind: ChapterReviewKind?
 
   var id: EntityRef { job }
 
@@ -81,7 +82,11 @@ nonisolated struct ChapterWorkspaceStatus: Equatable, Sendable {
 
   init(row: ChapterRow?, jobs: Derived<[ChapterJob]>?, replica: ReplicaID, here: JobsHere, consentNeeded: Bool = false) {
     let readable = jobs?.value ?? []
-    lines = readable.compactMap { Self.line($0, row: row, replica: replica, here: here, consentNeeded: consentNeeded) }
+    lines = readable.compactMap { job in
+      var line = Self.line(job, row: row, replica: replica, here: here, consentNeeded: consentNeeded)
+      line?.reviewKind = job.reviewKind
+      return line
+    }
     jobsUnavailable = jobs?.isUnavailable ?? false
     status = Self.status(row: row, lines: lines)
   }

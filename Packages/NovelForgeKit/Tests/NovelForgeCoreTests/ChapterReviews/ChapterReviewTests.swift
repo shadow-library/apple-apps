@@ -83,6 +83,27 @@ struct ChapterReviewTests {
     #expect(world.provider.requests.count == 2)
   }
 
+  @Test func shouldShowTheLatestJudgeAndEditorialJobsSeparatelyEachWithItsKind() async throws {
+    let editorial: JSONValue = [
+      "disposition": "revision_requested", "note": "Tighten the ending.",
+      "findings": [["severity": "blocking", "text": "The torn page is never explained.", "evidence": "its last page torn away"]],
+      "proofreading": [["kind": "spelling", "quote": "found teh logbook", "fix": "found the logbook"]],
+    ]
+    let world = try await ReviewWorld(calls: [ReviewWorld.contradiction, ReviewWorld.reply(editorial)])
+    let engine = try world.engine()
+    _ = try await world.review(engine, .judge)
+    _ = try await world.review(engine, .editorial)
+
+    let jobs = try await world.store.load(ChapterJobs.self, ChapterJobsQuery(novel: world.novel, chapter: 1, now: world.base.clock.instant))
+
+    let judge = try #require(jobs.latest(review: .judge))
+    let editor = try #require(jobs.latest(review: .editorial))
+    #expect(judge.job != editor.job)
+    #expect(judge.reviewKind == .judge && editor.reviewKind == .editorial)
+    #expect(jobs.jobs.value?.filter { $0.kind == .known(.review) }.count == 2)
+    #expect(jobs.latest(review: .mechanics) == nil)
+  }
+
   @Test func shouldStoreEditorialFindingsWithEvidenceFoundInTheProse() async throws {
     let reply: JSONValue = [
       "disposition": "revision_requested", "note": " Tighten the ending. ",

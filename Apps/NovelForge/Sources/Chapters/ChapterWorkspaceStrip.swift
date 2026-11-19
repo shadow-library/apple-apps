@@ -31,7 +31,7 @@ struct ChapterWorkspaceStrip: View {
       let chip = JobDisplay.chip(status.status)
       ShadowBadge(Text(verbatim: chip.label), intent: chip.intent, systemImage: chip.systemImage)
       ForEach(status.lines) { line in
-        ShadowCallout(JobDisplay.title(line.kind), message: JobDisplay.message(line), intent: JobDisplay.intent(line)) {
+        ShadowCallout(JobDisplay.title(line), message: JobDisplay.message(line), intent: JobDisplay.intent(line)) {
           if let runtime { actions(line, runtime: runtime) }
         }
       }
