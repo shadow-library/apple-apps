@@ -27,6 +27,11 @@ Read `README.md` first; it covers layout, modules and tasks.
 - Fixtures come from `bun` generators that import the reference read-only; they are deterministic and hold no machine paths. Never write inside the reference checkout.
 - Port JavaScript semantics through `Text/` and `Text/Regex`; never use `NSRegularExpression` or Swift `Regex` for a pattern taken from the reference.
 - Sync files are deleted only by the rules in `ShadowSync` (`SyncCompaction`, `SyncAdoption`), by recorded names and never by prefix; never hand-delete under `replicas/`.
+- Pipelines call models only through `JobStepContext.call` or `callText`, which apply the route, the hard-line screens and the ledger.
+- Job keys are built and read through `NovelJobAddress` and `NovelJobKind`, never by string.
+- A job's `origin` comes from `NovelJobOrigin.json`.
+- Derived ids use `derivedID(_:_:)` with a `com.shadow.library.<library>.<purpose>` domain.
+- New test suites take a `TestTimeLimit` tier (`quick`, `standard`, `property`), never a literal limit.
 - Tests are named `should…`; Swift Testing tests that resolve `Color` or `Font` need `@MainActor`.
 
 ## Verifying a change
