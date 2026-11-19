@@ -89,4 +89,24 @@ struct ChapterReplicaTests {
     #expect(views[1]?.review == .final)
     #expect(views[2]?.stale == "ancestor chapter 1's final text was replaced")
   }
+  @Test
+  func shouldAgreeOnAHeldRewriteAndOnTheConcurrentWritesThatLiftIt() async throws {
+    let replicas = try await book(seed: 0xD230)
+    _ = try await replicas.write(1) { try ChapterWrites.rewrite(novel: novel, chapter: 1, holding: true, in: &$0) }
+    try await replicas.settle()
+    #expect(try await agreed(replicas)[1] == LifecycleView(review: .contradiction))
+
+    let approval = UUID()
+    _ = try await replicas.write(1) { try ReviewWrites.judge(novel: novel, chapter: 1, findings: [ReviewWrites.finding("f1")], in: &$0) }
+    _ = try await replicas.write(2) { try ChapterWrites.approve(novel: novel, chapter: 1, id: approval, in: &$0) }
+    try await replicas.settle()
+    #expect(try await agreed(replicas)[1]?.review == .contradiction)
+
+    _ = try await replicas.write(0) { try ChapterWrites.rewrite(novel: novel, chapter: 1, body: "The ledger is forged twice.", holding: true, in: &$0) }
+    _ = try await replicas.write(2) { try ChapterWrites.draft(novel: novel, chapter: 1, body: "Rewritten.", source: .handEdited, in: &$0) }
+    try await replicas.settle()
+    let views = try await agreed(replicas)
+    let head = try await replicas.store(0).read { transaction in try DraftRecord.read(try DraftRecord.ref(novel: novel, chapter: 1), in: transaction).entry?.record }
+    #expect(views[1]?.review == (head?.content.source.known == .passageRewritten ? .contradiction : .needsReview))
+  }
 }

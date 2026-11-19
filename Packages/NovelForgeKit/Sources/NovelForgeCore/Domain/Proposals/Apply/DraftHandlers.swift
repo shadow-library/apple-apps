@@ -15,7 +15,8 @@ enum DraftHandlers: ContentOpHandler {
     }
   }
 
-  // draft.handler.ts:114: a chapter's selected rewrites land as one passage_rewritten revision, built from the head this transaction reads
+  // draft.handler.ts:114: a chapter's selected rewrites land as one passage_rewritten revision, built from the head this transaction reads, held when they
+  // bring in a leak (:129)
   static func rewritePassages(chapter: Int, _ rewrites: [DraftRewritePassage], context: ApplyContext, in transaction: inout WriteTransaction) throws(ApplyError)
     -> HandlerOutcome
   {
@@ -43,6 +44,7 @@ enum DraftHandlers: ContentOpHandler {
     content.source = .known(.passageRewritten)
     content.restoredFrom = nil
     try requireSettledWorkingCopy(novel: novel, chapter: chapter, ref: ref, in: transaction)
+    content.leakHeldOver = try PassageLeaks.holdNewLeaks(rewrites, novel: novel, chapter: chapter, in: transaction) ? head.revision : nil
     try commit(content, novel: novel, chapter: chapter, in: &transaction)
     return HandlerOutcome(inverse: DraftWrite(restoring: head.content, chapter: chapter).inverse)
   }

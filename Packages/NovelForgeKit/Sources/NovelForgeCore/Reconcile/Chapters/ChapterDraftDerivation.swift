@@ -4,7 +4,7 @@ import ShadowCore
 import ShadowStore
 
 /// One draft as the chapter lifecycle reads it, so a per-novel pass never decodes a draft body again. `upstream` is the canonical JSON of the head's recorded
-/// upstream, nil when the head records none this version can read.
+/// upstream, nil when the head records none this version can read; `leakHold` whether the head holds the leak its passage rewrite brought in.
 struct ChapterDraftEntry: Hashable, Sendable, FetchableRecord, PersistableRecord {
   static let databaseTableName = "nf_derived_chapter_draft"
 
@@ -15,8 +15,9 @@ struct ChapterDraftEntry: Hashable, Sendable, FetchableRecord, PersistableRecord
   let head: String?
   let source: String?
   let upstream: String?
+  let leakHold: Bool
 
-  init(key: EntityKey, novel: UUID, chapter: Int, readable: Bool, head: String?, source: String?, upstream: String?) {
+  init(key: EntityKey, novel: UUID, chapter: Int, readable: Bool, head: String?, source: String?, upstream: String?, leakHold: Bool) {
     self.key = key
     self.novel = novel
     self.chapter = chapter
@@ -24,6 +25,7 @@ struct ChapterDraftEntry: Hashable, Sendable, FetchableRecord, PersistableRecord
     self.head = head
     self.source = source
     self.upstream = upstream
+    self.leakHold = leakHold
   }
 
   init(row: Row) throws {
@@ -31,7 +33,8 @@ struct ChapterDraftEntry: Hashable, Sendable, FetchableRecord, PersistableRecord
     self.init(
       key: key, novel: try row.decode(UUID.self, forColumn: "novel"), chapter: try row.decode(Int.self, forColumn: "chapter"),
       readable: try row.decode(Bool.self, forColumn: "readable"), head: try row.decode(String?.self, forColumn: "head"),
-      source: try row.decode(String?.self, forColumn: "source"), upstream: try row.decode(String?.self, forColumn: "upstream"))
+      source: try row.decode(String?.self, forColumn: "source"), upstream: try row.decode(String?.self, forColumn: "upstream"),
+      leakHold: try row.decode(Bool.self, forColumn: "leak_hold"))
   }
 
   var ref: EntityRef { EntityRef(kind: NovelForgeKind.draft.entityKind, key: key) }
@@ -50,15 +53,17 @@ struct ChapterDraftEntry: Hashable, Sendable, FetchableRecord, PersistableRecord
     container["head"] = head
     container["source"] = source
     container["upstream"] = upstream
+    container["leak_hold"] = leakHold
   }
 }
 
 // One row per draft that is not removed; a draft this version cannot read still counts as written, with its head and no recorded upstream.
 struct ChapterDraftDerivation: Derivation {
-  static let version = 1
+  static let version = 2
   static let definition = """
     CREATE TABLE nf_derived_chapter_draft (
-      key TEXT PRIMARY KEY, novel BLOB NOT NULL, chapter INTEGER NOT NULL, readable INTEGER NOT NULL, head TEXT, source TEXT, upstream TEXT
+      key TEXT PRIMARY KEY, novel BLOB NOT NULL, chapter INTEGER NOT NULL, readable INTEGER NOT NULL, head TEXT, source TEXT, upstream TEXT,
+      leak_hold INTEGER NOT NULL
     ) STRICT, WITHOUT ROWID;
     CREATE INDEX nf_derived_chapter_draft_novel ON nf_derived_chapter_draft (novel, chapter);
     """
@@ -87,14 +92,15 @@ struct ChapterDraftDerivation: Derivation {
       guard !entry.isRemoved else { return [] }
       let content = entry.record.content
       let upstream = content.upstream.map { String(decoding: CanonicalJSON.encode($0.json), as: UTF8.self) }
+      let parent = revisioned.headRevision.flatMap { revisioned.revisions[ExactString($0)]?.parent }
       return [
         ChapterDraftEntry(
           key: ref.key, novel: entry.record.novel, chapter: entry.record.chapter, readable: true, head: revisioned.headRevision, source: content.source.rawValue,
-          upstream: upstream)
+          upstream: upstream, leakHold: content.holdsLeak(over: parent))
       ]
     case .unreadable:
       guard let state, let key = try? NovelForgeKey(reading: state, of: ref), case .draft(let chapter) = key.components else { return [] }
-      return [ChapterDraftEntry(key: ref.key, novel: key.novel, chapter: chapter, readable: false, head: revisioned.headRevision, source: nil, upstream: nil)]
+      return [ChapterDraftEntry(key: ref.key, novel: key.novel, chapter: chapter, readable: false, head: revisioned.headRevision, source: nil, upstream: nil, leakHold: false)]
     }
   }
 }

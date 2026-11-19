@@ -17,6 +17,7 @@ extension ChapterDrafts {
     content.body = normalizeLineEndings(body)
     content.source = .known(.handEdited)
     content.restoredFrom = nil
+    content.leakHeldOver = nil
     let copy = DraftWorkingCopy(novel: novel, chapter: chapter, base: base, content: content)
     try storeCall { () throws(StoreError) in try copy.save(in: transaction.database) }
   }

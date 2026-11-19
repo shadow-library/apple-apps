@@ -22,15 +22,15 @@ final class OperationClock: Sendable {
 typealias BookWrite<T> = @Sendable (inout WriteTransaction) throws -> T
 
 /// A novel with the learner `mara`, secrets `heir` (shown from chapter 1) and `tide` (locked until chapter 5), and the milestone `rise`, on one store that
-/// reconciles the chapter area.
+/// reconciles the chapter area, or every area for a write that reads the writer's disclosure policy (a passage rewrite).
 struct ChapterBook: Sendable {
   let store: VaultStore
   let clock: OperationClock
   let novel = SchemaFixture.novel
 
-  static func make() async throws -> ChapterBook {
+  static func make(reconciling derivations: [any Derivation] = chapterAreaDerivations) async throws -> ChapterBook {
     let clock = OperationClock()
-    let reconciler = try Projection.reconciler(chapterAreaDerivations)
+    let reconciler = try Projection.reconciler(derivations)
     let store = try VaultStore.open(.inMemory, registry: Projection.registry, migrations: reconciler.migrations, wallClock: clock.function, reconciler: reconciler)
     let book = ChapterBook(store: store, clock: clock)
     let novel = book.novel

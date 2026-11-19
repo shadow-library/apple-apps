@@ -189,6 +189,32 @@ struct ChapterDocumentTests {
     #expect(edited.json.objectValue?["upstream"] == ["chapters": []])
   }
 
+  @Test func shouldHoldALeakOnlyOverTheRevisionItWasWrittenOverAndStoreNothingWithoutOne() async throws {
+    let store = try SchemaFixture.store()
+    var content = DraftContent(body: "d", source: .known(.passageRewritten))
+    #expect(content.json.objectValue?.keys.contains("leak_hold") == false)
+    content.leakHeldOver = "v:parent"
+    #expect(content.json.objectValue?["leak_hold"] == "v:parent")
+    #expect(content.holdsLeak(over: "v:parent"))
+    #expect(!content.holdsLeak(over: "v:other") && !content.holdsLeak(over: nil))
+    let draft = try DraftRecord(novel: novel, chapter: 5, content: content)
+    _ = try await Harness.create(draft, in: store)
+    #expect(try await Harness.read(draft.ref, as: DraftRecord.self, in: store).entry?.record.content == content)
+    content.leakHeldOver = nil
+    #expect(content.json.objectValue?.keys.contains("leak_hold") == false)
+  }
+
+  @Test(arguments: [JSONValue.bool(true), ["over": "v:parent"], 4])
+  func shouldReadADraftWhoseLeakHoldThisVersionCannotReadAsHoldingNothingAndKeepItAsStored(_ stored: JSONValue) async throws {
+    let store = try SchemaFixture.store()
+    let draft = try DraftRecord(novel: novel, chapter: 5, content: DraftContent(body: "d", source: .known(.passageRewritten)))
+    var body = try #require(draft.content.json.objectValue)
+    body["leak_hold"] = stored
+    let read = try #require(try await readBody(draft, .object(body), in: store).entry?.record.content)
+    #expect(read.leakHeldOver == nil && !read.holdsLeak(over: "v:parent"))
+    #expect(read.json == .object(body))
+  }
+
   @Test func shouldRoundTripTheContinuationStateRunAndJobOfADraftRevision() async throws {
     let store = try SchemaFixture.store()
     let job = try JobKey(scope: novel.uuidString.lowercased(), kind: "generate", target: "chapter:5", fingerprint: "f0", run: 1).ref.key
@@ -303,8 +329,10 @@ struct ChapterDocumentTests {
     #expect(Set(scene.keys) == Set(PlanSceneMember.allCases.map(\.rawValue)))
     let learn = try #require(ContractLearn(KnowledgeReveal(entityKey: "a", factKey: "f")).json.objectValue)
     #expect(Set(learn.keys) == Set(CanonLearnMember.allCases.map(\.rawValue)))
-    let draft = try #require(DraftContent(body: "b", source: .known(.generated)).json.objectValue)
-    #expect(Set(draft.keys) == Set(DraftContentMember.allCases.map(\.rawValue)))
+    var content = DraftContent(body: "b", source: .known(.generated))
+    #expect(Set(try #require(content.json.objectValue).keys) == Set(DraftContentMember.allCases.filter { $0 != .leakHold }.map(\.rawValue)))
+    content.leakHeldOver = "v:parent"
+    #expect(Set(try #require(content.json.objectValue).keys) == Set(DraftContentMember.allCases.map(\.rawValue)))
   }
 
   @Test func shouldConvergeConcurrentDraftRevisionsAndKeepBothInTheHistory() async throws {

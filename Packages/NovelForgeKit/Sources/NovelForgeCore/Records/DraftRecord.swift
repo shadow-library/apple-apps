@@ -37,6 +37,7 @@ enum DraftContentMember: String, CaseIterable, FieldName {
   case state
   case run
   case job
+  case leakHold = "leak_hold"
 }
 
 // apps/novel-forge-server/src/database/schemas/ai.ts:267-291; the review status, stale reason and word count are derived, never stored
@@ -54,6 +55,7 @@ public struct DraftContent: RevisionBody, Sendable {
   private var storedState: JSONValue
   private var storedRun: JSONValue
   private var storedJob: JSONValue
+  private var storedLeakHold: JSONValue
 
   public init(
     title: String? = nil, body: String, summary: String? = nil, source: StoredEnum<DraftSource>, generator: StoredEnum<ContentGenerator> = .known(.standard),
@@ -70,6 +72,7 @@ public struct DraftContent: RevisionBody, Sendable {
     storedState = state.json
     storedRun = run.json
     storedJob = job.json
+    storedLeakHold = .null
     unrecognised = [:]
   }
 
@@ -97,6 +100,18 @@ public struct DraftContent: RevisionBody, Sendable {
     set { storedJob = newValue.json }
   }
 
+  /// The head a passage rewrite was written over when it brought in a locked secret its passage did not give away (schema v4, holdNewLeaks in
+  /// apps/novel-forge-server/src/modules/generation/passage-leaks.ts:13). Naming the parent holds that one revision: content copied into a later one holds nothing.
+  public var leakHeldOver: String? {
+    get { storedLeakHold.stringValue }
+    set { storedLeakHold = newValue.json }
+  }
+
+  public func holdsLeak(over parent: String?) -> Bool {
+    guard let parent, let held = leakHeldOver else { return false }
+    return held.utf8.elementsEqual(parent.utf8)
+  }
+
   public init?(json: JSONValue) {
     guard let reader = FieldReader<DraftContentMember>(object: json) else { return nil }
     do throws(UnreadableReason) {
@@ -110,6 +125,7 @@ public struct DraftContent: RevisionBody, Sendable {
     storedState = Self.stored(.state, in: reader)
     storedRun = Self.stored(.run, in: reader)
     storedJob = Self.stored(.job, in: reader)
+    storedLeakHold = Self.stored(.leakHold, in: reader)
     unrecognised = reader.unrecognised
   }
 
@@ -126,6 +142,7 @@ public struct DraftContent: RevisionBody, Sendable {
     fields.put(.state, storedState)
     fields.put(.run, storedRun)
     fields.put(.job, storedJob)
+    if storedLeakHold != .null { fields.put(.leakHold, storedLeakHold) }
     return .object(unrecognised.merging(fields.members) { _, known in known })
   }
 
@@ -167,9 +184,11 @@ extension DraftRecord {
     try revise(ref, body: content, marks: marks, in: &transaction)
   }
 
-  /// A revision beside the head, child of `parent`, that does not become the head.
+  /// A revision beside the head, child of `parent`, that does not become the head; it holds no leak, whatever revision its content was copied from.
   public static func keep(_ ref: EntityRef, _ content: DraftContent, parent: RevisionParent, in transaction: inout WriteTransaction) throws(StoreError) -> Revised {
-    try revise(ref, body: content, parent: parent, head: false, in: &transaction)
+    var content = content
+    content.leakHeldOver = nil
+    return try revise(ref, body: content, parent: parent, head: false, in: &transaction)
   }
 
   public static func mark(_ ref: EntityRef, revision: String, _ marks: [DraftMark], in transaction: inout WriteTransaction) throws(StoreError) -> ChangeRecord {

@@ -28,6 +28,16 @@ struct NovelForgeSchemaMigrationTests {
     return try VaultStore.open(.file(url), registry: registry, migrations: reconciler.migrations, reconciler: reconciler)
   }
 
+  private static func openAtVersionThree(_ url: URL) throws -> VaultStore {
+    let registry = try SchemaRegistry(canonicalDescription: try ReferenceFixture.data("schema/registry-v3.json"))
+    let reconciler = try NovelForgeReconciler(registry: registry)
+    return try VaultStore.open(.file(url), registry: registry, migrations: reconciler.migrations, reconciler: reconciler)
+  }
+
+  private static func review(of chapter: Int, in store: VaultStore) async throws -> DraftReviewState? {
+    try await store.read { transaction in try ChapterLifecycleEntry.read(novel: novel, chapter: chapter, in: transaction.database)?.review }
+  }
+
   private static func createNovelAsAnEarlierVersion(in transaction: inout WriteTransaction) throws -> ChangeRecord {
     let record = NovelRecord(id: novel, name: "Ember")
     return try transaction.set(record.ref, record.storedMembers.filter { $0.key != NovelField.autoKeep.rawValue })
@@ -134,6 +144,43 @@ struct NovelForgeSchemaMigrationTests {
     defer { try? FileManager.default.removeItem(at: url.deletingLastPathComponent()) }
     _ = try NovelForgeStore.open(at: url)
     #expect(throws: StoreError.self) { try Self.openAtVersionTwo(url) }
+  }
+
+  @Test func shouldOpenAVaultWrittenAtVersionThreeAtVersionFourAndHoldTheRewriteALaterDeviceHeld() async throws {
+    let url = try Self.temporaryVault()
+    defer { try? FileManager.default.removeItem(at: url.deletingLastPathComponent()) }
+    let rewritten = try DraftRecord.ref(novel: Self.novel, chapter: 2)
+    let newer = try NovelForgeStore.openInMemory()
+    _ = try await newer.write { transaction in
+      _ = try DraftRecord(novel: Self.novel, chapter: 2, content: DraftContent(body: "The ledger.", source: .known(.handEdited))).create(in: &transaction)
+      guard case .revisioned(let state)? = try transaction.state(of: rewritten) else { throw SchemaFixtureError(description: "the draft has no head") }
+      var content = DraftContent(body: "The ledger is forged.", source: .known(.passageRewritten))
+      content.leakHeldOver = state.headRevision
+      _ = try DraftRecord.revise(rewritten, content, in: &transaction)
+    }
+    let sent = try await newer.pendingChanges(limit: Int.max).map(\.line)
+    do {
+      let old = try Self.openAtVersionThree(url)
+      _ = try await old.write { transaction in
+        _ = try Self.createNovelAsAnEarlierVersion(in: &transaction)
+        _ = try DraftRecord(novel: Self.novel, chapter: 1, content: DraftContent(body: "The tide turns.", source: .known(.handEdited))).create(in: &transaction)
+      }
+      _ = try await old.applyRemote(sent)
+      let held = try await SchemaFixture.document(rewritten, in: old)
+      #expect(held.headRevision.flatMap { held.revisions[ExactString($0)]?.body["leak_hold"] } != nil)
+    }
+
+    let upgraded = try NovelForgeStore.open(at: url)
+    #expect(try await upgraded.load(LibraryList.self).novels.map(\.novel.name) == ["Ember"])
+    #expect(try await Self.review(of: 1, in: upgraded) == .needsReview)
+    #expect(try await Self.review(of: 2, in: upgraded) == .contradiction)
+  }
+
+  @Test func shouldRefuseToReopenAVersionFourVaultWithTheVersionThreeSchema() throws {
+    let url = try Self.temporaryVault()
+    defer { try? FileManager.default.removeItem(at: url.deletingLastPathComponent()) }
+    _ = try NovelForgeStore.open(at: url)
+    #expect(throws: StoreError.self) { try Self.openAtVersionThree(url) }
   }
 
   @Test func shouldKeepADecisionALaterVersionAddsOutOfTheRecordUntilTheUpgrade() async throws {

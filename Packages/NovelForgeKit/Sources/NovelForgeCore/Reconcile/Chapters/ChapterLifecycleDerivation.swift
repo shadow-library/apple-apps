@@ -105,10 +105,11 @@ public struct ChapterLifecycleEntry: Hashable, Sendable, FetchableRecord, Persis
   }
 }
 
-// ChapterFingerprint's rules over one novel: final chapters from the canon layer, drafts and approvals from theirs, plan terms and reveal verdicts from D20's plan
-// world, open generate jobs from the job activity, and the judge reviews with their remedies, read for the chapters whose head the latest one read.
+// ChapterFingerprint's rules over one novel: final chapters from the canon layer, drafts (with a passage rewrite's leak hold) and approvals from theirs, plan terms
+// and reveal verdicts from D20's plan world, open generate jobs from the job activity, and the judge reviews with their remedies, read for the chapters whose head
+// the latest one read or whose head holds a leak.
 public struct ChapterLifecycleDerivation: Derivation {
-  public static let version = 2
+  public static let version = 3
   public static let definition = """
     CREATE TABLE nf_derived_chapter_lifecycle (
       novel BLOB NOT NULL, chapter INTEGER NOT NULL, final INTEGER NOT NULL, draft TEXT, resting TEXT, canon TEXT, taught TEXT, review TEXT, approval TEXT,
@@ -155,6 +156,7 @@ public struct ChapterLifecycleDerivation: Derivation {
     var recorded = Set<Int>()
     for draft in try context.fetchAll(ChapterDraftEntry.filter(Column("novel") == novel)) {
       inputs.drafts[draft.chapter] = draft
+      if draft.leakHold, inputs.finals[draft.chapter] == nil { inputs.leakHolds.insert(draft.chapter) }
       guard inputs.finals[draft.chapter] == nil, let upstream = draft.recordedUpstream else { continue }
       inputs.upstreams[draft.chapter] = upstream
       for case .draft(let chapter, _, .some(_)) in upstream.entries { recorded.insert(chapter) }
@@ -204,6 +206,13 @@ public struct ChapterLifecycleDerivation: Derivation {
         case .readable(let current) = try DraftRecord.read(draft.ref, in: context.records)
       else { continue }
       let text = ReviewedText(draftRevision: head, body: current.record.content.body)
+      if inputs.leakHolds.contains(chapter) {
+        for row in ordered where row.draft == head {
+          guard try reviewOfHead(row, text, in: context) != nil else { continue }
+          inputs.leakHolds.remove(chapter)
+          break
+        }
+      }
       if let latest = ordered.last, latest.draft == head, let read = try reviewOfHead(latest, text, in: context) {
         inputs.judgements[chapter] = try judgement(of: read, text, novel: novel, in: context)
       }

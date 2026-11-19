@@ -22,6 +22,7 @@ struct LifecyclePropertyTests {
       let seen = LifecycleOperations.reached
       #expect(seen.isSuperset(of: [.generating, .contradiction, .approved, .needsReview]), "\(order): reached \(seen.map(\.rawValue).sorted())")
       #expect(LifecycleOperations.answersToAHold > 0, "\(order): no answer went to a review holding its chapter")
+      #expect(LifecycleOperations.leakHolds > 0, "\(order): no chapter was held by its rewrite's leak alone")
     }
   }
 }

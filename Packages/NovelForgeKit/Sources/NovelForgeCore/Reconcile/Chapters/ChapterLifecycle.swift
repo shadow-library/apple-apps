@@ -55,6 +55,9 @@ struct LifecycleInputs {
   /// again moves its clock past the review's and can revoke the approval, where the reference only lifts a contradiction; keeping a remedy's first-set clock
   /// closes it (follow-up with G24).
   var resets: [Int: HLCTimestamp] = [:]
+  /// Unfinalized chapters whose head holds the leak its passage rewrite brought in (passage-leaks.ts:20-24) and no judge review of the head as it stands has run
+  /// its gate since (chapter-review.service.ts:508-513); an approval of the head lifts it too (generation.service.ts:474), and a later revision never holds it.
+  var leakHolds: Set<Int> = []
 }
 
 /// What one chapter is, after the rules of `ChapterFingerprint`.
@@ -121,11 +124,12 @@ enum ChapterLifecycle {
       taught = ofHead.contains { $0.terms.flatMap(ChapterFingerprint.learnsPart(of:)).map(String.init) == learns } ? learns : nil
     }
     let judgement = inputs.judgements[chapter]
-    let held =
+    let judged =
       judgement.map { judgement in
         guard let outcome = judgement.outcome else { return judgement.openBlocking > 0 }
         return outcome && !ofHead.contains { $0.clock > judgement.clock }
       } ?? false
+    let held = judged || inputs.leakHolds.contains(chapter) && ofHead.isEmpty
     let inForce = generating || held ? nil : approval
     let review: DraftReviewState = generating ? .generating : held ? .contradiction : inForce == nil ? .needsReview : .approved
     return ChapterState(

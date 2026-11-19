@@ -63,3 +63,21 @@ enum ReviewWrites {
     return try JobWorld.attemptID(at: 0, &generator)
   }
 }
+
+extension ChapterWrites {
+  /// A passage_rewritten revision over the head, holding a leak as the rewrite handler records one: over that head, or over `over` when given.
+  @discardableResult
+  static func rewrite(novel: UUID, chapter: Int, body: String = "The ledger is forged.", holding: Bool, over: String? = nil, in transaction: inout WriteTransaction) throws
+    -> String?
+  {
+    let ref = try DraftRecord.ref(novel: novel, chapter: chapter)
+    guard case .readable(let entry) = try DraftRecord.read(ref, in: transaction), !entry.isRemoved, let head = try head(novel: novel, chapter: chapter, in: transaction)
+    else { return nil }
+    var content = entry.record.content
+    content.body = body
+    content.source = .known(.passageRewritten)
+    content.leakHeldOver = holding ? over ?? head : nil
+    _ = try DraftRecord.revise(ref, content, in: &transaction)
+    return try self.head(novel: novel, chapter: chapter, in: transaction)
+  }
+}

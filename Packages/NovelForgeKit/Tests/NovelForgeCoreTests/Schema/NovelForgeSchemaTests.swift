@@ -9,7 +9,7 @@ import Testing
 
 @Suite("NovelForgeSchema")
 struct NovelForgeSchemaTests {
-  private static let frozenVersions = [1, 2, 3]
+  private static let frozenVersions = [1, 2, 3, 4]
 
   private static func frozenPath(_ version: Int) -> String { "schema/registry-v\(version).json" }
 

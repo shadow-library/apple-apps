@@ -8,8 +8,9 @@ import Synchronization
 
 @testable import NovelForgeCore
 
-/// Random drafts, approvals, judge reviews of a head (current or not, generation passes or not, findings of every kind), remedies of their findings and
-/// generate jobs, with an unreadable review and purges: what the chapter lifecycle reads beyond the chapter writes.
+/// Random drafts, passage rewrites holding a leak (over their own head or a stale one), approvals, judge reviews of a head (current or not, generation passes
+/// or not, findings of every kind), remedies of their findings and generate jobs, with an unreadable review and purges: what the chapter lifecycle reads beyond
+/// the chapter writes.
 enum LifecycleOperations {
   private static let severities: [StoredEnum<ReviewFindingSeverity>] = [
     .known(.blocking), .known(.blocking), .known(.warning), .known(.note), StoredEnum(rawValue: "severe"),
@@ -19,6 +20,7 @@ enum LifecycleOperations {
   private static let seen = Mutex<Set<DraftReviewState>>([])
 
   private static let answered = Mutex(0)
+  private static let leaks = Mutex(0)
 
   /// The statuses the operations found reconciled when they ran, for a property to gate on.
   static var reached: Set<DraftReviewState> { seen.withLock { $0 } }
@@ -26,15 +28,21 @@ enum LifecycleOperations {
   /// How many answers went to the review holding its chapter as a contradiction.
   static var answersToAHold: Int { answered.withLock { $0 } }
 
+  /// How many times a chapter was found held by its rewrite's leak alone.
+  static var leakHolds: Int { leaks.withLock { $0 } }
+
   /// Clears the gates; the operations are shared, so one property runs at a time.
   static func resetGates() {
     seen.withLock { $0 = [] }
     answered.withLock { $0 = 0 }
+    leaks.withLock { $0 = 0 }
   }
 
   private static func observe(_ novel: UUID, in transaction: borrowing WriteTransaction) throws {
-    let found = try ChapterLifecycleDerivation.request(for: novel).fetchAll(transaction.database).compactMap(\.review)
-    seen.withLock { $0.formUnion(found) }
+    let entries = try ChapterLifecycleDerivation.request(for: novel).fetchAll(transaction.database)
+    seen.withLock { $0.formUnion(entries.compactMap(\.review)) }
+    let leaking = entries.filter { $0.review == .contradiction && $0.judge == nil }.count
+    leaks.withLock { $0 += leaking }
   }
 
   static func findings(_ generator: inout SeededGenerator) -> [ReviewFinding] {
@@ -98,7 +106,7 @@ enum LifecycleOperations {
       )
       return { transaction in
         try observe(novel, in: transaction)
-        let held = try ChapterLifecycleDerivation.request(for: novel).fetchAll(transaction.database).filter { $0.review == .contradiction }.map(\.chapter)
+        let held = try ChapterLifecycleDerivation.request(for: novel).fetchAll(transaction.database).filter { $0.review == .contradiction && $0.judge != nil }.map(\.chapter)
         let chapter = aimed && !held.isEmpty ? held[any % held.count] : any
         let reviews = try reviews(novel: novel, chapter: chapter, in: transaction)
         guard let latest = reviews.last else { return }
@@ -137,6 +145,15 @@ enum LifecycleOperations {
       return { transaction in
         guard let attempt, try transaction.state(of: key.ref) != nil, try transaction.state(of: attempt.ref) == nil else { return }
         try ReviewWrites.succeed(key.ref, attempt: attempt, in: &transaction)
+      }
+    },
+    ProjectionOperation(name: "rewrite a passage of a draft head", weight: 2) { generator, universe in
+      let (novel, any, holding, stale) = (universe.novel(&generator), universe.chapter(&generator), generator.chance(0.7), generator.chance(0.2))
+      return { transaction in
+        try observe(novel, in: transaction)
+        let drafted = try ChapterLifecycleDerivation.request(for: novel).fetchAll(transaction.database).filter { $0.draft != nil && !$0.isFinal }.map(\.chapter)
+        let chapter = drafted.isEmpty ? any : drafted[any % drafted.count]
+        try ChapterWrites.rewrite(novel: novel, chapter: chapter, body: "The ledger is forged.", holding: holding, over: stale ? "v:stale" : nil, in: &transaction)
       }
     },
   ]

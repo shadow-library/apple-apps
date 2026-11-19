@@ -3,7 +3,7 @@ import ShadowJobs
 import ShadowStore
 
 public enum NovelForgeSchema {
-  public static let version = 3
+  public static let version = 4
 
   // apps/novel-forge-server/src/common/draft-history.ts:10
   static let revisionLimit = 50

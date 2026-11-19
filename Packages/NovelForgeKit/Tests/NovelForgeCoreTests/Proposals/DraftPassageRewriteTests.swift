@@ -117,7 +117,7 @@ struct DraftRewrittenBodyTests {
 
 /// Chapters 1 and 2 final, so the story cursor stands at 2; chapter 3 holds `body` as a draft (passage-rewrite.spec.ts:57-69).
 private func workspace() async throws -> ChapterBook {
-  let book = try await ChapterBook.make()
+  let book = try await ChapterBook.make(reconciling: NovelForgeDerivations.standard)
   try await book.finalized(through: 2)
   try await book.draft(3, body)
   return book
@@ -200,7 +200,7 @@ struct DraftPassageRewriteTests {
     let rewrite = try stamped("tide", "sea", in: "The tide turns.", draft: try #require(try await book.identity(2)))
     #expect(applyRefusal(try await book.perform(.passageRewrites(chapter: 2, [rewrite]))) == .locked)
 
-    let isolated = try await ChapterBook.make()
+    let isolated = try await ChapterBook.make(reconciling: NovelForgeDerivations.standard)
     let novel = isolated.novel
     _ = try await isolated.run { try ChapterDrafts.importDraft(novel: novel, chapter: 1, DraftImport(prose: body, isolated: true), base: nil, in: &$0) }
     let walled = try stamped(wrist, wristRewrite, draft: try #require(try await isolated.identity(1)))
@@ -292,5 +292,228 @@ struct DraftPassageRewriteTests {
     #expect(try await book.draftContent(3)?.restoredFrom == first)
     _ = try await book.perform(.passageRewrites(chapter: 3, [try await both(book)[1]])).get()
     #expect(try await book.draftContent(3)?.restoredFrom == nil)
+  }
+}
+
+private let ledger = ["Corin crossed the salle.", "The clerk kept the ledger.", "The forgery lay open, Mara said.", "Nobody answered."].joined(separator: "\n\n")
+private let giveaway = "The clerk kept the forgery."
+
+private let sealUpsert = #"{"op":"fact.upsert","factKey":"seal","body":"Elias forged the seal.","terms":["forgery"],"revealChapter":5}"#
+private let leakingRewrite = #"{"op":"draft.rewrite_passage","chapter":3,"passage":"The clerk kept the ledger.","replacement":"The clerk kept the forgery."}"#
+
+/// Chapter 3's draft, planned from Mara's point of view, over a novel whose secret `seal`, given away by "forgery", stays locked until chapter 5 (unless
+/// `sealed` is false, when the novel has no such secret yet).
+private func leakWorkspace(sealed: Bool = true) async throws -> (ChapterBook, String) {
+  let book = try await ChapterBook.make(reconciling: NovelForgeDerivations.standard)
+  let novel = book.novel
+  if sealed {
+    try await book.run { transaction in
+      let seal = SecretRecord(
+        novel: novel, secret: "seal", text: "Elias forged the seal.", cluesAndTerms: CluesAndTerms(terms: ["forgery"]), revealChapter: 5, source: .known(.manual))
+      _ = try seal.create(in: &transaction)
+    }
+  }
+  try await book.finalized(through: 2)
+  try await book.plan(3)
+  try await book.draft(3, ledger)
+  let identity = try #require(try await book.identity(3))
+  return (book, identity)
+}
+
+/// The seal revealed to Mara by chapter 2, approved but not final, so chapter 3's writer may know it only while that approval stands (provisional-knowledge.ts).
+private func revealWorkspace() async throws -> (ChapterBook, String) {
+  let book = try await ChapterBook.make(reconciling: NovelForgeDerivations.standard)
+  let novel = book.novel
+  try await book.run { transaction in
+    let seal = SecretRecord(
+      novel: novel, secret: "seal", text: "Elias forged the seal.", cluesAndTerms: CluesAndTerms(terms: ["forgery"]), revealChapter: 2, source: .known(.manual))
+    _ = try seal.create(in: &transaction)
+  }
+  try await book.finalized(through: 1)
+  try await book.plan(2, learns: [KnowledgeReveal(entityKey: "mara", factKey: "seal")])
+  try await book.draft(2)
+  try await book.approve(2)
+  try await book.plan(3)
+  try await book.draft(3, ledger)
+  return (book, try #require(try await book.identity(3)))
+}
+
+private let chapterTwoUpdate = #"{"op":"draft.update","chapter":2,"body":"The tide turns back."}"#
+
+private func leakRewrite(_ book: ChapterBook, identity: String) async throws -> String {
+  let held = try #require(try await book.head(3))
+  _ = try await book.perform(.passageRewrites(chapter: 3, [try stamped("The clerk kept the ledger.", giveaway, in: ledger, draft: identity)])).get()
+  return held
+}
+
+// apps/novel-forge-server/src/modules/generation/passage-leaks.ts:13 through draft.handler.ts:129, and what lifts the hold the reference stores
+// (chapter-review.service.ts:508-513, draft-save.ts:73, generation.service.ts:474)
+@Suite("Passage rewrites holding a leak", TestTimeLimit.standard)
+struct PassageLeakHoldTests {
+  @Test func shouldHoldARewriteThatBringsInALockedSecretAsAContradiction() async throws {
+    let (book, identity) = try await leakWorkspace()
+    let over = try await leakRewrite(book, identity: identity)
+    #expect(try await book.draftContent(3)?.leakHeldOver == over)
+    let entry = try #require(try await book.lifecycle(3))
+    #expect(entry.review == .contradiction && entry.judge == nil && entry.openBlocking == 0)
+  }
+
+  @Test func shouldNotHoldARewriteWhosePassageAlreadyGaveTheSecretAwayOrThatBringsNoSecret() async throws {
+    let (book, identity) = try await leakWorkspace()
+    let kept = try stamped("The forgery lay open, Mara said.", "The forgery lay shut, Mara whispered.", in: ledger, draft: identity)
+    _ = try await book.perform(.passageRewrites(chapter: 3, [kept])).get()
+    #expect(try await book.draftContent(3)?.leakHeldOver == nil)
+    #expect(try await book.lifecycle(3)?.review == .needsReview)
+    let plain = try stamped("Nobody answered.", "Nobody spoke.", in: try #require(try await book.draftContent(3)?.body), draft: identity)
+    _ = try await book.perform(.passageRewrites(chapter: 3, [plain])).get()
+    #expect(try await book.draftContent(3)?.leakHeldOver == nil)
+    #expect(try await book.lifecycle(3)?.review == .needsReview)
+  }
+
+  @Test func shouldJudgeTheLeakOfEachSelectedRewriteAgainstItsOwnPassage() async throws {
+    let (book, identity) = try await leakWorkspace()
+    let rewrites = [
+      try stamped("The forgery lay open, Mara said.", "The forgery lay shut, Mara whispered.", in: ledger, draft: identity),
+      try stamped("Corin crossed the salle.", "Corin crossed the salle to the forgery.", in: ledger, draft: identity),
+    ]
+    _ = try await book.perform(.passageRewrites(chapter: 3, rewrites)).get()
+    #expect(try await book.lifecycle(3)?.review == .contradiction)
+  }
+
+  @Test func shouldLiftTheHoldWhenAJudgeReviewOfTheHeadRunsItsGate() async throws {
+    let (book, identity) = try await leakWorkspace()
+    _ = try await leakRewrite(book, identity: identity)
+    let novel = book.novel
+    let review = try await book.run { try ReviewWrites.judge(novel: novel, chapter: 3, findings: [ReviewWrites.finding("f1")], in: &$0) }
+    #expect(try await book.lifecycle(3)?.review == .contradiction)
+    try await book.run { try ReviewWrites.remedy(novel: novel, review: review, finding: "f1", .dismissed, in: &$0) }
+    #expect(try await book.lifecycle(3)?.review == .needsReview)
+
+    let (passing, passingIdentity) = try await leakWorkspace()
+    _ = try await leakRewrite(passing, identity: passingIdentity)
+    try await passing.run { try ReviewWrites.judge(novel: novel, chapter: 3, findings: [], verdict: "consistent", in: &$0) }
+    #expect(try await passing.lifecycle(3)?.review == .needsReview)
+  }
+
+  @Test func shouldKeepTheHoldOverAJudgeReviewOfAnEarlierRevision() async throws {
+    let (book, identity) = try await leakWorkspace()
+    let earlier = try await leakRewrite(book, identity: identity)
+    let novel = book.novel
+    try await book.run { try ReviewWrites.judge(novel: novel, chapter: 3, findings: [], verdict: "consistent", revision: earlier, body: ledger, in: &$0) }
+    #expect(try await book.lifecycle(3)?.review == .contradiction)
+  }
+
+  @Test func shouldLiftTheHoldWithTheNextRevisionThoughItCarriesTheHoldForward() async throws {
+    let (book, identity) = try await leakWorkspace()
+    let over = try await leakRewrite(book, identity: identity)
+    let rewritten = try #require(try await book.draftContent(3)?.body)
+    try await book.save(3, "\(rewritten)\n\nDawn.", base: nil)
+    #expect(try await book.draftContent(3)?.leakHeldOver == over)
+    #expect(try await book.lifecycle(3)?.review == .needsReview)
+  }
+
+  @Test func shouldLiftTheHoldWhenTheRewriteIsUndone() async throws {
+    let (book, identity) = try await leakWorkspace()
+    let call = ContentCall.passageRewrites(chapter: 3, [try stamped("The clerk kept the ledger.", giveaway, in: ledger, draft: identity)])
+    let applied = try await book.perform(call).get()
+    #expect(try await book.lifecycle(3)?.review == .contradiction)
+    _ = try await book.undo(applied.inverse, of: call).get()
+    #expect(try await book.draftContent(3)?.body == ledger)
+    #expect(try await book.lifecycle(3)?.review == .needsReview)
+    _ = try await book.perform(call, intent: .redo).get()
+    #expect(try await book.lifecycle(3)?.review == .contradiction)
+  }
+
+  // generation.service.ts:457-505 approves over a contradiction and overrides only open findings; the hold never comes back once the approval lapses
+  // (draft-staleness.ts:41, plan-state.ts:139 reset an approval to needs review)
+  @Test func shouldApproveOverTheHoldOverridingNothingAndNotHoldAgainOnceTheApprovalLapses() async throws {
+    let (book, identity) = try await leakWorkspace()
+    _ = try await leakRewrite(book, identity: identity)
+    let novel = book.novel
+    let (head, requester) = (try #require(try await book.head(3)), book.store.replica)
+    let approval = try await book.run { try ChapterApprovals.approve(novel: novel, chapter: 3, revision: head, requester: requester, in: &$0) }
+    #expect(approval.overridden == 0)
+    #expect(try await book.lifecycle(3)?.review == .approved)
+    try await book.plan(3, claims: ["rise"])
+    #expect(try await book.lifecycle(3)?.review == .needsReview)
+  }
+  // apply-rules.ts:41-44: the change set's ops apply in one transaction, so the rewrite is judged by the policy the fact upsert before it already changed
+  @Test func shouldHoldARewriteThatGivesAwayASecretTheSameChangeSetCreates() async throws {
+    let (book, _) = try await leakWorkspace(sealed: false)
+    let id = try await book.stage(sealUpsert, leakingRewrite).proposal.id
+    _ = try await book.applied(id)
+    #expect(try await book.draftContent(3)?.body.contains("kept the forgery") == true)
+    #expect(try await book.lifecycle(3)?.review == .contradiction)
+  }
+
+  @Test func shouldHoldARewriteWhenThePolicyCannotBeReadButNotWhenOnlyTheCharactersCannot() async throws {
+    let (book, identity) = try await leakWorkspace()
+    let novel = book.novel
+    let plain = ContentCall.passageRewrites(chapter: 3, [try stamped("Nobody answered.", "Nobody spoke.", in: ledger, draft: identity)])
+    let fault = "INSERT INTO \(ProjectionFaults.table) (derivation, key, version, message) VALUES ('\(CharacterStateEntry.databaseTableName)', '*', 1, 'probe')"
+    try await book.tamper(fault)
+    _ = try await book.perform(plain, faulted: true).get()
+    #expect(try await book.lifecycle(3)?.review == .needsReview)
+
+    let (corrupt, corruptIdentity) = try await leakWorkspace()
+    _ = try await corrupt.run { transaction in try transaction.set(SecretRecord.ref(novel: novel, secret: "seal"), ["text": 5]) }
+    let rewrite = try stamped("Nobody answered.", "Nobody spoke.", in: ledger, draft: corruptIdentity)
+    _ = try await corrupt.perform(.passageRewrites(chapter: 3, [rewrite])).get()
+    #expect(try await corrupt.lifecycle(3)?.review == .contradiction)
+  }
+
+  // persistDraft sets generating over any status (chapter-generation.graph.ts:171-184); the hold is back once the job ends without a new head
+  @Test func shouldShowAHeldChapterGeneratingWhileAGenerateJobIsOpen() async throws {
+    let (book, identity) = try await leakWorkspace()
+    _ = try await leakRewrite(book, identity: identity)
+    let novel = book.novel
+    let job = try await book.run { try ReviewWrites.requestGeneration(novel: novel, chapter: 3, in: &$0) }
+    #expect(try await book.lifecycle(3)?.review == .generating)
+    try await book.run { try ReviewWrites.cancel(job, in: &$0) }
+    #expect(try await book.lifecycle(3)?.review == .contradiction)
+  }
+
+  // A review of an earlier revision recorded later runs no gate (chapter-review.service.ts:485-489), so it gives back no hold the head's review lifted
+  @Test func shouldNotHoldAgainWhenAReviewOfAnEarlierRevisionLandsAfterTheHeadsReview() async throws {
+    let (book, identity) = try await leakWorkspace()
+    let earlier = try await leakRewrite(book, identity: identity)
+    let novel = book.novel
+    try await book.run { try ReviewWrites.judge(novel: novel, chapter: 3, findings: [], verdict: "consistent", in: &$0) }
+    #expect(try await book.lifecycle(3)?.review == .needsReview)
+    book.clock.advance(by: 5)
+    try await book.run { try ReviewWrites.judge(novel: novel, chapter: 3, findings: [], verdict: "consistent", revision: earlier, body: ledger, in: &$0) }
+    let entry = try #require(try await book.lifecycle(3))
+    #expect(entry.review == .needsReview && entry.judge == nil)
+  }
+  // draft.handler.ts:84 revokes chapter 2's provisional reveals inside the transaction, before the rewrite of chapter 3 is judged (:129)
+  @Test func shouldHoldARewriteOnceAnEarlierChaptersApprovalThatRevealedTheSecretEnds() async throws {
+    let (alone, aloneIdentity) = try await revealWorkspace()
+    _ = try await leakRewrite(alone, identity: aloneIdentity)
+    #expect(try await alone.lifecycle(3)?.review == .needsReview)
+
+    let (separate, separateIdentity) = try await revealWorkspace()
+    _ = try await separate.perform(try draftCall(chapterTwoUpdate)).get()
+    _ = try await leakRewrite(separate, identity: separateIdentity)
+    #expect(try await separate.lifecycle(3)?.review == .contradiction)
+
+    let (together, _) = try await revealWorkspace()
+    _ = try await together.applied(try await together.stage(chapterTwoUpdate, leakingRewrite).proposal.id)
+    #expect(try await together.draftContent(3)?.body.contains("kept the forgery") == true)
+    #expect(try await together.lifecycle(3)?.review == .contradiction)
+  }
+
+  @Test func shouldNotHoldARewriteForSettlingTheWorkingCopyOfItsOwnChapter() async throws {
+    let (book, identity) = try await leakWorkspace()
+    let novel = book.novel
+    let head = try #require(try await book.head(3))
+    try await book.run { try ChapterDrafts.hold(novel: novel, chapter: 3, title: nil, body: "Dawn.\n\n\(ledger)", base: head, in: &$0) }
+    let call = ContentCall.passageRewrites(chapter: 3, [try stamped("Nobody answered.", "Nobody spoke.", in: ledger, draft: identity)])
+    let context = book.applyContext()
+    _ = try await book.run { transaction in
+      try DraftHandlers.settleWorkingCopies(chapters: [3], novel: novel, in: &transaction)
+      return try ApplyFrame.perform(call, context: context, in: &transaction)
+    }
+    #expect(try await book.draftContent(3)?.body.hasPrefix("Dawn.") == true)
+    #expect(try await book.lifecycle(3)?.review == .needsReview)
   }
 }

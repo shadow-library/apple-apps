@@ -44,7 +44,7 @@ struct NovelForgeSchemaVersionThreeTests {
 
   @Test func shouldRegisterTheLedgerAndJobKindsInTheVaultBesideTheNovelForgeKinds() throws {
     let registry = NovelForgeStore.registry
-    #expect(registry.version == 3)
+    #expect(registry.version == NovelForgeSchema.version)
     let described = try JSONDecoder().decode(JSONValue.self, from: registry.canonicalDescription())
     let kinds = try #require(described["kinds"]?.arrayValue).compactMap { $0["kind"]?.stringValue }
     #expect(Set(kinds) == Set(NovelForgeKind.allCases.map(\.rawValue) + ["ai_model_call", "ai_consent", "jobs_job", "jobs_attempt"]))
