@@ -174,7 +174,7 @@ struct FinalizeIdempotencePropertyTests {
     #expect(answers.contains(.kept) && answers.contains(.skipped) && answers.contains(.automatic))
     #expect(answers.contains { if case .edited = $0 { true } else { false } })
     #expect(cases.contains { $0.open > 0 } && cases.contains { $0.open == 0 })
-    #expect(Set(cases.map(\.path)) == Set(FinalizePath.allCases))
+    #expect(Set(cases.map(\.path)) == Set(FinalizeRepeatPath.allCases))
     #expect(Set(cases.map(\.isolated)) == [true, false] && Set(cases.map(\.chapter)) == [1, 2])
     #expect(cases.contains { !$0.learns.isEmpty } && cases.contains { !$0.claims.isEmpty })
     #expect(cases.flatMap(\.items).contains { $0.change.category == .entity && $0.change.itemKey != Kept.entity("mara").itemKey })

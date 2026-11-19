@@ -8,7 +8,7 @@ import ShadowTestSupport
 @testable import NovelForgeCore
 
 /// How the author asks for the commit: by chapter number, for the lowest approved chapter (generation.service.ts:604-612), or by a chat card's action.
-enum FinalizePath: String, CaseIterable, Sendable {
+enum FinalizeRepeatPath: String, CaseIterable, Sendable {
   case named
   case lowest
   case card
@@ -67,7 +67,7 @@ private let pool: [(change: ProposedChange, edit: [String: JSONValue]?)] = [
 struct FinalizeCase: Sendable, CustomStringConvertible {
   let chapter: Int
   let isolated: Bool
-  let path: FinalizePath
+  let path: FinalizeRepeatPath
   let learns: [KnowledgeReveal]
   let claims: [String]
   let autoKeep: [FinalizeCategory]
@@ -89,7 +89,7 @@ struct FinalizeCase: Sendable, CustomStringConvertible {
       items[unanswered] = CaseItem(change: item.change, triage: item.triage, autoKept: false, answer: .open)
     }
     return FinalizeCase(
-      chapter: generator.chance(0.35) ? 2 : 1, isolated: isolated, path: generator.pick(from: FinalizePath.allCases),
+      chapter: generator.chance(0.35) ? 2 : 1, isolated: isolated, path: generator.pick(from: FinalizeRepeatPath.allCases),
       learns: generator.chance(0.5) ? [reveal("mara", "heir")] : [], claims: ["rise", "fall"].filter { _ in generator.chance(0.5) }, autoKeep: autoKeep,
       items: Array(items))
   }

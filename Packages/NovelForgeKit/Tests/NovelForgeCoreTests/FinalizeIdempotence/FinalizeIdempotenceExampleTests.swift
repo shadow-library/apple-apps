@@ -11,7 +11,7 @@ private let kael = Kept.entity("kael")
 private let seen = Kept.appearance("kael")
 
 /// Chapter 1 teaching mara heir and claiming rise, its review keeping the new entity kael on its own and the author answering the rest.
-private func reviewed(_ path: FinalizePath) -> FinalizeCase {
+private func reviewed(_ path: FinalizeRepeatPath) -> FinalizeCase {
   FinalizeCase(
     chapter: 1, isolated: false, path: path, learns: [reveal("mara", "heir")], claims: ["rise"], autoKeep: [.appearance],
     items: [
@@ -30,8 +30,8 @@ private func vaultURL() -> URL {
 @Suite("Finalizing again, by example", TestTimeLimit.standard)
 struct FinalizeIdempotenceExampleTests {
   // A process ended inside the commit's transaction leaves the file as the last committed transaction left it; the relaunch commits once
-  @Test(arguments: [FinalizePath.named, .card])
-  func shouldCommitOnceWhenTheAppRelaunchesAfterEndingInsideTheCommit(_ path: FinalizePath) async throws {
+  @Test(arguments: [FinalizeRepeatPath.named, .card])
+  func shouldCommitOnceWhenTheAppRelaunchesAfterEndingInsideTheCommit(_ path: FinalizeRepeatPath) async throws {
     let url = vaultURL()
     defer { try? FileManager.default.removeItem(at: url.deletingLastPathComponent()) }
     let clock = OperationClock()
