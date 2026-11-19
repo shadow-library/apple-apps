@@ -12,11 +12,12 @@ public enum ChapterApprovals {
 
   /// generation.service.ts:457 with its guards in order (DRF_002, DRF_007, DRF_017, DRF_013, PLN_004, then DRF_013 while the lifecycle reads it generating, :482); in the
   /// same transaction it answers the open blocking findings (:505) and requests the revision's finalize review (:504). The app calls `VaultStore.approveChapter`.
+  /// `confirmed` is how many open blocking findings the author agreed to override; nil overrides whatever is open.
   @discardableResult
   static func approve(
-    novel: UUID, chapter: Int, revision: String, as intent: ApprovalIntent = .standard, id: UUID = UUID(), requester: ReplicaID,
+    novel: UUID, chapter: Int, revision: String, as intent: ApprovalIntent = .standard, id: UUID = UUID(), confirmed: Int? = nil, requester: ReplicaID,
     in transaction: inout WriteTransaction
-  ) throws(DomainError) -> UUID {
+  ) throws(DomainError) -> ChapterApproval {
     try transaction.requireNovel(novel)
     let head = try transaction.liveDraft(novel: novel, chapter: chapter)
     guard try !transaction.isFinal(novel: novel, chapter: chapter) else { throw .draftFinal(chapter) }
@@ -33,10 +34,10 @@ public enum ChapterApprovals {
     guard entry.review != .generating else { throw .draftConflict(chapter: chapter, head: head.revision) }
     let plan = try transaction.planHead(novel: novel, chapter: chapter)
     let review = FinalizeReviewJobInput(revision: head.revision, body: head.content.body, plan: plan?.revision)
-    try overrideOpenBlocking(novel: novel, chapter: chapter, head: head, in: &transaction)
+    let overridden = try overrideOpenBlocking(novel: novel, chapter: chapter, head: head, confirmed: confirmed, in: &transaction)
     if entry.review == .approved, let held = entry.approval {
       _ = try FinalizeReviewJobs.request(review, novel: novel, chapter: chapter, requester: requester, in: &transaction)
-      return held
+      return ChapterApproval(id: held, overridden: overridden)
     }
     let approval = ApprovalRecord(
       id: id, novel: novel, chapter: chapter, approvalKind: .known(kept == nil ? .standard : .asWritten), draftRevision: head.revision,
@@ -47,13 +48,15 @@ public enum ChapterApprovals {
       _ = try DraftRecord.mark(head.record.ref, revision: head.revision, [.approved], in: &transaction)
     }
     _ = try FinalizeReviewJobs.request(review, novel: novel, chapter: chapter, requester: requester, in: &transaction)
-    return id
+    return ChapterApproval(id: id, overridden: overridden)
   }
 
   /// apps/novel-forge-server/src/modules/review/review-records.ts:163: approving answers every blocking finding still open on the chapter's latest judge review,
   /// when that review read the head as it stands. Approve overrides the review the lifecycle gates on: its latest readable judge row, by clock then id; a remedy
   /// this version cannot read is left as it is.
-  private static func overrideOpenBlocking(novel: UUID, chapter: Int, head: DraftHead, in transaction: inout WriteTransaction) throws(DomainError) {
+  private static func overrideOpenBlocking(
+    novel: UUID, chapter: Int, head: DraftHead, confirmed: Int?, in transaction: inout WriteTransaction
+  ) throws(DomainError) -> Int {
     let rows = try transaction.sql { database -> [ChapterReviewEntry] in
       guard try database.tableExists(ChapterReviewEntry.databaseTableName) else { return [] }
       return try ChapterReviewEntry.filter(Column("novel") == novel && Column("chapter") == chapter && Column("kind") == ChapterReviewKind.judge.rawValue)
@@ -61,7 +64,7 @@ public enum ChapterApprovals {
     }
     guard let row = rows.max(by: ChapterReviewEntry.precedes),
       case .readable(let reading) = try storeCall({ () throws(StoreError) in try ChapterReviewRecord.read(row.ref, in: transaction) })
-    else { return }
+    else { return 0 }
     let latest = reading.record
     var remedies = [ReviewRemedyRecord]()
     var unreadable = Set<String>()
@@ -78,13 +81,22 @@ public enum ChapterApprovals {
     let judged = LatestJudgeReview(
       reviewed: ReviewedText(draftRevision: latest.draftRevision, bodyHash: latest.bodyHash), findings: latest.findings, remedies: remedies)
     let overrides = ReviewFindings.approvalOverrides(latest: judged, draft: ReviewedText(draftRevision: head.revision, body: head.content.body))
-    for override in overrides where !unreadable.contains(override.findingId) {
+      .filter { !unreadable.contains($0.findingId) }
+    if let confirmed, overrides.count > confirmed { throw .approvalOverridesUnconfirmed(chapter: chapter, open: overrides.count) }
+    for override in overrides {
       let remedy = ReviewRemedy(action: .known(override.action), fingerprint: override.fingerprint, reason: override.reason)
       _ = try storeCall { () throws(StoreError) in
         try ReviewRemedyRecord.set(novel: novel, review: latest.id, finding: override.findingId, remedy, in: &transaction)
       }
     }
+    return overrides.count
   }
+}
+
+/// An approval in force and how many open blocking findings it recorded as overridden (chapter-checks.ts:274-278).
+public struct ChapterApproval: Sendable, Equatable {
+  public let id: UUID
+  public let overridden: Int
 }
 
 /// What a finalize review reads, bound to the revision approved (apps/novel-forge-server/src/modules/finalize-review/finalize-review-stage.ts:30-38): its job's
@@ -171,19 +183,37 @@ enum FinalizeReviewJobs {
 
   /// Every finalize_review job of the chapter whose input names `revision`, whatever its plan.
   static func jobs(novel: UUID, chapter: Int, revision: String, in transaction: borrowing WriteTransaction) throws(DomainError) -> [JobSnapshot] {
-    let (scope, target) = (NovelJobAddress.scope(of: novel), NovelJobAddress.target(chapter: chapter))
-    let states = try storeCall { () throws(StoreError) in try transaction.states(ofKind: JobSchema.jobKind) }
+    let refs = try storeCall { () throws(StoreError) in try requests(novel: novel, chapter: chapter, revision: revision, in: transaction) }
     var snapshots = [JobSnapshot]()
+    for ref in refs.read { if let snapshot = try load(ref, in: transaction) { snapshots.append(snapshot) } }
+    return snapshots
+  }
+
+  /// The finalize_review jobs of the chapter whose input names `revision`, among `candidates` (every job of the vault when nil, as a write reads them): `read`
+  /// those whose input names it, `unreadable` those whose input this version cannot read.
+  static func requests<Transaction: StateReading & ~Copyable>(
+    novel: UUID, chapter: Int, revision: String, among candidates: [EntityRef]? = nil, in transaction: borrowing Transaction
+  ) throws(StoreError) -> (read: [EntityRef], unreadable: [EntityRef]) {
+    let (scope, target) = (NovelJobAddress.scope(of: novel), NovelJobAddress.target(chapter: chapter))
+    var states = [(ref: EntityRef, state: EntityState)]()
+    if let candidates {
+      for ref in candidates { if let state = try transaction.state(of: ref, scope: .vault) { states.append((ref, state)) } }
+    } else {
+      states = try transaction.states(ofKind: JobSchema.jobKind, scope: .vault)
+    }
+    var read = [EntityRef]()
+    var unreadable = [EntityRef]()
     for (ref, state) in states {
       guard let job = JobRecords.reading(state, of: ref).record else { continue }
       let key = job.request.key
-      guard key.scope == scope, key.kind == NovelJobKind.finalizeReview.rawValue, key.target == target,
-        let input = FinalizeReviewJobInput(json: job.request.payload), input.revision.utf8.elementsEqual(revision.utf8),
-        let snapshot = try load(ref, in: transaction)
-      else { continue }
-      snapshots.append(snapshot)
+      guard key.kind == NovelJobKind.finalizeReview.rawValue, key.scope == scope, key.target == target else { continue }
+      guard let input = FinalizeReviewJobInput(json: job.request.payload) else {
+        unreadable.append(ref)
+        continue
+      }
+      if input.revision.utf8.elementsEqual(revision.utf8) { read.append(ref) }
     }
-    return snapshots
+    return (read, unreadable)
   }
 
   /// Failed or cancelled with nothing left running, so no read of it will come; known with no clock, since only a running attempt's lease reads one.

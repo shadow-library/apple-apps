@@ -11,7 +11,7 @@ private let rewritten = StaleCause.ancestorDraft(chapter: 1, change: .rewritten(
 struct ApprovalTests {
   private func approving(_ book: ChapterBook, _ chapter: Int, revision: String, as intent: ApprovalIntent = .standard) -> BookWrite<UUID> {
     let (novel, requester) = (book.novel, book.store.replica)
-    return { try ChapterApprovals.approve(novel: novel, chapter: chapter, revision: revision, as: intent, requester: requester, in: &$0) }
+    return { try ChapterApprovals.approve(novel: novel, chapter: chapter, revision: revision, as: intent, requester: requester, in: &$0).id }
   }
 
   private func planRevision(_ book: ChapterBook, _ chapter: Int) async throws -> String? {

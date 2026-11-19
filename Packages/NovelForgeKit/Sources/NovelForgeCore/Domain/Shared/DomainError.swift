@@ -83,6 +83,8 @@ public enum DomainError: ShadowError, Equatable {
   case unreadable(EntityRef)
   case unrestrictedLocked
   case finalizeRefused(FinalizeRefusal)
+  /// Approving would record more open blocking findings as overridden than the author confirmed: a judge review arrived since they were asked.
+  case approvalOverridesUnconfirmed(chapter: Int, open: Int)
   case store(StoreError)
 
   public var code: String {
@@ -149,6 +151,7 @@ public enum DomainError: ShadowError, Equatable {
     case .unreadable: "domain.unreadable"
     case .unrestrictedLocked: "library.unrestricted_locked"
     case .finalizeRefused(let refusal): refusal.code
+    case .approvalOverridesUnconfirmed: "chapters.approval_overrides_unconfirmed"
     case .store(let error): error.code
     }
   }
@@ -221,6 +224,8 @@ public enum DomainError: ShadowError, Equatable {
     case .unreadable(let ref): "\(ref.kind.rawValue)/\(ref.key.rawValue) is stored in a form this version cannot read"
     case .unrestrictedLocked: "This novel's chats, drafts, final chapters or reviews hold, or may hold, unrestricted text, so it stays unrestricted"
     case .finalizeRefused(let refusal): refusal.message
+    case .approvalOverridesUnconfirmed(let chapter, let open):
+      "Approving chapter \(chapter) would record \(open) blocking findings as overridden, more than were confirmed — confirm the override again"
     case .store(let error): error.errorDescription
     }
   }

@@ -174,7 +174,7 @@ struct DraftSaveTests {
     let book = try await ChapterBook.make()
     let first = try await book.draft(1, "A")
     try await book.save(1, "AB", base: first)
-    let approval = try await book.store.approveChapter(novel: book.novel, chapter: 1, revision: first)
+    let approval = try await book.store.approveChapter(novel: book.novel, chapter: 1, revision: first).id
     let head = try await book.head(1)
     #expect(head != first)
     #expect(try await book.draftContent(1)?.body == "AB")

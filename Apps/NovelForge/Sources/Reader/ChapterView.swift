@@ -174,6 +174,7 @@ struct ChapterView: View {
         header(loaded, title: title, amended: amended)
         ChapterWorkspaceStrip(context: context, chapter: chapter, row: loaded.row)
         GenerationControls(context: context, chapter: chapter, row: loaded.row)
+        ChapterFinalizeBar(context: context, content: loaded)
         stateCallouts(loaded)
         keptCallout(loaded)
         ProseView(markdown: markdown)

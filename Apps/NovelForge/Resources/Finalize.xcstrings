@@ -1,0 +1,2039 @@
+{
+  "sourceLanguage": "en",
+  "strings": {
+    "%@ can't be empty.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ can't be empty."
+          }
+        }
+      }
+    },
+    "%lld Story Bible updates still need your call.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld Story Bible update still needs your call."
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld Story Bible updates still need your call."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld blocking findings are still open. Change the text, dismiss them or approve over them first.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld blocking finding is still open. Change the text, dismiss it or approve over it first."
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld blocking findings are still open. Change the text, dismiss them or approve over them first."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld blocking findings were recorded as overridden.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld blocking finding was recorded as overridden."
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld blocking findings were recorded as overridden."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld possible unplanned disclosures": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld possible unplanned disclosure"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld possible unplanned disclosures"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld updates need your call.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld update needs your call."
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld updates need your call."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "A character learns something the plan keeps locked here.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A character learns something the plan keeps locked here."
+          }
+        }
+      }
+    },
+    "A check arrived with more blocking findings than you confirmed. Approve again to see them.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A check arrived with more blocking findings than you confirmed. Approve again to see them."
+          }
+        }
+      }
+    },
+    "A reveal in this chapter's plan no longer holds, so it can't be approved as written. Fix the plan first.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A reveal in this chapter's plan no longer holds, so it can't be approved as written. Fix the plan first."
+          }
+        }
+      }
+    },
+    "A skipped update is never asked again for this chapter.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A skipped update is never asked again for this chapter."
+          }
+        }
+      }
+    },
+    "About %@. The record it names stays as it is.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "About %@. The record it names stays as it is."
+          }
+        }
+      }
+    },
+    "All Answered": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "All Answered"
+          }
+        }
+      }
+    },
+    "All Kept": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "All Kept"
+          }
+        }
+      }
+    },
+    "An edited update keeps its kind and the record it is about. Change only its details.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "An edited update keeps its kind and the record it is about. Change only its details."
+          }
+        }
+      }
+    },
+    "Answered on an earlier read": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Answered on an earlier read"
+          }
+        }
+      }
+    },
+    "Appearances": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Appearances"
+          }
+        }
+      }
+    },
+    "Appeared": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Appeared"
+          }
+        }
+      }
+    },
+    "Approve": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Approve"
+          }
+        }
+      }
+    },
+    "Approve and Override": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Approve and Override"
+          }
+        }
+      }
+    },
+    "Approve as Written": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Approve as Written"
+          }
+        }
+      }
+    },
+    "Approve it, and its Story Bible updates are read from the version you approved.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Approve it, and its Story Bible updates are read from the version you approved."
+          }
+        }
+      }
+    },
+    "Approve over %lld blocking findings?": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Approve over %lld blocking finding?"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Approve over %lld blocking findings?"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "Approve over the blocking findings still open?": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Approve over the blocking findings still open?"
+          }
+        }
+      }
+    },
+    "Approving records %lld blocking findings as overridden, including any you marked “I'll fix it myself”.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Approving records %lld blocking finding as overridden, including any you marked “I'll fix it myself”."
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Approving records %lld blocking findings as overridden, including any you marked “I'll fix it myself”."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "Approving records every blocking finding still open as overridden, including any you marked “I'll fix it myself”.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Approving records every blocking finding still open as overridden, including any you marked “I'll fix it myself”."
+          }
+        }
+      }
+    },
+    "Back to the Chapter": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Back to the Chapter"
+          }
+        }
+      }
+    },
+    "Bridge summaries": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bridge summaries"
+          }
+        }
+      }
+    },
+    "Cancel": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cancel"
+          }
+        }
+      }
+    },
+    "Changed since you answered it": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Changed since you answered it"
+          }
+        }
+      }
+    },
+    "Chapter %lld approved": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Chapter %lld approved"
+          }
+        }
+      }
+    },
+    "Chapter %lld can't be finalized yet": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Chapter %lld can't be finalized yet"
+          }
+        }
+      }
+    },
+    "Chapter %lld has no summary. Write one or summarize it first.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Chapter %lld has no summary. Write one or summarize it first."
+          }
+        }
+      }
+    },
+    "Chapter %lld is already final.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Chapter %lld is already final."
+          }
+        }
+      }
+    },
+    "Chapter %lld is final": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Chapter %lld is final"
+          }
+        }
+      }
+    },
+    "Chapter %lld is isolated and needs its summary and where things stand before it can be final.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Chapter %lld is isolated and needs its summary and where things stand before it can be final."
+          }
+        }
+      }
+    },
+    "Chapter %lld is isolated, so only you can finalize it.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Chapter %lld is isolated, so only you can finalize it."
+          }
+        }
+      }
+    },
+    "Chapter %lld is out of date: something it was written against changed. Edit it, or approve it as written.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Chapter %lld is out of date: something it was written against changed. Edit it, or approve it as written."
+          }
+        }
+      }
+    },
+    "Chapter %lld isn't approved. Approve it first.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Chapter %lld isn't approved. Approve it first."
+          }
+        }
+      }
+    },
+    "Chapter %lld was finalized on two devices with different updates": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Chapter %lld was finalized on two devices with different updates"
+          }
+        }
+      }
+    },
+    "Chapter %lld's Story Bible updates": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Chapter %lld's Story Bible updates"
+          }
+        }
+      }
+    },
+    "Chapter progress is being rebuilt on this device. Try again in a moment.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Chapter progress is being rebuilt on this device. Try again in a moment."
+          }
+        }
+      }
+    },
+    "Chapters are finalized in order. Finalize the earlier chapters first.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Chapters are finalized in order. Finalize the earlier chapters first."
+          }
+        }
+      }
+    },
+    "Conditions (comma separated)": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Conditions (comma separated)"
+          }
+        }
+      }
+    },
+    "Couldn't approve": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Couldn't approve"
+          }
+        }
+      }
+    },
+    "Couldn't check whether this chapter can be finalized": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Couldn't check whether this chapter can be finalized"
+          }
+        }
+      }
+    },
+    "Couldn't finalize": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Couldn't finalize"
+          }
+        }
+      }
+    },
+    "Couldn't load the review": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Couldn't load the review"
+          }
+        }
+      }
+    },
+    "Decision for %@": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Decision for %@"
+          }
+        }
+      }
+    },
+    "Discard": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Discard"
+          }
+        }
+      }
+    },
+    "Discard your unsaved answer?": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Discard your unsaved answer?"
+          }
+        }
+      }
+    },
+    "Edit": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Edit"
+          }
+        }
+      }
+    },
+    "Finalize Without Updates": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Finalize Without Updates"
+          }
+        }
+      }
+    },
+    "Finalize and Keep %lld Updates": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Finalize and Keep %lld Update"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Finalize and Keep %lld Updates"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "Finalize chapter %lld: what it changes in your Story Bible": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Finalize chapter %lld: what it changes in your Story Bible"
+          }
+        }
+      }
+    },
+    "Finalize · Review Story Bible Updates": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Finalize · Review Story Bible Updates"
+          }
+        }
+      }
+    },
+    "From the chapter:": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "From the chapter:"
+          }
+        }
+      }
+    },
+    "Got It": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Got It"
+          }
+        }
+      }
+    },
+    "How they are": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "How they are"
+          }
+        }
+      }
+    },
+    "How they learn it": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "How they learn it"
+          }
+        }
+      }
+    },
+    "If nothing needs your call, the chapter becomes final on its own.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "If nothing needs your call, the chapter becomes final on its own."
+          }
+        }
+      }
+    },
+    "In the Story Bible": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "In the Story Bible"
+          }
+        }
+      }
+    },
+    "Interpretation": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Interpretation"
+          }
+        }
+      }
+    },
+    "Its Story Bible updates are being read. If nothing needs your call, the chapter becomes final on its own.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Its Story Bible updates are being read. If nothing needs your call, the chapter becomes final on its own."
+          }
+        }
+      }
+    },
+    "Its Story Bible updates are being read. This chapter is isolated, so it becomes final only when you finalize it.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Its Story Bible updates are being read. This chapter is isolated, so it becomes final only when you finalize it."
+          }
+        }
+      }
+    },
+    "Its answers changed since, so this is the review it named as it reads now.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Its answers changed since, so this is the review it named as it reads now."
+          }
+        }
+      }
+    },
+    "Keep": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Keep"
+          }
+        }
+      }
+    },
+    "Keep All": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Keep All"
+          }
+        }
+      }
+    },
+    "Keep Editing": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Keep Editing"
+          }
+        }
+      }
+    },
+    "Keep automatically from now on": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Keep automatically from now on"
+          }
+        }
+      }
+    },
+    "Keep automatically from now on:": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Keep automatically from now on:"
+          }
+        }
+      }
+    },
+    "Keep: %@": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Keep: %@"
+          }
+        }
+      }
+    },
+    "Keeping it locked leaves %@ without the milestone it needs.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Keeping it locked leaves %@ without the milestone it needs."
+          }
+        }
+      }
+    },
+    "Keeping it locked means later chapters can't count on it.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Keeping it locked means later chapters can't count on it."
+          }
+        }
+      }
+    },
+    "Kept": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kept"
+          }
+        }
+      }
+    },
+    "Kept as edited": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kept as edited"
+          }
+        }
+      }
+    },
+    "Kept automatically": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kept automatically"
+          }
+        }
+      }
+    },
+    "Kept by the other finalize, not applied": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kept by the other finalize, not applied"
+          }
+        }
+      }
+    },
+    "Knows": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Knows"
+          }
+        }
+      }
+    },
+    "Left open on purpose": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Left open on purpose"
+          }
+        }
+      }
+    },
+    "Milestone": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Milestone"
+          }
+        }
+      }
+    },
+    "Missed milestone": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Missed milestone"
+          }
+        }
+      }
+    },
+    "Name": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Name"
+          }
+        }
+      }
+    },
+    "Needs your call": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Needs your call"
+          }
+        }
+      }
+    },
+    "Needs your call · %lld of %lld": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Needs your call · %lld of %lld"
+          }
+        }
+      }
+    },
+    "New in the Story Bible": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "New in the Story Bible"
+          }
+        }
+      }
+    },
+    "New world details": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "New world details"
+          }
+        }
+      }
+    },
+    "No": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No"
+          }
+        }
+      }
+    },
+    "No unplanned disclosure detected": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No unplanned disclosure detected"
+          }
+        }
+      }
+    },
+    "No updates": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No updates"
+          }
+        }
+      }
+    },
+    "Note": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Note"
+          }
+        }
+      }
+    },
+    "Notes": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Notes"
+          }
+        }
+      }
+    },
+    "Nothing needs your call.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nothing needs your call."
+          }
+        }
+      }
+    },
+    "OK": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "OK"
+          }
+        }
+      }
+    },
+    "Open blocking findings can't be counted on this device right now.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Open blocking findings can't be counted on this device right now."
+          }
+        }
+      }
+    },
+    "Part of this chapter is stored in a form this version cannot read.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Part of this chapter is stored in a form this version cannot read."
+          }
+        }
+      }
+    },
+    "Part of this chapter's Story Bible review is stored in a form this version of Novel Forge can't read. You may need to update the app.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Part of this chapter's Story Bible review is stored in a form this version of Novel Forge can't read. You may need to update the app."
+          }
+        }
+      }
+    },
+    "Planned milestones": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Planned milestones"
+          }
+        }
+      }
+    },
+    "Promise": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Promise"
+          }
+        }
+      }
+    },
+    "Promises that moved": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Promises that moved"
+          }
+        }
+      }
+    },
+    "Reached in this chapter": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reached in this chapter"
+          }
+        }
+      }
+    },
+    "Read Again": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Read Again"
+          }
+        }
+      }
+    },
+    "Read from the version you approved.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Read from the version you approved."
+          }
+        }
+      }
+    },
+    "Reading the Story Bible updates from the version you approved…": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reading the Story Bible updates from the version you approved…"
+          }
+        }
+      }
+    },
+    "Reading the Story Bible updates from this chapter failed. Read them again.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reading the Story Bible updates from this chapter failed. Read them again."
+          }
+        }
+      }
+    },
+    "Reading the updates from this chapter failed": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reading the updates from this chapter failed"
+          }
+        }
+      }
+    },
+    "Reason for skipping %@": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reason for skipping %@"
+          }
+        }
+      }
+    },
+    "Relationship": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Relationship"
+          }
+        }
+      }
+    },
+    "Relationships": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Relationships"
+          }
+        }
+      }
+    },
+    "Renames a record": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Renames a record"
+          }
+        }
+      }
+    },
+    "Reopens a promise": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reopens a promise"
+          }
+        }
+      }
+    },
+    "Routine · %lld": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Routine · %lld"
+          }
+        }
+      }
+    },
+    "Run the AI review first: it turns the judge's conflict into findings you can fix, dismiss or override.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Run the AI review first: it turns the judge's conflict into findings you can fix, dismiss or override."
+          }
+        }
+      }
+    },
+    "Save Edit": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Save Edit"
+          }
+        }
+      }
+    },
+    "Say why you're skipping this update.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Say why you're skipping this update."
+          }
+        }
+      }
+    },
+    "Skip": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Skip"
+          }
+        }
+      }
+    },
+    "Skip: %@": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Skip: %@"
+          }
+        }
+      }
+    },
+    "Skipped": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Skipped"
+          }
+        }
+      }
+    },
+    "Skipped because: %@": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Skipped because: %@"
+          }
+        }
+      }
+    },
+    "Skipping only means “don't record this”. It doesn't unsay what the reader saw; to change what happened, edit the chapter before finalizing.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Skipping only means “don't record this”. It doesn't unsay what the reader saw; to change what happened, edit the chapter before finalizing."
+          }
+        }
+      }
+    },
+    "Something went wrong.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Something went wrong."
+          }
+        }
+      }
+    },
+    "Status": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Status"
+          }
+        }
+      }
+    },
+    "Still waiting on: %@.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Still waiting on: %@."
+          }
+        }
+      }
+    },
+    "Story Bible Updates": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Story Bible Updates"
+          }
+        }
+      }
+    },
+    "Summary later chapters see": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Summary later chapters see"
+          }
+        }
+      }
+    },
+    "That update is no longer part of this review.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "That update is no longer part of this review."
+          }
+        }
+      }
+    },
+    "The Story Bible already has this record under another name.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The Story Bible already has this record under another name."
+          }
+        }
+      }
+    },
+    "The Story Bible has this settled; keeping it opens it again.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The Story Bible has this settled; keeping it opens it again."
+          }
+        }
+      }
+    },
+    "The Story Bible updates are still being read from the approved version. Finalize once they are ready.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The Story Bible updates are still being read from the approved version. Finalize once they are ready."
+          }
+        }
+      }
+    },
+    "The first finalize stands, and its updates are in the Story Bible. The other finalize's updates were not applied, except that new entries it created in the Story Bible stay. Check that the Story Bible holds what you want.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The first finalize stands, and its updates are in the Story Bible. The other finalize's updates were not applied, except that new entries it created in the Story Bible stay. Check that the Story Bible holds what you want."
+          }
+        }
+      }
+    },
+    "The plan doesn't claim this milestone for this chapter.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The plan doesn't claim this milestone for this chapter."
+          }
+        }
+      }
+    },
+    "The plan for chapter %lld reveals something too early. Fix the plan first.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The plan for chapter %lld reveals something too early. Fix the plan first."
+          }
+        }
+      }
+    },
+    "The promise": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The promise"
+          }
+        }
+      }
+    },
+    "The question": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The question"
+          }
+        }
+      }
+    },
+    "The text changed since you approved it": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The text changed since you approved it"
+          }
+        }
+      }
+    },
+    "The text changed since you approved it, so its Story Bible updates no longer apply. Approve it again.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The text changed since you approved it, so its Story Bible updates no longer apply. Approve it again."
+          }
+        }
+      }
+    },
+    "The updates read from the version you approved were checked against what the plan still keeps locked at this chapter. It's a model reading, so “nothing detected” is not a guarantee.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The updates read from the version you approved were checked against what the plan still keeps locked at this chapter. It's a model reading, so “nothing detected” is not a guarantee."
+          }
+        }
+      }
+    },
+    "The updates were read again, and %lld you answered changed": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "The updates were read again, and %lld you answered changed"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "The updates were read again, and %lld you answered changed"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "These updates are in the Story Bible": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "These updates are in the Story Bible"
+          }
+        }
+      }
+    },
+    "These updates were already applied when the chapter was finalized.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "These updates were already applied when the chapter was finalized."
+          }
+        }
+      }
+    },
+    "They were applied when chapter %lld was finalized.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "They were applied when chapter %lld was finalized."
+          }
+        }
+      }
+    },
+    "This chapter changed or is being written. Read the version on screen, then approve again.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This chapter changed or is being written. Read the version on screen, then approve again."
+          }
+        }
+      }
+    },
+    "This chapter changes nothing in the Story Bible.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This chapter changes nothing in the Story Bible."
+          }
+        }
+      }
+    },
+    "This chapter has no Story Bible review yet": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This chapter has no Story Bible review yet"
+          }
+        }
+      }
+    },
+    "This chapter has no Story Bible review yet. Approve it first.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This chapter has no Story Bible review yet. Approve it first."
+          }
+        }
+      }
+    },
+    "This chapter has no draft": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This chapter has no draft"
+          }
+        }
+      }
+    },
+    "This chapter has no draft to finalize.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This chapter has no draft to finalize."
+          }
+        }
+      }
+    },
+    "This chapter has no draft. It may have been removed on another device.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This chapter has no draft. It may have been removed on another device."
+          }
+        }
+      }
+    },
+    "This chapter is already final.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This chapter is already final."
+          }
+        }
+      }
+    },
+    "This chapter is isolated, so it becomes final only when you finalize it.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This chapter is isolated, so it becomes final only when you finalize it."
+          }
+        }
+      }
+    },
+    "This chapter is isolated, so the lines each update was read from are withheld here.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This chapter is isolated, so the lines each update was read from are withheld here."
+          }
+        }
+      }
+    },
+    "This chapter isn't approved. Approve it first.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This chapter isn't approved. Approve it first."
+          }
+        }
+      }
+    },
+    "This chapter reveals %@, which needs milestone %@. Keep the milestone as reached, or change the plan or the text.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This chapter reveals %@, which needs milestone %@. Keep the milestone as reached, or change the plan or the text."
+          }
+        }
+      }
+    },
+    "This chapter's Story Bible review can't be read on this device right now.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This chapter's Story Bible review can't be read on this device right now."
+          }
+        }
+      }
+    },
+    "This chapter's draft is stored in a form this version cannot read.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This chapter's draft is stored in a form this version cannot read."
+          }
+        }
+      }
+    },
+    "This chapter's jobs are being rebuilt on this device. Try again in a moment.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This chapter's jobs are being rebuilt on this device. Try again in a moment."
+          }
+        }
+      }
+    },
+    "This is what was proposed. Choose Keep to record it as it is.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This is what was proposed. Choose Keep to record it as it is."
+          }
+        }
+      }
+    },
+    "This isolated chapter needs its summary and where things stand before it can be final.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This isolated chapter needs its summary and where things stand before it can be final."
+          }
+        }
+      }
+    },
+    "This review was read from an earlier version. Approve the chapter again to review what the new version changes.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This review was read from an earlier version. Approve the chapter again to review what the new version changes."
+          }
+        }
+      }
+    },
+    "Try Again": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Try Again"
+          }
+        }
+      }
+    },
+    "Unavailable": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Unavailable"
+          }
+        }
+      }
+    },
+    "Unplanned disclosure": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Unplanned disclosure"
+          }
+        }
+      }
+    },
+    "Unplanned milestone": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Unplanned milestone"
+          }
+        }
+      }
+    },
+    "Unreadable update": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Unreadable update"
+          }
+        }
+      }
+    },
+    "What Was Checked": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "What Was Checked"
+          }
+        }
+      }
+    },
+    "What characters learn": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "What characters learn"
+          }
+        }
+      }
+    },
+    "What later chapters read": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "What later chapters read"
+          }
+        }
+      }
+    },
+    "What the other finalize kept can't be read on this device yet.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "What the other finalize kept can't be read on this device yet."
+          }
+        }
+      }
+    },
+    "What they want next": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "What they want next"
+          }
+        }
+      }
+    },
+    "Where people are": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Where people are"
+          }
+        }
+      }
+    },
+    "Where people are, who appeared, small world details, promises that moved": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Where people are, who appeared, small world details, promises that moved"
+          }
+        }
+      }
+    },
+    "Where they are": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Where they are"
+          }
+        }
+      }
+    },
+    "Where they stand": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Where they stand"
+          }
+        }
+      }
+    },
+    "Why skip it?": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Why skip it?"
+          }
+        }
+      }
+    },
+    "Yes": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Yes"
+          }
+        }
+      }
+    },
+    "Your earlier answers were for what the first read proposed. Answer the changed updates again.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your earlier answers were for what the first read proposed. Answer the changed updates again."
+          }
+        }
+      }
+    }
+  },
+  "version": "1.0"
+}

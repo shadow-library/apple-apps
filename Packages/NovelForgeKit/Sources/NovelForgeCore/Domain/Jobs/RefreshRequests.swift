@@ -55,6 +55,46 @@ struct CanonRefreshJobInput: Sendable, Equatable {
   var fingerprint: String { canonDigest }
 }
 
+/// The finalize review a commit applied, beside its canon in the refresh request: two devices can finalize a chapter apart, and the canon that loses leaves only
+/// its refresh request behind, so this is how the app lists the updates it would have kept (plan, "Finalize commit"). `kept` is `fingerprint(of:)` of
+/// `CanonReview.kept`.
+struct CanonRefreshReview: Sendable, Equatable {
+  let id: UUID
+  let kept: String
+
+  private enum Member: String {
+    case review
+    case kept
+  }
+
+  init(id: UUID, kept: String) {
+    self.id = id
+    self.kept = kept
+  }
+
+  init(_ review: CanonReview) {
+    self.init(id: review.id, kept: Self.fingerprint(of: review.kept))
+  }
+
+  init?(payload: JSONValue) {
+    guard let members = payload.objectValue, let id = members[Member.review.rawValue]?.stringValue.flatMap(UUID.init(uuidString:)),
+      let kept = members[Member.kept.rawValue]?.stringValue
+    else { return nil }
+    self.init(id: id, kept: kept)
+  }
+
+  static func fingerprint(of kept: [[String: JSONValue]]) -> String {
+    sha256Hex(String(decoding: CanonicalJSON.encode(.array(kept.map(JSONValue.object))), as: UTF8.self))
+  }
+
+  func adding(to payload: JSONValue) -> JSONValue {
+    var members = payload.objectValue ?? [:]
+    members[Member.review.rawValue] = .string(id.lowercasedString)
+    members[Member.kept.rawValue] = .string(kept)
+    return .object(members)
+  }
+}
+
 /// The canon_refresh jobs of a chapter (generation.service.ts:583-602 queues one after a finalize), requested as `JobEngine.request` does: the same canon is one
 /// job, and a cancelled one is asked for again as its next run.
 enum CanonRefreshJobs {
@@ -71,7 +111,8 @@ enum CanonRefreshJobs {
   /// For the finalize commit, in its transaction; fails closed on a job record of the canon this version cannot read.
   @discardableResult
   static func request(
-    novel: UUID, chapter: Int, canonDigest: String, origin: JSONValue = .null, requester: ReplicaID, in transaction: inout WriteTransaction
+    novel: UUID, chapter: Int, canonDigest: String, review: CanonRefreshReview? = nil, origin: JSONValue = .null, requester: ReplicaID,
+    in transaction: inout WriteTransaction
   ) throws(DomainError) -> JobKey {
     let input = CanonRefreshJobInput(chapter: chapter, canonDigest: canonDigest)
     var run = 1
@@ -85,7 +126,9 @@ enum CanonRefreshJobs {
       if let highest = try jobs({ () throws(JobRecordError) in try JobSnapshot.load(ref, in: transaction) }), !cancelled(highest) { return highest.job.request.key }
     }
     let key = try key(input, novel: novel, chapter: chapter, run: run)
-    _ = try jobs { () throws(JobRecordError) in try JobRecords.request(JobRequest(key: key, payload: input.json, origin: origin, replica: requester), in: &transaction) }
+    _ = try jobs { () throws(JobRecordError) in
+      try JobRecords.request(JobRequest(key: key, payload: review?.adding(to: input.json) ?? input.json, origin: origin, replica: requester), in: &transaction)
+    }
     return key
   }
 

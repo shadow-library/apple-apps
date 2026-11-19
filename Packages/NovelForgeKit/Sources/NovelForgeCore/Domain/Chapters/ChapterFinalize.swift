@@ -40,7 +40,9 @@ public enum ChapterFinalize {
     if let plan {
       _ = try storeCall { () throws(StoreError) in try ChapterPlanRecord.mark(plan.record.ref, revision: plan.revision, [.finalized], in: &transaction) }
     }
-    try CanonRefreshJobs.request(novel: novel, chapter: chapter, canonDigest: record.canonDigest, origin: origin, requester: change.clock.replica, in: &transaction)
+    try CanonRefreshJobs.request(
+      novel: novel, chapter: chapter, canonDigest: record.canonDigest, review: CanonRefreshReview(binding.review), origin: origin, requester: change.clock.replica,
+      in: &transaction)
     return chapter
   }
 

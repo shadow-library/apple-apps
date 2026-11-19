@@ -93,7 +93,11 @@ struct FinalizeCommitBindingTests {
     #expect(jobs.count == 1)
     let key = try #require(jobs.first?.request.key)
     #expect(key.target == NovelJobAddress.target(chapter: 1) && key.fingerprint == digest && key.run == 1)
-    #expect(jobs.first?.request.payload == ["chapter": 1, "canon": .string(digest)])
+    let review = try #require(try await book.final(1)?.canon.review)
+    #expect(
+      jobs.first?.request.payload == [
+        "chapter": 1, "canon": .string(digest), "review": .string(review.id.lowercasedString), "kept": .string(CanonRefreshReview.fingerprint(of: review.kept)),
+      ])
     #expect(jobs.first?.request.origin == .null)
   }
 

@@ -8,7 +8,7 @@ enum JSNormalizationForm {
 }
 
 extension String {
-  func jsTrim() -> String {
+  public func jsTrim() -> String {
     trimming(start: true, end: true)
   }
 

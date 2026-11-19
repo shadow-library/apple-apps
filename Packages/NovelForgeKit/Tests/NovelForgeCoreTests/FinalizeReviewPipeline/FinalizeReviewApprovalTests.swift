@@ -137,7 +137,7 @@ struct FinalizeReviewApprovalTests {
       try await world.store.read { transaction in try ChapterLifecycleEntry.read(novel: novel, chapter: 1, in: transaction.database) }
     }
     #expect(try await lifecycle()?.review == .contradiction)
-    let approval = try await world.store.approveChapter(novel: novel, chapter: 1, revision: head)
+    let approval = try await world.store.approveChapter(novel: novel, chapter: 1, revision: head).id
     #expect(try await remedies(world, review: readable)["open"]?.action == .known(.overridden))
     let entry = try await lifecycle()
     #expect(entry?.review == .approved && entry?.approval == approval)
