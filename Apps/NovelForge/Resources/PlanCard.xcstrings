@@ -1,0 +1,1084 @@
+{
+  "sourceLanguage": "en",
+  "strings": {
+    "A milestone can't be claimed here": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A milestone can't be claimed here"
+          }
+        }
+      }
+    },
+    "A reveal in this plan isn't unlocked here": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A reveal in this plan isn't unlocked here"
+          }
+        }
+      }
+    },
+    "About %@ words": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "About %@ words"
+          }
+        }
+      }
+    },
+    "Always: this plan, how the last chapter ended, the characters on stage and what their points of view know, the book's rules, the volume's goal and your style. If it can't all fit, you'll be told what was cut.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Always: this plan, how the last chapter ended, the characters on stage and what their points of view know, the book's rules, the volume's goal and your style. If it can't all fit, you'll be told what was cut."
+          }
+        }
+      }
+    },
+    "Beats": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Beats"
+          }
+        }
+      }
+    },
+    "Cancel": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cancel"
+          }
+        }
+      }
+    },
+    "Chapter %@": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Chapter %@"
+          }
+        }
+      }
+    },
+    "Chapter %lld plan": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Chapter %lld plan"
+          }
+        }
+      }
+    },
+    "Claim the milestone it waits for, or plan the chapter again.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Claim the milestone it waits for, or plan the chapter again."
+          }
+        }
+      }
+    },
+    "Content for this chapter": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Content for this chapter"
+          }
+        }
+      }
+    },
+    "Direction: %@": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Direction: %@"
+          }
+        }
+      }
+    },
+    "Discard": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Discard"
+          }
+        }
+      }
+    },
+    "Discard this plan?": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Discard this plan?"
+          }
+        }
+      }
+    },
+    "Discarded": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Discarded"
+          }
+        }
+      }
+    },
+    "Draft": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Draft"
+          }
+        }
+      }
+    },
+    "Ends on": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ends on"
+          }
+        }
+      }
+    },
+    "Every step for this chapter — writing, repairs, revisions, its summary and checks — uses a model that allows dark content. The chapter is then walled off: not searched, quoted or read by the chat. The next chapter sees only a short summary and what changed (where people are, injuries, who learned what), which you check and edit before moving on.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Every step for this chapter — writing, repairs, revisions, its summary and checks — uses a model that allows dark content. The chapter is then walled off: not searched, quoted or read by the chat. The next chapter sees only a short summary and what changed (where people are, injuries, who learned what), which you check and edit before moving on."
+          }
+        }
+      }
+    },
+    "Follows the novel's setting": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Follows the novel's setting"
+          }
+        }
+      }
+    },
+    "Give it a title and at least one scene first": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Give it a title and at least one scene first"
+          }
+        }
+      }
+    },
+    "Goal, obstacle and beats · %lld filled": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Goal, obstacle and beats · %lld filled"
+          }
+        }
+      }
+    },
+    "How it stands when the scene ends": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "How it stands when the scene ends"
+          }
+        }
+      }
+    },
+    "It can no longer change. Ask for a new plan if you need one.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "It can no longer change. Ask for a new plan if you need one."
+          }
+        }
+      }
+    },
+    "It stops on every device. You can plan the chapter again later.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "It stops on every device. You can plan the chapter again later."
+          }
+        }
+      }
+    },
+    "Keep It": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Keep It"
+          }
+        }
+      }
+    },
+    "Kept from the writer: %@. You can't add these here; a locked secret goes in only once its conditions are met. The Writer's view shows exactly what was sent.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kept from the writer: %@. You can't add these here; a locked secret goes in only once its conditions are met. The Writer's view shows exactly what was sent."
+          }
+        }
+      }
+    },
+    "Kind of ending": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kind of ending"
+          }
+        }
+      }
+    },
+    "Make the Plan": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Make the Plan"
+          }
+        }
+      }
+    },
+    "Milestone: %@": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Milestone: %@"
+          }
+        }
+      }
+    },
+    "Mystery: %@": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mystery: %@"
+          }
+        }
+      }
+    },
+    "No chapter plan here": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No chapter plan here"
+          }
+        }
+      }
+    },
+    "No directions, no questions — straight to a plan card.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No directions, no questions — straight to a plan card."
+          }
+        }
+      }
+    },
+    "No milestone claimed — nothing unlocks in this chapter.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No milestone claimed — nothing unlocks in this chapter."
+          }
+        }
+      }
+    },
+    "No pages picked — the writer gets only what is always sent.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No pages picked — the writer gets only what is always sent."
+          }
+        }
+      }
+    },
+    "No point of view yet": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No point of view yet"
+          }
+        }
+      }
+    },
+    "No scenes yet.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No scenes yet."
+          }
+        }
+      }
+    },
+    "Not Now": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Not Now"
+          }
+        }
+      }
+    },
+    "Nothing in it becomes the chapter's plan. You can plan the chapter again.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nothing in it becomes the chapter's plan. You can plan the chapter again."
+          }
+        }
+      }
+    },
+    "Only the next chapter can be planned, and the story has moved on. Plan the chapter that's next now.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Only the next chapter can be planned, and the story has moved on. Plan the chapter that's next now."
+          }
+        }
+      }
+    },
+    "Optional. She sells the lamp, and regrets it by nightfall.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Optional. She sells the lamp, and regrets it by nightfall."
+          }
+        }
+      }
+    },
+    "Other things to look at": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Other things to look at"
+          }
+        }
+      }
+    },
+    "Out of date": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Out of date"
+          }
+        }
+      }
+    },
+    "Pages picked from your Story Bible": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pages picked from your Story Bible"
+          }
+        }
+      }
+    },
+    "Plan chapter %lld": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Plan chapter %lld"
+          }
+        }
+      }
+    },
+    "Plan saved": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Plan saved"
+          }
+        }
+      }
+    },
+    "Plan the chapter again without it.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Plan the chapter again without it."
+          }
+        }
+      }
+    },
+    "Planning the next chapter is unavailable": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Planning the next chapter is unavailable"
+          }
+        }
+      }
+    },
+    "Plans waiting on you are not up to date on this device yet.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Plans waiting on you are not up to date on this device yet."
+          }
+        }
+      }
+    },
+    "Provisional until you finalize chapter %lld — rewrite the chapter without it and it goes back to open.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Provisional until you finalize chapter %lld — rewrite the chapter without it and it goes back to open."
+          }
+        }
+      }
+    },
+    "Replaced by a newer plan": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Replaced by a newer plan"
+          }
+        }
+      }
+    },
+    "Review Permission…": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Review Permission…"
+          }
+        }
+      }
+    },
+    "Save Plan": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Save Plan"
+          }
+        }
+      }
+    },
+    "Scenes · who tells each one": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Scenes · who tells each one"
+          }
+        }
+      }
+    },
+    "Something went wrong.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Something went wrong."
+          }
+        }
+      }
+    },
+    "Standard": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Standard"
+          }
+        }
+      }
+    },
+    "Stop": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Stop"
+          }
+        }
+      }
+    },
+    "Stop Job": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Stop Job"
+          }
+        }
+      }
+    },
+    "Stop planning?": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Stop planning?"
+          }
+        }
+      }
+    },
+    "The question it leaves open": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The question it leaves open"
+          }
+        }
+      }
+    },
+    "The story has moved on": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The story has moved on"
+          }
+        }
+      }
+    },
+    "This card holds no plan to show. Plan the next chapter again.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This card holds no plan to show. Plan the next chapter again."
+          }
+        }
+      }
+    },
+    "This chapter already has a plan, so an empty one can't replace it.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This chapter already has a plan, so an empty one can't replace it."
+          }
+        }
+      }
+    },
+    "This chapter reaches": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This chapter reaches"
+          }
+        }
+      }
+    },
+    "This plan is for a chapter that is no longer next. Plan the next chapter again.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This plan is for a chapter that is no longer next. Plan the next chapter again."
+          }
+        }
+      }
+    },
+    "This plan was already used or discarded": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This plan was already used or discarded"
+          }
+        }
+      }
+    },
+    "Thread: %@": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Thread: %@"
+          }
+        }
+      }
+    },
+    "Title": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Title"
+          }
+        }
+      }
+    },
+    "Told by %@": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Told by %@"
+          }
+        }
+      }
+    },
+    "Told mainly by": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Told mainly by"
+          }
+        }
+      }
+    },
+    "Try Again": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Try Again"
+          }
+        }
+      }
+    },
+    "Unavailable": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Unavailable"
+          }
+        }
+      }
+    },
+    "Undone": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Undone"
+          }
+        }
+      }
+    },
+    "Unrestricted": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Unrestricted"
+          }
+        }
+      }
+    },
+    "Unrestricted writing isn't available right now, so this chapter can't be written until it is.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Unrestricted writing isn't available right now, so this chapter can't be written until it is."
+          }
+        }
+      }
+    },
+    "Volume: %@": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Volume: %@"
+          }
+        }
+      }
+    },
+    "What happens in chapter %lld": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "What happens in chapter %lld"
+          }
+        }
+      }
+    },
+    "What stands in the way": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "What stands in the way"
+          }
+        }
+      }
+    },
+    "What the reader feels on the last line": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "What the reader feels on the last line"
+          }
+        }
+      }
+    },
+    "What the writer gets": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "What the writer gets"
+          }
+        }
+      }
+    },
+    "What they want": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "What they want"
+          }
+        }
+      }
+    },
+    "What this chapter does": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "What this chapter does"
+          }
+        }
+      }
+    },
+    "Whether a plan is already being made can't be read on this device right now. Try again after syncing.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Whether a plan is already being made can't be read on this device right now. Try again after syncing."
+          }
+        }
+      }
+    },
+    "Whether a plan is being made can't be read on this device right now.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Whether a plan is being made can't be read on this device right now."
+          }
+        }
+      }
+    },
+    "Which chapter comes next can't be read on this device right now.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Which chapter comes next can't be read on this device right now."
+          }
+        }
+      }
+    },
+    "Which chapter comes next can't be read on this device right now. Try again after syncing.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Which chapter comes next can't be read on this device right now. Try again after syncing."
+          }
+        }
+      }
+    },
+    "Words for this scene": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Words for this scene"
+          }
+        }
+      }
+    },
+    "World: %@": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "World: %@"
+          }
+        }
+      }
+    },
+    "Your direction couldn't be read on this device. Try again without it.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your direction couldn't be read on this device. Try again without it."
+          }
+        }
+      }
+    },
+    "Your plan — nothing filled in for you": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your plan — nothing filled in for you"
+          }
+        }
+      }
+    },
+    "cliffhanger": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "cliffhanger"
+          }
+        }
+      }
+    },
+    "closure with momentum": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "closure with momentum"
+          }
+        }
+      }
+    },
+    "earned rest": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "earned rest"
+          }
+        }
+      }
+    },
+    "how the book ends": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "how the book ends"
+          }
+        }
+      }
+    },
+    "later volumes and their goals": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "later volumes and their goals"
+          }
+        }
+      }
+    },
+    "planner-only pages (the organised timeline and open questions)": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "planner-only pages (the organised timeline and open questions)"
+          }
+        }
+      }
+    },
+    "promise": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "promise"
+          }
+        }
+      }
+    },
+    "quiet dread": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "quiet dread"
+          }
+        }
+      }
+    },
+    "revelation": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "revelation"
+          }
+        }
+      }
+    },
+    "turn": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "turn"
+          }
+        }
+      }
+    }
+  },
+  "version": "1.0"
+}

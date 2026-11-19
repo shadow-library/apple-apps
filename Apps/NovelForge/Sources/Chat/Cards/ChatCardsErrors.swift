@@ -59,7 +59,7 @@ enum ChatCardsErrors {
       String(localized: "What this change touches has changed since it was undone, so it can't be redone.", table: "ChatCards")
     case "RFN_003": conflicted
     case "RFN_009", "DRF_009", "CNT_002", "DRF_014", "VOL_004": String(localized: "Select this step on its own and apply it deliberately.", table: "ChatCards")
-    case "refinement.not_yet_available": String(localized: "This step becomes available with chapters.", table: "ChatCards")
+    case "refinement.not_yet_available": String(localized: "This step isn't available yet.", table: "ChatCards")
     case "refinement.automatic_action", "refinement.automatic_always_card", "refinement.sources_mismatch", "RFN_004":
       String(localized: "One of these changes is no longer valid. Leave it out and apply the rest.", table: "ChatCards")
     case "RFN_005": String(localized: "That chapter's plan is already final, so it can't change.", table: "ChatCards")

@@ -10,6 +10,7 @@ nonisolated struct ChatTrayCard: Equatable, Sendable {
   let title: String?
   /// The indexes that touch what changed since the card was staged; nil while it would apply as staged.
   let conflicts: [Int]?
+  var isPlan = false
 }
 
 /// Why an applied card's actions are still pending, as far as this device can tell.
@@ -77,7 +78,11 @@ nonisolated struct ChatTraySnapshot: Equatable, Sendable {
       let titles = try Self.titles(contents.actions.map(\.proposal), in: transaction)
       let staged = (contents.cards + contents.conflicted).sorted { $0.state.staged == $1.state.staged ? $0.state.ref < $1.state.ref : $0.state.staged < $1.state.staged }
       let cards = ChatTrayCards(
-        cards: staged.map { ChatTrayCard(proposal: $0.state.proposal, session: $0.session, title: $0.card.map(ChatTrayTitles.title), conflicts: $0.conflict?.indexes) },
+        cards: staged.map {
+          ChatTrayCard(
+            proposal: $0.state.proposal, session: $0.session, title: $0.card.map(ChatTrayTitles.title), conflicts: $0.conflict?.indexes,
+            isPlan: $0.state.kind == .known(.chapterPlan))
+        },
         actions: contents.actions.compactMap { action in
           Self.standing(standings[action.proposal].map { ($0.fault, $0.isGivenUp) }).map {
             ChatTrayActions(proposal: action.proposal, session: action.session, title: titles[action.proposal], indexes: action.indexes, standing: $0)
@@ -170,6 +175,8 @@ nonisolated struct ChatTrayItem: Identifiable, Equatable, Sendable {
   let title: String?
   let session: ChatProposalSession
   let target: ChatFocusTarget
+  /// A chapter plan staged with no chat: it is shown with Plan next chapter, not in a thread.
+  var isPlan = false
 
   var isAnswerable: Bool { kind == .elsewhere(nil) }
 
@@ -192,7 +199,7 @@ nonisolated struct ChatTrayItem: Identifiable, Equatable, Sendable {
     let cards = (contents?.cards ?? []).map { card in
       ChatTrayItem(
         id: "card:\(card.proposal)", kind: card.title == nil ? .unreadableCard : .card(conflicts: card.conflicts), title: card.title, session: card.session,
-        target: .proposal(card.proposal))
+        target: .proposal(card.proposal), isPlan: card.isPlan && card.session == .none)
     }
     let actions = (contents?.actions ?? []).map { action in
       ChatTrayItem(
@@ -221,6 +228,8 @@ final class ChatTrayModel {
   /// The card whose actions the author asked to run again, while they run.
   private(set) var retrying: UUID?
   private(set) var retryNotices: [UUID: PresentedError] = [:]
+  /// Raised by Open on a plan card with no chat; Plan next chapter scrolls its plan cards into view on each change.
+  private(set) var planReveal = 0
   /// A chat's own model while it is loaded: it follows a turn live, which the engine's activity is read again for only on a commit.
   @ObservationIgnored var live: (UUID) -> ChatTurnActivity? = { _ in nil }
   private let context: NovelContext
@@ -256,6 +265,10 @@ final class ChatTrayModel {
 
   func retry() {
     generation += 1
+  }
+
+  func revealPlans() {
+    planReveal += 1
   }
 
   /// Try Again for actions the launch sweep stopped retrying; what is still pending afterwards stays listed, with how many.

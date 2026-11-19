@@ -67,6 +67,8 @@ struct ChatSessionScreen: View {
           }
         }
         ChatTurnStatusView(model: model, mode: chats.mode(of: model.session))
+        PlanStart(
+          context: model.context, reveal: chats.waiting.planReveal, isBusy: model.isTurnActive || PlanStart.awaitsAnswer(model.messages))
       }
       .padding(Spacing.space4)
       .frame(maxWidth: 760)

@@ -231,20 +231,30 @@ struct ChatStartScreen: View {
   @Bindable var model: ChatNovelModel
 
   var body: some View {
-    ChatHero(novelTitle: model.novelTitle, mode: model.composer.draftMode)
-      .fillingSurface()
-      .safeAreaInset(edge: .bottom, spacing: 0) {
-        VStack(alignment: .leading, spacing: Spacing.space2) {
-          ChatWaitingTray(tray: model.waiting, chats: model, session: nil)
-          ChatComposer(
-            state: model.composer, draft: $model.draft, sessionMode: model.composer.draftMode, offer: model.replyOffer, isOpening: true, canSend: model.canStartDraft,
-            isSending: model.isStarting, isLocked: false, isRunning: false, saveMode: nil
-          ) {
-            Task { await model.startDraft() }
-          }
+    GeometryReader { proxy in
+      ScrollView {
+        VStack(alignment: .leading, spacing: Spacing.space4) {
+          ChatHero(novelTitle: model.novelTitle, mode: model.composer.draftMode).frame(maxWidth: .infinity)
+          PlanStart(context: model.context, reveal: model.waiting.planReveal, isBusy: model.isStarting)
         }
-        .task(id: model.waiting.generation) { await model.waiting.observe() }
+        .padding(Spacing.space4)
+        .frame(maxWidth: 760)
+        .frame(maxWidth: .infinity, minHeight: proxy.size.height)
       }
+    }
+    .fillingSurface()
+    .safeAreaInset(edge: .bottom, spacing: 0) {
+      VStack(alignment: .leading, spacing: Spacing.space2) {
+        ChatWaitingTray(tray: model.waiting, chats: model, session: nil)
+        ChatComposer(
+          state: model.composer, draft: $model.draft, sessionMode: model.composer.draftMode, offer: model.replyOffer, isOpening: true, canSend: model.canStartDraft,
+          isSending: model.isStarting, isLocked: false, isRunning: false, saveMode: nil
+        ) {
+          Task { await model.startDraft() }
+        }
+      }
+      .task(id: model.waiting.generation) { await model.waiting.observe() }
+    }
   }
 }
 

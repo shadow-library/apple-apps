@@ -111,7 +111,14 @@ struct ChatWaitingTray: View {
 
   @ViewBuilder
   private func actions(_ item: ChatTrayItem) -> some View {
-    if let chat = openable(item) {
+    if item.isPlan {
+      Button {
+        tray.revealPlans()
+      } label: {
+        Text("Open", tableName: "ChatChanges")
+      }
+      .buttonStyle(.borderless)
+    } else if let chat = openable(item) {
       Button {
         show(item, in: chat)
       } label: {

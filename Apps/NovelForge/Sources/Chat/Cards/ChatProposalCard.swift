@@ -29,6 +29,8 @@ struct ChatProposalCard: View {
         ChatCardUnavailable(message: Text("They are not up to date on this device yet. Try again after syncing.", tableName: "ChatCards")) { model.retryReading() }
       } else if snapshot.card == nil {
         absent(snapshot)
+      } else if snapshot.card?.kind == .known(.chapterPlan) {
+        ChatPlanCard(model: model, presenter: presenter)
       } else {
         card(snapshot)
       }
@@ -153,7 +155,7 @@ struct ChatCardOpRow: View {
         if let entry, !model.isPending { ChatEntryBadge(state: entry) }
       }
       if model.isPending && op.isJobAction {
-        Text("Available with chapters.", tableName: "ChatCards").shadowFont(.caption).foregroundStyle(ShadowColor.textSecondary)
+        Text("Not yet available.", tableName: "ChatCards").shadowFont(.caption).foregroundStyle(ShadowColor.textSecondary)
       } else if model.isPending && op.isGuarded {
         Text("Applies only when you select it deliberately.", tableName: "ChatCards").shadowFont(.caption).foregroundStyle(ShadowColor.textSecondary)
       }
