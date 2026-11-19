@@ -94,6 +94,22 @@ public struct TaskRouter: Sendable {
     }
   }
 
+  /// The consent a call in `contentMode` still needs from the host `route` sends it to (OpenRouter for unrestricted, else the configured provider), read
+  /// now; nil once granted, or when no provider is bound (the call itself is then refused), so work that has to call can wait before it starts.
+  public func missingConsent(_ consent: AIConsentRequirement, contentMode: ModelContentMode = .standard) async throws(TaskRouterError) -> AIConsentRequest? {
+    let provider = contentMode == .unrestricted ? ModelProviderKind.openRouter : configuration.provider
+    guard let host = binding(for: provider)?.host else { return nil }
+    let granted: Bool
+    do {
+      granted = try await store.read { transaction in
+        try AIConsent.isGranted(provider: host, dataClass: consent.dataClass, currentSummary: consent.disclosure, in: transaction)
+      }
+    } catch {
+      throw .ledger(error)
+    }
+    return granted ? nil : AIConsentRequest(provider: provider, host: host, dataClass: consent.dataClass, disclosure: consent.disclosure)
+  }
+
   private func binding(for provider: ModelProviderKind) -> ProviderBinding? {
     switch provider {
     case .anthropic: anthropic

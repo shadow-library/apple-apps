@@ -123,7 +123,8 @@ public final class JobEngine: Sendable {
     claim.release()
   }
 
-  /// The job's key; a request already made answers its job as stored, and a cancelled job is requested again as its next run.
+  /// The job's key; a request already made answers its job as stored, and a cancelled or failed job is requested again as its next run
+  /// (apps/novel-forge-server/src/modules/jobs/job.service.ts:133-135, 165-175 resets a terminal job).
   @concurrent
   public func request(_ request: NovelJobRequest) async throws(JobEngineError) -> JobKey {
     guard request.chapter >= 1 else { throw .chapterOutOfRange(request.chapter) }
@@ -218,7 +219,8 @@ public final class JobEngine: Sendable {
     if byHand, let live = snapshot.attempts.first(where: { $0.isLive(at: now) && $0.start.replica != store.replica }) {
       throw .runningElsewhere(live.id, live.start.replica)
     }
-    let pins = try await pin(target, pipeline: pipeline.version)
+    let (pins, mode) = try await pin(target, payload: snapshot.job.request.payload, pipeline: pipeline.version)
+    if let missing = try await missingConsent(mode) { throw .consentRequired(missing) }
     if faults.crashes(.pinned) { throw .run(.interrupted) }
     let started: AttemptHandle
     do {
@@ -257,8 +259,38 @@ public final class JobEngine: Sendable {
     return .runningElsewhere(leader, replica)
   }
 
-  private func pin(_ target: NovelJobTarget, pipeline version: Int) async throws(JobEngineError) -> JobPins {
-    try await engineWrite { transaction in try JobPins.pin(target, pipeline: version, in: transaction) }
+  /// Every pipeline sends the novel's text, so an attempt started without consent would only fail at its first call and use the run up.
+  private func missingConsent(_ mode: ModelContentMode) async throws(JobEngineError) -> AIConsentRequest? {
+    let router = await services.router { _ in nil }
+    do {
+      return try await router.missingConsent(services.consent, contentMode: mode)
+    } catch .ledger(let error) {
+      throw .store(error)
+    } catch {
+      throw .store(.aborted(error))
+    }
+  }
+
+  /// The pins, read without writing, and the content mode the job's calls take, for its consent.
+  private func pin(_ target: NovelJobTarget, payload: JSONValue, pipeline version: Int) async throws(JobEngineError) -> (JobPins, ModelContentMode) {
+    let unrestrictedAvailable = services.unrestrictedAvailable
+    return try await engineWrite { transaction in
+      (try JobPins.pin(target, pipeline: version, in: transaction), Self.contentMode(target, payload: payload, unrestrictedAvailable: unrestrictedAvailable, in: transaction))
+    }
+  }
+
+  /// As the chapter's calls route it (ChapterCallRouter): an isolated draft, a plan that names unrestricted or a payload that raises the call is unrestricted
+  /// where this build writes it; anything this version cannot read checks the standard host, and the call itself refuses later.
+  static func contentMode(
+    _ target: NovelJobTarget, payload: JSONValue, unrestrictedAvailable: Bool, in transaction: borrowing WriteTransaction
+  ) -> ModelContentMode {
+    guard unrestrictedAvailable else { return .standard }
+    let plan = (try? transaction.planHead(novel: target.novel, chapter: target.chapter))?.record.content
+    var isolated = false
+    if case .live(let head)? = try? transaction.draft(novel: target.novel, chapter: target.chapter) { isolated = head.content.isolated }
+    let source = ChapterCallSource(
+      novel: target.novel, chapter: target.chapter, role: .draft, plan: plan, isolated: isolated, raised: payload["unrestricted"]?.boolValue == true)
+    return (try? ChapterCallRouter.route(source, unrestrictedAvailable: true))?.contentMode ?? .standard
   }
 
   private func ready(_ kind: NovelJobKind) throws(JobEngineError) -> NovelPipeline {
@@ -391,7 +423,7 @@ extension NovelJobRequest {
     let stale =
       highest.map { snapshot in
         let status = JobStatus(snapshot, at: now)
-        guard case .succeeded = status else { return rerun || status == .cancelled }
+        guard case .succeeded = status else { return rerun || status == .cancelled || status.phase == .failed }
         return rerun || rerunOnceSucceeded
       } ?? (run > 1)
     let requested = try key(run: run == 1 ? 1 : (stale ? run : run - 1))
@@ -407,14 +439,16 @@ protocol LeaseTimed {
 
 extension JobActivity: LeaseTimed {}
 
-/// Claims a vault for one engine in this process: by the store and by the replica it syncs as, so a second store opened on the same database is refused too.
-/// A release frees only its own claim, so a released engine that lingers never frees the claim of the engine after it.
+/// Claims a vault for one engine: in this process by the store and by the replica it syncs as, so a second store opened on the same database is refused too,
+/// and across processes by the vault's jobs lock, so a second copy of the app on the vault runs nothing. A release frees only its own claim, so a released
+/// engine that lingers never frees the claim of the engine after it.
 final class JobEngineClaim: Sendable {
   private static let claimed = Mutex<(stores: [ObjectIdentifier: UUID], replicas: [ReplicaID: UUID])>(([:], [:]))
 
   private let store: ObjectIdentifier
   private let replica: ReplicaID
   private let token: UUID
+  private let lock: VaultProcessLock
 
   init(_ store: VaultStore) throws(JobEngineError) {
     let (identity, replica, token) = (ObjectIdentifier(store), store.replica, UUID())
@@ -428,11 +462,27 @@ final class JobEngineClaim: Sendable {
     self.store = identity
     self.replica = replica
     self.token = token
+    let lock: VaultProcessLock?
+    do {
+      lock = try store.acquireProcessLock(.jobs)
+    } catch {
+      Self.unclaim(identity, replica, token)
+      throw .store(error)
+    }
+    guard let lock else {
+      Self.unclaim(identity, replica, token)
+      throw .heldByAnotherProcess
+    }
+    self.lock = lock
   }
 
   func release() {
-    let (store, replica, token) = (store, replica, token)
-    Self.claimed.withLock { claimed in
+    lock.release()
+    Self.unclaim(store, replica, token)
+  }
+
+  private static func unclaim(_ store: ObjectIdentifier, _ replica: ReplicaID, _ token: UUID) {
+    claimed.withLock { claimed in
       if claimed.stores[store] == token { claimed.stores[store] = nil }
       if claimed.replicas[replica] == token { claimed.replicas[replica] = nil }
     }

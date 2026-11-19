@@ -171,9 +171,9 @@ struct ChatCardsModelTests {
     #expect(ChatCardsErrors.failure("DRF_013") != ChatCardsErrors.failure("not-a-code"))
   }
 
-  @Test func shouldOfferJobActionsOnlyWithChapters() async throws {
-    let world = try await ChatCardsWorld.make([Script.reply("Shall I write it?", ops: [#"{"op":"action.generate_chapter","chapter":1}"#])])
-    let reply = try await world.reply(to: "Write chapter 1.")
+  @Test func shouldKeepAnActionWithNoExecutorUnselectable() async throws {
+    let world = try await ChatCardsWorld.make([Script.reply("Shall I audit it?", ops: [#"{"op":"action.audit_bible"}"#])])
+    let reply = try await world.reply(to: "Audit the bible.")
     let model = world.card(try #require(reply.cardProposal))
     let task = observing { await model.observe() }
     defer { task.cancel() }
@@ -183,6 +183,21 @@ struct ChatCardsModelTests {
     model.toggle(job)
 
     #expect(job.isJobAction && !model.isSelectable(job) && !model.isSelected(job) && !model.canApply)
+  }
+
+  @Test func shouldLetARunnableJobActionBeSelectedDeliberately() async throws {
+    let world = try await ChatCardsWorld.make([Script.reply("Shall I write it?", ops: [#"{"op":"action.generate_chapter","chapter":1}"#])])
+    let reply = try await world.reply(to: "Write chapter 1.")
+    let model = world.card(try #require(reply.cardProposal))
+    let task = observing { await model.observe() }
+    defer { task.cancel() }
+    try await ChatWait.until("the card loads") { model.status == .pending }
+    let job = try #require(model.ops.first)
+    #expect(!job.isJobAction && job.isGuarded && model.isSelectable(job) && !model.isSelected(job))
+
+    model.toggle(job)
+
+    #expect(model.isSelected(job) && model.canApply)
   }
 
   @Test func shouldAnswerAQuestionAndSettleIt() async throws {

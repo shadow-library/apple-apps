@@ -170,6 +170,7 @@ struct ChapterView: View {
     ScrollView {
       VStack(alignment: .leading, spacing: Spacing.space6) {
         header(loaded, title: title, amended: amended)
+        ChapterWorkspaceStrip(context: context, chapter: chapter, row: loaded.row)
         stateCallouts(loaded)
         keptCallout(loaded)
         ProseView(markdown: markdown)

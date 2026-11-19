@@ -10,6 +10,8 @@ public enum JobRunError: ShadowError {
   case jobSucceeded(EntityRef)
   case anotherAttemptLive(AttemptID)
   case alreadyRunningHere(AttemptID)
+  /// The attempt's checkpoint here is no longer the one its step ran from: another process on this vault drove the attempt on.
+  case checkpointMoved(AttemptID)
   case interrupted
 
   public var code: String {
@@ -22,6 +24,7 @@ public enum JobRunError: ShadowError {
     case .jobSucceeded: "job_run.job_succeeded"
     case .anotherAttemptLive: "job_run.another_attempt_live"
     case .alreadyRunningHere: "job_run.already_running_here"
+    case .checkpointMoved: "job_run.checkpoint_moved"
     case .interrupted: "job_run.interrupted"
     }
   }
@@ -36,6 +39,7 @@ public enum JobRunError: ShadowError {
     case .jobSucceeded(let ref): "Job \(ref.key) already succeeded."
     case .anotherAttemptLive(let attempt): "Attempt \(attempt.uuid.lowercasedString) is running the job with a live lease."
     case .alreadyRunningHere(let attempt): "This device is already running the job as attempt \(attempt.uuid.lowercasedString)."
+    case .checkpointMoved(let attempt): "Attempt \(attempt.uuid.lowercasedString) moved past this step in another process."
     case .interrupted: "The attempt stopped as a crash stops it."
     }
   }

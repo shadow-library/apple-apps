@@ -71,6 +71,16 @@ public enum JobsLocal {
     }
   }
 
+  /// Whether `checkpoint` is still the attempt's step here: read in the transaction that commits the step's output, so of two processes that drive one attempt
+  /// only the first to commit moves it on.
+  public static func holds(_ checkpoint: LocalCheckpoint, in database: Database) throws(StoreError) -> Bool {
+    try execute {
+      guard try database.tableExists(checkpointTable) else { return false }
+      let sql = "SELECT EXISTS (SELECT 1 FROM \(checkpointTable) WHERE attempt = ? AND step_index = ? AND next_step = ?)"
+      return try Bool.fetchOne(database, sql: sql, arguments: [checkpoint.attempt.uuid, checkpoint.index, checkpoint.next]) ?? false
+    }
+  }
+
   /// Keeps the first mark.
   @discardableResult
   public static func markStopped(_ attempt: AttemptID, as stop: LocalStop, at now: Date, in database: Database) throws(StoreError) -> Bool {

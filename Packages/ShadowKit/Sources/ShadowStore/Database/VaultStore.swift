@@ -10,8 +10,8 @@ public final class VaultStore: Sendable {
   let storedRegistryVersion: Int
 
   let settlement: Settlement
-  private let directory: URL?
-  private let databaseName: String?
+  let directory: URL?
+  let databaseName: String?
   private let files: any VaultFiles
 
   private let writer: any DatabaseWriter
@@ -93,7 +93,7 @@ public final class VaultStore: Sendable {
     }
   }
 
-  /// A file store owns its directory: it must hold only the database and its `-wal`, `-shm` and `-journal` files.
+  /// A file store owns its directory: it must hold only the database, its `-wal`, `-shm` and `-journal` files and its process locks.
   /// The flag is guidance to the system, not a guarantee, and `true` is refused for a directory holding anything else. An in-memory store ignores it.
   public func setExcludedFromBackup(_ excluded: Bool) throws(StoreError) {
     guard let directory, let databaseName else { return }
@@ -106,7 +106,8 @@ public final class VaultStore: Sendable {
   }
 
   private func requireOwnership(of directory: URL, databaseName: String) throws(StoreError) {
-    let owned = Set(VaultFileProtection.sidecarSuffixes.map { databaseName + $0 } + [databaseName + "-journal"])
+    let locks = VaultProcessLock.Purpose.allCases.map { VaultProcessLock.fileName($0, database: databaseName) }
+    let owned = Set(VaultFileProtection.sidecarSuffixes.map { databaseName + $0 } + [databaseName + "-journal"] + locks)
     let foreign: [String]
     do {
       foreign = try FileManager.default.contentsOfDirectory(atPath: directory.path(percentEncoded: false)).filter { !owned.contains($0) }

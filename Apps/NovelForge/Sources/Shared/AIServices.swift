@@ -118,11 +118,12 @@ final class AIServices {
     AIServices(keys: .standard(store: keychain()), settingsStore: AISettingsStore(defaults: defaults), transport: URLSessionTransport())
   }
 
-  func router(store: VaultStore) -> TaskRouter {
+  func router(
+    store: VaultStore, requestGuard: @escaping @Sendable (ModelRoute) -> ModelRequestGuard? = { ModelRequestGuard.hardLine(for: $0) }
+  ) -> TaskRouter {
     let configuration = TaskRouterConfiguration(
       provider: settings.provider, assignments: settings.assignments, openRouterModels: openRouterModels, spendLimits: settings.limits)
-    return TaskRouter(
-      configuration: configuration, anthropic: anthropic, openRouter: openRouter, credentials: keys, store: store, requestGuard: { ModelRequestGuard.hardLine(for: $0) })
+    return TaskRouter(configuration: configuration, anthropic: anthropic, openRouter: openRouter, credentials: keys, store: store, requestGuard: requestGuard)
   }
 
   func update(_ change: (inout AISettings) -> Void) {

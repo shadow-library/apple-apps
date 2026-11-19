@@ -11,14 +11,17 @@ struct NovelForgeApp: App {
   @State private var vault = VaultModel(locate: Self.locate)
   @State private var ai = AIServices.live()
   @State private var chats = ChatRuntimes()
+  @State private var jobs = JobRuntimes()
 
   var body: some Scene {
     WindowGroup {
       RootView(vault: vault)
         .environment(ai)
         .environment(chats)
+        .environment(jobs)
         .task { await ai.loadOpenRouterModelsIfKeyed() }
         .task(id: vault.store.map(ObjectIdentifier.init)) { await chats.launch(vault.store, services: ai) }
+        .task(id: vault.store.map(ObjectIdentifier.init)) { await jobs.launch(vault.store, services: ai) }
         .shadowTheme()
         .flushingUnsavedWork()
         #if os(macOS)

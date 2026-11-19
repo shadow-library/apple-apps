@@ -25,8 +25,8 @@ nonisolated struct ChatOp: Equatable, Sendable {
   // apps/novel-forge-web/src/lib/proposals.ts:5-9: applied only when the author selects them deliberately, so they start unselected
   var isGuarded: Bool { Self.guarded.contains(type) }
 
-  /// An action with no executor in ProposalActionRegistry yet: it starts work the chapters section brings.
-  var isJobAction: Bool { isAction && !Self.runnable.contains(type) }
+  /// An action with no executor in ProposalActionRegistry yet, so its card's apply would be refused.
+  var isJobAction: Bool { isAction && !(OpType(rawValue: type).map(ProposalActionRegistry.isRunnable) ?? false) }
 
   var isPassageRewrite: Bool { type == "draft.rewrite_passage" }
 
@@ -128,7 +128,6 @@ nonisolated struct ChatOp: Equatable, Sendable {
   }
 
   private static let guarded: Set<String> = ["action.finalize", "action.approve_draft", "action.apply_continuity", "action.generate_chapter"]
-  private static let runnable: Set<String> = ["action.approve_draft", "action.finalize", "action.advance_volume"]
   private static let identifying: Set<String> = ["op", "entityKey", "factKey", "section", "slug", "key", "kind", "volumeKey", "milestoneKey", "chapter", "upTo"]
   // chat-view.ts:35-43
   private static let premiseFields = ["premise", "brief", "themes", "instructions"]

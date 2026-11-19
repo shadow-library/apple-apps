@@ -1,3 +1,4 @@
+import ShadowAI
 import ShadowCore
 import ShadowJobs
 import ShadowStore
@@ -5,6 +6,8 @@ import ShadowStore
 public enum JobEngineError: ShadowError {
   /// This vault already has a running engine: two would each run attempts the other cannot see in its running set.
   case engineExists
+  /// Another process holds the vault's jobs lock (a second copy of the app on the same vault), so this one runs no attempt.
+  case heldByAnotherProcess
   case chapterOutOfRange(Int)
   case key(JobKeyError)
   case jobNotFound(EntityRef)
@@ -13,6 +16,8 @@ public enum JobEngineError: ShadowError {
   case pipelineNotYetAvailable(NovelJobKind)
   /// Another device's attempt holds a live lease, so "Run here" is not offered (plan, Jobs and devices).
   case runningElsewhere(AttemptID, ReplicaID)
+  /// The novel's text cannot be sent to the host the router assigns until the author allows it; checked before an attempt exists, so the job waits queued.
+  case consentRequired(AIConsentRequest)
   /// The attempt was started by another version of its pipeline, whose checkpoint this one cannot read.
   case pipelineChanged(running: Int, pinned: Int?)
   case pins(DomainError)
@@ -24,12 +29,14 @@ public enum JobEngineError: ShadowError {
   public var code: String {
     switch self {
     case .engineExists: "job_engine.engine_exists"
+    case .heldByAnotherProcess: "job_engine.held_by_another_process"
     case .chapterOutOfRange: "job_engine.chapter_out_of_range"
     case .key(let error): error.code
     case .jobNotFound: "job_engine.job_not_found"
     case .notANovelJob: "job_engine.not_a_novel_job"
     case .pipelineNotYetAvailable: "job_engine.pipeline_not_yet_available"
     case .runningElsewhere: "job_engine.running_elsewhere"
+    case .consentRequired: "routing.consent_required"
     case .pipelineChanged: "job_engine.pipeline_changed"
     case .pins(let error): error.code
     case .writerPack(let code, _): code
@@ -42,12 +49,14 @@ public enum JobEngineError: ShadowError {
   public var errorDescription: String? {
     switch self {
     case .engineExists: "This vault already has a job engine running."
+    case .heldByAnotherProcess: "Another process runs this vault's jobs."
     case .chapterOutOfRange(let chapter): "\(chapter) is not a chapter number; chapters start at 1."
     case .key(let error): error.errorDescription
     case .jobNotFound(let ref): "Job \(ref.key) has not arrived or cannot be read."
     case .notANovelJob(let ref): "Job \(ref.key) is not a job of a novel."
     case .pipelineNotYetAvailable(let kind): "Jobs of kind \(kind.rawValue) cannot run in this version yet."
     case .runningElsewhere(let attempt, let replica): "Device \(replica) is running the job as attempt \(attempt.uuid.lowercasedString)."
+    case .consentRequired(let request): "Sending \(request.dataClass) to \(request.host) needs your consent."
     case .pipelineChanged(let running, let pinned): "The attempt was started by pipeline version \(pinned.map(String.init) ?? "unknown"), not \(running)."
     case .pins(let error): error.errorDescription
     case .writerPack(_, let description): description

@@ -206,13 +206,14 @@ struct JobEngineWorld {
 
   func engine(
     _ faults: AttemptRunner.Faults = .none, engineFaults: JobEngine.Faults = .none,
-    catalog: @escaping @Sendable (NovelJobKind) -> NovelPipelineDefinition = { _ in .ready(JobEngineWorld.pipeline) }
+    catalog: @escaping @Sendable (NovelJobKind) -> NovelPipelineDefinition = { _ in .ready(JobEngineWorld.pipeline) }, unrestrictedAvailable: Bool = false
   ) throws -> JobEngine {
     let world = self
     let rereads = rereads
     return try JobEngine(
       store: store, router: { world.router($0) }, consent: CompactionWorld.consent, clock: LeaseClock(trusted: nil, device: clock.function), runner: runner(faults),
-      catalog: catalog, packs: packs.builder(store), timing: JobEngine.Timing { _ in try await rereads.sleep() }, faults: engineFaults, unrestrictedAvailable: false)
+      catalog: catalog, packs: packs.builder(store), timing: JobEngine.Timing { _ in try await rereads.sleep() }, faults: engineFaults, unrestrictedAvailable: unrestrictedAvailable
+    )
   }
 
   func request(_ engine: JobEngine, chapter: Int = 1, rerun: Bool = false) async throws -> JobKey {

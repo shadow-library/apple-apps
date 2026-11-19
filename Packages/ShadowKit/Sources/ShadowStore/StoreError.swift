@@ -21,6 +21,7 @@ public enum StoreError: ShadowError {
   case reconcilerFailed(any Error)
   case fileProtection(path: String, reason: String)
   case backupExclusion(path: String, reason: String)
+  case processLock(path: String, reason: String)
 
   public var code: String {
     switch self {
@@ -41,6 +42,7 @@ public enum StoreError: ShadowError {
     case .reconcilerFailed: "store.reconciler_failed"
     case .fileProtection: "store.file_protection"
     case .backupExclusion: "store.backup_exclusion"
+    case .processLock: "store.process_lock"
     }
   }
 
@@ -63,6 +65,7 @@ public enum StoreError: ShadowError {
     case .reconcilerFailed(let error): "The reconciler failed: \(error.localizedDescription)"
     case .fileProtection(let path, let reason): "File protection could not be applied to \(path): \(reason)."
     case .backupExclusion(let path, let reason): "Backup exclusion could not be changed on \(path): \(reason)."
+    case .processLock(let path, let reason): "The process lock \(path) could not be taken: \(reason)."
     }
   }
 }

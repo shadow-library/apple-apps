@@ -48,6 +48,8 @@ struct AttemptRun: Sendable {
       let next: LocalCheckpoint?
       do {
         next = try await commit(output, after: checkpoint)
+      } catch .checkpointMoved {
+        return crash()
       } catch {
         if control.isCrashed { return .interrupted }
         return await settle(.failed(AttemptFailure(error.underlying)))
@@ -74,11 +76,13 @@ struct AttemptRun: Sendable {
     }
   }
 
-  /// One transaction, so a step's output is written once or not at all; the last step's commits with the attempt's success.
+  /// One transaction, so a step's output is written once or not at all, and only over the checkpoint it ran from; the last step's commits with the attempt's
+  /// success.
   private func commit(_ output: AttemptStepOutput, after checkpoint: LocalCheckpoint) async throws(JobRunError) -> LocalCheckpoint? {
     if let next = output.next, pipeline.steps[next] == nil { throw JobRunError.unknownStep(next) }
     let (id, writer, clock) = (id, writer, runner.clock)
     return try await runner.write(control) { transaction in
+      guard try JobsLocal.holds(checkpoint, in: transaction.database) else { throw JobRunError.checkpointMoved(id) }
       try output.writes(&transaction)
       guard let name = output.next else {
         try AttemptRecords.update(id, AttemptUpdate(settlement: .succeeded), by: writer, in: &transaction)
