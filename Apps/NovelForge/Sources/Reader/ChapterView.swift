@@ -200,6 +200,7 @@ struct ChapterView: View {
     .sheet(isPresented: $checking) {
       ChecksSheet(context: context, chapter: chapter, isApproved: loaded.row?.review == .approved, reloadToken: ChecksSheet.reloadToken(loaded.body))
     }
+    .chapterDetails(context: context, chapter: chapter)
   }
 
   private func header(_ loaded: ChapterContent, title: String?, amended: Bool) -> some View {

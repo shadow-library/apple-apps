@@ -62,6 +62,23 @@ public struct WriterSnapshotSummary: Equatable, Sendable {
   public let route: WriterSnapshotRoute
   public let isolated: Bool
   public let recordedAt: Date
+
+  @_spi(Preview)
+  public init(
+    id: UUID, chapter: Int, revision: String, attempt: Int, role: WriterAttemptRole, promptKey: String, promptVersion: String, route: WriterSnapshotRoute,
+    isolated: Bool, recordedAt: Date
+  ) {
+    self.id = id
+    self.chapter = chapter
+    self.revision = revision
+    self.attempt = attempt
+    self.role = role
+    self.promptKey = promptKey
+    self.promptVersion = promptVersion
+    self.route = route
+    self.isolated = isolated
+    self.recordedAt = recordedAt
+  }
 }
 
 /// The writer's view of one attempt; an isolated chapter's messages and Story Bible hash are walled off, never rebuilt from today's state.
@@ -71,6 +88,15 @@ public struct WriterSnapshotView: Equatable, Sendable {
   public let keptBack: JSONValue
   public let planRevision: String?
   public let bibleHash: String?
+
+  @_spi(Preview)
+  public init(summary: WriterSnapshotSummary, messages: [WriterSnapshotMessage], keptBack: JSONValue, planRevision: String?, bibleHash: String?) {
+    self.summary = summary
+    self.messages = messages
+    self.keptBack = keptBack
+    self.planRevision = planRevision
+    self.bibleHash = bibleHash
+  }
 }
 
 /// `nf_local_writer_snapshot`, the Inspector's writer attempts: they stay on the device that made the call (plan, Inspector), for the chapter's current
