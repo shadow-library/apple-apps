@@ -177,21 +177,19 @@ struct JobEngineTests {
 
   @Test func shouldRefuseAKindWhosePipelineIsNotYetAvailable() async throws {
     let world = try await JobEngineWorld()
-    let engine = try world.engine(catalog: PipelineCatalog.definition(for:))
-    let job = try await engine.request(NovelJobRequest(kind: .canonRefresh, novel: world.novel, chapter: 1, fingerprint: "f:1")).ref
+    let engine = try world.engine(catalog: { _ in .notYetAvailable(.canonRefresh) })
+    let job = try await world.request(engine).ref
     do {
       _ = try await engine.runHere(job: job)
       Issue.record("a stub pipeline ran")
     } catch {
       #expect(error.code == JobEngineError.pipelineNotYetAvailable(.canonRefresh).code)
     }
-    if case .notYetAvailable = PipelineCatalog.definition(for: .finalizeReview) { Issue.record("finalize_review has no pipeline") }
-    for kind in NovelJobKind.allCases where ![.review, .plan, .finalizeReview, .generate].contains(kind) {
-      guard case .notYetAvailable(let named) = PipelineCatalog.definition(for: kind) else {
-        Issue.record("\(kind) has a pipeline")
-        continue
-      }
-      #expect(named == kind)
+  }
+
+  @Test func shouldHaveAPipelineForEveryKind() {
+    for kind in NovelJobKind.allCases {
+      if case .notYetAvailable = PipelineCatalog.definition(for: kind) { Issue.record("\(kind) has no pipeline") }
     }
   }
 
