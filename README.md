@@ -95,8 +95,13 @@ A product module is added the same way: a library product in the product's packa
 | `Chat/*`                 | `Engine` (`ChatTurnEngine`), `Turn` (relay and local turn store), `Compaction`, `Lookups`                |
 | `Context`                | The chat context: `ChatPack` renderers, `ChatContextAssembler`, `TokenBudget`                            |
 | `Prompts`                | Chat refine, compact and title prompts, scope playbooks, writing instructions                            |
+| `Evaluation`             | The public facade `nf-eval` reads through: chapter rows, the deterministic prose metrics report, the plan-card apply |
 | `Pipelines/Routing`      | `ChapterRoute` and `ChapterCallRouter`: a chapter call's content mode from its plan head and isolation (unrestricted refused with `AI_024` while the build cannot write it), hard-line screens of inputs and results, and the draft's generator and isolated flags |
 | `ReadModels`             | Observed reads, among them the chat session list, transcript, Waiting on you, change history, reply costs and `UnrestrictedLock` (the chats, drafts, canon and reviews of isolated prose that keep a novel unrestricted; unavailable counts as locked) |
+
+`nf-eval` (`NovelForgeEval`, run with `swift run --package-path Packages/NovelForgeKit nf-eval --help`) measures chapters and runs them through plan, generate, review, finalize review, finalize and refresh. A pipeline run calls a model, so it refuses without `--live`, without `NF_EVAL_PROVIDER=anthropic` and `NF_EVAL_API_KEY` in the environment (OpenRouter is refused), and, on a real vault, without an AI consent the author already recorded there. `--live --vault` also needs `--write-vault`: the run writes into the real vault, applying a plan card, writing a draft, a review and an approval as the author, finalizing the chapter and refreshing the Story Bible; those writes sync to the author's other devices and cannot be undone. `--fixture` runs in a throwaway in-memory vault. `--metrics-only` calls no model but still opens a real vault read-write, so pending migrations and projection catch-up are applied.
+
+The report is JSON only. Metrics read a final chapter's canon and any other chapter's draft head (the reference reads one source per run), drop empty bodies as the reference does, and list a body this version cannot read under `skipped`; there is no `--from`, `--to`, `--all` or text report. The fail-open invariant skips the chapters the tool approved itself (`failOpenExcluded`), since its own approval would satisfy it.
 
 ### Chat
 

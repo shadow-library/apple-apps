@@ -13,7 +13,8 @@ let package = Package(
   name: "NovelForgeKit",
   platforms: [.iOS(.v26), .macOS(.v26)],
   products: [
-    .library(name: "NovelForgeCore", targets: ["NovelForgeCore"])
+    .library(name: "NovelForgeCore", targets: ["NovelForgeCore"]),
+    .executable(name: "nf-eval", targets: ["NovelForgeEval"]),
   ],
   dependencies: [
     .package(path: "../ShadowKit"),
@@ -33,13 +34,21 @@ let package = Package(
     ),
     .executableTarget(
       name: "NovelForgeEval",
-      dependencies: ["NovelForgeCore"],
+      dependencies: [
+        "NovelForgeCore",
+        .product(name: "ShadowCore", package: "ShadowKit"),
+        .product(name: "ShadowStore", package: "ShadowKit"),
+        .product(name: "ShadowAI", package: "ShadowKit"),
+        .product(name: "ShadowJobs", package: "ShadowKit"),
+        .product(name: "ShadowNetworking", package: "ShadowKit"),
+      ],
       swiftSettings: swiftSettings
     ),
     .testTarget(
       name: "NovelForgeCoreTests",
       dependencies: [
         "NovelForgeCore",
+        "NovelForgeEval",
         .product(name: "ShadowTestSupport", package: "ShadowKit"),
       ],
       swiftSettings: swiftSettings
