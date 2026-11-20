@@ -10,13 +10,15 @@ struct RetrievalWorld {
   static let otherNovel = UUID(uuidString: "6f0c4d1e-0000-4000-8000-0000000000e2") ?? UUID()
 
   let store: VaultStore
+  let embedders: (any EmbedderProvider)?
   let novel = Self.novel
 
-  init(store: VaultStore? = nil) throws {
+  init(store: VaultStore? = nil, embedder: FakeEmbedder? = nil) throws {
     self.store = try store ?? NovelForgeStore.openInMemory()
+    self.embedders = embedder.map { FakeEmbedders(embedder: $0) }
   }
 
-  var retrieval: NovelRetrieval { NovelRetrieval(store: store) }
+  var retrieval: NovelRetrieval { NovelRetrieval(store: store, embedders: embedders) }
 
   func finalize(_ chapter: Int, _ body: String, isolated: Bool = false, novel: UUID = Self.novel) async throws {
     _ = try await store.write { transaction in
@@ -105,7 +107,18 @@ struct RetrievalWorld {
         database,
         sql: "SELECT s.record_key, l.novel, l.kind, l.ref_key, l.text FROM \(RetrievalTables.lore) l JOIN \(RetrievalTables.source) s ON s.id = l.source"
       ).map { "lore \($0)" }
-      return (sources + prose + lore).sorted()
+      guard try database.tableExists(RetrievalTables.vector) else { return (sources + prose + lore).sorted() }
+      let vectors = try Row.fetchAll(
+        database,
+        sql: """
+          SELECT v.corpus, s.record_key, p.ordinal, v.novel, v.model, hex(v.vector) AS vector FROM \(RetrievalTables.vector) v
+          JOIN \(RetrievalTables.prose) p ON v.corpus = 'prose' AND p.id = v.item JOIN \(RetrievalTables.source) s ON s.id = p.source
+          UNION ALL
+          SELECT v.corpus, s.record_key, NULL, v.novel, v.model, hex(v.vector) FROM \(RetrievalTables.vector) v
+          JOIN \(RetrievalTables.lore) l ON v.corpus = 'lore' AND l.id = v.item JOIN \(RetrievalTables.source) s ON s.id = l.source
+          """
+      ).map { "vector \($0)" }
+      return (sources + prose + lore + vectors).sorted()
     }
   }
 
@@ -128,4 +141,39 @@ struct RetrievalWorld {
       }
     }
   }
+
+  /// Every vector row of every novel: whose row it is, which model made it and how many bytes it holds (nil for a failure mark).
+  func vectors() async throws -> [StoredVector] {
+    try await store.read { transaction in
+      let database = transaction.database
+      guard try database.tableExists(RetrievalTables.vector) else { return [] }
+      return try Row.fetchAll(database, sql: "SELECT corpus, item, novel, model, vector FROM \(RetrievalTables.vector) ORDER BY corpus, item").map { row in
+        StoredVector(corpus: row["corpus"], item: row["item"], novel: row["novel"], model: row["model"], vector: row["vector"])
+      }
+    }
+  }
+
+  /// Rows of the index that hold no vector row at all.
+  func unvectoredRows() async throws -> Int {
+    try await store.read { transaction in
+      let database = transaction.database
+      guard try RetrievalTables.exist(in: database), try database.tableExists(RetrievalTables.vector) else { return 0 }
+      return try Int.fetchOne(
+        database,
+        sql: """
+          SELECT (SELECT COUNT(*) FROM \(RetrievalTables.prose) p WHERE NOT EXISTS (
+            SELECT 1 FROM \(RetrievalTables.vector) v WHERE v.corpus = 'prose' AND v.item = p.id))
+          + (SELECT COUNT(*) FROM \(RetrievalTables.lore) l WHERE NOT EXISTS (
+            SELECT 1 FROM \(RetrievalTables.vector) v WHERE v.corpus = 'lore' AND v.item = l.id))
+          """) ?? 0
+    }
+  }
+}
+
+struct StoredVector: Equatable {
+  let corpus: String
+  let item: Int64
+  let novel: UUID
+  let model: String
+  let vector: Data?
 }

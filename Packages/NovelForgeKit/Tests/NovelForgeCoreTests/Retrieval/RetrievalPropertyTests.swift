@@ -13,7 +13,7 @@ private enum EntityLife {
 
 /// Random edits to one novel's corpus, with catch-ups at random points between them.
 private struct EditScript {
-  private static let words = ["tide", "lamp", "harbour", "café", "物語", "ash", "bell", "wolf", "ridge", "salt"]
+  private static let words = ["tide", "lamp", "harbour", "café", "物語", "ash", "bell", "wolf", "ridge", "salt", "vessel", "gale", FakeEmbedder.failing]
 
   var generator: SeededGenerator
   var finals = Set<Int>()
@@ -84,6 +84,33 @@ struct RetrievalPropertyTests {
     }
     #expect(rebuilt == searches)
     #expect(try await world.retrieval.catchUp(novel: world.novel).isEmpty)
+  }
+
+  @Test(arguments: 0..<24)
+  func shouldEqualAnIndexBuiltFromScratchAfterAnySequenceOfEditsCatchUpsAndEmbeddingPasses(_ seed: Int) async throws {
+    let world = try RetrievalWorld(embedder: FakeEmbedder())
+    let queries = ["tide", "café cafe", "物語", "wolf ridge", "boat storm"]
+    var script = EditScript(generator: SeededGenerator(seed: UInt64(seed) &* 0x9E37_79B9 &+ 17))
+    for _ in 0..<30 {
+      try await script.step(in: world)
+      if script.generator.chance(0.35) { try await world.retrieval.catchUp(novel: world.novel) }
+      if script.generator.chance(0.25) { try await world.retrieval.embedPending(novel: world.novel, limit: script.generator.int(in: 1...20)) }
+    }
+    try await world.retrieval.catchUp(novel: world.novel)
+    #expect(try await world.retrieval.embedPending(novel: world.novel).isComplete)
+    let incremental = try await world.dump()
+    let searches = try await queries.asyncMap { query in try await world.retrieval.searchProseAndLore(novel: world.novel, query: query) }
+    try await world.checkSearchIntegrity()
+    #expect(try await world.unvectoredRows() == 0)
+
+    try await world.store.forgetLocalState(novel: world.novel)
+    try await world.retrieval.catchUp(novel: world.novel)
+    try await world.retrieval.embedPending(novel: world.novel)
+    #expect(try await world.dump() == incremental)
+    let rebuilt = try await queries.asyncMap { query in try await world.retrieval.searchProseAndLore(novel: world.novel, query: query) }
+    #expect(rebuilt == searches)
+    #expect(try await world.retrieval.catchUp(novel: world.novel).isEmpty)
+    #expect(try await world.retrieval.embedPending(novel: world.novel) == RetrievalEmbedding(model: "fake/a"))
   }
 }
 
