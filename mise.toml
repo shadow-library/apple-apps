@@ -19,7 +19,7 @@ run = "swift Scripts/generate-design-tokens.swift"
 
 [tasks."test:packages"]
 description = "Run every package's tests with SwiftPM"
-run = ["swift test --package-path Packages/ShadowKit", "swift test --package-path Packages/NovelForgeKit"]
+run = ["swift test --package-path Packages/ShadowKit", "swift test --package-path Packages/NovelForgeKit", "swift test --package-path Packages/MemoirKit"]
 
 [tasks."test:apps"]
 description = "Run the app test targets"
@@ -49,7 +49,7 @@ run = ['tuist scaffold app --name "$usage_name" --platform "$usage_platform"', "
 
 [tasks.clean]
 description = "Remove generated projects and build artifacts"
-run = "tuist clean && rm -rf Derived Packages/ShadowKit/.build Packages/NovelForgeKit/.build"
+run = "tuist clean && rm -rf Derived Packages/ShadowKit/.build Packages/NovelForgeKit/.build Packages/MemoirKit/.build"
 
 [tasks.screenshots]
 description = "Capture Catalog pages on iPhone, iPad and Mac (see --help)"

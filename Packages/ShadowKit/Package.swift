@@ -21,6 +21,8 @@ let package = Package(
     .library(name: "ShadowSyncS3", targets: ["ShadowSyncS3"]),
     .library(name: "ShadowSyncOneDrive", targets: ["ShadowSyncOneDrive"]),
     .library(name: "ShadowSyncGoogleDrive", targets: ["ShadowSyncGoogleDrive"]),
+    .library(name: "ShadowSyncCloudKit", targets: ["ShadowSyncCloudKit"]),
+    .library(name: "ShadowSyncRuntime", targets: ["ShadowSyncRuntime"]),
     .library(name: "ShadowAI", targets: ["ShadowAI"]),
     .library(name: "ShadowJobs", targets: ["ShadowJobs"]),
     .library(name: "ShadowDesignSystem", targets: ["ShadowDesignSystem"]),
@@ -38,10 +40,20 @@ let package = Package(
     .target(name: "ShadowSyncS3", dependencies: ["ShadowCore", "ShadowNetworking", "ShadowSync"], swiftSettings: swiftSettings),
     .target(name: "ShadowSyncOneDrive", dependencies: ["ShadowCore", "ShadowNetworking", "ShadowSync"], swiftSettings: swiftSettings),
     .target(name: "ShadowSyncGoogleDrive", dependencies: ["ShadowCore", "ShadowNetworking", "ShadowSync"], swiftSettings: swiftSettings),
+    .target(name: "ShadowSyncCloudKit", dependencies: ["ShadowCore", "ShadowSync"], swiftSettings: swiftSettings),
+    .target(
+      name: "ShadowSyncRuntime",
+      dependencies: [
+        "ShadowCore", "ShadowKeychain", "ShadowNetworking", "ShadowStore", "ShadowSync", "ShadowSyncS3", "ShadowSyncOneDrive", "ShadowSyncGoogleDrive", "ShadowSyncCloudKit",
+      ],
+      swiftSettings: swiftSettings
+    ),
     .target(name: "ShadowAI", dependencies: ["ShadowCore", "ShadowNetworking", "ShadowStore"], swiftSettings: swiftSettings),
     .target(name: "ShadowJobs", dependencies: ["ShadowCore", "ShadowStore", .product(name: "GRDB", package: "GRDB.swift")], swiftSettings: swiftSettings),
     .target(name: "ShadowDesignSystem", swiftSettings: swiftSettings + [.defaultIsolation(MainActor.self)]),
-    .target(name: "ShadowTestSupport", dependencies: ["ShadowCore", "ShadowNetworking", "ShadowKeychain", "ShadowStore", "ShadowSync", "ShadowAI"], swiftSettings: swiftSettings),
+    .target(
+      name: "ShadowTestSupport", dependencies: ["ShadowCore", "ShadowNetworking", "ShadowKeychain", "ShadowStore", "ShadowSync", "ShadowSyncCloudKit", "ShadowAI"],
+      swiftSettings: swiftSettings),
 
     .testTarget(name: "ShadowCoreTests", dependencies: ["ShadowCore", "ShadowTestSupport"], swiftSettings: swiftSettings),
     .testTarget(name: "ShadowNetworkingTests", dependencies: ["ShadowNetworking", "ShadowTestSupport"], swiftSettings: swiftSettings),
@@ -51,6 +63,8 @@ let package = Package(
     .testTarget(name: "ShadowSyncS3Tests", dependencies: ["ShadowSyncS3", "ShadowTestSupport"], swiftSettings: swiftSettings),
     .testTarget(name: "ShadowSyncOneDriveTests", dependencies: ["ShadowSyncOneDrive", "ShadowTestSupport"], swiftSettings: swiftSettings),
     .testTarget(name: "ShadowSyncGoogleDriveTests", dependencies: ["ShadowSyncGoogleDrive", "ShadowTestSupport"], swiftSettings: swiftSettings),
+    .testTarget(name: "ShadowSyncCloudKitTests", dependencies: ["ShadowSyncCloudKit", "ShadowTestSupport"], swiftSettings: swiftSettings),
+    .testTarget(name: "ShadowSyncRuntimeTests", dependencies: ["ShadowSyncRuntime", "ShadowTestSupport"], swiftSettings: swiftSettings),
     .testTarget(name: "ShadowAITests", dependencies: ["ShadowAI", "ShadowTestSupport"], swiftSettings: swiftSettings),
     .testTarget(name: "ShadowJobsTests", dependencies: ["ShadowJobs", "ShadowTestSupport"], swiftSettings: swiftSettings),
     .testTarget(name: "ShadowDesignSystemTests", dependencies: ["ShadowDesignSystem"], swiftSettings: swiftSettings),

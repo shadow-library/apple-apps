@@ -6,8 +6,9 @@ import PackageDescription
   import ProjectDescription
 
   let libraryTargets = [
-    "ShadowCore", "ShadowNetworking", "ShadowKeychain", "ShadowStore", "ShadowSync", "ShadowSyncS3", "ShadowSyncOneDrive", "ShadowSyncGoogleDrive", "ShadowAI", "ShadowJobs",
-    "ShadowDesignSystem", "ShadowTestSupport", "NovelForgeCore",
+    "ShadowCore", "ShadowNetworking", "ShadowKeychain", "ShadowStore", "ShadowSync", "ShadowSyncS3", "ShadowSyncOneDrive", "ShadowSyncGoogleDrive", "ShadowSyncCloudKit",
+    "ShadowSyncRuntime", "ShadowAI", "ShadowJobs",
+    "ShadowDesignSystem", "ShadowTestSupport", "NovelForgeCore", "MemoirCore",
   ]
 
   let packageSettings = PackageSettings(
@@ -23,5 +24,6 @@ let package = Package(
   dependencies: [
     .package(path: "../Packages/ShadowKit"),
     .package(path: "../Packages/NovelForgeKit"),
+    .package(path: "../Packages/MemoirKit"),
   ]
 )

@@ -2,6 +2,7 @@ import ProjectDescription
 
 public enum ProductModule: String, CaseIterable {
   case novelForgeCore = "NovelForgeCore"
+  case memoirCore = "MemoirCore"
 }
 
 extension TargetDependency {

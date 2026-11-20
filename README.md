@@ -29,6 +29,7 @@ Apps/                         one folder per app, each with its own Project.swif
 Packages/
   ShadowKit/                  the shared Swift package (one library product per module)
   NovelForgeKit/              Novel Forge's core (`NovelForgeCore`): domain rules, pipelines, retrieval; no UI
+  MemoirKit/                  Memoir's core (`MemoirCore`): calendar, rules, records; no UI
 Tuist/
   Package.swift               external + local package dependencies for the apps
   ProjectDescriptionHelpers/  Project.app(...), shared settings, platform presets
@@ -50,10 +51,12 @@ Bundle identifiers: apps are `com.shadow.apps.<app-name>` (lowercased, test targ
 | `ShadowSyncS3`       | S3-compatible storage: `S3StorageProvider` (SigV4 signing, ListObjectsV2, conditional puts, DeleteObjects, `probeConditionalWrites()`), `S3Configuration` (endpoint, region, bucket, key prefix, addressing, conditional writes) and `S3Credentials` | `ShadowCore`, `ShadowNetworking`, `ShadowSync` |
 | `ShadowSyncOneDrive` | OneDrive storage in the app folder: `OneDriveConfiguration` (Microsoft identity platform v2 sign-in, Graph), `OneDriveStorageProvider` with its delta-fed key index (`OneDriveStateStore`) | `ShadowCore`, `ShadowNetworking`, `ShadowSync` |
 | `ShadowSyncGoogleDrive` | Google Drive storage in the app data folder: `GoogleDriveConfiguration` (Google sign-in, Drive v3), `GoogleDriveProvider` and its index store (`GoogleDriveStateStore`) | `ShadowCore`, `ShadowNetworking`, `ShadowSync` |
+| `ShadowSyncCloudKit` | iCloud (CloudKit) storage; the only module that imports CloudKit. Today `CloudKitConfiguration` (container, zone) | `ShadowCore`, `ShadowSync` |
+| `ShadowSyncRuntime`  | Non-UI sync runtime shared by the apps: provider setup, credentials, start-up and scheduling. Today `SyncProviderKind` | `ShadowCore`, `ShadowKeychain`, `ShadowNetworking`, `ShadowStore`, `ShadowSync`, `ShadowSyncS3`, `ShadowSyncOneDrive`, `ShadowSyncGoogleDrive`, `ShadowSyncCloudKit` |
 | `ShadowAI`           | `ModelProvider` with `AnthropicProvider` and `OpenRouterProvider`, `ModelCatalog` (task and pace to a model), `RetryingProvider`, structured calls, `Ledger` of model calls and spend, with `Ledger.reconcilePending` pricing OpenRouter calls after the fact | `ShadowCore`, `ShadowNetworking`, `ShadowStore` |
 | `ShadowJobs`         | Durable background jobs: synced job and attempt records, derived status, leases, `AttemptRunner` with a local checkpoint | `ShadowCore`, `ShadowStore`      |
 | `ShadowDesignSystem` | Tokens, Liquid Glass helpers and native-first SwiftUI components (see below) | —                                |
-| `ShadowTestSupport`  | Test targets only: `StubHTTPTransport` and streaming stubs, `InMemorySecureStore`, `InMemoryKeychain`, `InMemoryOAuthTokenStore`, `InMemoryStorageProvider`, `FaultInjectingStorageProvider`, `StorageProviderConformance`, `ScriptedModelProvider`, `CausalReplicas`, `forAll`/`forAllConcurrently`/`replay` with `SeededGenerator` | `ShadowCore`, `ShadowNetworking`, `ShadowKeychain`, `ShadowStore`, `ShadowSync`, `ShadowAI` |
+| `ShadowTestSupport`  | Test targets only: `StubHTTPTransport` and streaming stubs, `InMemorySecureStore`, `InMemoryKeychain`, `InMemoryOAuthTokenStore`, `InMemoryStorageProvider`, `FaultInjectingStorageProvider`, `StorageProviderConformance`, `ScriptedModelProvider`, `CausalReplicas`, `forAll`/`forAllConcurrently`/`replay` with `SeededGenerator` | `ShadowCore`, `ShadowNetworking`, `ShadowKeychain`, `ShadowStore`, `ShadowSync`, `ShadowSyncCloudKit`, `ShadowAI` |
 
 Apps depend on modules through the typed helper, so a typo fails at manifest compile time:
 
@@ -93,6 +96,10 @@ Product cores are depended on the same way, through `ProductModule` (`.product(.
 3. `mise run bootstrap`.
 
 A product module is added the same way: a library product in the product's package, a case in `ProductModule` (`Tuist/ProjectDescriptionHelpers/ProductModule.swift`), and a `.package(path:)` entry in `Tuist/Package.swift` for a new package.
+
+## Memoir core
+
+`Packages/MemoirKit` holds `MemoirCore` (bundle id `com.shadow.library.memoircore`), Memoir's records, rules and derived state; it imports no UI framework and depends on `ShadowCore`, `ShadowStore`, `ShadowSync`, `ShadowAI`, `ShadowJobs` and GRDB. `LocalDate` (`Calendar/`) is a civil date held as days since 1970-01-01 (years 0000 to 9999), computed with integer arithmetic only, never `Calendar` or `TimeZone`; it parses and formats `yyyy-MM-dd` and encodes as that string. Its fixtures follow `Packages/MemoirKit/Fixtures/README.md`.
 
 ## Novel Forge core
 
@@ -301,7 +308,7 @@ tuist test Catalog --platform macOS --no-selective-testing
 tuist test NovelForge --platform macOS --no-selective-testing
 ```
 
-- `mise run test:packages` covers `ShadowKit` and `NovelForgeKit`. Property tests print their seed on failure; rerun it with `replay(seed:)` from `ShadowTestSupport`.
+- `mise run test:packages` covers `ShadowKit`, `NovelForgeKit` and `MemoirKit`. Property tests print their seed on failure; rerun it with `replay(seed:)` from `ShadowTestSupport`.
 - NovelForgeKit property tests spread their iterations over the cores, at most one per processor (`forAllConcurrently`). Unset, `ProjectionProperty` runs and the record helpers (`ProjectionProperty.iterations(full:)`) run half their iterations; plain `forAll` is never reduced. These keep every iteration at the default because a coverage gate or a kill needs them: the three-replica domain property, the plan-world reach test, the Notebook projection property and the Volume state property. `NOVELFORGE_PROPERTY_SCALE=n` runs `n` times the full iteration count of every property: 1 is full strength and is what CI runs (`.github/workflows/ci.yml` sets it), `NOVELFORGE_PROPERTY_SCALE=4 swift test --package-path Packages/NovelForgeKit` is the deep run for mutation checks, and unset is the local default (half). `NOVELFORGE_DOMAIN_REPLAY=<seed>` replays one domain case.
 - Every suite takes a `TestTimeLimit` tier (defined once per test target) instead of a literal limit: `quick` 5 minutes for unit suites, `standard` 10 for store, replica and derivation suites, `property` 20 for property, interleaving and concurrency suites. They are hang detectors with headroom for a loaded machine, not performance budgets; polling helpers wait up to two minutes and return as soon as the condition holds.
 - Three suites under `Tests/NovelForgeCoreTests` carry the chapter work's done-when: `ChapterInterruptions` (plan to canon killed at every crash seam of every pipeline, and resumed, with the same footprint as an uninterrupted run), `ChapterReplicas` (two replicas alternating steps, both asking at once, running apart, and running here after a lease lapsed) and `FinalizeIdempotence` (finalizing again, by relaunch, job, card or a second device, writes the same values).

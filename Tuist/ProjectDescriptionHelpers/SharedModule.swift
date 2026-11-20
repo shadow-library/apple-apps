@@ -9,6 +9,8 @@ public enum SharedModule: String, CaseIterable {
   case syncS3 = "ShadowSyncS3"
   case syncOneDrive = "ShadowSyncOneDrive"
   case syncGoogleDrive = "ShadowSyncGoogleDrive"
+  case syncCloudKit = "ShadowSyncCloudKit"
+  case syncRuntime = "ShadowSyncRuntime"
   case ai = "ShadowAI"
   case jobs = "ShadowJobs"
   case designSystem = "ShadowDesignSystem"
