@@ -1,0 +1,10 @@
+{
+"count": 5,
+"cases": [
+{"function":"epochDayOf","input":"0000-01-01","reference":-25567,"exact":-719528,"reason":"Date.UTC reads a year from 0 to 99 as 1900 to 1999"},
+{"function":"epochDayOf","input":"0000-03-01","reference":-25508,"exact":-719468,"reason":"Date.UTC reads a year from 0 to 99 as 1900 to 1999"},
+{"function":"epochDayOf","input":"0001-01-01","reference":-25202,"exact":-719162,"reason":"Date.UTC reads a year from 0 to 99 as 1900 to 1999"},
+{"function":"epochDayOf","input":"0050-06-15","reference":-7140,"exact":-701100,"reason":"Date.UTC reads a year from 0 to 99 as 1900 to 1999"},
+{"function":"epochDayOf","input":"0099-12-31","reference":10956,"exact":-683004,"reason":"Date.UTC reads a year from 0 to 99 as 1900 to 1999"}
+]
+}

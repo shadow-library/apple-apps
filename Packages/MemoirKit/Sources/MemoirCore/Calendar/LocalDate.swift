@@ -111,7 +111,7 @@ public struct LocalDate: Sendable, Hashable, Comparable, Codable, CustomStringCo
     return era * 146_097 + dayOfEra - 719_468
   }
 
-  private static func floorDivide(_ value: Int, _ divisor: Int) -> Int {
+  static func floorDivide(_ value: Int, _ divisor: Int) -> Int {
     value >= 0 ? value / divisor : -((-value + divisor - 1) / divisor)
   }
 
