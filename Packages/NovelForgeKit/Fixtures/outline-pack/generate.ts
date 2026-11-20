@@ -5,6 +5,7 @@ import { fileURLToPath } from 'node:url';
 
 // Run as: PLATFORM_REPO=<checkout> bun --tsconfig-override "$PLATFORM_REPO/apps/novel-forge-server/tsconfig.json" generate.ts
 // Each scenario is a vault state the Swift test builds through typed records; the expected pack is the reference's forOutline (and, for plan scenarios, ChapterPlanService.plan up to its model call) over a fake database holding the same state.
+// A scenario with `retrieval` gives the assembler a retrieval service that answers every search with those hits (or rejects), and records the queries it was asked.
 const platformRepo = process.env.PLATFORM_REPO;
 if (!platformRepo) throw new Error('PLATFORM_REPO must point at the platform checkout');
 
@@ -132,6 +133,7 @@ interface Spec {
   drafts: { chapter: number; title: string | null; summary: string | null; body: string; isolated: boolean; state: Record<string, unknown> | null }[];
   plans: { chapter: number; title: string | null; body: string; volume: string | null; isEnding: boolean; claims: string[]; ending: { openQuestion: string; handoffState: string } | null }[];
   knowledge: { fact: string; entity: string; chapter: number }[];
+  retrieval: { prose: { chapter: number; text: string }[]; lore: { kind: string; refKey: string; text: string }[]; fails: boolean } | null;
 }
 
 const entry = (fields: Partial<Spec['ledger'][number]> & { kind: string; topic: string; statement: string }): Spec['ledger'][number] => ({
@@ -154,7 +156,7 @@ const entity = (key: string, type: string, major: boolean, overrides: Partial<Sp
 });
 const empty = (name: string, chapter: number, mode: Spec['mode'] = 'pack'): Spec => ({
   name, mode, chapter, budgetTokens: null, span: null, insertAfter: null, volume: null, ledger: [], volumes: [], threads: [], mysteries: [], entities: [], pages: [], secrets: [],
-  milestones: [], finals: [], drafts: [], plans: [], knowledge: [],
+  milestones: [], finals: [], drafts: [], plans: [], knowledge: [], retrieval: null,
 });
 const timeline = { section: 'project', slug: 'timeline', title: null, body: `# Timeline\n\n## Early on\n\n${paragraph()}\n\n## The ending\n\n${paragraph()}` };
 
@@ -284,6 +286,47 @@ specs.push({
 });
 
 specs.push({ ...(specs.at(-1) as Spec), name: 'a smaller trim stops partway through the chapters', budgetTokens: 12_100 });
+
+type Recall = NonNullable<Spec['retrieval']>;
+const recalled = (prose: Recall['prose'], lore: Recall['lore'], fails = false): Recall => ({ prose, lore, fails });
+const recallWorld = (name: string, chapter: number, mode: Spec['mode'] = 'pack'): Spec => ({
+  ...empty(name, chapter, mode),
+  ledger: [entry({ kind: 'decision', topic: 'voice.tone', statement: sentence() })],
+  volumes: [{ key: 'v1', ordinal: 1, title: 'One', objective: `${sentence()}\n${sentence()}\n\n${paragraph()}`, goalMet: false }],
+  entities: [entity('mara', 'character', true), entity('sea', 'location', false)],
+  pages: [{ section: 'world', slug: 'sea', title: 'The Sea', body: paragraph() }],
+  finals: Array.from({ length: chapter - 1 }, (_, index) => final(index + 1)),
+  plans: [plan(chapter)],
+});
+
+specs.push({
+  ...recallWorld('pack with retrieved prose and lore', 4),
+  retrieval: recalled(
+    [{ chapter: 2, text: paragraph() }, { chapter: 1, text: odd(paragraph()) }, { chapter: 3, text: prose(2) }],
+    [{ kind: 'character', refKey: 'mara', text: `${words(2)}\n${sentence()}` }, { kind: 'bible_doc', refKey: 'world/sea', text: odd(paragraph()) }],
+  ),
+});
+specs.push({ ...recallWorld('plan with retrieved lore and no prose', 3, 'plan'), retrieval: recalled([], [{ kind: 'character', refKey: 'sea', text: paragraph() }]) });
+specs.push({
+  ...recallWorld('retrieved prose gives way to the budget before lore', 4),
+  budgetTokens: 900,
+  retrieval: recalled(Array.from({ length: 5 }, (_, index) => ({ chapter: (index % 3) + 1, text: prose(6) })), [{ kind: 'character', refKey: 'mara', text: sentence() }]),
+});
+specs.push({
+  ...recallWorld('retrieval takes only what a full catalog leaves', 4),
+  budgetTokens: 3_000,
+  entities: Array.from({ length: 120 }, (_, index) => entity(`ent-${String(index).padStart(3, '0')}`, 'character', index % 4 === 0, { body: prose(2) })),
+  retrieval: recalled([{ chapter: 1, text: prose(3) }], [{ kind: 'character', refKey: 'ent-000', text: prose(3) }]),
+});
+specs.push({ ...recallWorld('a failed retrieval leaves the pack without it', 3), retrieval: recalled([{ chapter: 1, text: paragraph() }], [], true) });
+{
+  const base = recallWorld('an objective whose first line is empty searches nothing', 3);
+  specs.push({ ...base, volumes: [{ key: 'v1', ordinal: 1, title: 'One', objective: `\n${sentence()}`, goalMet: false }], retrieval: recalled([{ chapter: 1, text: paragraph() }], []) });
+}
+{
+  const base = recallWorld('no objective searches nothing', 3);
+  specs.push({ ...base, volumes: [{ key: 'v1', ordinal: 1, title: 'One', objective: null, goalMet: false }], retrieval: recalled([{ chapter: 1, text: paragraph() }], []) });
+}
 
 const volumeStates = (spec: Spec): Map<string, string> => {
   const ordered = [...spec.volumes].sort((left, right) => left.ordinal - right.ordinal);
@@ -433,6 +476,20 @@ for (const spec of specs) {
   assembler.db = db;
   assembler.logger = { info: () => undefined, warn: () => undefined };
   assembler.catalogService = catalogService;
+  const queries: string[] = [];
+  if (spec.retrieval !== null) {
+    const { prose: proseHits, lore: loreHits, fails } = spec.retrieval;
+    assembler.retrievalService = {
+      searchProseAndLore: async (_projectId: bigint, query: string) => {
+        queries.push(query);
+        if (fails) throw new Error('the index is unavailable');
+        return {
+          prose: proseHits.map((hit) => ({ text: hit.text, score: 0.5, metadata: { chapter: hit.chapter } })),
+          lore: loreHits.map((hit) => ({ text: hit.text, score: 0.5, metadata: { kind: hit.kind, refKey: hit.refKey } })),
+        };
+      },
+    };
+  }
   let expected: any;
   if (spec.mode === 'pack') {
     const options: any = { dryRun: true, span: spec.span ?? undefined, insertAfter: spec.insertAfter ?? undefined };
@@ -459,6 +516,7 @@ for (const spec of specs) {
       expected = { catalog: error.vars.catalog, obligations: error.vars.obligations, milestones: error.vars.milestones, endingNote: error.vars.endingNote };
     }
   }
+  if (spec.retrieval !== null) expected.queries = queries;
   scenarios.push({ spec, expected });
 }
 

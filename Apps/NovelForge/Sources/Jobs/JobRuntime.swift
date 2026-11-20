@@ -98,9 +98,10 @@ final class JobRuntime {
 
   static func live(store: VaultStore, services: AIServices) -> JobRuntime {
     let clock = LeaseClock(trusted: nil)
-    let consent = ConsentDisclosure.novelText.requirement
+    let (consent, embedders) = (ConsentDisclosure.novelText.requirement, services.embedders)
     return JobRuntime(store: store, clock: clock, settler: services.settler(for: store)) { () throws(JobEngineError) -> JobEngine in
-      try JobEngine(store: store, router: { requestGuard in await services.router(store: store, requestGuard: requestGuard) }, consent: consent, clock: clock)
+      try JobEngine(
+        store: store, router: { requestGuard in await services.router(store: store, requestGuard: requestGuard) }, consent: consent, clock: clock, embedders: embedders)
     }
   }
 

@@ -42,7 +42,8 @@ final class ChatRuntime {
   }
 
   static func live(store: VaultStore, services: AIServices) -> ChatRuntime {
-    let engine = ChatTurnEngine(store: store, router: { await services.router(store: store) }, consent: ConsentDisclosure.novelText.requirement)
+    let engine = ChatTurnEngine(
+      store: store, router: { await services.router(store: store) }, consent: ConsentDisclosure.novelText.requirement, embedders: services.embedders)
     return ChatRuntime(store: store, engine: engine, settler: services.settler(for: store))
   }
 

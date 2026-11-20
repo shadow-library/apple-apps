@@ -14,8 +14,10 @@ struct OutlinePackParityTests {
     for scenario in try Self.fixture.get().scenarios where scenario.spec.mode == "pack" {
       let spec = scenario.spec
       let store = try await OutlinePackWorld.build(spec)
-      let pack = try await store.outlinePack(novel: OutlinePackWorld.novel, request: spec.request)
+      let recorded = spec.retrieval.map(RecordedOutlineRetrieval.init)
+      let pack = try await store.outlinePack(novel: OutlinePackWorld.novel, request: spec.request, retrieval: recorded?.retrieval)
       let expected = scenario.expected
+      #expect(recorded?.queries == expected.queries, "\(spec.name): queries")
       #expect(pack.sections.map(\.key) == expected.sections?.map(\.key), "\(spec.name): sections")
       for (section, wanted) in zip(pack.sections, expected.sections ?? []) { Self.same(section.rendered, wanted.rendered, "\(spec.name) \(wanted.key)") }
       for (section, wanted) in zip(pack.sections, expected.sections ?? []) {
@@ -32,8 +34,11 @@ struct OutlinePackParityTests {
     for scenario in try Self.fixture.get().scenarios where scenario.spec.mode == "plan" {
       let spec = scenario.spec
       let store = try await OutlinePackWorld.build(spec)
-      let context = try await store.chapterPlanContext(novel: OutlinePackWorld.novel, chapter: spec.chapter, budgetTokens: spec.budgetTokens ?? OutlinePack.budget)
+      let recorded = spec.retrieval.map(RecordedOutlineRetrieval.init)
+      let context = try await store.chapterPlanContext(
+        novel: OutlinePackWorld.novel, chapter: spec.chapter, budgetTokens: spec.budgetTokens ?? OutlinePack.budget, retrieval: recorded?.retrieval)
       let expected = scenario.expected
+      #expect(recorded?.queries == expected.queries, "\(spec.name): queries")
       Self.same(context.catalog, expected.catalog, "\(spec.name): catalog")
       Self.same(renderObligations(context.obligations), expected.obligations, "\(spec.name): obligations")
       Self.same(context.milestones, expected.milestones, "\(spec.name): milestones")
@@ -49,7 +54,12 @@ struct OutlinePackParityTests {
 
   @Test func shouldCoverTheWorldsThePlanTaskNames() throws {
     let names = try Self.fixture.get().scenarios.map(\.spec.name)
-    for needed in ["first chapter", "mid volume", "volume end", "no milestones and an unplanned chapter", "many threads under budget pressure"] {
+    let wanted = [
+      "first chapter", "mid volume", "volume end", "no milestones and an unplanned chapter", "many threads under budget pressure", "pack with retrieved prose and lore",
+      "plan with retrieved lore and no prose", "retrieved prose gives way to the budget before lore", "retrieval takes only what a full catalog leaves",
+      "a failed retrieval leaves the pack without it", "an objective whose first line is empty searches nothing", "no objective searches nothing",
+    ]
+    for needed in wanted {
       #expect(names.contains(needed), "\(needed)")
     }
   }

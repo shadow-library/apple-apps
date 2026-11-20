@@ -8,10 +8,12 @@ struct NovelForgeApp: App {
   #if os(macOS)
     @NSApplicationDelegateAdaptor(NovelForgeAppDelegate.self) private var delegate
   #endif
+  @Environment(\.scenePhase) private var scenePhase
   @State private var vault = VaultModel(locate: Self.locate)
   @State private var ai = AIServices.live()
   @State private var chats = ChatRuntimes()
   @State private var jobs = JobRuntimes()
+  @State private var retrieval = RetrievalRuntimes()
 
   var body: some Scene {
     WindowGroup {
@@ -22,12 +24,14 @@ struct NovelForgeApp: App {
         .task { await ai.loadOpenRouterModelsIfKeyed() }
         .task(id: vault.store.map(ObjectIdentifier.init)) { await chats.launch(vault.store, services: ai) }
         .task(id: vault.store.map(ObjectIdentifier.init)) { await jobs.launch(vault.store, services: ai) }
+        .task(id: vault.store.map(ObjectIdentifier.init)) { await retrieval.launch(vault.store, embedders: ai.embedders) }
         .shadowTheme()
         .flushingUnsavedWork()
         #if os(macOS)
           .frame(minWidth: 900, minHeight: 600)
         #endif
     }
+    .onChange(of: scenePhase, initial: true) { _, phase in Task { await retrieval.phaseChanged(phase) } }
     .commands { NovelForgeCommands() }
     #if os(macOS)
       Settings { AISettingsScene(vault: vault, services: ai) }

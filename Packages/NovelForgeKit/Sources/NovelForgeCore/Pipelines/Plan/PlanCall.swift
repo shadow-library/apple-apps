@@ -92,11 +92,11 @@ enum PlanCall {
     let now = LeaseInstant(date: context.services.now(), source: .device)
     let subject = try await read(store) { transaction in try subject(novel: novel, chapter: chapter, empty: input.empty, at: now, in: transaction) }
     guard let refs = subject.refs else {
-      let obligations = try await planContext(store, novel: novel, chapter: chapter, policy: PlanPolicy(.standard)).obligations
+      let obligations = try await planContext(store, novel: novel, chapter: chapter, policy: PlanPolicy(.standard), retrieval: nil).obligations
       return emptyPlanOp(PlanOpInput(chapter: chapter, steer: input.steer, rationale: planRationale(obligations)))
     }
     let policy = PlanPolicy(subject.mode)
-    let plan = try await planContext(store, novel: novel, chapter: chapter, policy: policy)
+    let plan = try await planContext(store, novel: novel, chapter: chapter, policy: policy, retrieval: .index(context.services.retrieval))
     let route: ChapterCallRoute
     do {
       // A plan takes the novel's mode when it is made (chapter-route.ts:34), so the planner is routed by it, as routeModel routes the outline call.
@@ -178,9 +178,11 @@ enum PlanCall {
     return OrderedJSONObject(texts.map { (key: $0.0, value: OrderedJSON.string($0.1)) })
   }
 
-  private static func planContext(_ store: VaultStore, novel: UUID, chapter: Int, policy: PlanPolicy) async throws -> ChapterPlanContext {
+  private static func planContext(
+    _ store: VaultStore, novel: UUID, chapter: Int, policy: PlanPolicy, retrieval: OutlineRetrieval?
+  ) async throws -> ChapterPlanContext {
     do {
-      return try await store.chapterPlanContext(novel: novel, chapter: chapter, readsIsolatedRaw: policy.permissive)
+      return try await store.chapterPlanContext(novel: novel, chapter: chapter, readsIsolatedRaw: policy.permissive, retrieval: retrieval)
     } catch {
       throw PlanPipelineError.outline(error)
     }

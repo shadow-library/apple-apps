@@ -22,17 +22,13 @@ struct OutlinePack: Equatable, Sendable {
 
 extension OutlinePack {
   /// What the planner reads before it plans `request.chapter`: the volume goal, the last summaries, how the previous chapter ended, the decision ledger, the author's
-  /// plans for later and the whole catalog. Every section is required, so none is evicted to fit the budget; the catalog is cut to what the others leave.
+  /// plans for later, the whole catalog and, when `recalled` is given, the prose and lore retrieval found for the volume goal. Every section but the retrieved
+  /// two is required, so only those are evicted to fit the budget; the catalog is cut to what the other required sections leave.
   // apps/novel-forge-server/src/modules/ai/context/context-assembler.service.ts:587 (forOutline)
-  static func assemble(_ world: OutlineWorld, _ request: OutlineRequest) throws(OutlineLoadError) -> OutlinePack {
+  static func assemble(_ world: OutlineWorld, _ request: OutlineRequest, recalled: RetrievalResults? = nil) throws(OutlineLoadError) -> OutlinePack {
     let chapter = request.chapter
     let previous = chapter - 1
-    let volumeKey: String?
-    switch request.volume {
-    case .key(let key): volumeKey = key
-    case .nearest: volumeKey = nearestVolumeKey(world.planWorld.plans.map(\.claims), chapter: request.insertAfter ?? chapter)
-    }
-    let currentVolume = volumeKey.flatMap { key in world.volumes.first { $0.volumeKey.jsEquals(key) } }
+    let (volumeKey, currentVolume) = volume(world, request)
 
     var sections: [ChatPackSection] = []
     func require(_ section: ChatPackSection) {
@@ -70,6 +66,11 @@ extension OutlinePack {
     let catalog = world.catalog(OutlineCatalogOptions(maxTokens: maxTokens, span: request.planSpan, insertAfter: request.insertAfter))
     if !catalog.isEmpty { require(ChatPack.makeSection("catalog", catalog, tier: .canonical)) }
 
+    if let recalled {
+      if !recalled.prose.isEmpty { sections.append(ChatPack.makeSection("prose_retrieved", recalledLines(recalled.prose), tier: .canonical)) }
+      if !recalled.lore.isEmpty { sections.append(ChatPack.makeSection("lore_retrieved", recalledLines(recalled.lore), tier: .canonical)) }
+    }
+
     let budgeted = applyBudget(sections, budgetTokens: request.budgetTokens)
     if request.readsIsolatedRaw {
       let screens = sectionScreens(budgeted.fitting.map { ContextSection(key: $0.key, rendered: $0.rendered, sourceRefs: $0.sourceRefs) })
@@ -80,5 +81,25 @@ extension OutlinePack {
       chapter: chapter, volumeKey: volumeKey, budgetTokens: request.budgetTokens, usedTokens: budgeted.fitting.reduce(0) { $0 + $1.tokens }, sections: budgeted.fitting,
       omitted: budgeted.omitted.map(ChatPackOmission.init), renderedStable: split.renderedStable, renderedVolatile: split.renderedVolatile,
       rendered: joinSections(budgeted.fitting.filter { $0.segment == .stable } + budgeted.fitting.filter { $0.segment != .stable }))
+  }
+
+  /// context-assembler.service.ts:660: the first line of the current volume's objective, or nil when that line is empty and nothing is searched for.
+  static func retrievalQuery(_ world: OutlineWorld, _ request: OutlineRequest) -> String? {
+    guard let objective = volume(world, request).current?.objective, let line = objective.jsSplit("\n").first, !line.isEmpty else { return nil }
+    return line
+  }
+
+  private static func volume(_ world: OutlineWorld, _ request: OutlineRequest) -> (key: String?, current: OutlineVolume?) {
+    let key: String?
+    switch request.volume {
+    case .key(let chosen): key = chosen
+    case .nearest: key = nearestVolumeKey(world.planWorld.plans.map(\.claims), chapter: request.insertAfter ?? request.chapter)
+    }
+    return (key, key.flatMap { key in world.volumes.first { $0.volumeKey.jsEquals(key) } })
+  }
+
+  // context-assembler.service.ts:667,671
+  private static func recalledLines(_ hits: [RetrievalHit]) -> String {
+    hits.enumerated().map { index, hit in "\(index + 1). [\(hit.outlineLabel)] \(hit.text)" }.joined(separator: "\n\n")
   }
 }

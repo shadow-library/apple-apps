@@ -79,6 +79,36 @@ struct StoreObservationTests {
     consumer.cancel()
   }
 
+  @Test("should read again only after a commit that wrote to a table it follows, WITHOUT ROWID tables included")
+  func shouldFollowOnlyTheNamedTables() async throws {
+    let store = try StoreFixture.open()
+    let reads = Reads()
+    let observed = store.observeReads(writingTo: ["FIELD_STATE"]) { transaction in
+      reads.bump()
+      return try transaction.states(ofKind: Fixture.note, scope: .vault).count
+    }
+    let consumer = Task { for try await _ in observed {} }
+    try await settle { reads.value == 1 }
+    _ = try await store.write { transaction in
+      try transaction.database.execute(sql: "CREATE TABLE IF NOT EXISTS local_scratch (value INTEGER)")
+      try transaction.database.execute(sql: "INSERT INTO local_scratch (value) VALUES (1)")
+    }
+    try await Task.sleep(for: .milliseconds(300))
+    #expect(reads.value == 1)
+    _ = try await store.write { transaction in try transaction.set(note, ["title": "a"]) }
+    try await settle { reads.value == 2 }
+    await #expect(throws: (any Error).self) {
+      _ = try await store.write { transaction in
+        _ = try transaction.set(other, ["title": "b"])
+        throw Rollback()
+      }
+    }
+    _ = try await store.write { transaction in try transaction.database.execute(sql: "INSERT INTO local_scratch (value) VALUES (2)") }
+    try await Task.sleep(for: .milliseconds(300))
+    #expect(reads.value == 2)
+    consumer.cancel()
+  }
+
   @Test("should stop observing once the consumer is cancelled")
   func shouldRemoveTheObserverOnCancel() async throws {
     let store = try StoreFixture.open()

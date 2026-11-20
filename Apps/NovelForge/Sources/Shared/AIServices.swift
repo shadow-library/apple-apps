@@ -87,6 +87,8 @@ final class AIServices {
   private(set) var openRouterModels: [RemoteModel] = []
 
   let keys: ProviderKeys
+  /// The system's sentence embeddings, one per language for the life of the app, shared by the retrieval upkeep and the searches of every job.
+  let embedders: any EmbedderProvider
   private let settingsStore: AISettingsStore
   private let anthropic: ProviderBinding?
   private let openRouter: ProviderBinding?
@@ -98,9 +100,10 @@ final class AIServices {
 
   init(
     keys: ProviderKeys, settingsStore: AISettingsStore, transport: any HTTPTransport & HTTPStreamingTransport, validation: CredentialValidation? = nil,
-    listing: ModelListing? = nil, now: @escaping @Sendable () -> Date = { Date() }
+    listing: ModelListing? = nil, embedders: any EmbedderProvider = NLSentenceEmbedders(), now: @escaping @Sendable () -> Date = { Date() }
   ) {
     self.keys = keys
+    self.embedders = embedders
     self.settingsStore = settingsStore
     self.settings = settingsStore.load()
     self.now = now

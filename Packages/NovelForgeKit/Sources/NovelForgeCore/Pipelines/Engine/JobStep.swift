@@ -52,6 +52,7 @@ struct JobServices: Sendable {
   let unrestrictedAvailable: Bool
   let hardLines: NovelHardLines
   let packs: WriterPackBuilder
+  let retrieval: NovelRetrieval
   let now: @Sendable () -> Date
 }
 

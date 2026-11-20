@@ -90,12 +90,10 @@ public final class ChatTurnEngine: Sendable {
   private let running = Mutex<[UUID: Control]>([:])
   private let namings = Mutex<[UUID: (token: UUID, answer: Task<[UUID]?, Never>, settled: Task<Void, Never>)]>([:])
 
-  public static let sharedEmbedders = NLSentenceEmbedders()
-
   init(
     store: VaultStore, router: @escaping @Sendable () async -> TaskRouter, consent: AIConsentRequirement, upkeep: ChatSessionUpkeep,
     grace: any ChatTurnGrace = NoChatTurnGrace(), timing: Timing = .standard, faults: Faults = .none, unrestrictedAvailable: Bool = UnrestrictedWriting.isAvailable,
-    embedders: (any EmbedderProvider)? = ChatTurnEngine.sharedEmbedders
+    embedders: (any EmbedderProvider)? = nil
   ) {
     self.store = store
     self.router = router
@@ -112,7 +110,7 @@ public final class ChatTurnEngine: Sendable {
   /// lookup's query once the novel's vectors exist; nil searches by words alone.
   public convenience init(
     store: VaultStore, router: @escaping @Sendable () async -> TaskRouter, consent: AIConsentRequirement, grace: any ChatTurnGrace = NoChatTurnGrace(),
-    embedders: (any EmbedderProvider)? = ChatTurnEngine.sharedEmbedders
+    embedders: (any EmbedderProvider)? = nil
   ) {
     self.init(store: store, router: router, consent: consent, upkeep: .vault(store), grace: grace, embedders: embedders)
   }

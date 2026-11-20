@@ -88,17 +88,20 @@ public final class JobEngine: Sendable {
   private let starting = Mutex<[EntityRef: Task<Result<JobRunHandle, JobEngineError>, Never>]>([:])
   private let claim: JobEngineClaim
 
+  /// `embedders` ranks the plan's retrieval by vectors too once a novel is fully embedded; without it the plan's retrieval is full-text alone.
   public convenience init(
-    store: VaultStore, router: @escaping RouterSource, consent: AIConsentRequirement, clock: LeaseClock, unrestrictedAvailable: Bool = UnrestrictedWriting.isAvailable
+    store: VaultStore, router: @escaping RouterSource, consent: AIConsentRequirement, clock: LeaseClock, embedders: (any EmbedderProvider)? = nil,
+    unrestrictedAvailable: Bool = UnrestrictedWriting.isAvailable
   ) throws(JobEngineError) {
     try self.init(
-      store: store, router: router, consent: consent, clock: clock, runner: AttemptRunner(store: store, clock: clock), unrestrictedAvailable: unrestrictedAvailable)
+      store: store, router: router, consent: consent, clock: clock, runner: AttemptRunner(store: store, clock: clock), embedders: embedders,
+      unrestrictedAvailable: unrestrictedAvailable)
   }
 
   init(
     store: VaultStore, router: @escaping RouterSource, consent: AIConsentRequirement, clock: LeaseClock, runner: AttemptRunner,
     catalog: @escaping @Sendable (NovelJobKind) -> NovelPipelineDefinition = PipelineCatalog.definition(for:), packs: WriterPackBuilder? = nil,
-    timing: Timing = .standard, faults: Faults = .none, unrestrictedAvailable: Bool = UnrestrictedWriting.isAvailable
+    embedders: (any EmbedderProvider)? = nil, timing: Timing = .standard, faults: Faults = .none, unrestrictedAvailable: Bool = UnrestrictedWriting.isAvailable
   ) throws(JobEngineError) {
     claim = try JobEngineClaim(store)
     self.store = store
@@ -110,7 +113,7 @@ public final class JobEngine: Sendable {
     let packs = packs ?? vaultWriterPack(store)
     services = JobServices(
       store: store, router: router, consent: consent, unrestrictedAvailable: unrestrictedAvailable, hardLines: NovelHardLines(), packs: packs,
-      now: { clock.now().date })
+      retrieval: NovelRetrieval(store: store, embedders: embedders), now: { clock.now().date })
   }
 
   deinit {

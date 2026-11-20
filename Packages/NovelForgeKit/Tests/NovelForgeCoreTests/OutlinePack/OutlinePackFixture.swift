@@ -1,6 +1,7 @@
 import Foundation
 import ShadowCore
 import ShadowStore
+import Synchronization
 import Testing
 
 @testable import NovelForgeCore
@@ -103,6 +104,27 @@ struct OutlinePackFixture: Decodable {
       let start, end: Int
     }
 
+    struct Recall: Decodable, Sendable {
+      struct Prose: Decodable, Sendable {
+        let chapter: Int
+        let text: String
+      }
+
+      struct Lore: Decodable, Sendable {
+        let kind, refKey, text: String
+      }
+
+      let prose: [Prose]
+      let lore: [Lore]
+      let fails: Bool
+
+      var results: RetrievalResults {
+        RetrievalResults(
+          prose: prose.map { RetrievalHit(text: $0.text, score: 0.5, origin: .prose(chapter: $0.chapter)) },
+          lore: lore.map { RetrievalHit(text: $0.text, score: 0.5, origin: .lore(kind: $0.kind, refKey: $0.refKey)) })
+      }
+    }
+
     let name, mode: String
     let chapter: Int
     let budgetTokens: Int?
@@ -121,6 +143,7 @@ struct OutlinePackFixture: Decodable {
     let drafts: [Draft]
     let plans: [Plan]
     let knowledge: [Knowledge]
+    let retrieval: Recall?
 
     var request: OutlineRequest {
       OutlineRequest(
@@ -134,6 +157,7 @@ struct OutlinePackFixture: Decodable {
     let omitted: [ChatPackOmission]?
     let usedTokens, budgetTokens: Int?
     let rendered, catalog, obligations, milestones, endingNote: String?
+    let queries: [String]?
   }
 
   struct Scenario: Decodable {
@@ -145,6 +169,26 @@ struct OutlinePackFixture: Decodable {
   let budget, timelineCap: Int
 
   static let shared = Result { try ReferenceFixture.decode(OutlinePackFixture.self, from: "outline-pack/outline-pack.json") }
+}
+
+/// Answers every search with the scenario's hits, or fails, as the generator's stub service does, and records what it was asked.
+final class RecordedOutlineRetrieval: Sendable {
+  private let asked = Mutex<[String]>([])
+  private let recall: OutlinePackFixture.Spec.Recall
+
+  init(_ recall: OutlinePackFixture.Spec.Recall) {
+    self.recall = recall
+  }
+
+  var queries: [String] { asked.withLock(\.self) }
+
+  var retrieval: OutlineRetrieval {
+    OutlineRetrieval { [self] _, query in
+      asked.withLock { $0.append(query) }
+      if recall.fails { throw RetrievalError.indexUnavailable([]) }
+      return recall.results
+    }
+  }
 }
 
 enum OutlinePackWorld {

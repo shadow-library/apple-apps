@@ -26,10 +26,11 @@ struct ChapterPlanContext: Equatable, Sendable {
 extension ChapterPlanContext {
   /// Threads and mysteries reach the obligations in key order: the urgency sort is intransitive, so replicas must agree on the order it starts from.
   // apps/novel-forge-server/src/modules/actions/chapter-plan.service.ts:73-139
-  static func assemble(_ world: OutlineWorld, chapter: Int, budgetTokens: Int = OutlinePack.budget, readsIsolatedRaw: Bool = false) throws(OutlineLoadError) -> ChapterPlanContext {
-    let volumeKey = world.slot?.volumeKey ?? nearestVolumeKey(world.planWorld.plans.map(\.claims), chapter: chapter)
-    let request = OutlineRequest(chapter: chapter, budgetTokens: budgetTokens, volume: .key(volumeKey), readsIsolatedRaw: readsIsolatedRaw)
-    let pack = try OutlinePack.assemble(world, request)
+  static func assemble(
+    _ world: OutlineWorld, chapter: Int, budgetTokens: Int = OutlinePack.budget, readsIsolatedRaw: Bool = false, recalled: RetrievalResults? = nil
+  ) throws(OutlineLoadError) -> ChapterPlanContext {
+    let volumeKey = volumeKey(world, chapter: chapter)
+    let pack = try OutlinePack.assemble(world, request(world, chapter: chapter, budgetTokens: budgetTokens, readsIsolatedRaw: readsIsolatedRaw), recalled: recalled)
     let surrounding = world.neighbours.map { "## Chapter \($0.chapter): \($0.title ?? "")\n\($0.body)" }.joined(separator: "\n\n")
     let catalog = [pack.rendered, surrounding.isEmpty ? "" : "## Surrounding chapters\n\(surrounding)"].filter { !$0.isEmpty }.joined(separator: "\n\n")
 
@@ -49,6 +50,15 @@ extension ChapterPlanContext {
       milestones: renderPlanMilestones(rows, facts: facts, plan: claims, world: world.planWorld), claims: claims, facts: facts, milestoneRows: rows, world: world.planWorld,
       characters: Set(world.characters.map { JSString($0) }))
   }
+
+  // chapter-plan.service.ts:130: the pack of the chapter's own span, under the volume its plan names or the nearest one
+  static func request(_ world: OutlineWorld, chapter: Int, budgetTokens: Int = OutlinePack.budget, readsIsolatedRaw: Bool = false) -> OutlineRequest {
+    OutlineRequest(chapter: chapter, budgetTokens: budgetTokens, volume: .key(volumeKey(world, chapter: chapter)), readsIsolatedRaw: readsIsolatedRaw)
+  }
+
+  private static func volumeKey(_ world: OutlineWorld, chapter: Int) -> String? {
+    world.slot?.volumeKey ?? nearestVolumeKey(world.planWorld.plans.map(\.claims), chapter: chapter)
+  }
 }
 
 extension VaultStore {
@@ -63,13 +73,25 @@ extension VaultStore {
     return load.world
   }
 
-  func outlinePack(novel: UUID, request: OutlineRequest) async throws(OutlineLoadError) -> OutlinePack {
+  /// With `retrieval`, the pack carries what it finds for the volume goal; without it the pack has no retrieved sections, as the reference's without a
+  /// retrieval service.
+  func outlinePack(novel: UUID, request: OutlineRequest, retrieval: OutlineRetrieval? = nil) async throws(OutlineLoadError) -> OutlinePack {
     let world = try await outlineWorld(novel: novel, chapter: request.chapter)
-    return try OutlinePack.assemble(world, request)
+    let recalled = await recall(novel: novel, query: OutlinePack.retrievalQuery(world, request), from: retrieval)
+    return try OutlinePack.assemble(world, request, recalled: recalled)
   }
 
-  func chapterPlanContext(novel: UUID, chapter: Int, budgetTokens: Int = OutlinePack.budget, readsIsolatedRaw: Bool = false) async throws(OutlineLoadError) -> ChapterPlanContext {
+  func chapterPlanContext(
+    novel: UUID, chapter: Int, budgetTokens: Int = OutlinePack.budget, readsIsolatedRaw: Bool = false, retrieval: OutlineRetrieval? = nil
+  ) async throws(OutlineLoadError) -> ChapterPlanContext {
     let world = try await outlineWorld(novel: novel, chapter: chapter)
-    return try ChapterPlanContext.assemble(world, chapter: chapter, budgetTokens: budgetTokens, readsIsolatedRaw: readsIsolatedRaw)
+    let request = ChapterPlanContext.request(world, chapter: chapter, budgetTokens: budgetTokens, readsIsolatedRaw: readsIsolatedRaw)
+    let recalled = await recall(novel: novel, query: OutlinePack.retrievalQuery(world, request), from: retrieval)
+    return try ChapterPlanContext.assemble(world, chapter: chapter, budgetTokens: budgetTokens, readsIsolatedRaw: readsIsolatedRaw, recalled: recalled)
+  }
+
+  private func recall(novel: UUID, query: String?, from retrieval: OutlineRetrieval?) async -> RetrievalResults? {
+    guard let retrieval, let query else { return nil }
+    return await retrieval.recall(novel: novel, query: query)
   }
 }
