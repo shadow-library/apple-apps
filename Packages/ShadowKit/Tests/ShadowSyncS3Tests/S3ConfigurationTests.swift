@@ -45,6 +45,13 @@ struct S3ConfigurationTests {
     #expect(configuration.endpoint.absoluteString == "https://s3.eu-west-1.amazonaws.com")
   }
 
+  @Test("should lowercase the endpoint host, since the Host header goes out lowercased and is signed")
+  func lowercasesHost() throws {
+    #expect(try Self.make(endpoint: "https://S3.EU-West-1.AmazonAWS.com:9443").endpoint.absoluteString == "https://s3.eu-west-1.amazonaws.com:9443")
+    #expect(try Self.make(endpoint: "http://LocalHost:9000", style: .path, insecureLocalhost: true).endpoint.absoluteString == "http://localhost:9000")
+    #expect(try Self.make(endpoint: "https://Bücher.Example").endpoint.absoluteString == "https://xn--bcher-kva.example")
+  }
+
   @Test("should refuse plain http unless a loopback endpoint opts in")
   func guardsPlainHTTP() throws {
     #expect(Self.failure { try Self.make(endpoint: "http://s3.example.com") } == .insecureEndpoint)

@@ -16,7 +16,7 @@ public struct S3Configuration: Sendable, Hashable {
   public let bucket: String
   public let keyPrefix: String
   public let addressingStyle: AddressingStyle
-  public let supportsConditionalWrites: Bool
+  public private(set) var supportsConditionalWrites: Bool
   public let allowsInsecureLocalhost: Bool
 
   public init(
@@ -39,6 +39,12 @@ public struct S3Configuration: Sendable, Hashable {
     self.addressingStyle = addressingStyle
     self.supportsConditionalWrites = supportsConditionalWrites
     self.allowsInsecureLocalhost = allowsInsecureLocalhost
+  }
+
+  public func withConditionalWrites(_ supported: Bool) -> S3Configuration {
+    var configuration = self
+    configuration.supportsConditionalWrites = supported
+    return configuration
   }
 
   public func objectName(for key: ObjectKey) -> String {
@@ -65,6 +71,7 @@ public struct S3Configuration: Sendable, Hashable {
       throw .invalidEndpoint("Virtual-hosted addressing needs a DNS name; use path-style for an IP address or localhost.")
     }
     components.scheme = scheme
+    components.encodedHost = components.encodedHost?.lowercased()
     components.path = ""
     guard let normalized = components.url else { throw .invalidEndpoint("It cannot be rebuilt.") }
     return normalized
