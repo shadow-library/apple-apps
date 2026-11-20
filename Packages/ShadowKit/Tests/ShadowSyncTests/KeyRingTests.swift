@@ -61,6 +61,16 @@ private struct FailingStore: SecureStore {
   func allKeys() throws(SecureStoreError) -> [String] { throw .unexpectedStatus(-25_308) }
 }
 
+private struct StatusStore: SecureStore {
+  let status: OSStatus
+
+  func data(forKey key: String) throws(SecureStoreError) -> Data? { throw .unexpectedStatus(status) }
+  func setData(_ data: Data, forKey key: String) throws(SecureStoreError) { throw .unexpectedStatus(status) }
+  func insertData(_ data: Data, forKey key: String) throws(SecureStoreError) -> Bool { throw .unexpectedStatus(status) }
+  func removeValue(forKey key: String) throws(SecureStoreError) { throw .unexpectedStatus(status) }
+  func allKeys() throws(SecureStoreError) -> [String] { throw .unexpectedStatus(status) }
+}
+
 private struct ListingStore: SecureStore {
   let base: InMemorySecureStore
   let names: [String]
@@ -292,7 +302,7 @@ struct KeyRingTests {
     #expect(ring.unreadableItems.isEmpty)
   }
 
-  @Test("should turn store errors into KeyRingError.store without key material")
+  @Test("should turn store errors into typed KeyRingError cases without key material")
   func shouldMapStoreErrors() throws {
     let vault = try Self.vault()
     let key = try Self.key("00000000-0000-7000-8000-000000000001", byte: 0xAB)
@@ -314,7 +324,8 @@ struct KeyRingTests {
     }
     let readFailing = KeyRing(vault: vault, store: FailingReadStore(names: [KeyRing.itemName(vault: vault, key: key.id)], leak: leak))
     #expect(throws: KeyRingError.store("secure_store.decoding")) { try readFailing.refresh() }
-    #expect(errors == [.store("secure_store.unexpected_status -25308"), .store("secure_store.encoding"), .store("secure_store.encoding")])
+    #expect(errors == [.deviceLocked, .store("secure_store.encoding"), .store("secure_store.encoding")])
+    #expect(throws: KeyRingError.store("secure_store.unexpected_status -25300")) { try KeyRing(vault: vault, store: StatusStore(status: -25_300)).refresh() }
     for error in errors {
       for text in [String(describing: error), String(reflecting: error), error.localizedDescription] {
         #expect(!text.contains(leak))

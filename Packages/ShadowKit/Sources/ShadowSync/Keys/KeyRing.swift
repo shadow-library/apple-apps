@@ -125,6 +125,7 @@ public final class KeyRing: Sendable {
     do {
       return try body()
     } catch {
+      if error.isInteractionNotAllowed { throw .deviceLocked }
       switch error {
       case .unexpectedStatus(let status): throw .store("\(error.code) \(status)")
       case .encoding, .decoding: throw .store(error.code)

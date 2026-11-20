@@ -22,6 +22,12 @@ public enum SecureStoreError: ShadowError {
     case .decoding(let reason): "The stored value could not be decoded: \(reason)"
     }
   }
+
+  /// The status for an item readable only after first unlock while the device has not been unlocked since it started.
+  public var isInteractionNotAllowed: Bool {
+    guard case .unexpectedStatus(let status) = self else { return false }
+    return status == errSecInteractionNotAllowed
+  }
 }
 
 public protocol SecureStore: Sendable {
