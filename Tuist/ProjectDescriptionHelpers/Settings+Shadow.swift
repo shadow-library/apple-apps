@@ -23,9 +23,9 @@ extension SettingsDictionary {
 }
 
 extension Settings {
-  static func shadow(_ base: SettingsDictionary) -> Settings {
+  static func shadow(_ base: SettingsDictionary, capabilities: AppCapabilities? = nil) -> Settings {
     .settings(
-      base: base,
+      base: base.merging(capabilities?.settings ?? [:]) { $1 },
       configurations: [
         .debug(name: .debug, settings: ["SWIFT_ACTIVE_COMPILATION_CONDITIONS": "$(inherited) DEBUG"]),
         .release(name: .release, settings: ["SWIFT_COMPILATION_MODE": "wholemodule"]),

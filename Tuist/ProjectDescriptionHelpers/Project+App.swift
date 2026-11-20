@@ -10,15 +10,16 @@ extension Project {
     testDependencies: [TargetDependency] = [],
     includesUITests: Bool = false,
     infoPlist: [String: Plist.Value] = [:],
-    entitlements: Entitlements? = nil
+    capabilities: [AppCapability] = []
   ) -> Project {
     let bundleId = "\(Organization.appBundleIdPrefix).\(bundleIdSuffix ?? name.lowercased())"
+    let resolved = AppCapabilities(capabilities, bundleId: bundleId, platform: platform)
     let defaultInfoPlist: [String: Plist.Value] = [
       "CFBundleDisplayName": .string(name),
       "CFBundleShortVersionString": "$(MARKETING_VERSION)",
       "CFBundleVersion": "$(CURRENT_PROJECT_VERSION)",
       "UILaunchScreen": [:],
-    ]
+    ].merging(resolved.infoPlist) { $1 }
 
     let app: Target = .target(
       name: name,
@@ -28,9 +29,9 @@ extension Project {
       deploymentTargets: platform.deploymentTargets,
       infoPlist: .extendingDefault(with: defaultInfoPlist.merging(infoPlist) { $1 }),
       buildableFolders: ["Sources", "Resources"],
-      entitlements: entitlements,
+      entitlements: resolved.entitlements,
       dependencies: dependencies,
-      settings: .shadow(.shadowApp)
+      settings: .shadow(.shadowApp, capabilities: resolved)
     )
 
     let tests: Target = .target(

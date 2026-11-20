@@ -5,12 +5,13 @@ Read `README.md` first; it covers layout, modules and tasks.
 ## Rules
 
 - Never commit or hand-edit `*.xcodeproj`, `*.xcworkspace` or `Derived/`. Change the Swift manifests and run `tuist generate --no-open`.
-- Every app's `Project.swift` goes through `Project.app(...)`. Build settings belong in `Tuist/ProjectDescriptionHelpers/Settings+Shadow.swift`, never per app; settings of the package targets (ShadowKit, product kits) live in `Tuist/Package.swift`'s `PackageSettings`.
+- Every app's `Project.swift` goes through `Project.app(...)`. Build settings belong in `Tuist/ProjectDescriptionHelpers/Settings+Shadow.swift`, never per app (capability-derived settings are built in `AppCapability.swift` and merged there); settings of the package targets (ShadowKit, product kits) live in `Tuist/Package.swift`'s `PackageSettings`.
 - Every identifier is reverse-DNS under its owner: `com.shadow.apps.<app>` for an app (bundle id, keychain services, defaults keys) and `com.shadow.library.<library>` for a shared library (bundle id, migration identifiers, format tags, hash domain separators). A new library target is added to the list in `Tuist/Package.swift`.
 - Depend on shared modules with `.shared(.<module>)`, never `.external(name:)` with a string.
 - Depend on product modules with `.product(.<module>)` (`ProductModule`), never `.external(name:)` with a string.
 - Code reused by a second app belongs in `Packages/ShadowKit`, not copied between apps.
 - A product's core lives in `Packages/<Product>Kit` (first: `Packages/NovelForgeKit`, module `NovelForgeCore`). It imports no UI framework (SwiftUI, UIKit, AppKit) and reaches ShadowKit through the package's products.
+- Capabilities (iCloud, push, background modes, keychain group, camera, Mac sandbox) are declared only through `Project.app(capabilities:)` with `AppCapability`; never write entitlements, `aps-environment`, `UIBackgroundModes` or usage strings by hand. Capabilities that need a signing team are emitted only when `TUIST_DEVELOPMENT_TEAM` is set, so team-less builds must keep working.
 - `ShadowTestSupport` is for test targets only; never link it into an app target.
 - Third-party dependencies are added to `Tuist/Package.swift` (for apps), `Packages/ShadowKit/Package.swift` (for shared modules) or the product package's own `Package.swift` and need the user's approval.
 - `ShadowDesignSystem`: use semantic tokens only (`ShadowColor`, `Spacing`, `Radius`), never primitives or literal colours; the library has no user-facing strings.
