@@ -95,7 +95,7 @@ struct ChatTurnUpkeepTests {
     let basis = try await begunTurn("Two.", engine: engine, book: book)
     try await book.run { try TurnStagingMarks.record(.cards(proposal: nil), reply: basis.reply, session: basis.session, in: $0.database) }
 
-    try await book.store.forgetLocalChats(novel: book.novel)
+    try await book.store.forgetLocalState(novel: book.novel)
     #expect(try await book.store.chatCallInspection(reply: reply) == nil)
     #expect(try await World.record(basis.turn, in: book.store) == nil)
     #expect(try await World.stepRows(in: book.store) == 0)

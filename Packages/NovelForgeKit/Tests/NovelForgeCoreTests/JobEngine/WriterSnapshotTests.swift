@@ -90,7 +90,7 @@ struct WriterSnapshotTests {
         _ = try WriterPackPins.pin(pack, options: WriterPackOptions(), attempt: attempt, novel: owner, at: Date(), in: transaction.database)
       }
     }
-    try await store.forgetLocalChats(novel: novel)
+    try await store.forgetLocalState(novel: novel)
     #expect(try await store.writerSnapshots(novel: novel, chapter: 2).isEmpty)
     #expect(try await store.writerSnapshots(novel: other, chapter: 2).count == 1)
     let pinned = try await store.read { transaction in

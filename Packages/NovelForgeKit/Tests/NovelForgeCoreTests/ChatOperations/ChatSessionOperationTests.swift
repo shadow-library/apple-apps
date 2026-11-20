@@ -122,7 +122,7 @@ struct ChatSessionOperationTests {
     try await World.leaveLocalState(session: first.id, in: store)
     try await World.leaveLocalState(session: removed.id, in: store)
     try await World.leaveLocalState(session: other.id, novel: World.otherNovel, in: store)
-    try await store.forgetLocalChats(novel: World.novel)
+    try await store.forgetLocalState(novel: World.novel)
     for table in [LocalTurnStore.turnTable, LocalTurnStore.frameTable, ChatContextExchangeLog.table] {
       #expect(try await World.localRows(table, session: first.id, in: store) == 0, "\(table)")
       #expect(try await World.localRows(table, session: removed.id, in: store) == 0, "\(table)")
@@ -134,7 +134,7 @@ struct ChatSessionOperationTests {
     let store = try await World.store()
     let session = try await store.createChatSession(novel: World.novel)
     try await store.deleteChatSession(session.id, novel: World.novel)
-    try await store.forgetLocalChats(novel: World.novel)
+    try await store.forgetLocalState(novel: World.novel)
     #expect(try await World.isRemoved(session.id, in: store))
   }
 
