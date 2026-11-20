@@ -18,6 +18,7 @@ struct StoreErrorTests {
       (.unknownRevision("v:00"), "store.unknown_revision"), (.entityPurged(ref), "store.entity_purged"), (.duplicateMigration("a"), "store.duplicate_migration"),
       (.corruptStore("reason"), "store.corrupt_store"), (.replicaReused(replica), "store.replica_reused"),
       (.registryDowngrade(stored: 3, current: 1), "store.registry_downgrade"), (.sequenceExhausted, "store.sequence_exhausted"), (.aborted(Underlying()), "store.aborted"),
+      (.backupExclusionPinned, "store.backup_exclusion_pinned"), (.syncClassNotAdmitted(kind: Fixture.note, syncClass: .health), "store.sync_class_not_admitted"),
     ]
     for (error, code) in cases { #expect(error.code == code) }
   }

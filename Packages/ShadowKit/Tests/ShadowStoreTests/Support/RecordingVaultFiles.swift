@@ -4,10 +4,16 @@ import Synchronization
 @testable import ShadowStore
 
 final class RecordingVaultFiles: VaultFiles {
+  struct ExclusionCall: Equatable {
+    let excluded: Bool
+    let contents: [String]
+  }
+
   private struct State {
     var protections: [String: FileProtectionType] = [:]
     var applied: [String] = []
     var excluded: [String: Bool] = [:]
+    var exclusionCalls: [ExclusionCall] = []
   }
 
   let enforcesProtection: Bool
@@ -24,6 +30,8 @@ final class RecordingVaultFiles: VaultFiles {
   }
 
   var applied: [String] { state.withLock { $0.applied } }
+
+  var exclusionCalls: [ExclusionCall] { state.withLock { $0.exclusionCalls } }
 
   func protectionByName() -> [String: FileProtectionType] {
     state.withLock { $0.protections }
@@ -51,6 +59,10 @@ final class RecordingVaultFiles: VaultFiles {
 
   func setExcludedFromBackup(_ excluded: Bool, _ url: URL) throws {
     guard !failingExclusion.contains(url.lastPathComponent) else { throw CocoaError(.fileWriteNoPermission) }
-    state.withLock { $0.excluded[url.lastPathComponent] = excluded }
+    let contents = (try? FileManager.default.contentsOfDirectory(atPath: url.path(percentEncoded: false)).sorted()) ?? []
+    state.withLock {
+      $0.excluded[url.lastPathComponent] = excluded
+      $0.exclusionCalls.append(ExclusionCall(excluded: excluded, contents: contents))
+    }
   }
 }

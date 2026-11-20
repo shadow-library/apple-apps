@@ -16,6 +16,12 @@ public enum StoreLocation: Sendable {
   case inMemory
 }
 
+public enum StoreBackupPolicy: Sendable, Equatable {
+  case adjustable
+  /// Set at every open and never cleared, so detaching storage cannot return the data to device backups.
+  case alwaysExcluded
+}
+
 public enum StateScope: Int, Sendable, CaseIterable {
   case vault = 0
   case own = 1

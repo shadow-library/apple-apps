@@ -21,6 +21,8 @@ public enum StoreError: ShadowError {
   case reconcilerFailed(any Error)
   case fileProtection(path: String, reason: String)
   case backupExclusion(path: String, reason: String)
+  case backupExclusionPinned
+  case syncClassNotAdmitted(kind: EntityKind, syncClass: SyncClass)
   case processLock(path: String, reason: String)
 
   public var code: String {
@@ -42,6 +44,8 @@ public enum StoreError: ShadowError {
     case .reconcilerFailed: "store.reconciler_failed"
     case .fileProtection: "store.file_protection"
     case .backupExclusion: "store.backup_exclusion"
+    case .backupExclusionPinned: "store.backup_exclusion_pinned"
+    case .syncClassNotAdmitted: "store.sync_class_not_admitted"
     case .processLock: "store.process_lock"
     }
   }
@@ -65,6 +69,8 @@ public enum StoreError: ShadowError {
     case .reconcilerFailed(let error): "The reconciler failed: \(error.localizedDescription)"
     case .fileProtection(let path, let reason): "File protection could not be applied to \(path): \(reason)."
     case .backupExclusion(let path, let reason): "Backup exclusion could not be changed on \(path): \(reason)."
+    case .backupExclusionPinned: "The store is always excluded from device backups; the exclusion cannot be cleared."
+    case .syncClassNotAdmitted(let kind, let syncClass): "Kind \(kind) is in sync class \(syncClass.rawValue), which this store does not admit."
     case .processLock(let path, let reason): "The process lock \(path) could not be taken: \(reason)."
     }
   }

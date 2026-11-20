@@ -74,3 +74,31 @@ struct VaultFileProtection {
     }
   }
 }
+
+/// A file store owns its directory: it must hold only the database, its `-wal`, `-shm` and `-journal` files and its process locks, or exclusion is refused.
+struct VaultBackupExclusion {
+  let files: any VaultFiles
+  let directory: URL
+  let databaseName: String
+
+  func apply(_ excluded: Bool) throws(StoreError) {
+    if excluded { try requireOwnership() }
+    do {
+      try files.setExcludedFromBackup(excluded, directory)
+    } catch {
+      throw .backupExclusion(path: directory.lastPathComponent, reason: error.localizedDescription)
+    }
+  }
+
+  private func requireOwnership() throws(StoreError) {
+    let locks = VaultProcessLock.Purpose.allCases.map { VaultProcessLock.fileName($0, database: databaseName) }
+    let owned = Set(VaultFileProtection.sidecarSuffixes.map { databaseName + $0 } + [databaseName + "-journal"] + locks)
+    let foreign: [String]
+    do {
+      foreign = try FileManager.default.contentsOfDirectory(atPath: directory.path(percentEncoded: false)).filter { !owned.contains($0) }
+    } catch {
+      throw .backupExclusion(path: directory.lastPathComponent, reason: error.localizedDescription)
+    }
+    guard foreign.isEmpty else { throw .backupExclusion(path: directory.lastPathComponent, reason: "the directory holds files the vault does not own") }
+  }
+}

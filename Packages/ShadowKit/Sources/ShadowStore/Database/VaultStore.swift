@@ -13,6 +13,7 @@ public final class VaultStore: Sendable {
   let directory: URL?
   let databaseName: String?
   private let files: any VaultFiles
+  private let backup: StoreBackupPolicy
 
   private let writer: any DatabaseWriter
   public let wallClock: @Sendable () -> Date
@@ -21,12 +22,14 @@ public final class VaultStore: Sendable {
   private let currentReplica: Mutex<ReplicaID>
 
   private init(
-    writer: any DatabaseWriter, settlement: Settlement, row: KernelRow, directory: URL?, databaseName: String?, files: any VaultFiles, wallClock: @escaping @Sendable () -> Date
+    writer: any DatabaseWriter, settlement: Settlement, row: KernelRow, directory: URL?, databaseName: String?, files: any VaultFiles, backup: StoreBackupPolicy,
+    wallClock: @escaping @Sendable () -> Date
   ) {
     self.writer = writer
     self.directory = directory
     self.databaseName = databaseName
     self.files = files
+    self.backup = backup
     self.settlement = settlement
     registry = settlement.registry
     storedRegistryVersion = row.registryVersion
@@ -40,18 +43,23 @@ public final class VaultStore: Sendable {
     currentReplica.withLock { $0 }
   }
 
-  /// The database's directory belongs to the vault; see ``setExcludedFromBackup(_:)``.
+  /// The database's directory belongs to the vault; see ``setExcludedFromBackup(_:)``. A registry declaring a kind outside `admittedClasses` is refused.
   public static func open(
     _ location: StoreLocation, registry: SchemaRegistry, migrations: [StoreMigration] = [], wallClock: @escaping @Sendable () -> Date = { Date() },
-    reconciler: (any StoreReconciler)? = nil
+    reconciler: (any StoreReconciler)? = nil, backup: StoreBackupPolicy = .adjustable, admittedClasses: Set<SyncClass> = Set(SyncClass.allCases)
   ) throws(StoreError) -> VaultStore {
-    try open(location, registry: registry, migrations: migrations, wallClock: wallClock, reconciler: reconciler, files: SystemVaultFiles())
+    try open(
+      location, registry: registry, migrations: migrations, wallClock: wallClock, reconciler: reconciler, backup: backup, admittedClasses: admittedClasses,
+      files: SystemVaultFiles())
   }
 
   static func open(
     _ location: StoreLocation, registry: SchemaRegistry, migrations: [StoreMigration], wallClock: @escaping @Sendable () -> Date, reconciler: (any StoreReconciler)?,
-    files: any VaultFiles
+    backup: StoreBackupPolicy = .adjustable, admittedClasses: Set<SyncClass> = Set(SyncClass.allCases), files: any VaultFiles
   ) throws(StoreError) -> VaultStore {
+    if let refused = registry.schemas.first(where: { !admittedClasses.contains($0.syncClass) }) {
+      throw .syncClassNotAdmitted(kind: refused.kind, syncClass: refused.syncClass)
+    }
     let migrator = try KernelSchema.migrator(migrations)
     let settlement = Settlement(registry: registry, reconciler: reconciler)
     return try StoreError.wrapping {
@@ -68,6 +76,9 @@ public final class VaultStore: Sendable {
         databaseName = url.lastPathComponent
         try FileManager.default.createDirectory(at: url.deletingLastPathComponent(), withIntermediateDirectories: true)
         try protection.prepare(directory: url.deletingLastPathComponent())
+        if backup == .alwaysExcluded {
+          try VaultBackupExclusion(files: files, directory: url.deletingLastPathComponent(), databaseName: url.lastPathComponent).apply(true)
+        }
         writer = try DatabasePool(path: url.path(percentEncoded: false), configuration: configuration)
       case .inMemory:
         directory = nil
@@ -89,32 +100,17 @@ public final class VaultStore: Sendable {
         try KernelRow.saveRegistry(registry, in: db)
         return row
       }
-      return VaultStore(writer: writer, settlement: settlement, row: row, directory: directory, databaseName: databaseName, files: files, wallClock: wallClock)
+      return VaultStore(
+        writer: writer, settlement: settlement, row: row, directory: directory, databaseName: databaseName, files: files, backup: backup, wallClock: wallClock)
     }
   }
 
-  /// A file store owns its directory: it must hold only the database, its `-wal`, `-shm` and `-journal` files and its process locks.
-  /// The flag is guidance to the system, not a guarantee, and `true` is refused for a directory holding anything else. An in-memory store ignores it.
+  /// The flag is guidance to the system, not a guarantee, and `true` is refused while the directory holds files the vault does not own.
+  /// An in-memory store ignores it; a store opened with ``StoreBackupPolicy/alwaysExcluded`` refuses `false`.
   public func setExcludedFromBackup(_ excluded: Bool) throws(StoreError) {
+    if !excluded, backup == .alwaysExcluded { throw .backupExclusionPinned }
     guard let directory, let databaseName else { return }
-    do {
-      if excluded { try requireOwnership(of: directory, databaseName: databaseName) }
-      try files.setExcludedFromBackup(excluded, directory)
-    } catch {
-      throw .backupExclusion(path: directory.lastPathComponent, reason: error.localizedDescription)
-    }
-  }
-
-  private func requireOwnership(of directory: URL, databaseName: String) throws(StoreError) {
-    let locks = VaultProcessLock.Purpose.allCases.map { VaultProcessLock.fileName($0, database: databaseName) }
-    let owned = Set(VaultFileProtection.sidecarSuffixes.map { databaseName + $0 } + [databaseName + "-journal"] + locks)
-    let foreign: [String]
-    do {
-      foreign = try FileManager.default.contentsOfDirectory(atPath: directory.path(percentEncoded: false)).filter { !owned.contains($0) }
-    } catch {
-      throw .backupExclusion(path: directory.lastPathComponent, reason: error.localizedDescription)
-    }
-    guard foreign.isEmpty else { throw .backupExclusion(path: directory.lastPathComponent, reason: "the directory holds files the vault does not own") }
+    try VaultBackupExclusion(files: files, directory: directory, databaseName: databaseName).apply(excluded)
   }
 
   public func read<T: Sendable>(_ body: @Sendable (ReadTransaction) throws -> T) async throws(StoreError) -> T {
