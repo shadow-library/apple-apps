@@ -20,11 +20,13 @@ public struct CloudKitConfiguration: Sendable, Equatable {
 public enum CloudKitConfigurationError: ShadowError, Equatable {
   case invalidContainer(String)
   case invalidZoneName(String)
+  case engineAlreadyRunning(String)
 
   public var code: String {
     switch self {
     case .invalidContainer: "cloudkit.invalid_container"
     case .invalidZoneName: "cloudkit.invalid_zone_name"
+    case .engineAlreadyRunning: "cloudkit.engine_already_running"
     }
   }
 
@@ -32,6 +34,7 @@ public enum CloudKitConfigurationError: ShadowError, Equatable {
     switch self {
     case .invalidContainer(let identifier): "The CloudKit container \"\(identifier)\" must start with \"iCloud.\" and name the container."
     case .invalidZoneName(let name): "The CloudKit zone name \"\(name)\" must not be empty or start with an underscore."
+    case .engineAlreadyRunning(let identifier): "A CloudKit client for \"\(identifier)\" is already running in this process."
     }
   }
 }
