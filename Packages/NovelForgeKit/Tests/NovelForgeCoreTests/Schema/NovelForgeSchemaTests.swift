@@ -3,13 +3,14 @@ import ShadowAI
 import ShadowCore
 import ShadowJobs
 import ShadowStore
+import ShadowSync
 import Testing
 
 @testable import NovelForgeCore
 
 @Suite("NovelForgeSchema")
 struct NovelForgeSchemaTests {
-  private static let frozenVersions = [1, 2, 3, 4]
+  private static let frozenVersions = [1, 2, 3, 4, 5]
 
   private static func frozenPath(_ version: Int) -> String { "schema/registry-v\(version).json" }
 
@@ -43,7 +44,7 @@ struct NovelForgeSchemaTests {
       fields["canon"] = .register
       return EntitySchema(kind: schema.kind, shape: .revisioned(fields: fields, marks: marks, retention: retention), syncClass: schema.syncClass)
     }
-    let problems = SchemaRegistry(version: NovelForgeSchema.version + 1, entities: changed + LedgerSchema.entities + JobSchema.entities).incompatibilities(with: registry)
+    let problems = SyncKernelSchema.registry(version: NovelForgeSchema.version + 1, adding: changed + LedgerSchema.entities + JobSchema.entities).incompatibilities(with: registry)
     #expect(problems == ["field nf_final_chapter.canon changed rule from first writer wins to register"])
   }
 
@@ -109,6 +110,10 @@ struct NovelForgeSchemaTests {
       #expect(!kind.rawValue.hasPrefix("_"))
       #expect(NovelForgeKind(kind.entityKind) == kind)
     }
+  }
+
+  @Test func shouldCarryEverySyncKernelKindInTheRegistry() {
+    for schema in SyncKernelSchema.entities { #expect(SchemaFixture.registry[schema.kind] == schema, "\(schema.kind) is missing or changed") }
   }
 
   @Test func shouldSyncEveryKindAsGeneral() {

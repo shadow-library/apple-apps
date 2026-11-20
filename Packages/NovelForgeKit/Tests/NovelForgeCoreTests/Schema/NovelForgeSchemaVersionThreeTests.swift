@@ -3,6 +3,7 @@ import ShadowAI
 import ShadowCore
 import ShadowJobs
 import ShadowStore
+import ShadowSync
 import Testing
 
 @testable import NovelForgeCore
@@ -47,8 +48,9 @@ struct NovelForgeSchemaVersionThreeTests {
     #expect(registry.version == NovelForgeSchema.version)
     let described = try JSONDecoder().decode(JSONValue.self, from: registry.canonicalDescription())
     let kinds = try #require(described["kinds"]?.arrayValue).compactMap { $0["kind"]?.stringValue }
-    #expect(Set(kinds) == Set(NovelForgeKind.allCases.map(\.rawValue) + ["ai_model_call", "ai_consent", "jobs_job", "jobs_attempt"]))
-    #expect(kinds.count == NovelForgeKind.allCases.count + 4)
+    #expect(
+      Set(kinds) == Set(NovelForgeKind.allCases.map(\.rawValue) + ["ai_model_call", "ai_consent", "jobs_job", "jobs_attempt"] + SyncKernelSchema.entities.map(\.kind.rawValue)))
+    #expect(kinds.count == NovelForgeKind.allCases.count + 4 + SyncKernelSchema.entities.count)
     for schema in JobSchema.entities {
       #expect(registry[schema.kind] == schema)
       #expect(NovelForgeKind(schema.kind) == nil)

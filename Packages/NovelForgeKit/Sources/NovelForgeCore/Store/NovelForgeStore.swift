@@ -1,5 +1,6 @@
 import Foundation
 import ShadowStore
+import ShadowSync
 
 public enum NovelForgeStore {
   public static let registry = NovelForgeSchema.registry
@@ -15,7 +16,7 @@ public enum NovelForgeStore {
   private static func open(_ location: StoreLocation, wallClock: @escaping @Sendable () -> Date) throws(ProjectionError) -> VaultStore {
     let reconciler = try NovelForgeReconciler(registry: registry)
     do {
-      return try VaultStore.open(location, registry: registry, migrations: reconciler.migrations, wallClock: wallClock, reconciler: reconciler)
+      return try VaultStore.open(location, registry: registry, migrations: reconciler.migrations + SyncEngine.migrations, wallClock: wallClock, reconciler: reconciler)
     } catch {
       throw .store(error)
     }

@@ -3,6 +3,7 @@ import ShadowAI
 import ShadowCore
 import ShadowJobs
 import ShadowStore
+import ShadowSync
 import Testing
 
 @testable import NovelForgeCore
@@ -30,6 +31,12 @@ struct NovelForgeSchemaMigrationTests {
 
   private static func openAtVersionThree(_ url: URL) throws -> VaultStore {
     let registry = try SchemaRegistry(canonicalDescription: try ReferenceFixture.data("schema/registry-v3.json"))
+    let reconciler = try NovelForgeReconciler(registry: registry)
+    return try VaultStore.open(.file(url), registry: registry, migrations: reconciler.migrations, reconciler: reconciler)
+  }
+
+  private static func openAtVersionFour(_ url: URL) throws -> VaultStore {
+    let registry = try SchemaRegistry(canonicalDescription: try ReferenceFixture.data("schema/registry-v4.json"))
     let reconciler = try NovelForgeReconciler(registry: registry)
     return try VaultStore.open(.file(url), registry: registry, migrations: reconciler.migrations, reconciler: reconciler)
   }
@@ -183,13 +190,59 @@ struct NovelForgeSchemaMigrationTests {
     #expect(throws: StoreError.self) { try Self.openAtVersionThree(url) }
   }
 
+  @Test func shouldOpenAVaultWrittenAtVersionFourAtVersionFiveWithItsDataIntactAndTheSyncKernelWritable() async throws {
+    let url = try Self.temporaryVault()
+    defer { try? FileManager.default.removeItem(at: url.deletingLastPathComponent()) }
+    let session = NovelForgeKey.chatSession(UUID())
+    let message = NovelForgeKey.chatMessage(UUID())
+    let replica = try Self.openAtVersionFour(url).replica
+    do {
+      let old = try Self.openAtVersionFour(url)
+      _ = try await old.write { transaction in
+        _ = try Self.createNovelAsAnEarlierVersion(in: &transaction)
+        _ = try transaction.set(session, ["novel": Self.novelID, "title": "Openings", "mode": "auto", "status": "active", "removed": false])
+        _ = try transaction.append(message, item: ["novel": Self.novelID, "session": .string(session.key.rawValue), "role": "user", "content": "Hello"])
+      }
+    }
+
+    let upgraded = try NovelForgeStore.open(at: url)
+    #expect(upgraded.replica == replica)
+    #expect(try await upgraded.load(LibraryList.self).novels.map(\.novel.name) == ["Ember"])
+    #expect(try await SchemaFixture.record(session, in: upgraded)[field: "title"]?.value == "Openings")
+    guard case .appended(let appended)? = try await SchemaFixture.state(message, in: upgraded) else { throw SchemaFixtureError(description: "the message was lost") }
+    #expect(appended.item["content"] == "Hello")
+    let marker = EntityRef(kind: try #require(EntityKind("_schema_floor")), key: try #require(EntityKey("v-5")))
+    try await SchemaFixture.set(marker, ["version": 5], in: upgraded)
+    #expect(try await SchemaFixture.record(marker, in: upgraded)[field: "version"]?.value == 5)
+  }
+
+  @Test func shouldRefuseToReopenAVersionFiveVaultWithTheVersionFourSchema() throws {
+    let url = try Self.temporaryVault()
+    defer { try? FileManager.default.removeItem(at: url.deletingLastPathComponent()) }
+    _ = try NovelForgeStore.open(at: url)
+    #expect(throws: StoreError.self) { try Self.openAtVersionFour(url) }
+  }
+
+  @Test func shouldReopenAVersionFiveVaultAndKeepTheSyncMigrationsIdempotent() async throws {
+    let url = try Self.temporaryVault()
+    defer { try? FileManager.default.removeItem(at: url.deletingLastPathComponent()) }
+    let session = NovelForgeKey.chatSession(UUID())
+    let first = try NovelForgeStore.open(at: url)
+    try await SchemaFixture.set(session, ["novel": Self.novelID, "title": "Openings", "removed": false], in: first)
+    let second = try NovelForgeStore.open(at: url)
+    let third = try NovelForgeStore.open(at: url)
+    #expect(first.replica == second.replica)
+    #expect(second.replica == third.replica)
+    #expect(try await SchemaFixture.record(session, in: third)[field: "title"]?.value == "Openings")
+  }
+
   @Test func shouldKeepADecisionALaterVersionAddsOutOfTheRecordUntilTheUpgrade() async throws {
     let extended = NovelForgeSchema.entities.map { schema in
       guard schema.kind == NovelForgeKind.proposal.entityKind, case .record(var fields) = schema.shape else { return schema }
       fields["decision"] = .monotone(order: ["pending", "conflicted", "superseded", "discarded", "applied"])
       return EntitySchema(kind: schema.kind, shape: .record(fields: fields), syncClass: schema.syncClass)
     }
-    let later = SchemaRegistry(version: NovelForgeSchema.version + 1, entities: extended + LedgerSchema.entities + JobSchema.entities)
+    let later = SyncKernelSchema.registry(version: NovelForgeSchema.version + 1, adding: extended + LedgerSchema.entities + JobSchema.entities)
     #expect(later.incompatibilities(with: NovelForgeSchema.registry) == [])
     let newer = try VaultStore.open(.inMemory, registry: later)
     let proposal = NovelForgeKey.proposal(UUID())
