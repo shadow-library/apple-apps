@@ -30,6 +30,15 @@ enum ChatLookupRequest: Equatable, Sendable {
   case volume(key: String)
   case notes(from: Double?, part: Double?, query: String?)
   case usage(chapter: Double?, period: UsagePeriod?, lastRun: Bool?)
+  case searchLore(query: String, kinds: [String]?)
+  case searchProse(query: String, k: Int?)
+
+  var isRetrieval: Bool {
+    switch self {
+    case .searchLore, .searchProse: true
+    default: false
+    }
+  }
 
   // planner-only-guard.ts:13 reads the parsed arguments
   var plannerGuardArguments: OrderedJSON? {
@@ -44,6 +53,14 @@ extension ChatLookupName {
     var reader = ArgumentReader(fields: arguments)
     let request: ChatLookupRequest?
     switch self {
+    case .searchLore:
+      let kinds = reader.kinds("kinds", pattern: loreKindPattern, maximumCount: ChatLookups.maximumLoreKinds)
+      let query = reader.string("query")
+      request = reader.issues.isEmpty ? query.map { .searchLore(query: $0, kinds: kinds) } : nil
+    case .searchProse:
+      let k = reader.integer("k", minimum: 1, maximum: Double(ChatLookups.maximumProseK), required: false)
+      let query = reader.string("query")
+      request = reader.issues.isEmpty ? query.map { .searchProse(query: $0, k: k.map { Int($0) }) } : nil
     case .getBibleDocument:
       let section = reader.choice("section", among: BiblePageSection.allCases.map(\.rawValue))
       let slug = reader.string("slug")
@@ -98,11 +115,12 @@ private struct ArgumentReader {
   }
 
   /// A number that fails a check is still a number, so the refinement of the whole object still reads it.
-  mutating func integer(_ key: String, minimum: Double, required: Bool = true) -> Double? {
+  mutating func integer(_ key: String, minimum: Double, maximum: Double? = nil, required: Bool = true) -> Double? {
     guard let value = present(key, required: required) else { return nil }
     guard let number = value.numberValue else { return fail(key, "Expected number, received \(typeName(of: value))") }
     if !number.jsIsInteger { issues.append(ChatLookupIssue(path: key, message: "Expected integer, received float")) }
     if number < minimum { issues.append(ChatLookupIssue(path: key, message: "Number must be greater than or equal to \(minimum.jsString)")) }
+    if let maximum, number > maximum { issues.append(ChatLookupIssue(path: key, message: "Number must be less than or equal to \(maximum.jsString)")) }
     return number
   }
 
@@ -139,6 +157,24 @@ private struct ArgumentReader {
     return issues.count == before ? texts : nil
   }
 
+  mutating func kinds(_ key: String, pattern: (String) -> Bool, maximumCount: Int) -> [String]? {
+    guard let value = present(key, required: false) else { return nil }
+    guard case .array(let items) = value else { return fail(key, "Expected array, received \(typeName(of: value))") }
+    let before = issues.count
+    if items.count > maximumCount { issues.append(ChatLookupIssue(path: key, message: "Array must contain at most \(maximumCount) element(s)")) }
+    var texts: [String] = []
+    for (index, item) in items.enumerated() {
+      let path = "\(key).\(index)"
+      guard case .string(let text) = item else {
+        issues.append(ChatLookupIssue(path: path, message: "Expected string, received \(typeName(of: item))"))
+        continue
+      }
+      if !pattern(text) { issues.append(ChatLookupIssue(path: path, message: "Invalid")) }
+      texts.append(text)
+    }
+    return issues.count == before ? texts : nil
+  }
+
   private mutating func present(_ key: String, required: Bool) -> OrderedJSON? {
     if let value = fields[key] { return value }
     if required { issues.append(ChatLookupIssue(path: key, message: "Required")) }
@@ -160,4 +196,10 @@ private struct ArgumentReader {
     case .object: "object"
     }
   }
+}
+
+// tools/search-lore.tool.ts:9: /^[a-z0-9_]{1,64}$/i, where `$` ends the string and a case-insensitive ASCII class takes no other letter
+private func loreKindPattern(_ text: String) -> Bool {
+  guard (1...64).contains(text.jsLength) else { return false }
+  return text.utf8.allSatisfy { ($0 >= 0x30 && $0 <= 0x39) || ($0 >= 0x41 && $0 <= 0x5a) || ($0 >= 0x61 && $0 <= 0x7a) || $0 == 0x5f }
 }

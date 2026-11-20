@@ -27,7 +27,7 @@ struct ChatLookupParityTests {
 
   @Test func shouldDeclareExactlyTheLookupsTheReferenceOffersTheHubThatThisBuildAnswers() throws {
     let fixture = try fixture()
-    #expect(ChatLookups.definitions.count == 10)
+    #expect(ChatLookups.definitions.count == 12)
     for definition in ChatLookups.definitions {
       let reference = try #require(fixture.definitions.first { $0.name == definition.name.rawValue })
       #expect(definition.description.jsEquals(descriptionDeviations[reference.name] ?? reference.description), "\(reference.name) description")
@@ -41,11 +41,11 @@ struct ChatLookupParityTests {
 
   @Test func shouldListTheLookupsInThePlaybookAsTheReferenceDoes() throws {
     let fixture = try fixture()
-    let lines = chatScopeInstructions(ChatLookups.tools).jsSplit("\n").filter { $0.hasPrefix("- get_") }
+    let lines = chatScopeInstructions(ChatLookups.tools).jsSplit("\n").filter { $0.hasPrefix("- get_") || $0.hasPrefix("- search_") }
     let offered = Set(ChatLookups.definitions.map(\.name.rawValue))
     let reference = fixture.scopeLines.filter { line in offered.contains(where: { line.hasPrefix("- \($0) ") }) }
     let deviating = Set(descriptionDeviations.keys)
-    #expect(lines.count == 10)
+    #expect(lines.count == 12)
     #expect(lines.filter { line in !deviating.contains { line.hasPrefix("- \($0) ") } } == reference.filter { line in !deviating.contains { line.hasPrefix("- \($0) ") } })
     #expect(lines.contains("- get_usage (args: period) — \(descriptionDeviations["get_usage"] ?? "")"))
     #expect(lines.contains("- get_entity (args: entityKey) — \(descriptionDeviations["get_entity"] ?? "")"))
@@ -63,7 +63,7 @@ struct ChatLookupParityTests {
       let service = ChatLookupService(store: try #require(stores[spec.world]), novel: readNovel)
       var counts = ChatLookupCounts()
       let calls = try spec.lookups.map { ChatLookupCall(tool: $0.tool, args: try parsedArguments($0.argsJSON)) }
-      let round = await service.execute(calls, counts: &counts)
+      let round = try await service.execute(calls, counts: &counts)
       #expect(round.text.jsEquals(spec.expected.text), "\(spec.name): \(difference(round.text, spec.expected.text))")
       #expect(round.readsPlannerOnly == spec.expected.plannerRead, "\(spec.name): planner-only flag")
       #expect(round.outcomes.count == spec.expected.outcomes.count, "\(spec.name): outcomes")

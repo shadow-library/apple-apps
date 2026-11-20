@@ -97,14 +97,15 @@ enum EngineWorld {
 
   static func engine(
     _ store: VaultStore, provider: ScriptedModelProvider, upkeep: RecordedUpkeep = RecordedUpkeep(), now: @escaping @Sendable () -> Date = { Date() },
-    faults: ChatTurnEngine.Faults = .none, unrestrictedAvailable: Bool = true, turnsWait: Signal? = nil
+    faults: ChatTurnEngine.Faults = .none, unrestrictedAvailable: Bool = true, turnsWait: Signal? = nil,
+    embedders: (any EmbedderProvider)? = nil
   ) async throws -> ChatTurnEngine {
     let gated: any ModelProvider = turnsWait.map { TitleSplittingProvider(titles: provider, turns: provider, turnsWait: $0) } ?? provider
     let router = try await CompactionWorld.router(gated, store: store)
     let timing = ChatTurnEngine.Timing(flushInterval: .seconds(3_600), monotonic: { ProcessInfo.processInfo.systemUptime * 1000 }, now: now)
     return ChatTurnEngine(
       store: store, router: { router }, consent: CompactionWorld.consent, upkeep: upkeep.seam, timing: timing, faults: faults,
-      unrestrictedAvailable: unrestrictedAvailable)
+      unrestrictedAvailable: unrestrictedAvailable, embedders: embedders)
   }
 
   /// `fault` at `point`, the first `times` times the run reaches it.

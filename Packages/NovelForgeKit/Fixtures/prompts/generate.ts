@@ -50,6 +50,8 @@ const titleSchema = await import(join(server, 'modules/ai/schemas/chat-title.sch
 const organisePlan = await import(join(server, 'modules/notes/organise-plan.ts'));
 
 const toolFiles = [
+  'search-lore',
+  'search-prose',
   'get-bible-document',
   'get-brief',
   'get-draft',
@@ -70,10 +72,9 @@ for (const file of toolFiles) {
 }
 const byName = (name: string): any => tools.find(tool => tool.name === name);
 
-const DISABLED_LOOKUPS = ['search_lore', 'search_prose', 'get_review', 'get_world_facts', 'get_character_timeline', 'search_web', 'fetch_page'];
+const DISABLED_LOOKUPS = ['get_review', 'get_world_facts', 'get_character_timeline', 'search_web', 'fetch_page'];
 
 const REPLACEMENTS = [
-  { from: 'find it with search_lore or the matching lookup rather than inventing a ref.', to: 'find it with the matching lookup rather than inventing a ref.' },
   {
     from: 'get_draft (with get_brief) and get_review for the chapter; get_bible_document, get_entity, get_canon_facts or get_world_facts for the records in question;',
     to: 'get_draft (with get_brief) for the chapter; get_bible_document, get_entity or get_canon_facts for the records in question;',
@@ -110,8 +111,8 @@ const opaqueTool = { ...byName('get_brief'), name: 'get_opaque', description: 'P
 const scopeCases = [
   { name: 'none', list: [] },
   { name: 'one', list: [byName('get_brief')] },
-  { name: 'ten', list: tools },
-  { name: 'ten-reversed', list: [...tools].reverse() },
+  { name: 'twelve', list: tools },
+  { name: 'twelve-reversed', list: [...tools].reverse() },
   { name: 'shapes', list: [emptyArgsTool, opaqueTool, byName('get_chapter_summaries')] },
 ].map(({ name, list }) => ({
   name,

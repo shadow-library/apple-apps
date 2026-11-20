@@ -135,7 +135,7 @@ final class ChatTurnRun: Sendable {
 
     var output = try await invoke(call, rounds: &rounds, calls: &carry.calls)
     var settledCount = rounds.count
-    let lookups = ChatLookupService(store: store, novel: basis.novel, now: engine.timing.now)
+    let lookups = ChatLookupService(store: store, novel: basis.novel, now: engine.timing.now, embedders: engine.embedders)
     while round < maxLookupRounds, let requested = output.lookups, !requested.isEmpty {
       let results = try await lookUp(requested, round: round, service: lookups, counts: &counts)
       carry.tools += requested.map(\.tool)
@@ -267,11 +267,23 @@ final class ChatTurnRun: Sendable {
 
   // apps/novel-forge-server/src/modules/refinement/chat-lookup.service.ts:51-118
   private func lookUp(_ requested: [ChatLookup], round: Int, service: ChatLookupService, counts: inout ChatLookupCounts) async throws(ChatTurnStop) -> ChatLookupRound {
+    if Task.isCancelled || control.stop != nil { throw .stopped }
     for lookup in requested {
       stream.emit(.lookup(TurnLookupEvent(round: round, tool: lookup.tool, args: lookup.args ?? OrderedJSONObject([]), status: .running)))
       stream.lookupStarted()
     }
-    let results = await service.execute(requested.map { ChatLookupCall(tool: $0.tool, args: $0.args) }, counts: &counts)
+    let results: ChatLookupRound
+    do {
+      results = try await service.execute(requested.map { ChatLookupCall(tool: $0.tool, args: $0.args) }, counts: &counts)
+    } catch {
+      for lookup in requested {
+        let args = lookup.args ?? OrderedJSONObject([])
+        stream.emit(.lookup(TurnLookupEvent(round: round, tool: lookup.tool, args: args, status: .error)))
+        let trace = ChatLookupTrace(tool: lookup.tool, args: traceArgs(tool: lookup.tool, args: args), status: .error, audit: .handlerError, resultCharacters: 0, truncated: false)
+        stream.lookupSettled(trace, tool: lookup.tool)
+      }
+      throw .stopped
+    }
     for (lookup, outcome) in zip(requested, results.outcomes) {
       let status: TurnLookupStatus = outcome.trace.status == .ok ? .ok : .error
       stream.emit(.lookup(TurnLookupEvent(round: round, tool: lookup.tool, args: lookup.args ?? OrderedJSONObject([]), status: status)))

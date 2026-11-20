@@ -218,13 +218,17 @@ public struct NovelRetrieval: Sendable {
   }
 
   /// The query embedded by the model the novel's vectors were made by, resolved from that stored identity without reading the novel's text; nil, and so
-  /// FTS alone, when the query has no terms, the novel has no vectors, the system's model is no longer that one or it could not embed the query.
+  /// FTS alone, when the query has no terms, the novel has no vectors or rows still waiting for them, the system's model is no longer that one or it could
+  /// not embed the query.
   private func queryVector(novel: UUID, query: String, parsed: RetrievalQuery) async throws(RetrievalError) -> RetrievalQueryVector? {
     guard let embedders, parsed.matchExpression != nil else { return nil }
     let stored = try await read { transaction in try transaction.query { database in try RetrievalVectors.storedModel(novel: novel, in: database) } }
-    guard let stored, let embedder = await embedders.embedder(forModel: stored), embedder.model == stored, embedder.dimension > 0,
-      let embedded = await embedder.embed([query]).first, let values = embedded.flatMap({ RetrievalVectors.unit($0, dimension: embedder.dimension) })
-    else { return nil }
+    guard let stored, let embedder = await embedders.embedder(forModel: stored), embedder.model == stored, embedder.dimension > 0 else { return nil }
+    let dimension = embedder.dimension
+    let complete = try await read { transaction in
+      try transaction.query { database in try RetrievalVectors.isComplete(novel: novel, model: stored, dimension: dimension, in: database) }
+    }
+    guard complete, let embedded = await embedder.embed([query]).first, let values = embedded.flatMap({ RetrievalVectors.unit($0, dimension: dimension) }) else { return nil }
     return RetrievalQueryVector(model: stored, values: values)
   }
 

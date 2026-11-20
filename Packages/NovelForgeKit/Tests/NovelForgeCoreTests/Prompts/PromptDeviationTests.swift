@@ -9,9 +9,9 @@ struct PromptDeviationTests {
     PromptFixture.path("deviations", "replacements").pItems.reduce(text) { $0.jsSplit($1.pField("from").pText).joined(separator: $1.pField("to").pText) }
   }
 
-  @Test func shouldDifferFromTheReferenceGuidanceOnlyByTheThreeLookupEdits() {
+  @Test func shouldDifferFromTheReferenceGuidanceOnlyByTheTwoLookupEdits() {
     let replacements = PromptFixture.path("deviations", "replacements").pItems
-    #expect(replacements.count == 3)
+    #expect(replacements.count == 2)
     #expect(replacements.allSatisfy { PromptFixture.path("deviations", "rawGuidance").pText.jsSplit($0.pField("from").pText).count == 2 })
     #expect(sameText(Self.adapted(PromptFixture.path("deviations", "rawGuidance").pText), hubGuidance))
     #expect(sameText(Self.adapted(PromptFixture.path("deviations", "rawInstructions").pText), hubInstructions))

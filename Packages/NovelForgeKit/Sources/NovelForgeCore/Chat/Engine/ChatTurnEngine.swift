@@ -86,12 +86,16 @@ public final class ChatTurnEngine: Sendable {
   let faults: Faults
   /// Whether a turn may be written unrestricted; the app takes the build's flag (orchestrator decision 5).
   let unrestrictedAvailable: Bool
+  let embedders: (any EmbedderProvider)?
   private let running = Mutex<[UUID: Control]>([:])
   private let namings = Mutex<[UUID: (token: UUID, answer: Task<[UUID]?, Never>, settled: Task<Void, Never>)]>([:])
 
+  public static let sharedEmbedders = NLSentenceEmbedders()
+
   init(
     store: VaultStore, router: @escaping @Sendable () async -> TaskRouter, consent: AIConsentRequirement, upkeep: ChatSessionUpkeep,
-    grace: any ChatTurnGrace = NoChatTurnGrace(), timing: Timing = .standard, faults: Faults = .none, unrestrictedAvailable: Bool = UnrestrictedWriting.isAvailable
+    grace: any ChatTurnGrace = NoChatTurnGrace(), timing: Timing = .standard, faults: Faults = .none, unrestrictedAvailable: Bool = UnrestrictedWriting.isAvailable,
+    embedders: (any EmbedderProvider)? = ChatTurnEngine.sharedEmbedders
   ) {
     self.store = store
     self.router = router
@@ -101,13 +105,16 @@ public final class ChatTurnEngine: Sendable {
     self.timing = timing
     self.faults = faults
     self.unrestrictedAvailable = unrestrictedAvailable
+    self.embedders = embedders
   }
 
-  /// `router` builds the router for each turn, so a change to the AI settings holds from the next turn; `consent` is what a chat turn sends.
+  /// `router` builds the router for each turn, so a change to the AI settings holds from the next turn; `consent` is what a chat turn sends. `embedders` embeds a
+  /// lookup's query once the novel's vectors exist; nil searches by words alone.
   public convenience init(
-    store: VaultStore, router: @escaping @Sendable () async -> TaskRouter, consent: AIConsentRequirement, grace: any ChatTurnGrace = NoChatTurnGrace()
+    store: VaultStore, router: @escaping @Sendable () async -> TaskRouter, consent: AIConsentRequirement, grace: any ChatTurnGrace = NoChatTurnGrace(),
+    embedders: (any EmbedderProvider)? = ChatTurnEngine.sharedEmbedders
   ) {
-    self.init(store: store, router: router, consent: consent, upkeep: .vault(store), grace: grace)
+    self.init(store: store, router: router, consent: consent, upkeep: .vault(store), grace: grace, embedders: embedders)
   }
 
   /// Sends the author's message: refuses it with nothing written, or saves it with its local turn and returns the running turn.

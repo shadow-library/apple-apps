@@ -52,6 +52,24 @@ struct RetrievalEmbeddingTests {
     #expect(await embedder.calls.count == calls)
   }
 
+  @Test func shouldNotEmbedTheQueryWhileRowsStillWaitForTheirVectors() async throws {
+    let embedder = FakeEmbedder()
+    let world = try RetrievalWorld(embedder: embedder)
+    try await world.finalize(1, "The tempest broke the mast.")
+    try await world.finalize(2, "The boats left the harbour.")
+    try await world.retrieval.catchUp(novel: world.novel)
+    #expect(try await world.retrieval.embedPending(novel: world.novel, limit: 1).isComplete == false)
+    let before = await embedder.calls.count
+    _ = try await world.retrieval.searchProse(novel: world.novel, query: "harbour")
+    _ = try await world.retrieval.searchLore(novel: world.novel, query: "harbour")
+    _ = try await world.retrieval.searchProseAndLore(novel: world.novel, query: "harbour")
+    #expect(await embedder.calls.count == before)
+    try await world.retrieval.embedPending(novel: world.novel)
+    let embedded = await embedder.calls.count
+    _ = try await world.retrieval.searchProse(novel: world.novel, query: "harbour")
+    #expect(await embedder.calls.count == embedded + 1)
+  }
+
   @Test func shouldEmbedTheQueryWithTheStoredModelWithoutReadingASampleAgain() async throws {
     let embedders = FakeEmbedders(embedder: FakeEmbedder())
     let world = try RetrievalWorld()

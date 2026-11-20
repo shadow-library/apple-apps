@@ -62,17 +62,19 @@ struct ChatLookupService: Sendable {
   let store: VaultStore
   let novel: UUID
   let now: @Sendable () -> Date
+  let embedders: (any EmbedderProvider)?
 
-  init(store: VaultStore, novel: UUID, now: @escaping @Sendable () -> Date = { Date() }) {
+  init(store: VaultStore, novel: UUID, now: @escaping @Sendable () -> Date = { Date() }, embedders: (any EmbedderProvider)? = nil) {
     self.store = store
     self.novel = novel
     self.now = now
+    self.embedders = embedders
   }
 
   // chat-lookup.service.ts:51
-  func execute(_ calls: [ChatLookupCall], counts: inout ChatLookupCounts) async -> ChatLookupRound {
+  func execute(_ calls: [ChatLookupCall], counts: inout ChatLookupCounts) async throws(CancellationError) -> ChatLookupRound {
     let plans = calls.map { plan($0, counts: &counts) }
-    let answers = await answers(for: plans)
+    let answers = try await answers(for: plans)
     return ChatLookupRound(outcomes: zip(calls, zip(plans, answers)).map { settle($0, $1.0, $1.1) })
   }
 
@@ -87,11 +89,18 @@ struct ChatLookupService: Sendable {
     }
   }
 
-  private func answers(for plans: [Planned]) async -> [Result<String, ChatLookupFailure>?] {
+  private func answers(for plans: [Planned]) async throws(CancellationError) -> [Result<String, ChatLookupFailure>?] {
     let requests = plans.map { plan -> ChatLookupRequest? in
       guard case .request(_, let request) = plan else { return nil }
       return request
     }
+    let searched = try await ChatLookupSearch(store: store, novel: novel, embedders: embedders).answers(for: requests)
+    let direct = zip(requests, searched).map { request, answer in answer == nil ? request : nil }
+    let read = await readAnswers(direct)
+    return zip(read, searched).map { read, answer in answer.map { .success($0) } ?? read }
+  }
+
+  private func readAnswers(_ requests: [ChatLookupRequest?]) async -> [Result<String, ChatLookupFailure>?] {
     guard requests.contains(where: { $0 != nil }) else { return requests.map { _ in nil } }
     let (novel, now) = (novel, now())
     do {
@@ -138,6 +147,7 @@ extension ChatLookupReader {
       case .volume(let key): return .success(try volume(key: key))
       case .notes(let from, let part, let query): return .success(try notes(from: from, part: part, query: query))
       case .usage(let chapter, let period, let lastRun): return .success(try usage(chapter: chapter, period: period, lastRun: lastRun))
+      case .searchLore, .searchProse: return .failure(ChatLookupFailure())
       }
     } catch {
       return .failure(error)

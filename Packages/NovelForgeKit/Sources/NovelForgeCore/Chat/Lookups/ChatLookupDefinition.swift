@@ -1,4 +1,6 @@
 enum ChatLookupName: String, CaseIterable, Sendable {
+  case searchLore = "search_lore"
+  case searchProse = "search_prose"
   case getEntity = "get_entity"
   case getChapterSummaries = "get_chapter_summaries"
   case getPlotThreads = "get_plot_threads"
@@ -45,8 +47,27 @@ private func choices(_ values: [String]) -> OrderedJSON {
 private let positiveInteger = property("integer", [("minimum", .int(1))])
 
 enum ChatLookups {
-  // apps/novel-forge-server/src/modules/ai/tools/tool-registry.service.ts:25 filtered to the chat hub; search_lore, search_prose, get_world_facts, get_character_timeline and get_review stay out
+  // tools/search-prose.tool.ts:7
+  static let maximumProseK = 8
+  // The reference accepts any number of kinds; two exist, so sixteen keeps room to grow without an unbounded SQL filter
+  static let maximumLoreKinds = 16
+
+  // apps/novel-forge-server/src/modules/ai/tools/tool-registry.service.ts:25 filtered to the chat hub; get_world_facts, get_character_timeline and get_review stay out
   static let definitions: [ChatLookupDefinition] = [
+    ChatLookupDefinition(
+      name: .searchLore,
+      // tools/search-lore.tool.ts:14
+      description: "Search the lore knowledge base for relevant information about characters, factions, locations, or world rules.", arguments: ["kinds", "query"],
+      maxCallsPerRun: 10, tokensBudget: 4000,
+      schema: schema(
+        [
+          (
+            "kinds",
+            property(
+              "array", [("items", property("string", [("pattern", .string("^[a-zA-Z0-9_]{1,64}$"))])), ("maxItems", .int(Int64(maximumLoreKinds)))])
+          ),
+          ("query", property("string")),
+        ], required: ["query"])),
     ChatLookupDefinition(
       name: .getEntity,
       // tools/get-entity.tool.ts:16
@@ -57,6 +78,12 @@ enum ChatLookups {
       // tools/get-chapter-summaries.tool.ts:20
       description: "Retrieve chapter summaries for a range of chapters (max 20-chapter span).", arguments: nil, maxCallsPerRun: 5, tokensBudget: 8000,
       schema: schema([("from", positiveInteger), ("to", positiveInteger)], required: ["from", "to"])),
+    ChatLookupDefinition(
+      name: .searchProse,
+      // tools/search-prose.tool.ts:16
+      description: "Search the prose index for relevant story passages by query.", arguments: ["k", "query"], maxCallsPerRun: 8, tokensBudget: 6000,
+      schema: schema(
+        [("k", property("integer", [("minimum", .int(1)), ("maximum", .int(Int64(maximumProseK)))])), ("query", property("string"))], required: ["query"])),
     ChatLookupDefinition(
       name: .getPlotThreads,
       // tools/get-plot-threads.tool.ts:17

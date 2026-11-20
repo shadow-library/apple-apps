@@ -7,15 +7,15 @@ import Testing
 
 @testable import NovelForgeCore
 
-private let unoffered = ["search_lore", "search_prose", "get_world_facts", "get_character_timeline", "get_review", "search_web", "fetch_page"]
+private let unoffered = ["get_world_facts", "get_character_timeline", "get_review", "search_web", "fetch_page"]
 
 private func call(_ tool: String, _ json: String? = nil) throws -> ChatLookupCall {
   ChatLookupCall(tool: tool, args: try parsedArguments(json))
 }
 
-private func run(_ store: VaultStore, _ calls: ChatLookupCall..., now: Date = Date(), counts: ChatLookupCounts = ChatLookupCounts()) async -> ChatLookupRound {
+private func run(_ store: VaultStore, _ calls: ChatLookupCall..., now: Date = Date(), counts: ChatLookupCounts = ChatLookupCounts()) async throws -> ChatLookupRound {
   var counts = counts
-  return await ChatLookupService(store: store, novel: readNovel, now: { now }).execute(calls, counts: &counts)
+  return try await ChatLookupService(store: store, novel: readNovel, now: { now }).execute(calls, counts: &counts)
 }
 
 private struct UsageSeed: Sendable {
@@ -34,7 +34,7 @@ private func richStore(allowingFaults: Bool = false) async throws -> VaultStore 
 @Suite("Chat lookups", TestTimeLimit.standard)
 struct ChatLookupSpecTests {
   @Test(arguments: unoffered) func shouldRefuseALookupThisBuildDoesNotAnswer(_ tool: String) async throws {
-    let round = await run(try await richStore(), try call(tool, #"{"query":"x","chapter":1,"entityKey":"mara","category":"c","url":"https://example.com"}"#))
+    let round = try await run(try await richStore(), try call(tool, #"{"query":"x","chapter":1,"entityKey":"mara","category":"c","url":"https://example.com"}"#))
     #expect(round.text == "### \(tool)\nerror: unknown tool '\(tool)'")
     #expect(round.outcomes.first?.trace.audit == .invalidArgs)
     #expect(round.outcomes.first?.trace.status == .error)
@@ -45,7 +45,6 @@ struct ChatLookupSpecTests {
     let answered = Set(ChatLookupName.allCases.map(\.rawValue))
     #expect(advertised.isSubset(of: answered), "advertised but unanswered: \(advertised.subtracting(answered).sorted())")
     #expect(answered.isSubset(of: advertised.union(["get_plot_threads", "get_chapter_summaries", "get_usage"])))
-    #expect(!advertised.contains { $0.hasPrefix("search_") })
     #expect(Set(ChatLookups.tools.map(\.name)) == answered)
   }
 
@@ -53,9 +52,9 @@ struct ChatLookupSpecTests {
     let store = try await richStore()
     var counts = ChatLookupCounts()
     let service = ChatLookupService(store: store, novel: readNovel)
-    let first = await service.execute([try call("get_draft", #"{"chapter":1}"#), try call("get_draft", #"{"chapter":1}"#)], counts: &counts)
+    let first = try await service.execute([try call("get_draft", #"{"chapter":1}"#), try call("get_draft", #"{"chapter":1}"#)], counts: &counts)
     #expect(first.outcomes.map(\.trace.audit) == [.ok, .ok])
-    let second = await service.execute([try call("get_draft", #"{"chapter":1}"#), try call("get_volume", #"{"volumeKey":"one"}"#)], counts: &counts)
+    let second = try await service.execute([try call("get_draft", #"{"chapter":1}"#), try call("get_volume", #"{"volumeKey":"one"}"#)], counts: &counts)
     #expect(second.outcomes.map(\.trace.audit) == [.budgetExceeded, .ok])
     #expect(second.text.hasPrefix("### get_draft\nerror: tool 'get_draft' has exceeded its call budget for this turn"))
   }
@@ -64,29 +63,29 @@ struct ChatLookupSpecTests {
     let store = try await richStore()
     var counts = ChatLookupCounts()
     let service = ChatLookupService(store: store, novel: readNovel)
-    _ = await service.execute([try call("get_draft", #"{"chapter":0}"#), try call("get_draft", nil)], counts: &counts)
-    let round = await service.execute([try call("get_draft", #"{"chapter":1}"#)], counts: &counts)
+    _ = try await service.execute([try call("get_draft", #"{"chapter":0}"#), try call("get_draft", nil)], counts: &counts)
+    let round = try await service.execute([try call("get_draft", #"{"chapter":1}"#)], counts: &counts)
     #expect(round.outcomes.map(\.trace.audit) == [.budgetExceeded])
   }
 
   @Test func shouldReadAbsentArgumentsAsAnEmptyObject() async throws {
-    let round = await run(try await richStore(), try call("get_plot_threads"), try call("get_brief"))
+    let round = try await run(try await richStore(), try call("get_plot_threads"), try call("get_brief"))
     #expect(round.outcomes.map(\.trace.audit) == [.ok, .invalidArgs])
     #expect(round.text.hasSuffix("### get_brief\nerror: chapter: Required"))
   }
 
   @Test func shouldMarkPlannerOnlyReadsOnlyForNotesAndPlannerPages() async throws {
     let store = try await richStore()
-    #expect(await run(store, try call("get_notes")).readsPlannerOnly)
-    #expect(await run(store, try call("get_bible_document", #"{"section":"project","slug":"timeline"}"#)).readsPlannerOnly)
-    #expect(await run(store, try call("get_bible_document", #"{"section":"project","slug":"open-questions"}"#)).readsPlannerOnly)
-    #expect(await !run(store, try call("get_bible_document", #"{"section":"project","slug":"overview"}"#)).readsPlannerOnly)
-    #expect(await !run(store, try call("get_brief", #"{"chapter":1}"#), try call("get_notes", #"{"from":0}"#)).readsPlannerOnly)
-    #expect(await !run(store, try call("get_draft", #"{"chapter":1}"#)).readsPlannerOnly)
+    #expect(try await run(store, try call("get_notes")).readsPlannerOnly)
+    #expect(try await run(store, try call("get_bible_document", #"{"section":"project","slug":"timeline"}"#)).readsPlannerOnly)
+    #expect(try await run(store, try call("get_bible_document", #"{"section":"project","slug":"open-questions"}"#)).readsPlannerOnly)
+    #expect(try await !run(store, try call("get_bible_document", #"{"section":"project","slug":"overview"}"#)).readsPlannerOnly)
+    #expect(try await !run(store, try call("get_brief", #"{"chapter":1}"#), try call("get_notes", #"{"from":0}"#)).readsPlannerOnly)
+    #expect(try await !run(store, try call("get_draft", #"{"chapter":1}"#)).readsPlannerOnly)
   }
 
   @Test func shouldTraceWhatAnswerWasGivenAndHowLargeWithoutTheResult() async throws {
-    let round = await run(
+    let round = try await run(
       try await richStore(), try call("get_draft", #"{"chapter":11}"#), try call("get_volume", #"{"volumeKey":"one"}"#), try call("get_volume", #"{"volumeKey":"x","extra":1}"#))
     let trace = round.outcomes.map(\.trace)
     #expect(trace[0].truncated)
@@ -99,10 +98,10 @@ struct ChatLookupSpecTests {
 
   @Test func shouldReadAnUndisclosedSecretAsLockedWhenTheDisclosureIsFaulted() async throws {
     let store = try await richStore(allowingFaults: true)
-    let before = await run(store, try call("get_canon_facts", #"{"keys":["heir"]}"#))
+    let before = try await run(store, try call("get_canon_facts", #"{"keys":["heir"]}"#))
     #expect(before.text.contains("Reader knows since ch 1"))
     try await ReadWorld.insertFault(ReaderDisclosureEntry.databaseTableName, key: ProjectionFaults.wholeDerivation, in: store)
-    let after = await run(store, try call("get_canon_facts", #"{"keys":["heir"]}"#))
+    let after = try await run(store, try call("get_canon_facts", #"{"keys":["heir"]}"#))
     #expect(!after.text.contains("Reader knows since"))
     #expect(after.text.contains("Unlocks: chapter 4 or later"))
     #expect(after.outcomes.map(\.trace.audit) == [.ok])
@@ -111,7 +110,7 @@ struct ChatLookupSpecTests {
   @Test func shouldSayThePlannedRevealIsUnavailableWhenThePlanWorldIsFaulted() async throws {
     let store = try await richStore(allowingFaults: true)
     try await ReadWorld.insertFault(PlanWorldEntry.databaseTableName, key: ProjectionFaults.wholeDerivation, in: store)
-    let round = await run(store, try call("get_canon_facts", #"{"keys":["heir","secret_a"]}"#))
+    let round = try await run(store, try call("get_canon_facts", #"{"keys":["heir","secret_a"]}"#))
     #expect(round.text.contains("Planned reveal: (not available)"))
     #expect(!round.text.contains("Planned reveal: ch"))
   }
@@ -119,7 +118,7 @@ struct ChatLookupSpecTests {
   @Test func shouldSayTheReviewIsUnavailableWhenTheChapterLifecycleIsFaulted() async throws {
     let store = try await richStore(allowingFaults: true)
     try await ReadWorld.insertFault(ChapterLifecycleEntry.databaseTableName, key: ProjectionFaults.wholeDerivation, in: store)
-    let round = await run(store, try call("get_draft", #"{"chapter":8}"#))
+    let round = try await run(store, try call("get_draft", #"{"chapter":8}"#))
     #expect(round.text.hasPrefix("### get_draft\n**Chapter 8**: (untitled) ((not available), rev 8, review: (not available))\nWords: "))
     #expect(round.outcomes.map(\.trace.audit) == [.ok])
   }
@@ -127,7 +126,7 @@ struct ChatLookupSpecTests {
   @Test func shouldFailOnlyTheLookupWhoseReadIsFaulted() async throws {
     let store = try await richStore(allowingFaults: true)
     try await ReadWorld.insertFault(IndexedRecord.databaseTableName, key: ProjectionFaults.wholeDerivation, in: store)
-    let round = await run(store, try call("get_plot_threads"), try call("get_volume", #"{"volumeKey":"one"}"#))
+    let round = try await run(store, try call("get_plot_threads"), try call("get_volume", #"{"volumeKey":"one"}"#))
     #expect(round.text.hasPrefix("### get_plot_threads\nerror: lookup failed\n\n### get_volume\n**one**:"))
     #expect(round.outcomes.map(\.trace.audit) == [.handlerError, .ok])
     #expect(round.outcomes.map(\.trace.status) == [.error, .ok])
@@ -139,7 +138,7 @@ struct ChatLookupSpecTests {
     var members = volume.storedMembers
     members["ordinal"] = .string("one")
     try await SchemaFixture.set(volume.ref, members, in: store)
-    let round = await run(store, try call("get_volume", #"{"volumeKey":"broken"}"#), try call("get_volume", #"{"volumeKey":"one"}"#))
+    let round = try await run(store, try call("get_volume", #"{"volumeKey":"broken"}"#), try call("get_volume", #"{"volumeKey":"one"}"#))
     #expect(round.outcomes.map(\.trace.audit) == [.handlerError, .ok])
     #expect(round.text.hasPrefix("### get_volume\nerror: lookup failed"))
   }
@@ -151,7 +150,7 @@ struct ChatLookupSpecTests {
       _ = try EntityRecord.remove(novel: readNovel, entity: "mara", in: &transaction)
       _ = try SecretRecord.remove(novel: readNovel, secret: "heir", in: &transaction)
     }
-    let round = await run(
+    let round = try await run(
       store, try call("get_bible_document", #"{"section":"world","slug":"places"}"#), try call("get_entity", #"{"entityKey":"mara"}"#),
       try call("get_canon_facts", #"{"keys":["heir"]}"#))
     #expect(round.text.contains("Bible document not found: world/places"))
@@ -162,12 +161,12 @@ struct ChatLookupSpecTests {
   @Test func shouldFindARecordByEitherNormalisationOfItsKey() async throws {
     let store = try await richStore()
     let decomposed = "ünï".precomposedStringWithCanonicalMapping.decomposedStringWithCanonicalMapping
-    let round = await run(store, try call("get_entity", #"{"entityKey":"\#(decomposed)"}"#))
+    let round = try await run(store, try call("get_entity", #"{"entityKey":"\#(decomposed)"}"#))
     #expect(round.text.contains("**Ünï** (faction, active)"))
   }
 
   @Test func shouldCutAResultOnAUTF16CountAndNeverSplitASurrogatePair() async throws {
-    let round = await run(try await richStore(), try call("get_bible_document", #"{"section":"lore","slug":"huge"}"#))
+    let round = try await run(try await richStore(), try call("get_bible_document", #"{"section":"lore","slug":"huge"}"#))
     let result = try #require(round.outcomes.first?.result)
     #expect(result.hasSuffix("\n...[truncated]"))
     #expect(result.jsLength == 6_000 * 4 - 1 + "\n...[truncated]".jsLength)
@@ -192,16 +191,16 @@ struct ChatLookupSpecTests {
         try Ledger.open(entry, in: &transaction)
       }
     }
-    let today = await run(store, try call("get_usage", #"{"period":"today"}"#), now: now)
+    let today = try await run(store, try call("get_usage", #"{"period":"today"}"#), now: now)
     #expect(today.text == "### get_usage\nUsage for the last 24 hours: 1 calls, 1,100 tokens (1,000 in / 100 out), $2.00.\nFully recorded — no estimate involved.")
-    let week = await run(store, try call("get_usage", #"{"period":"week"}"#), now: now)
+    let week = try await run(store, try call("get_usage", #"{"period":"week"}"#), now: now)
     #expect(week.text.contains("2 calls, 3,300 tokens (3,000 in / 300 out), $2.04."))
     #expect(week.text.contains("Some of this figure is estimated"))
     #expect(week.text.hasSuffix("By role:\n- writing: 1 calls, $2.00\n- chat: 1 calls, $0.04"))
-    let month = await run(store, try call("get_usage", #"{"period":"month"}"#), now: now)
+    let month = try await run(store, try call("get_usage", #"{"period":"month"}"#), now: now)
     #expect(month.text.contains("3 calls"))
     #expect(month.text.contains("Some of this figure is estimated"))
-    let all = await run(store, try call("get_usage"), now: now)
+    let all = try await run(store, try call("get_usage"), now: now)
     #expect(all.text.contains("4 calls"))
     #expect(all.text.contains("- chat: 2 calls, $0.04"))
   }
@@ -211,7 +210,7 @@ struct ChatLookupSpecTests {
     let header = "**v**: (untitled) (ordinal 1)\n"
     let body = String(repeating: "a", count: 2_000 * 4 - header.jsLength + extra)
     try await ReadWorld.write(store) { transaction in _ = try VolumeRecord(novel: readNovel, volume: "v", ordinal: 1, body: body).create(in: &transaction) }
-    let outcome = try #require(await run(store, try call("get_volume", #"{"volumeKey":"v"}"#)).outcomes.first)
+    let outcome = try #require(try await run(store, try call("get_volume", #"{"volumeKey":"v"}"#)).outcomes.first)
     #expect(outcome.trace.truncated == (extra == 1))
     #expect(outcome.result.hasSuffix("\n...[truncated]") == (extra == 1))
     #expect(outcome.trace.resultCharacters == (extra == 0 ? 8_000 : 8_000 + "\n...[truncated]".jsLength))
@@ -219,7 +218,7 @@ struct ChatLookupSpecTests {
 
   @Test func shouldSayWhatTheLedgerCannotScope() async throws {
     let store = try ReadWorld.store()
-    let round = await run(store, try call("get_usage", #"{"chapter":3}"#), try call("get_usage", #"{"last_run":true}"#), try call("get_usage", #"{"last_run":false}"#))
+    let round = try await run(store, try call("get_usage", #"{"chapter":3}"#), try call("get_usage", #"{"last_run":true}"#), try call("get_usage", #"{"last_run":false}"#))
     #expect(round.outcomes.map(\.trace.audit) == [.ok, .ok, .ok])
     #expect(round.text.contains("records no chapter, so usage cannot be scoped to chapter 3."))
     #expect(round.text.contains("does not group calls into runs"))
