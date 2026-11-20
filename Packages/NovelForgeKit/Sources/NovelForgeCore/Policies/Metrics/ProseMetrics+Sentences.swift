@@ -1,3 +1,5 @@
+import ShadowText
+
 struct SentenceLengthMetrics: Equatable, Sendable {
   let sentenceCount: Int
   let bandCount: Int

@@ -1,6 +1,7 @@
 import Foundation
 import ShadowCore
 import ShadowStore
+import ShadowText
 
 // apps/novel-forge-server/src/modules/ai/context/context-assembler.service.ts:817: the Notebook section reads the active ledger without its lapsed rejections
 enum ChatContextLedger {

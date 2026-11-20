@@ -1,4 +1,5 @@
 import ShadowCore
+import ShadowText
 
 enum DraftStatus: String, Sendable {
   case draft

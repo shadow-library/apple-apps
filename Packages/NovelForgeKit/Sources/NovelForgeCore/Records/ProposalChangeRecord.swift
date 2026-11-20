@@ -1,6 +1,7 @@
 import Foundation
 import ShadowCore
 import ShadowStore
+import ShadowText
 
 extension ProposalChangeField: FieldName {}
 extension ProposalChangeUndoMember: FieldName {}

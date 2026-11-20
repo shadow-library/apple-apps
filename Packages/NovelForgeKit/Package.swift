@@ -26,6 +26,7 @@ let package = Package(
       dependencies: [
         .product(name: "ShadowCore", package: "ShadowKit"),
         .product(name: "ShadowStore", package: "ShadowKit"),
+        .product(name: "ShadowText", package: "ShadowKit"),
         .product(name: "ShadowAI", package: "ShadowKit"),
         .product(name: "ShadowJobs", package: "ShadowKit"),
         .product(name: "ShadowSync", package: "ShadowKit"),
@@ -50,6 +51,7 @@ let package = Package(
       dependencies: [
         "NovelForgeCore",
         "NovelForgeEval",
+        .product(name: "ShadowText", package: "ShadowKit"),
         .product(name: "ShadowTestSupport", package: "ShadowKit"),
       ],
       swiftSettings: swiftSettings

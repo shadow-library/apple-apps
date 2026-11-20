@@ -1,6 +1,7 @@
+import ShadowTestSupport
 import Testing
 
-@testable import NovelForgeCore
+@testable import ShadowText
 
 /// bun's results for every reference entry, recorded by `Fixtures/regex/generate.ts`; compared exactly, with no tolerance.
 struct JSRegexBunFixtureTests {

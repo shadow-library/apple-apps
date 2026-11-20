@@ -1,3 +1,5 @@
+import ShadowText
+
 // apps/novel-forge-server/src/modules/ai/prompts/continuity.prompt.ts:17
 let continuityVersion = "1.4.0"
 

@@ -1,3 +1,5 @@
+import ShadowText
+
 // apps/novel-forge-server/src/common/provisional-knowledge.ts:23
 struct ResolvedBriefReveals: Equatable, Sendable {
   var pairs: [LedgerPair]

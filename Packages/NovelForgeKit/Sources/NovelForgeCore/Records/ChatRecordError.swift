@@ -1,4 +1,5 @@
 import ShadowCore
+import ShadowText
 
 public enum ChatRecordError: ShadowError, Equatable {
   case blankTitle

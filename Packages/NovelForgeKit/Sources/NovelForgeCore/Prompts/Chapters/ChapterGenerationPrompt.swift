@@ -1,3 +1,5 @@
+import ShadowText
+
 // apps/novel-forge-server/src/modules/ai/prompts/generation.prompt.ts:42
 let chapterGenerationVersion = "2.12.0"
 

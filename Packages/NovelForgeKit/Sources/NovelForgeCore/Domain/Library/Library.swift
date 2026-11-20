@@ -1,6 +1,7 @@
 import Foundation
 import ShadowCore
 import ShadowStore
+import ShadowText
 
 private let wordTargetFloor = 500
 private let wordTargetCeiling = 6000

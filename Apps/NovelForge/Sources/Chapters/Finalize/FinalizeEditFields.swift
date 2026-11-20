@@ -1,6 +1,7 @@
 import Foundation
 import NovelForgeCore
 import ShadowCore
+import ShadowText
 
 /// apps/novel-forge-web/src/lib/finalize-review.ts:84-110, 209-282: the fields `editedChange` accepts per proposed record, never those naming the record, and
 /// the patch an edit sends.

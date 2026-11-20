@@ -1,5 +1,6 @@
 import Foundation
 import ShadowStore
+import ShadowText
 
 public struct VolumeChanges: Sendable, Equatable {
   public var ordinal: FieldChange<Int> = .keep

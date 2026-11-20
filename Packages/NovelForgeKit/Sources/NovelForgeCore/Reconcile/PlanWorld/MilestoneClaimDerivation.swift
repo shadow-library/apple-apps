@@ -1,6 +1,7 @@
 import Foundation
 import GRDB
 import ShadowStore
+import ShadowText
 
 public enum MilestoneClaimStatus: String, Codable, CaseIterable, Sendable {
   case holds

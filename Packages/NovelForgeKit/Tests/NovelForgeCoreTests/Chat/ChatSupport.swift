@@ -3,6 +3,7 @@ import GRDB
 import ShadowCore
 import ShadowStore
 import ShadowTestSupport
+import ShadowText
 
 @testable import NovelForgeCore
 

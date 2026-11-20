@@ -1,3 +1,5 @@
+import ShadowText
+
 private let writerLinesBudget = 1_200
 
 extension WriterRender {

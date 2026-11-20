@@ -1,3 +1,5 @@
+import ShadowText
+
 // apps/novel-forge-server/src/modules/bible/fact/writer-disclosure-policy.ts:12
 enum WriterField: String, CaseIterable, Sendable {
   case prose

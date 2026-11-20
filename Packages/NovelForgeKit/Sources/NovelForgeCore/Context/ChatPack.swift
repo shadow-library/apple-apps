@@ -1,3 +1,5 @@
+import ShadowText
+
 // apps/novel-forge-server/src/modules/ai/context/novel-chat-context.ts
 enum ChatPack {
   // novel-chat-context.ts:9

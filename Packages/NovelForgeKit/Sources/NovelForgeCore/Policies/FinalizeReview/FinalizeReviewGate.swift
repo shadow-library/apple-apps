@@ -1,4 +1,5 @@
 import ShadowCore
+import ShadowText
 
 // apps/novel-forge-server/src/classes/app-error-code.ts:296-309
 enum FinalizeReviewError: ShadowError, Equatable {

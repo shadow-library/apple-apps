@@ -2,7 +2,7 @@ import Foundation
 import ShadowTestSupport
 import Testing
 
-@testable import NovelForgeCore
+@testable import ShadowText
 
 private let oracleFunction = """
   s => {

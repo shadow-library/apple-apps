@@ -1,7 +1,7 @@
 import ShadowTestSupport
 import Testing
 
-@testable import NovelForgeCore
+@testable import ShadowText
 
 struct JSNumberTests {
   private let iterations = 300

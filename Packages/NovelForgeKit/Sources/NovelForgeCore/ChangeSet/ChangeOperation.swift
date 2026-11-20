@@ -1,3 +1,5 @@
+import ShadowText
+
 // apps/novel-forge-server/src/modules/refinement/change-set/change-set.types.ts:344
 enum ChangeOperation: Sendable, Equatable {
   case premiseUpdate(PremiseUpdate)

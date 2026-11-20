@@ -1,3 +1,5 @@
+import ShadowText
+
 private let underEighteen = "(?:[1-9]|1[0-7]|one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|thirteen|fourteen|fifteen|sixteen|seventeen)"
 
 func builtInPattern(_ source: String, flags: String = "") -> JSRegex {

@@ -1,5 +1,6 @@
 import Foundation
 import ShadowStore
+import ShadowText
 
 // apps/novel-forge-server/src/modules/refinement/chat-compaction.service.ts:32-33
 let unrestrictedReplyPlaceholder = "[reply written with the unrestricted model — omitted]"

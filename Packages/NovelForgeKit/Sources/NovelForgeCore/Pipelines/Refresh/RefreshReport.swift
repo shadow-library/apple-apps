@@ -1,4 +1,5 @@
 import ShadowCore
+import ShadowText
 
 /// apps/novel-forge-server/src/database/schemas/jobs.ts:9, as a chapter's refresh groups its findings: it never finds a contradiction and never removes.
 enum RefreshGroup: String, CaseIterable, Sendable {

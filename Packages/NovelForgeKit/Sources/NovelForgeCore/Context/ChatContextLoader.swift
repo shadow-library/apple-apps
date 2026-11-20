@@ -2,6 +2,7 @@ import Foundation
 import GRDB
 import ShadowCore
 import ShadowStore
+import ShadowText
 
 /// A part of the vault the chat context reads; a part that cannot be read leaves out every section built from it.
 enum ChatContextPart: String, CaseIterable, Sendable {

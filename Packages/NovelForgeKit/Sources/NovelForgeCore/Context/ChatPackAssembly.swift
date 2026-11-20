@@ -1,3 +1,5 @@
+import ShadowText
+
 struct ChatPackSections: Equatable, Sendable {
   var stable: [ChatPackSection]
   var volatile: [ChatPackSection]

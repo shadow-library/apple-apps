@@ -1,7 +1,7 @@
 import ShadowTestSupport
 import Testing
 
-@testable import NovelForgeCore
+@testable import ShadowText
 
 struct JSRegexDifferentialTests {
   static let inputsPerCase = 200

@@ -53,10 +53,11 @@ Bundle identifiers: apps are `com.shadow.apps.<app-name>` (lowercased, test targ
 | `ShadowSyncGoogleDrive` | Google Drive storage in the app data folder: `GoogleDriveConfiguration` (Google sign-in, Drive v3), `GoogleDriveProvider` and its index store (`GoogleDriveStateStore`) | `ShadowCore`, `ShadowNetworking`, `ShadowSync` |
 | `ShadowSyncCloudKit` | iCloud (CloudKit) storage; the only module that imports CloudKit: `CloudKitConfiguration` (container, zone), `CloudKitStorageProvider` with its key index (`CloudKitStateStore`), the `CloudKitZoneClient` seam and its CloudKit implementation `CKZoneClient` | `ShadowCore`, `ShadowSync` |
 | `ShadowSyncRuntime`  | Non-UI sync runtime shared by the apps: provider setup, credentials, start-up and scheduling: `SyncLocation` and its store, `FirstUnlockProbe`, keychain credential stores, `VaultSetup`, `SyncStartup` and `SyncPhase` | `ShadowCore`, `ShadowKeychain`, `ShadowNetworking`, `ShadowStore`, `ShadowSync`, `ShadowSyncS3`, `ShadowSyncOneDrive`, `ShadowSyncGoogleDrive`, `ShadowSyncCloudKit` |
+| `ShadowText`         | JavaScript semantics ported exactly: `JSText`, `JSString`, `JSNumber` and `String` helpers on UTF-16 code units, `OrderedJSON` with `jsonText`, and `JSRegex` (a backtracking engine for JavaScript patterns with `u` and `i` flags) | `ShadowCore` |
 | `ShadowAI`           | `ModelProvider` with `AnthropicProvider` and `OpenRouterProvider`, `ModelCatalog` (task and pace to a model), `RetryingProvider`, structured calls, `Ledger` of model calls and spend, with `Ledger.reconcilePending` pricing OpenRouter calls after the fact | `ShadowCore`, `ShadowNetworking`, `ShadowStore` |
 | `ShadowJobs`         | Durable background jobs: synced job and attempt records, derived status, leases, `AttemptRunner` with a local checkpoint | `ShadowCore`, `ShadowStore`      |
 | `ShadowDesignSystem` | Tokens, Liquid Glass helpers and native-first SwiftUI components (see below) | —                                |
-| `ShadowTestSupport`  | Test targets only: `StubHTTPTransport` and streaming stubs, `InMemorySecureStore`, `InMemoryKeychain`, `InMemoryOAuthTokenStore`, `InMemoryStorageProvider`, `FaultInjectingStorageProvider`, `StorageProviderConformance`, `FakeCloudKitZone`, `ScriptedModelProvider`, `CausalReplicas`, `forAll`/`forAllConcurrently`/`replay` with `SeededGenerator` | `ShadowCore`, `ShadowNetworking`, `ShadowKeychain`, `ShadowStore`, `ShadowSync`, `ShadowSyncCloudKit`, `ShadowAI` |
+| `ShadowTestSupport`  | Test targets only: `JSOracle` (JavaScriptCore as a differential oracle) with `TextSamples`, `StubHTTPTransport` and streaming stubs, `InMemorySecureStore`, `InMemoryKeychain`, `InMemoryOAuthTokenStore`, `InMemoryStorageProvider`, `FaultInjectingStorageProvider`, `StorageProviderConformance`, `FakeCloudKitZone`, `ScriptedModelProvider`, `CausalReplicas`, `forAll`/`forAllConcurrently`/`replay` with `SeededGenerator` | `ShadowCore`, `ShadowNetworking`, `ShadowKeychain`, `ShadowStore`, `ShadowSync`, `ShadowSyncCloudKit`, `ShadowAI`, `ShadowText` |
 
 Apps depend on modules through the typed helper, so a typo fails at manifest compile time:
 
@@ -113,7 +114,7 @@ A product module is added the same way: a library product in the product's packa
 
 ## Memoir core
 
-`Packages/MemoirKit` holds `MemoirCore` (bundle id `com.shadow.library.memoircore`), Memoir's records, rules and derived state; it imports no UI framework and depends on `ShadowCore`, `ShadowStore`, `ShadowSync`, `ShadowAI`, `ShadowJobs` and GRDB. `LocalDate` (`Calendar/`) is a civil date held as days since 1970-01-01 (years 0000 to 9999), computed with integer arithmetic only, never `Calendar` or `TimeZone`; it parses and formats `yyyy-MM-dd` and encodes as that string. Its fixtures follow `Packages/MemoirKit/Fixtures/README.md`.
+`Packages/MemoirKit` holds `MemoirCore` (bundle id `com.shadow.library.memoircore`), Memoir's records, rules and derived state; it imports no UI framework and depends on `ShadowCore`, `ShadowStore`, `ShadowSync`, `ShadowText`, `ShadowAI`, `ShadowJobs` and GRDB. `LocalDate` (`Calendar/`) is a civil date held as days since 1970-01-01 (years 0000 to 9999), computed with integer arithmetic only, never `Calendar` or `TimeZone`; it parses and formats `yyyy-MM-dd` and encodes as that string. Its fixtures follow `Packages/MemoirKit/Fixtures/README.md`.
 
 ### Memoir calendar
 
@@ -138,12 +139,10 @@ A vault is three stores in sibling directories, each opened only through `Memoir
 
 ## Novel Forge core
 
-`Packages/NovelForgeKit` holds `NovelForgeCore`: the product's records, rules and derived state on top of `ShadowStore`. It imports no UI framework and depends on `ShadowCore`, `ShadowStore`, `ShadowAI`, `ShadowJobs` and GRDB; `ShadowTestSupport` is linked by its tests only. `NovelForgeEval` is an executable target that depends on `NovelForgeCore` and hosts the evaluation commands (command-line only; not linked into any app).
+`Packages/NovelForgeKit` holds `NovelForgeCore`: the product's records, rules and derived state on top of `ShadowStore`. It imports no UI framework and depends on `ShadowCore`, `ShadowStore`, `ShadowText`, `ShadowAI`, `ShadowJobs` and GRDB; `ShadowTestSupport` is linked by its tests only. `NovelForgeEval` is an executable target that depends on `NovelForgeCore` and hosts the evaluation commands (command-line only; not linked into any app).
 
 | Folder                   | Contents                                                                                               |
 | ------------------------ | ------------------------------------------------------------------------------------------------------ |
-| `Text`                   | JavaScript string, number and JSON semantics (UTF-16 indexing, `OrderedJSON` stringify) that policies port exactly |
-| `Text/Regex`             | `JSRegex`: a backtracking engine for JavaScript patterns, with case folding and a follow analysis        |
 | `Schema`                 | `NovelForgeSchema` (`version`), `NovelForgeKind`, `NovelForgeField`, `NovelForgeKey`                    |
 | `Store`                  | `NovelForgeStore`: opens the vault (file or in-memory) with the schema registry and reconciler          |
 | `Records`                | One typed record per kind (`NovelRecord`, `DraftRecord`, `FinalChapterRecord`, ...) with create, edit, revision and append writes and reads |

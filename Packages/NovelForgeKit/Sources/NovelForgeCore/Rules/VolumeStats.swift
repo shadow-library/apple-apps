@@ -1,3 +1,5 @@
+import ShadowText
+
 struct VolumeChapterRow: Equatable, Sendable {
   var number: Int
   var wordCount: Int?

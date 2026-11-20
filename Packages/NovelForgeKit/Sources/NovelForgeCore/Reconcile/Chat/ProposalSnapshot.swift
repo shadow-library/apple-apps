@@ -2,6 +2,7 @@ import Foundation
 import GRDB
 import ShadowCore
 import ShadowStore
+import ShadowText
 
 public enum ProposalReadability: String, Sendable, DatabaseValueConvertible {
   case readable

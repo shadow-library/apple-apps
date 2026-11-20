@@ -1,4 +1,5 @@
 import Foundation
+import ShadowText
 
 // apps/novel-forge-server/src/modules/refinement/proposal-current.ts:4
 struct ProposalOpCurrent: Sendable, Equatable {

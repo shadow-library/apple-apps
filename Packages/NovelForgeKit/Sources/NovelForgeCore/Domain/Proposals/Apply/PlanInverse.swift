@@ -1,5 +1,6 @@
 import Foundation
 import ShadowCore
+import ShadowText
 
 /// A plan as an inverse writes it back (brief.handler.ts:19-41): every field the op can change, explicit, an empty one `null`; the knowledge contract always
 /// named, so an undone reveal does not merge as "keep". No contract is `null`, as are no claims.

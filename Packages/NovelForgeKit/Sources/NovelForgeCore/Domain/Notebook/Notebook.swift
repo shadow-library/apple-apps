@@ -1,6 +1,7 @@
 import Foundation
 import ShadowCore
 import ShadowStore
+import ShadowText
 
 // apps/novel-forge-server/src/modules/ledger/ledger.service.ts; the guards read the local state, `NotebookResolution` carries the merge across devices
 public enum Notebook {

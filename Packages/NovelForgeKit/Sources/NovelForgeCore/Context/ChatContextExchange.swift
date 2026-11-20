@@ -1,5 +1,6 @@
 import Foundation
 import ShadowCore
+import ShadowText
 
 // apps/novel-forge-server/src/database/schemas/refinement.ts:105
 struct ChatHeldSection: Equatable, Sendable {

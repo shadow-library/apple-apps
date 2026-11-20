@@ -1,4 +1,5 @@
 import ShadowCore
+import ShadowText
 
 /// apps/novel-forge-server/src/modules/refinement/op-undo.ts:13-67: a change depends on another when it cannot stand without it (names a record only the other
 /// created, or is a page owing its entity type) or wrote a record after it; undo and redo keep each record's changes a stack. An index whose stored op does

@@ -1,3 +1,5 @@
+import ShadowText
+
 // apps/novel-forge-server/src/modules/ai/prompts/chat-title.prompt.ts:7
 let chatTitleSystem =
   #"""

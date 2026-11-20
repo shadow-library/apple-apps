@@ -1,4 +1,5 @@
 import ShadowCore
+import ShadowText
 
 private func string(_ extra: [(String, OrderedJSON)] = []) -> OrderedJSON { jsonObject([("type", .string("string"))] + extra) }
 

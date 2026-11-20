@@ -1,6 +1,7 @@
 import Foundation
 import ShadowCore
 import ShadowStore
+import ShadowText
 
 // apps/novel-forge-server/src/modules/new-novel/new-novel.service.ts:81-97 (new-novel.controller.ts:51-61): an override is a system entry at progress.<key>
 public enum ChecklistOverrides {

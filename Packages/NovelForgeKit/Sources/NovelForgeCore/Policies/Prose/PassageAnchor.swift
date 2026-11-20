@@ -1,3 +1,5 @@
+import ShadowText
+
 let maxPassageChars = 6000
 let anchorContextChars = 32
 

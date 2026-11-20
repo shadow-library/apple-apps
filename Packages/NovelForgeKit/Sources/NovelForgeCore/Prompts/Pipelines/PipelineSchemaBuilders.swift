@@ -1,4 +1,5 @@
 import ShadowCore
+import ShadowText
 
 func pipelineText(minLength: Int? = nil, maxLength: Int? = nil, description: String? = nil) -> OrderedJSON {
   var fields: [(String, OrderedJSON)] = [("type", .string("string"))]

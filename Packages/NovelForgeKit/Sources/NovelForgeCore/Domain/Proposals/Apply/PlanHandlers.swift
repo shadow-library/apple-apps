@@ -1,6 +1,7 @@
 import Foundation
 import ShadowCore
 import ShadowStore
+import ShadowText
 
 // apps/novel-forge-server/src/modules/refinement/apply/brief.handler.ts: each write returns its plan as written for the plan rules (apply-rules.ts:46)
 enum PlanHandlers: ContentOpHandler {

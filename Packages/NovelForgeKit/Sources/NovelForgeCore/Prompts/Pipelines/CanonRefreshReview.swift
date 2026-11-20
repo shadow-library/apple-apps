@@ -1,5 +1,6 @@
 import Foundation
 import ShadowAI
+import ShadowText
 
 // apps/novel-forge-server/src/modules/ai/prompts/chapter-canon-refresh.prompt.ts:38
 func canonRefreshIssues(_ output: OrderedJSON) -> [String] {

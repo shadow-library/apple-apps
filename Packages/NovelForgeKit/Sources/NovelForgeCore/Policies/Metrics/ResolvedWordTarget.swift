@@ -1,3 +1,5 @@
+import ShadowText
+
 struct WordTargetSource: Sendable {
   var wordTargetMin: Double?
   var wordTargetMax: Double?

@@ -1,3 +1,5 @@
+import ShadowText
+
 // Probed against Bun for up to 64 elements only; above that an intransitive comparator may order differently.
 func jsArraySorted<Element>(_ items: [Element], compare: (Element, Element) -> Int) -> [Element] {
   guard items.count >= 2 else { return items }

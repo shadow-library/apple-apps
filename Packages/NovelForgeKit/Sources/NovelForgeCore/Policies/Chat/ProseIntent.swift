@@ -1,3 +1,5 @@
+import ShadowText
+
 // apps/novel-forge-server/src/modules/refinement/prose-intent.ts:4
 let proseEditOps: [OpType] = [.draftUpdate, .draftRemove, .draftRewritePassage, .actionReviseDraft]
 

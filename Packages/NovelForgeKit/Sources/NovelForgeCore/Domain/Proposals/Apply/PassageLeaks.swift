@@ -1,5 +1,6 @@
 import Foundation
 import ShadowStore
+import ShadowText
 
 // apps/novel-forge-server/src/modules/generation/passage-leaks.ts
 enum PassageLeaks {

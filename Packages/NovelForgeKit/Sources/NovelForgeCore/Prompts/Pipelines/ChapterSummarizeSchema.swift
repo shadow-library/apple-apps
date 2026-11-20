@@ -1,4 +1,5 @@
 import ShadowCore
+import ShadowText
 
 // apps/novel-forge-server/src/modules/ai/schemas/chapter-summarize.schema.ts:5
 let chapterSummarizeSchema: OrderedJSON = pipelineShape(

@@ -1,3 +1,5 @@
+import ShadowText
+
 // apps/novel-forge-server/src/modules/ai/context/token-budget.ts
 public struct TruncatedText: Sendable, Equatable {
   public let text: String

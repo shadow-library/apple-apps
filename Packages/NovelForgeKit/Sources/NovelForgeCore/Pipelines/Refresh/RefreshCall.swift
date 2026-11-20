@@ -3,6 +3,7 @@ import ShadowAI
 import ShadowCore
 import ShadowJobs
 import ShadowStore
+import ShadowText
 
 /// Why a refresh reads nothing (chapter-canon-refresh.service.ts:23, :69-78): `superseded` is a canon another device finalized first, which its own job refreshes.
 enum RefreshSettled: String, Sendable {

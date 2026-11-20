@@ -1,3 +1,5 @@
+import ShadowText
+
 public enum BibleStage: String, CaseIterable, Codable, Sendable {
   case foundation
   case world

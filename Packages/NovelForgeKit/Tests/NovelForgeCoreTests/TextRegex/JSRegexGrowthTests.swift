@@ -1,7 +1,7 @@
 import Foundation
 import Testing
 
-@testable import NovelForgeCore
+@testable import ShadowText
 
 /// Work is counted in matcher steps rather than timed, so the bounds hold on any machine and in a debug build.
 struct JSRegexGrowthTests {

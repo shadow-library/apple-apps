@@ -1,3 +1,5 @@
+import ShadowText
+
 private struct Draft {
   var basis: FinalizeBasis
   var subjectKey: String

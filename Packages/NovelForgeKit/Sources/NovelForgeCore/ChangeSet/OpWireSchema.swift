@@ -1,3 +1,5 @@
+import ShadowText
+
 private typealias WireSchema = OrderedJSON
 
 private func wire(_ pairs: [(String, OrderedJSON)]) -> WireSchema { jsonObject(pairs) }

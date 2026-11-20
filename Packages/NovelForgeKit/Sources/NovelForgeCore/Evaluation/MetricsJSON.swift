@@ -1,4 +1,5 @@
 import Foundation
+import ShadowText
 
 extension OrderedJSON {
   static func number(_ value: Double) -> OrderedJSON {

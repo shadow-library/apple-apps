@@ -1,3 +1,5 @@
+import ShadowText
+
 // apps/novel-forge-server/src/modules/refinement/change-set/change-set.types.ts:13
 struct PremiseUpdate: Sendable, Equatable {
   var premise: String?

@@ -1,3 +1,5 @@
+import ShadowText
+
 // apps/novel-forge-server/src/modules/bible/fact/knowledge-view.ts:298
 let knowledgeLeakPrefix = "knowledge leak: "
 

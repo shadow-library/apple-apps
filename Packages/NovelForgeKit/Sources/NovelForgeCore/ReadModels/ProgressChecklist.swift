@@ -1,6 +1,7 @@
 import Foundation
 import GRDB
 import ShadowStore
+import ShadowText
 
 public struct ChecklistItem: Sendable, Equatable {
   public let key: ProgressItemKey

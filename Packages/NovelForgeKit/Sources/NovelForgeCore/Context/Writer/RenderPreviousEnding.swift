@@ -1,3 +1,5 @@
+import ShadowText
+
 struct WriterEndingRow: Equatable, Sendable {
   var finalized: Bool
   var isolated: Bool

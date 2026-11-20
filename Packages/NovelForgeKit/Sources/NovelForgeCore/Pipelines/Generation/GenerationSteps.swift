@@ -4,6 +4,7 @@ import ShadowAI
 import ShadowCore
 import ShadowJobs
 import ShadowStore
+import ShadowText
 
 /// chapter-generation.graph.ts:920-946 as one job, each step checkpointed with its writes; ported from the platform working copy (user decision 2026-11-18).
 enum GenerationPipeline {

@@ -1,5 +1,6 @@
 import Foundation
 import ShadowCore
+import ShadowText
 
 extension ArtifactSubject {
   // The hash input follows the reference's field lists (artifact-state.ts:50-199, common/content-hash.ts:21-47) over the native record, canonicalised by computeContentHash so two devices agree

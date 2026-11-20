@@ -1,4 +1,5 @@
 import Foundation
+import ShadowText
 
 public struct NovelPackage: Sendable, Equatable {
   public let id: String

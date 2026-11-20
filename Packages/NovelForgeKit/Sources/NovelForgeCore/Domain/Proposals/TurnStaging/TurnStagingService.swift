@@ -1,6 +1,7 @@
 import Foundation
 import ShadowCore
 import ShadowStore
+import ShadowText
 
 // apps/novel-forge-server/src/modules/refinement/chat-turn-staging.service.ts:24-29, :46-55
 struct TurnStagingRequest: Sendable {

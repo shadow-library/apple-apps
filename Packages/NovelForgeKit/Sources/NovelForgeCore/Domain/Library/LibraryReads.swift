@@ -1,6 +1,7 @@
 import Foundation
 import ShadowCore
 import ShadowStore
+import ShadowText
 
 extension Library {
   // project.service.ts:139: the main list shows live, non-archived novels; archived ones are listed apart

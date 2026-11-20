@@ -1,3 +1,5 @@
+import ShadowText
+
 private let hiddenThreadPlaceholder = "keep the hidden thread unresolved"
 private let factPrefix = "fact:"
 

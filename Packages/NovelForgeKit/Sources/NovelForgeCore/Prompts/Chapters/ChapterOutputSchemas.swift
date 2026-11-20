@@ -1,4 +1,5 @@
 import ShadowCore
+import ShadowText
 
 // apps/novel-forge-server/src/modules/ai/schemas/generation.schema.ts:13
 let chapterContinuationStateSchema: OrderedJSON = shapeSchema(

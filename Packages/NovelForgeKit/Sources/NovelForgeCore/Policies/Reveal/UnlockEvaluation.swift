@@ -1,3 +1,5 @@
+import ShadowText
+
 struct UnlockContext: Equatable, Sendable {
   var chapter: Int
   var endingChapter: Int?

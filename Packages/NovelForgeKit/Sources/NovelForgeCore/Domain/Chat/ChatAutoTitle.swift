@@ -4,6 +4,7 @@ import OSLog
 import ShadowAI
 import ShadowCore
 import ShadowStore
+import ShadowText
 
 /// The turn whose opening message names the session: its pace routes the call and its content mode decides whether the hard line holds it.
 struct ChatAutoTitleTurn: Equatable, Sendable {

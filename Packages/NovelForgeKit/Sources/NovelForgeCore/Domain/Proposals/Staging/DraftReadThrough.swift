@@ -1,6 +1,7 @@
 import Foundation
 import ShadowCore
 import ShadowStore
+import ShadowText
 
 /// A draft as the apply will find it once `DraftHandlers.settleWorkingCopies` commits this device's working copy, read without writing it: staging and a
 /// rejection's anchor must describe the prose the author sees, but committing the copy would add a synced revision per staged card and move the editor's

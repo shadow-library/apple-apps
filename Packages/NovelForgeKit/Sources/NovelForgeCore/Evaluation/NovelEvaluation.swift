@@ -1,6 +1,7 @@
 import Foundation
 import ShadowCore
 import ShadowStore
+import ShadowText
 
 public struct EvaluationChapter: Sendable, Hashable {
   public let chapter: Int

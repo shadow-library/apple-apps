@@ -1,3 +1,5 @@
+import ShadowText
+
 /// One step of a withholding's body, its pattern without the lookarounds.
 enum BodyAtom: Sendable {
   case character(Unicode.Scalar, source: String)

@@ -1,4 +1,5 @@
 import Foundation
+import ShadowText
 
 struct VolumeStanding: Equatable, Sendable {
   let volume: String

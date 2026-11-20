@@ -1,5 +1,6 @@
 import Foundation
 import ShadowStore
+import ShadowText
 import Testing
 
 @testable import NovelForgeCore

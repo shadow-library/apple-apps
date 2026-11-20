@@ -1,4 +1,5 @@
 import ShadowCore
+import ShadowText
 
 struct JudgeReport: Equatable, Sendable {
   var verdict: GenerationVerdict

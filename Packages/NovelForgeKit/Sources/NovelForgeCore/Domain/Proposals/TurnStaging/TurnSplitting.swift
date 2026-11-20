@@ -1,3 +1,5 @@
+import ShadowText
+
 // apps/novel-forge-server/src/modules/refinement/turn-proposals.ts:81
 struct TurnPolicyContext: Sendable {
   var authorMessage: String

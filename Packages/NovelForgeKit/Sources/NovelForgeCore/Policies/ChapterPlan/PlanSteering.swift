@@ -1,3 +1,5 @@
+import ShadowText
+
 private let intentTurns = 3
 private let minIntentWords = 2
 private let bareEdges = ProseRegex.literal(#"^["'\s]+|["'\s.!…]+$"#, "gu")

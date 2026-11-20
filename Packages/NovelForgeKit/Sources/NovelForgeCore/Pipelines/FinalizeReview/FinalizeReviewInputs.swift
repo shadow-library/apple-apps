@@ -2,6 +2,7 @@ import Foundation
 import ShadowAI
 import ShadowCore
 import ShadowStore
+import ShadowText
 
 /// What a finalize review reads of the novel (apps/novel-forge-server/src/modules/finalize-review/finalize-review.service.ts:469-512): the continuity roster and
 /// milestones its call is shown, and what `buildReviewItems` weighs the extraction against. Threads and mysteries are read as the author's records and the

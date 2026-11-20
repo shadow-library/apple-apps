@@ -1,5 +1,6 @@
 import Foundation
 import ShadowStore
+import ShadowText
 
 public struct StoryBibleContents: ReadModel {
   public let pages: Derived<StructureSection<PageSummary>>

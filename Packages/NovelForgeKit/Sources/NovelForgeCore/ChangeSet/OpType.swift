@@ -1,3 +1,5 @@
+import ShadowText
+
 // apps/novel-forge-server/src/modules/refinement/change-set/change-set.types.ts:345
 public enum OpType: String, CaseIterable, Sendable {
   case premiseUpdate = "premise.update"

@@ -3,6 +3,7 @@ import NovelForgeCore
 import ShadowCore
 import ShadowStore
 import ShadowTestSupport
+import ShadowText
 import Testing
 
 @Suite("NovelForgeKey")

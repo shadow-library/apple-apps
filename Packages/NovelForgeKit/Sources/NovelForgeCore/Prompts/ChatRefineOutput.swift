@@ -1,5 +1,6 @@
 import Foundation
 import ShadowAI
+import ShadowText
 
 struct ChatLookup: Equatable, Sendable {
   let tool: String

@@ -1,4 +1,5 @@
 import ShadowCore
+import ShadowText
 
 private let proofreadKinds = ["grammar", "spelling", "punctuation", "tense", "pov", "name", "reference"]
 

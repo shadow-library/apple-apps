@@ -1,4 +1,5 @@
 import ShadowCore
+import ShadowText
 
 // apps/novel-forge-server/src/modules/ai/context/context-ref-resolver.ts:15
 struct WriterRefResolution: Equatable, Sendable {

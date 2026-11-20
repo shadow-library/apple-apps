@@ -1,4 +1,5 @@
 import Foundation
+import ShadowText
 
 enum ReferenceFixture {
   static func data(_ path: String) throws -> Data {

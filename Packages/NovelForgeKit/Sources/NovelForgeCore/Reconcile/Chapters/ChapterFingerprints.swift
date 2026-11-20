@@ -1,5 +1,6 @@
 import Foundation
 import ShadowCore
+import ShadowText
 
 /// The fingerprints a chapter's revisions and approvals record, and how the chapter lifecycle compares them with the current state. Every digest is the lowercase
 /// sha256 hex of the UTF-8 of an RFC 8785 canonical JSON value; keys are NFC; a set is deduplicated and sorted by UTF-16 code units, as JavaScript's `sort` does.

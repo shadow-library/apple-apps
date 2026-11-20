@@ -2,6 +2,7 @@ import Foundation
 import GRDB
 import ShadowCore
 import ShadowStore
+import ShadowText
 
 /// One pair of the novel's knowledge ledger: the author's manual reveal, or the earliest final or approved chapter whose contract teaches it. `draftRevision` is
 /// the revision that chapter's canon or approval names, for a plan row only.

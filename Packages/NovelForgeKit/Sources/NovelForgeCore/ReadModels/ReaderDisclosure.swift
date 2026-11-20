@@ -1,6 +1,7 @@
 import Foundation
 import GRDB
 import ShadowStore
+import ShadowText
 
 /// What the reader has been shown: each secret a final chapter disclosed, by key, with the first chapter that did. A consumer reads `.unavailable`, and a secret
 /// missing because a final chapter or a secret is faulted on its own, as nothing disclosed: the secret stays a secret, which withholds more, never less.

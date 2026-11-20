@@ -4,14 +4,14 @@ enum JSOffsetRounding {
 }
 
 extension String {
-  var jsLength: Int { utf16.count }
+  public var jsLength: Int { utf16.count }
 
-  var jsCodeUnits: [UInt16] { Array(utf16) }
+  public var jsCodeUnits: [UInt16] { Array(utf16) }
 
   /// `[...text]` iterates code points, not grapheme clusters.
-  var jsCodePoints: [String] { unicodeScalars.map { String($0) } }
+  public var jsCodePoints: [String] { unicodeScalars.map { String($0) } }
 
-  func jsEquals(_ other: String) -> Bool {
+  public func jsEquals(_ other: String) -> Bool {
     utf8.elementsEqual(other.utf8)
   }
 
@@ -20,7 +20,7 @@ extension String {
     return utf16[utf16.index(utf16.startIndex, offsetBy: index)]
   }
 
-  func jsCharAt(_ index: Int) -> String {
+  public func jsCharAt(_ index: Int) -> String {
     jsCharCodeAt(index).map { JSText.string(fromCodeUnits: [$0]) } ?? ""
   }
 
@@ -35,28 +35,28 @@ extension String {
     utf16.distance(from: utf16.startIndex, to: index)
   }
 
-  func jsSlice(_ start: Int, _ end: Int? = nil) -> String {
+  public func jsSlice(_ start: Int, _ end: Int? = nil) -> String {
     let length = jsLength
     return scalarAligned(from: JSText.relativeIndex(start, length: length), to: end.map { JSText.relativeIndex($0, length: length) } ?? length)
   }
 
-  func jsSliceCodeUnits(_ start: Int, _ end: Int? = nil) -> [UInt16] {
+  public func jsSliceCodeUnits(_ start: Int, _ end: Int? = nil) -> [UInt16] {
     let units = jsCodeUnits
     let from = JSText.relativeIndex(start, length: units.count)
     let to = end.map { JSText.relativeIndex($0, length: units.count) } ?? units.count
     return from < to ? Array(units[from..<to]) : []
   }
 
-  func jsIndexOf(_ search: String, _ position: Int = 0) -> Int {
+  public func jsIndexOf(_ search: String, _ position: Int = 0) -> Int {
     let units = jsCodeUnits
     return JSText.indexOf(search.jsCodeUnits, in: units, from: JSText.clamped(position, length: units.count))
   }
 
-  func jsIncludes(_ search: String, _ position: Int = 0) -> Bool {
+  public func jsIncludes(_ search: String, _ position: Int = 0) -> Bool {
     jsIndexOf(search, position) != -1
   }
 
-  func jsStartsWith(_ search: String, _ position: Int = 0) -> Bool {
+  public func jsStartsWith(_ search: String, _ position: Int = 0) -> Bool {
     let units = jsCodeUnits
     let needle = search.jsCodeUnits
     let start = JSText.clamped(position, length: units.count)
@@ -64,7 +64,7 @@ extension String {
     return units[start..<(start + needle.count)].elementsEqual(needle)
   }
 
-  func jsEndsWith(_ search: String, _ endPosition: Int? = nil) -> Bool {
+  public func jsEndsWith(_ search: String, _ endPosition: Int? = nil) -> Bool {
     let units = jsCodeUnits
     let needle = search.jsCodeUnits
     let end = JSText.clamped(endPosition ?? units.count, length: units.count)

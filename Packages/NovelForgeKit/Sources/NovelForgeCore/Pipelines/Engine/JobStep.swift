@@ -3,6 +3,7 @@ import ShadowAI
 import ShadowCore
 import ShadowJobs
 import ShadowStore
+import ShadowText
 import Synchronization
 
 /// One step of a Novel Forge pipeline: one model call at most, its output and next checkpoint written in one transaction by the runner (orchestrator

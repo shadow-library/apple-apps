@@ -1,5 +1,6 @@
 import Foundation
 import ShadowCore
+import ShadowText
 
 enum LedgerRuleError: ShadowError, Equatable {
   case onlyDecisionOrSystemDetailBecomesDecision

@@ -1,4 +1,5 @@
 import Foundation
+import ShadowText
 
 indirect enum EvalJSON: Sendable {
   case null

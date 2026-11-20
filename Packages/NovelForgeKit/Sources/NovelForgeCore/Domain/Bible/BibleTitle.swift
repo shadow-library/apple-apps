@@ -1,5 +1,6 @@
 import Foundation
 import ShadowCore
+import ShadowText
 
 // apps/novel-forge-server/src/common/bible-doc-title.ts
 enum BibleTitle {

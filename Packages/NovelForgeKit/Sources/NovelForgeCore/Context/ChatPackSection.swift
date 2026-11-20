@@ -1,3 +1,5 @@
+import ShadowText
+
 // apps/novel-forge-server/src/modules/ai/context/sections.ts:1
 enum ChatPackTier: String, Codable, Sendable {
   case canonical

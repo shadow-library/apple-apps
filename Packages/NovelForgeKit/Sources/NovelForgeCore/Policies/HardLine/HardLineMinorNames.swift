@@ -1,4 +1,5 @@
 import Foundation
+import ShadowText
 
 private let wordCharacters = #"[\p{L}\p{N}_]"#
 

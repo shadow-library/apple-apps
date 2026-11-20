@@ -1,3 +1,5 @@
+import ShadowText
+
 // apps/novel-forge-server/src/modules/refinement/chat-selection.ts:9
 let chatTurnGraph = "chat-turn"
 

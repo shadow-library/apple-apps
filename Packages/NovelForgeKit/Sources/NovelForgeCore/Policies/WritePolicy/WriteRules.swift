@@ -1,3 +1,5 @@
+import ShadowText
+
 // apps/novel-forge-server/src/modules/refinement/write-policy.ts:319
 private func isFilled(_ value: OrderedJSON?) -> Bool {
   switch value {

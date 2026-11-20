@@ -1,3 +1,5 @@
+import ShadowText
+
 // apps/novel-forge-server/src/common/reveal-term.ts:4
 private let minRevealTermLength = 3
 

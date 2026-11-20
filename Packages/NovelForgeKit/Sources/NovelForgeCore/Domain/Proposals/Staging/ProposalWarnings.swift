@@ -1,6 +1,7 @@
 import Foundation
 import ShadowCore
 import ShadowStore
+import ShadowText
 
 // apps/novel-forge-server/src/modules/ai/isolation-read-policy.ts:48
 let isolatedSourceWarning = "Read from an unrestricted chapter: excerpts are withheld; review every entry before it becomes canon."

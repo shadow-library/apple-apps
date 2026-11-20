@@ -1,3 +1,5 @@
+import ShadowText
+
 struct NegationEcho: Sendable, Equatable {
   let terms: [String]
   let excerpt: String

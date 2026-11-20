@@ -1,3 +1,5 @@
+import ShadowText
+
 private let learnsField = "knowledgeContract.learns"
 
 struct ScheduledReveal: Equatable, Sendable {

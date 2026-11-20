@@ -1,3 +1,5 @@
+import ShadowText
+
 private let dormantThresholdChapters = 6
 
 enum ObligationKind: String, Sendable {

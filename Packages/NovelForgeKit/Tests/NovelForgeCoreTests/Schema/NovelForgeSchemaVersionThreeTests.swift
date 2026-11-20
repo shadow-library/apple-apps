@@ -4,6 +4,7 @@ import ShadowCore
 import ShadowJobs
 import ShadowStore
 import ShadowSync
+import ShadowText
 import Testing
 
 @testable import NovelForgeCore

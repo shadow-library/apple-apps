@@ -1,6 +1,7 @@
 import Foundation
 import ShadowCore
 import ShadowStore
+import ShadowText
 
 /// The chat's context as one turn sends it: `renderedStable` is `ChatRefineRequestParts`' stable context, never empty as the Notebook section is always kept.
 // apps/novel-forge-server/src/modules/ai/context/sections.ts:29 (AssembledPack)

@@ -1,3 +1,5 @@
+import ShadowText
+
 // apps/novel-forge-server/src/modules/refinement/chat-turn-emitter.ts:34
 private let maximumLabelLength = 120
 

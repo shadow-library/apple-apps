@@ -1,6 +1,7 @@
 import Foundation
 import GRDB
 import ShadowStore
+import ShadowText
 
 public struct SecretRevealViolation: Sendable, Equatable {
   public let chapter: Int

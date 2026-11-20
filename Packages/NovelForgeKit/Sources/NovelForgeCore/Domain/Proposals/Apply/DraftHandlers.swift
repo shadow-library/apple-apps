@@ -1,6 +1,7 @@
 import Foundation
 import ShadowCore
 import ShadowStore
+import ShadowText
 
 // apps/novel-forge-server/src/modules/refinement/apply/draft.handler.ts, passage-rewrite.ts. Every refusal comes before the first write. The intent changes
 // nothing here: apply.types.ts:32 concerns a plan's content mode only.

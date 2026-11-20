@@ -1,3 +1,5 @@
+import ShadowText
+
 private let allowedCluesLead = "Signs you may show while their cause stays unexplained:"
 
 extension WriterRender {

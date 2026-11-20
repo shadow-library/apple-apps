@@ -1,3 +1,5 @@
+import ShadowText
+
 private func claimable(_ key: String, _ plan: PlanClaims, _ world: PlanWorld) -> Bool {
   var claiming = plan
   claiming.claimedMilestones = [key]

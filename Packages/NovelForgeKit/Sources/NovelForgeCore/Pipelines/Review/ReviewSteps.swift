@@ -4,6 +4,7 @@ import ShadowAI
 import ShadowCore
 import ShadowJobs
 import ShadowStore
+import ShadowText
 
 /// A judge or editorial review of one named revision as a job (apps/novel-forge-server/src/modules/review/chapter-review.service.ts:143-154, 236-305):
 /// `prepare` reads the text, the author's settled answers and the writer pack and keeps the prompt in the checkpoint; `review` makes the one model call and

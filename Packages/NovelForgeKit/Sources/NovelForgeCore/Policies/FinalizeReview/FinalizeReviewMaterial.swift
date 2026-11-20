@@ -1,3 +1,5 @@
+import ShadowText
+
 // apps/novel-forge-server/src/modules/ai/schemas/continuity.schema.ts:206, only the parts a finalize review reads; missing lists are empty.
 struct FinalizeExtraction: Sendable {
   enum Confidence: String, Sendable {

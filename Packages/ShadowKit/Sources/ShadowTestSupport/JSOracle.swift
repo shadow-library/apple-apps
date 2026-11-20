@@ -1,7 +1,7 @@
 import Foundation
 import JavaScriptCore
 
-enum JSOracleArgument {
+public enum JSOracleArgument {
   case string(String)
   case number(Double)
   case strings([String])
@@ -28,7 +28,7 @@ enum JSOracleArgument {
 }
 
 /// Strings stay UTF-16 code units so a lone surrogate stays visible.
-indirect enum JSOracleValue: Equatable, CustomStringConvertible {
+public indirect enum JSOracleValue: Equatable, CustomStringConvertible {
   case string([UInt16])
   case number(Double)
   case boolean(Bool)
@@ -36,7 +36,7 @@ indirect enum JSOracleValue: Equatable, CustomStringConvertible {
   case null
   case undefined
 
-  static func == (left: JSOracleValue, right: JSOracleValue) -> Bool {
+  public static func == (left: JSOracleValue, right: JSOracleValue) -> Bool {
     switch (left, right) {
     case (.string(let a), .string(let b)): a == b
     case (.number(let a), .number(let b)): (a.isNaN && b.isNaN) || a.bitPattern == b.bitPattern
@@ -47,7 +47,7 @@ indirect enum JSOracleValue: Equatable, CustomStringConvertible {
     }
   }
 
-  var description: String {
+  public var description: String {
     switch self {
     case .string(let units): "\"\(units.map { String($0, radix: 16) }.joined(separator: " "))\""
     case .number(let value): "\(value)"
@@ -59,11 +59,11 @@ indirect enum JSOracleValue: Equatable, CustomStringConvertible {
   }
 }
 
-struct JSOracleError: Error, CustomStringConvertible {
-  let description: String
+public struct JSOracleError: Error, CustomStringConvertible {
+  public let description: String
 }
 
-final class JSOracle {
+public final class JSOracle {
   private static let prelude = """
     globalThis.__decode = function decode(value) {
       if ('s' in value) { let text = ''; for (const unit of value.s) text += String.fromCharCode(unit); return text; }
@@ -87,7 +87,7 @@ final class JSOracle {
   private let runner: JSValue
   private var functions: [String: JSValue] = [:]
 
-  init() throws {
+  public init() throws {
     guard let context = JSContext() else { throw JSOracleError(description: "JavaScriptCore gave no context") }
     context.evaluateScript(Self.prelude)
     guard let runner = context.objectForKeyedSubscript("__run"), runner.isObject else { throw JSOracleError(description: "the oracle prelude did not load") }
@@ -95,7 +95,7 @@ final class JSOracle {
     self.runner = runner
   }
 
-  func call(_ function: String, _ arguments: JSOracleArgument...) throws -> JSOracleValue {
+  public func call(_ function: String, _ arguments: JSOracleArgument...) throws -> JSOracleValue {
     let compiled = try compile(function)
     context.exception = nil
     let json = "[\(arguments.map(\.encoded).joined(separator: ","))]"

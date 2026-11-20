@@ -1,3 +1,5 @@
+import ShadowText
+
 // apps/novel-forge-server/src/modules/refinement/change-set/change-set-refs.ts:5
 func actionDecisionKeys(_ ops: [ChangeOp]) -> [String] {
   let keys = ops.filter(isActionOp).map { op -> String in

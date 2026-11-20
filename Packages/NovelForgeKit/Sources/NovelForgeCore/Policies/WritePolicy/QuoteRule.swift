@@ -1,3 +1,5 @@
+import ShadowText
+
 /// A content word as UTF-16 code units: a bigram of a spaceless run can hold half a surrogate pair, which no Swift string keeps.
 typealias QuoteToken = [UInt16]
 

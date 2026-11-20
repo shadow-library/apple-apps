@@ -1,3 +1,5 @@
+import ShadowText
+
 private let newlineRuns = ProseRegex.literal(#"\r\n?"#, "g")
 private let blankLineRuns = ProseRegex.literal(#"\n{3,}"#, "g")
 

@@ -1,6 +1,7 @@
 import Foundation
 import ShadowCore
 import ShadowStore
+import ShadowText
 
 extension Library {
   // project.service.ts:240: the copy takes the source's settings, bible pages, entities and volumes; story fields, notes, plans, drafts and every derived or pipeline record start empty

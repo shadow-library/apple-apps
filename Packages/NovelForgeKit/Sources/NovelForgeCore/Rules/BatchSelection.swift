@@ -1,3 +1,5 @@
+import ShadowText
+
 struct BatchBrief: Equatable, Sendable {
   var chapter: Int
   var writeMode: BriefWriteMode

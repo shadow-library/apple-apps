@@ -1,4 +1,5 @@
 import ShadowCore
+import ShadowText
 
 struct WriterRecentSummary: Equatable, Sendable {
   var chapter: Int

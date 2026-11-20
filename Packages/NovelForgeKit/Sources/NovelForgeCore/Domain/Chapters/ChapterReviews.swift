@@ -2,6 +2,7 @@ import Foundation
 import ShadowCore
 import ShadowJobs
 import ShadowStore
+import ShadowText
 
 public enum ChapterReviewError: ShadowError, Equatable {
   case reviewNotFound(UUID)

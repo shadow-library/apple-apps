@@ -4,6 +4,7 @@ import ShadowAI
 import ShadowCore
 import ShadowJobs
 import ShadowStore
+import ShadowText
 
 enum CanonRefreshError: ShadowError {
   case novelUnavailable

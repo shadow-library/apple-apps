@@ -2,6 +2,7 @@ import Foundation
 import GRDB
 import ShadowCore
 import ShadowStore
+import ShadowText
 
 // apps/novel-forge-server/src/database/schemas/knowledge.ts (character_events.kind)
 public enum CharacterEventKind: String, Codable, CaseIterable, Sendable {

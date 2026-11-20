@@ -1,3 +1,5 @@
+import ShadowText
+
 // apps/novel-forge-server/src/modules/refinement/planner-only-guard.ts:3
 let plannerOnlyLookupTool = "get_bible_document"
 

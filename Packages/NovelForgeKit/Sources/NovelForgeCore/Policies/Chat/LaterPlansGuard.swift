@@ -1,3 +1,5 @@
+import ShadowText
+
 // apps/novel-forge-server/src/modules/refinement/later-plans-guard.ts:8
 private let notesOrganiseLeads = ["here are my notes for the story.", "organise my notes", "organize my notes"]
 

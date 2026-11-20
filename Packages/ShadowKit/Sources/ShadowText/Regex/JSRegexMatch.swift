@@ -1,13 +1,13 @@
 /// A match with UTF-16 offsets; texts that would hold half a surrogate pair drop it, as `JSText.string(fromCodeUnits:)` does.
-struct JSRegexMatch: Sendable, Equatable {
-  let index: Int
+public struct JSRegexMatch: Sendable, Equatable {
+  public let index: Int
   /// `match[0].length`, counted on the code units matched, so it stays exact when `text` dropped a lone surrogate.
-  let length: Int
-  let text: String
+  public let length: Int
+  public let text: String
   /// `match[1...]`, nil where JavaScript has `undefined`.
-  let groups: [String?]
+  public let groups: [String?]
 
-  var endIndex: Int { index + length }
+  public var endIndex: Int { index + length }
 
   init(slots: [Int], units: [UInt16]) {
     index = slots[0]
@@ -23,16 +23,16 @@ struct JSRegexMatch: Sendable, Equatable {
 }
 
 /// A `RegExp` object's `lastIndex`, for the call sites that call `exec` or `test` on one global expression repeatedly.
-struct JSRegexCursor: Sendable {
+public struct JSRegexCursor: Sendable {
   let regex: JSRegex
-  var lastIndex = 0
+  public var lastIndex = 0
 
-  init(_ regex: JSRegex) {
+  public init(_ regex: JSRegex) {
     self.regex = regex
   }
 
   /// A non-global expression ignores and keeps `lastIndex`; a global one starts there, moves it past the match and resets it to 0 on a miss.
-  mutating func exec(_ text: String) -> JSRegexMatch? {
+  public mutating func exec(_ text: String) -> JSRegexMatch? {
     let units = text.jsCodeUnits
     guard regex.global else { return regex.firstMatchSlots(in: units, from: 0).map { JSRegexMatch(slots: $0, units: units) } }
     guard lastIndex <= units.count, let slots = regex.firstMatchSlots(in: units, from: lastIndex) else {
@@ -43,7 +43,7 @@ struct JSRegexCursor: Sendable {
     return JSRegexMatch(slots: slots, units: units)
   }
 
-  mutating func test(_ text: String) -> Bool {
+  public mutating func test(_ text: String) -> Bool {
     exec(text) != nil
   }
 }

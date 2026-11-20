@@ -1,3 +1,5 @@
+import ShadowText
+
 enum ChatLookupName: String, CaseIterable, Sendable {
   case searchLore = "search_lore"
   case searchProse = "search_prose"

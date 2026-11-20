@@ -1,3 +1,5 @@
+import ShadowText
+
 public struct BriefScene: Equatable, Sendable, Codable {
   public var summary: String
   public var pov: String?

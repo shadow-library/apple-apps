@@ -1,5 +1,6 @@
 import Foundation
 import ShadowCore
+import ShadowText
 
 // apps/novel-forge-server/src/modules/refinement/undo-impact.ts:8
 public enum UndoDependentKind: String, CaseIterable, Sendable {

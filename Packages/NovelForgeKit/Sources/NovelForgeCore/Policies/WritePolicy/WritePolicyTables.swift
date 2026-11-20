@@ -1,3 +1,5 @@
+import ShadowText
+
 enum IdeaPolicy: Sendable, Equatable {
   case idea
   case card(AlwaysCardRule)

@@ -1,3 +1,5 @@
+import ShadowText
+
 struct FlaggedSentence: Equatable, Sendable {
   let sentence: String
   let reason: String

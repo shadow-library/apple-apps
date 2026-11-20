@@ -1,4 +1,5 @@
 import Foundation
+import ShadowText
 
 // apps/novel-forge-server/src/modules/refinement/artifact-state.ts:8
 struct ArtifactState: Sendable, Equatable {

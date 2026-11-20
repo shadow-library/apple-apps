@@ -1,3 +1,5 @@
+import ShadowText
+
 struct WordCountReport: Equatable, Sendable {
   let chapter: Int
   let words: Int

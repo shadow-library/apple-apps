@@ -1,3 +1,5 @@
+import ShadowText
+
 private let labelMaxChars = 240
 
 struct IdeaIdentity: Sendable {

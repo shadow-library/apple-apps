@@ -1,3 +1,5 @@
+import ShadowText
+
 @testable import NovelForgeCore
 
 func object(_ pairs: (String, OrderedJSON)...) -> OrderedJSON {

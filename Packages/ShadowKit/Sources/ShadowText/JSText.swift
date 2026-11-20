@@ -1,7 +1,8 @@
-enum JSText {
+public enum JSText {
   /// Drops the dangling half wherever JavaScript would produce a lone surrogate, which no Swift string can hold.
   /// Writes UTF-8 in place: appending to a `UnicodeScalarView` scalar by scalar costs several times as much.
-  static func string<Units: Collection<UInt16>>(fromCodeUnits units: Units) -> String {
+  @inlinable
+  public static func string<Units: Collection<UInt16>>(fromCodeUnits units: Units) -> String {
     String(unsafeUninitializedCapacity: 3 * units.count) { buffer in
       var written = 0
       var iterator = units.makeIterator()
@@ -21,7 +22,7 @@ enum JSText {
   }
 
   /// Unlike `Character.isWhitespace`, the ECMAScript set holds U+FEFF and leaves out U+0085, U+180E and U+200B.
-  static func isWhitespace(_ scalar: Unicode.Scalar) -> Bool {
+  public static func isWhitespace(_ scalar: Unicode.Scalar) -> Bool {
     switch scalar.value {
     case 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x20, 0xA0, 0x2028, 0x2029, 0xFEFF: true
     default: scalar.properties.generalCategory == .spaceSeparator
@@ -29,12 +30,12 @@ enum JSText {
   }
 
   /// Unlike `<`, places astral characters before U+E000–U+FFFF and never equates canonically equivalent strings.
-  static func codeUnitPrecedes(_ left: String, _ right: String) -> Bool {
+  public static func codeUnitPrecedes(_ left: String, _ right: String) -> Bool {
     left.utf16.lexicographicallyPrecedes(right.utf16)
   }
 
   /// Array indices ascending, then the other keys as inserted.
-  static func ownPropertyKeyOrder(_ insertionOrder: [String]) -> [String] {
+  public static func ownPropertyKeyOrder(_ insertionOrder: [String]) -> [String] {
     let indexed = insertionOrder.compactMap { key in arrayIndex(key).map { (index: $0, key: key) } }
     return indexed.sorted { $0.index < $1.index }.map(\.key) + insertionOrder.filter { arrayIndex($0) == nil }
   }
@@ -51,11 +52,11 @@ enum JSText {
     index < 0 ? max(length + index, 0) : min(index, length)
   }
 
-  static func clamped(_ index: Int, length: Int) -> Int {
+  public static func clamped(_ index: Int, length: Int) -> Int {
     min(max(index, 0), length)
   }
 
-  static func indexOf(_ needle: [UInt16], in haystack: [UInt16], from start: Int) -> Int {
+  public static func indexOf(_ needle: [UInt16], in haystack: [UInt16], from start: Int) -> Int {
     guard start <= haystack.count else { return -1 }
     guard !needle.isEmpty else { return start }
     guard needle.count <= haystack.count - start else { return -1 }

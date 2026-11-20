@@ -2,6 +2,7 @@ import Foundation
 import GRDB
 import ShadowCore
 import ShadowStore
+import ShadowText
 
 /// The final chapter in which the reader learned a secret (the reference's `canon_facts.disclosed_in_chapter`).
 public struct ReaderDisclosureEntry: Hashable, Sendable, FetchableRecord, PersistableRecord {

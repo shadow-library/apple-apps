@@ -1,6 +1,6 @@
 import ShadowTestSupport
 
-@testable import NovelForgeCore
+@testable import ShadowText
 
 struct RegexCase: Sendable, CustomStringConvertible {
   let entry: Int

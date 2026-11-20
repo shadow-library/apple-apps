@@ -1,4 +1,5 @@
 import ShadowCore
+import ShadowText
 
 enum ChangeSetError: ShadowError, Equatable {
   case notAllowedForScope(problems: [String])

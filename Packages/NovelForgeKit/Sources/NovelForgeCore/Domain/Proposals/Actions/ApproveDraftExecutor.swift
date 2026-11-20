@@ -1,6 +1,7 @@
 import Foundation
 import ShadowCore
 import ShadowStore
+import ShadowText
 
 /// apps/novel-forge-server/src/modules/hub/hub-action.registrar.ts:69-78 and proposal-apply.service.ts:58 (bindApprovalRevision). The approval names exactly
 /// one revision: the head the card's own applied change wrote, when it wrote this draft, else the revision the card was staged against.

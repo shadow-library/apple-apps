@@ -2,6 +2,7 @@ import Foundation
 import ShadowCore
 import ShadowJobs
 import ShadowStore
+import ShadowText
 
 // apps/novel-forge-server/src/classes/app-error-code.ts:295-308
 public enum FinalizeAnswerError: ShadowError, Equatable {

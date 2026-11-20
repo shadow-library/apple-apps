@@ -1,4 +1,5 @@
 import Foundation
+import ShadowText
 
 // apps/novel-forge-server/src/common/brief-body.ts:9-12
 let continuesLine = "[CONTINUES INTO NEXT CHAPTER] Do not resolve this chapter's central action/tension."

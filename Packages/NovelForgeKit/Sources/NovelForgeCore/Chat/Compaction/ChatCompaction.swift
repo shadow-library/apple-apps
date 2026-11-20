@@ -3,6 +3,7 @@ import OSLog
 import ShadowAI
 import ShadowCore
 import ShadowStore
+import ShadowText
 
 /// The turn a compaction runs before: its content mode and the novel's raise the fold, its pace routes it; without unrestricted writing a fold that
 /// would be unrestricted is refused rather than sent.

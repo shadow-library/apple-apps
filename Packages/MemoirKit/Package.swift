@@ -26,6 +26,7 @@ let package = Package(
         .product(name: "ShadowCore", package: "ShadowKit"),
         .product(name: "ShadowStore", package: "ShadowKit"),
         .product(name: "ShadowSync", package: "ShadowKit"),
+        .product(name: "ShadowText", package: "ShadowKit"),
         .product(name: "ShadowAI", package: "ShadowKit"),
         .product(name: "ShadowJobs", package: "ShadowKit"),
         .product(name: "GRDB", package: "GRDB.swift"),

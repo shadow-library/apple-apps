@@ -1,3 +1,5 @@
+import ShadowText
+
 // apps/novel-forge-server/src/modules/ai/context/novel-chat-context.ts
 extension ChatPackChapter {
   /// An isolated chapter as a standard call reads it, with no approved bridge: its title withheld and its summary a walled-off note.

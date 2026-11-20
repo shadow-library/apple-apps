@@ -1,6 +1,7 @@
 import Foundation
 import ShadowCore
 import ShadowStore
+import ShadowText
 
 /// A final chapter's text after finalize: amendments bound to the canon that stands (D06e). The canon, and everything derived from it, never changes.
 public enum FinalChapters {

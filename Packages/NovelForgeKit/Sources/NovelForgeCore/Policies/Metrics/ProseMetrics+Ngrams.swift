@@ -1,3 +1,5 @@
+import ShadowText
+
 struct NgramSizeStat: Equatable, Sendable {
   let n: Int
   let totalOccurrences: Int

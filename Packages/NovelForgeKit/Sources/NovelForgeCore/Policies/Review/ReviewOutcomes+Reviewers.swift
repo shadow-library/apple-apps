@@ -1,3 +1,5 @@
+import ShadowText
+
 extension ReviewFindings {
   private static let proofreadingMax = 20
   private static let mechanicalPrefix = ProseRegex.literal(#"^mechanical:\s*"#)

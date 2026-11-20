@@ -1,3 +1,5 @@
+import ShadowText
+
 private let authorBacked: Set<CardReason> = [.justDiscussing, .manualMode, .heldForReview, .dependsOnCard]
 
 struct IdeaFilterResult: Sendable, Equatable {

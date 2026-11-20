@@ -1,6 +1,7 @@
 import Foundation
 import ShadowAI
 import ShadowStore
+import ShadowText
 
 private let day: TimeInterval = 24 * 60 * 60
 

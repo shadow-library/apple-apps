@@ -1,4 +1,5 @@
 import Foundation
+import ShadowText
 
 struct ChapterSummarizeOutput: Equatable, Sendable {
   var summary: String

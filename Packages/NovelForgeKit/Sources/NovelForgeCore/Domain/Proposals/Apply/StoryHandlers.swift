@@ -1,6 +1,7 @@
 import Foundation
 import ShadowCore
 import ShadowStore
+import ShadowText
 
 // apps/novel-forge-server/src/modules/refinement/apply/{premise,volume,milestone,fact,promise}.handler.ts. Each handler reads what it needs and refuses before
 // its first write; the inverse is captured from the record as it stands right before the write. A redo is an apply, and the intent changes nothing here:

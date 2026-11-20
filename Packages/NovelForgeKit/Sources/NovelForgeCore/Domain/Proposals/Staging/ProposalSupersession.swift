@@ -2,6 +2,7 @@ import Foundation
 import GRDB
 import ShadowCore
 import ShadowStore
+import ShadowText
 
 // apps/novel-forge-server/src/modules/refinement/proposal.service.ts:80-88, :214-234
 enum ProposalSupersession {

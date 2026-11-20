@@ -2,6 +2,7 @@ import Foundation
 import GRDB
 import ShadowCore
 import ShadowStore
+import ShadowText
 
 /// What a final chapter's canon recorded at finalize of the knowledge it committed: nothing (readers recompute), the pairs, or a member this version cannot read.
 enum FrozenKnowledgeState: String, Sendable, DatabaseValueConvertible {

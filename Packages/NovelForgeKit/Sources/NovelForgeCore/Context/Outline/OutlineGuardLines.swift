@@ -1,4 +1,5 @@
 import ShadowCore
+import ShadowText
 
 private let revealScheduleBudget = 1_200
 private let hardLimitBudget = 1_500

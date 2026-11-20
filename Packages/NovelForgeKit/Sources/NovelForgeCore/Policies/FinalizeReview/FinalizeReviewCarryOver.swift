@@ -1,3 +1,5 @@
+import ShadowText
+
 /// One revision's latest read with the author's answers at that revision.
 struct RevisionReview: Sendable {
   var revision: String

@@ -1,3 +1,5 @@
+import ShadowText
+
 public struct ChatQuestionAnswer: Equatable, Sendable {
   public internal(set) var title: String
   public internal(set) var why: String?

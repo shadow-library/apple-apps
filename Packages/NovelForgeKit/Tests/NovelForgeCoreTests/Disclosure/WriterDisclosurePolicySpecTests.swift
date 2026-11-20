@@ -1,3 +1,4 @@
+import ShadowText
 import Testing
 
 @testable import NovelForgeCore

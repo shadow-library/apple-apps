@@ -1,4 +1,5 @@
 import ShadowCore
+import ShadowText
 
 /// A chapter's plan as the writer pack reads the reference's `briefs` row; a final chapter's claims and contract come from its canon.
 struct WriterPackPlan: Equatable, Sendable {

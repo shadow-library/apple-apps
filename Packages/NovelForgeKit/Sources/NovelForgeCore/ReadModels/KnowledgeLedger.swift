@@ -1,6 +1,7 @@
 import Foundation
 import GRDB
 import ShadowStore
+import ShadowText
 
 public struct KnowledgeLedger: ReadModel {
   public let entries: Derived<[CharacterKnowledgeEntry]>

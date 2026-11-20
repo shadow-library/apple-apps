@@ -1,3 +1,5 @@
+import ShadowText
+
 // apps/novel-forge-server/src/modules/review/review-findings.ts:75
 func hashReviewedBody(_ body: String) -> String {
   sha256Hex(body)

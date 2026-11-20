@@ -1,3 +1,5 @@
+import ShadowText
+
 struct ChangeSetValidationOptions: Sendable {
   var entityMaterialization: Bool
 

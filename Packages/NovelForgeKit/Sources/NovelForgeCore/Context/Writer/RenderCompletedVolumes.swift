@@ -1,3 +1,5 @@
+import ShadowText
+
 struct WriterVolumeChapter: Equatable, Sendable {
   var number: Int
   var summary: String

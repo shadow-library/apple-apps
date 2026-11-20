@@ -1,3 +1,5 @@
+import ShadowText
+
 enum FinalizeEditRefusal: Equatable, Sendable {
   case nothingToEdit
   case nothingChanged

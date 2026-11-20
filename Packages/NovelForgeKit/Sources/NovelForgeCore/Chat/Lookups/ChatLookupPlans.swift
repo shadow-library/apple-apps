@@ -1,5 +1,6 @@
 import Foundation
 import ShadowStore
+import ShadowText
 
 private let walledOffProse = "Prose: walled off. This is an unrestricted chapter, so its text is not available here; only its approved bridge is."
 private let walledOffEditHint = "To change the text, propose action.revise_draft rather than draft.update."

@@ -2,6 +2,7 @@ import Foundation
 import GRDB
 import ShadowCore
 import ShadowStore
+import ShadowText
 
 struct WorldLearn: Codable, Hashable, Sendable {
   let entity: String

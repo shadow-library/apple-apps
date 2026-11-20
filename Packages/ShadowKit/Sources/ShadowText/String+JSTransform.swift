@@ -1,6 +1,6 @@
 import Foundation
 
-enum JSNormalizationForm {
+public enum JSNormalizationForm {
   case nfc
   case nfd
   case nfkc
@@ -12,17 +12,17 @@ extension String {
     trimming(start: true, end: true)
   }
 
-  func jsTrimStart() -> String {
+  public func jsTrimStart() -> String {
     trimming(start: true, end: false)
   }
 
-  func jsTrimEnd() -> String {
+  public func jsTrimEnd() -> String {
     trimming(start: false, end: true)
   }
 
   /// JavaScript applies the Final_Sigma context; Swift's `lowercased()` turns every capital sigma into σ.
   /// Built with `+=`, as `UnicodeScalarView.append(contentsOf:)` costs time in the length already built and made this quadratic.
-  func jsToLowerCase() -> String {
+  public func jsToLowerCase() -> String {
     let scalars = Array(unicodeScalars)
     var lowered = ""
     lowered.reserveCapacity(utf8.count)
@@ -36,7 +36,7 @@ extension String {
     return lowered
   }
 
-  func jsNormalize(_ form: JSNormalizationForm = .nfc) -> String {
+  public func jsNormalize(_ form: JSNormalizationForm = .nfc) -> String {
     switch form {
     case .nfc: precomposedStringWithCanonicalMapping
     case .nfd: decomposedStringWithCanonicalMapping
@@ -46,7 +46,7 @@ extension String {
   }
 
   /// A nil `limit` is JavaScript's `undefined`; any other goes through ToUint32, so a negative limit splits without bound.
-  func jsSplit(_ separator: String, limit: Int? = nil) -> [String] {
+  public func jsSplit(_ separator: String, limit: Int? = nil) -> [String] {
     let bound = Int(limit.map { UInt32(truncatingIfNeeded: $0) } ?? UInt32.max)
     guard bound > 0 else { return [] }
     let units = jsCodeUnits

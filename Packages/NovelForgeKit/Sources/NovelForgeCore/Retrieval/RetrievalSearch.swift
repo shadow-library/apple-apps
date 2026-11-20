@@ -1,6 +1,7 @@
 import Foundation
 import GRDB
 import ShadowStore
+import ShadowText
 
 /// BM25 over the FTS5 tables; a hit's score is the negated `bm25()`, so higher is better and never below zero. Given a query vector (only once the novel is
 /// fully embedded, `fusable`), the stored vectors of its model are ranked by cosine too, and when that leaves any candidate (after isolation or the kinds)

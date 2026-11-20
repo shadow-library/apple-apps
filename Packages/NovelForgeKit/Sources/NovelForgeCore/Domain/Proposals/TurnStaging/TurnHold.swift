@@ -1,3 +1,5 @@
+import ShadowText
+
 // apps/novel-forge-server/src/modules/refinement/turn-proposals.ts:25-27
 enum TurnHoldReason: String, CaseIterable, Sendable {
   case warnings

@@ -1,6 +1,7 @@
+import ShadowTestSupport
 import Testing
 
-@testable import NovelForgeCore
+@testable import ShadowText
 
 /// Each rule by which the matcher skips a choice, on an input where applying it in the wrong direction changes the match; expected values are bun 1.4.4's.
 struct JSRegexNeedTests {

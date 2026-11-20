@@ -1,6 +1,7 @@
 import Foundation
 import ShadowCore
 import ShadowStore
+import ShadowText
 
 // Like EntityEdit: `.keep` leaves a field, `.set(value)` writes it and `.set(nil)` clears it; the initialiser sets what it is given and keeps the rest
 public struct EntityDetails: Sendable, Equatable {

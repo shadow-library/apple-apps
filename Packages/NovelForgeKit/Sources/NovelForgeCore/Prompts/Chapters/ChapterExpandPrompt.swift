@@ -1,3 +1,5 @@
+import ShadowText
+
 // apps/novel-forge-server/src/modules/ai/prompts/chapter-expand.prompt.ts:21
 let chapterExpandVersion = "1.3.0"
 

@@ -3,6 +3,7 @@ import GRDB
 import ShadowCore
 import ShadowJobs
 import ShadowStore
+import ShadowText
 
 /// The pack an attempt built, as it was built: the reference builds the context once per run (context-assembler.service.ts:193) and later steps read it, and
 /// scrub with the same disclosure policy (chapter-generation.graph.ts:490-494, 531-534, 739-762, 816-833). The policy is kept as the sources it was built from.

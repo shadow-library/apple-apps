@@ -1,5 +1,6 @@
 import Foundation
 import ShadowCore
+import ShadowText
 
 /// A draft's review status (apps/novel-forge-server/src/database/schemas/generation.ts:36), which the reference stores and this derives in the order its writes
 /// override one another: final (chapter-finalization.graph.ts:183; persistDraft never writes over it, chapter-generation.graph.ts:190), then generating (an

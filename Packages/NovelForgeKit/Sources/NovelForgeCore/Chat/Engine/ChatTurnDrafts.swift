@@ -1,6 +1,7 @@
 import Foundation
 import ShadowCore
 import ShadowStore
+import ShadowText
 
 // apps/novel-forge-server/src/modules/refinement/chat.dto.ts:256
 private let passageHashPattern = builtInPattern("^[0-9a-f]{64}$")

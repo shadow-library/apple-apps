@@ -1,3 +1,5 @@
+import ShadowText
+
 struct OrnatePattern: Sendable {
   let label: String
   let pattern: JSRegex

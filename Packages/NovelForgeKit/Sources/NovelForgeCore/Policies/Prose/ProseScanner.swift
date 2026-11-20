@@ -1,3 +1,5 @@
+import ShadowText
+
 private struct Line {
   let start: Int
   let text: String

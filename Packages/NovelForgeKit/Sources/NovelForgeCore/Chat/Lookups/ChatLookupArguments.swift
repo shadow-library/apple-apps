@@ -1,3 +1,5 @@
+import ShadowText
+
 enum UsagePeriod: String, CaseIterable, Sendable {
   case today
   case week

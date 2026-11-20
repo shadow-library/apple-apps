@@ -1,4 +1,5 @@
 import ShadowCore
+import ShadowText
 
 private let readerValueChanges = ["new_information", "relationship_change", "power_or_stakes_change", "goal_or_plan_change", "world_state_change", "emotional_turn"]
 private let readerValueDescription = "at least one concrete thing that changes this chapter, each drawn from: \(readerValueChanges.joined(separator: ", "))"

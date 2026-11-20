@@ -1,6 +1,7 @@
 import Foundation
 import GRDB
 import ShadowStore
+import ShadowText
 
 public struct MilestoneStateEntry: Codable, Hashable, Sendable, FetchableRecord, PersistableRecord {
   public static let databaseTableName = "nf_derived_milestone_state"

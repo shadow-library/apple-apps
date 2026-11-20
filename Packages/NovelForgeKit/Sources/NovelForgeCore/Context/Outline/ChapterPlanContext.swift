@@ -1,6 +1,7 @@
 import Foundation
 import ShadowCore
 import ShadowStore
+import ShadowText
 
 /// What the plan prompt is filled from for one chapter: the outline pack with the plans either side, the obligations and the open milestones, and what vetting reads afterwards.
 // apps/novel-forge-server/src/modules/actions/chapter-plan.service.ts:73-139

@@ -2,6 +2,7 @@ import Foundation
 import GRDB
 import ShadowCore
 import ShadowStore
+import ShadowText
 
 /// A promise as the author's record and the winning canons' observations leave it. `closedChapter` is a thread's closed chapter or a mystery's resolved one,
 /// `text` its summary or question; `lastAdvancedChapter` is the latest chapter that observed it.

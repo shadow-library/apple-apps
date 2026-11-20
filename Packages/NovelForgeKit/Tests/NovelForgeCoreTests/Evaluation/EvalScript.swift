@@ -4,6 +4,7 @@ import ShadowAI
 import ShadowCore
 import ShadowStore
 import ShadowTestSupport
+import ShadowText
 
 @testable import NovelForgeEval
 

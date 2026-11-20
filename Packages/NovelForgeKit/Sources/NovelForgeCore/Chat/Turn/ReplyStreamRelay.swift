@@ -1,4 +1,5 @@
 import ShadowAI
+import ShadowText
 
 /// One element of the reply's top-level `changeSet`, numbered from 0 among those shown since the last reset.
 struct StreamedChange: Equatable, Sendable {

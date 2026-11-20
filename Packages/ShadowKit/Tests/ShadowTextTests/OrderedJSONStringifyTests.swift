@@ -1,7 +1,7 @@
 import ShadowTestSupport
 import Testing
 
-@testable import NovelForgeCore
+@testable import ShadowText
 
 private let stringifyFunction = "s => JSON.stringify(JSON.parse(s))"
 

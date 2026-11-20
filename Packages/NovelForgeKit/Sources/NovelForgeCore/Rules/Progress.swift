@@ -1,4 +1,5 @@
 import ShadowCore
+import ShadowText
 
 public enum ProgressOverrideKind: String, CaseIterable, Sendable {
   case undecided

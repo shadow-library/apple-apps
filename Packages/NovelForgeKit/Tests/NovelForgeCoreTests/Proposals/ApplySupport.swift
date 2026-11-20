@@ -1,3 +1,5 @@
+import ShadowText
+
 @testable import NovelForgeCore
 
 func applyOps(_ json: String) throws -> [ChangeOp] {

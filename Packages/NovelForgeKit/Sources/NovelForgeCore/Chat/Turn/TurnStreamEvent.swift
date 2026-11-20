@@ -1,4 +1,5 @@
 import Foundation
+import ShadowText
 
 // apps/novel-forge-server/src/modules/refinement/turn-stream.types.ts:2
 public enum TurnStreamEventName: String, Sendable, CaseIterable {

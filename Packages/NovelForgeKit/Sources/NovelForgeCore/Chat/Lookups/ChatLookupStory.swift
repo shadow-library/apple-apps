@@ -1,6 +1,7 @@
 import Foundation
 import GRDB
 import ShadowStore
+import ShadowText
 
 extension ChatLookupReader {
   // tools/get-plot-threads.tool.ts:18; the reference leaves the order to the database, the vault lists by key

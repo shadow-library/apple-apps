@@ -1,3 +1,5 @@
+import ShadowText
+
 extension ReviewFindings {
   private static let graphCategories: [(prefix: String, category: ReviewFindingCategory)] = [
     ("ending contract: ", .ending), ("brief: ", .brief), (knowledgeLeakPrefix, .knowledge), (ReadabilityCheck.prefix, .readability), (MechanicalCheck.prefix, .mechanics),

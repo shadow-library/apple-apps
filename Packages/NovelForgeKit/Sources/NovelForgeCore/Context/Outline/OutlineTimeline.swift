@@ -1,4 +1,5 @@
 import ShadowCore
+import ShadowText
 
 // packages/sdk/src/organise.ts:6
 private let bandLabels = (opening: "The opening", early: "Early on", later: "Later", ending: "The ending", unplaced: "Not yet placed")

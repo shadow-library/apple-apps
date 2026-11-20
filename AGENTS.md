@@ -26,7 +26,7 @@ Read `README.md` first; it covers layout, modules and tasks.
 - App code builds proposal apply and revert contexts only through the public narrow inits (`ProposalApplyContext(novel:now:)`, `ProposalRevertContext(novel:now:)`); whether unrestricted writing is available comes from `UnrestrictedWriting.isAvailable`, never from a caller.
 - Register every derivation in the incremental == rebuild harness (`Tests/NovelForgeCoreTests/Projection/ProjectionHarness.swift`); raise its `version` when `outputs(for:in:)` changes meaning.
 - Fixtures come from `bun` generators that import the reference read-only; they are deterministic and hold no machine paths. Never write inside the reference checkout.
-- Port JavaScript semantics through `Text/` and `Text/Regex`; never use `NSRegularExpression` or Swift `Regex` for a pattern taken from the reference.
+- Port JavaScript semantics through `ShadowText` (`Packages/ShadowKit/Sources/ShadowText`, with `Regex/`); never use `NSRegularExpression` or Swift `Regex` for a pattern taken from the reference.
 - A remote storage provider lives in its own `ShadowSync<Name>` module that depends on `ShadowSync` (plus `ShadowNetworking` when it speaks HTTP), never inside `ShadowSync`; one that signs in with OAuth uses `OAuthSession`.
 - Sync files are deleted only by the rules in `ShadowSync` (`SyncCompaction`, `SyncAdoption`), by recorded names and never by prefix; never hand-delete under `replicas/`.
 - Pipelines call models only through `JobStepContext.call` or `callText`, which apply the route, the hard-line screens and the ledger.

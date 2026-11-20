@@ -1,3 +1,5 @@
+import ShadowText
+
 let withheldMarker = "[withheld]"
 
 private let markerUnits = Array(withheldMarker.utf16)

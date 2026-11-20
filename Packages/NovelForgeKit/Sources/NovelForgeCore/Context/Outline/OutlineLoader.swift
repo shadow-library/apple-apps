@@ -2,6 +2,7 @@ import Foundation
 import GRDB
 import ShadowCore
 import ShadowStore
+import ShadowText
 
 enum OutlineLoadError: ShadowError {
   case unreadable(parts: [String])

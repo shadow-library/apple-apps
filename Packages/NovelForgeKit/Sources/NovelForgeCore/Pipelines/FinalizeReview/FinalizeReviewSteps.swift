@@ -4,6 +4,7 @@ import ShadowAI
 import ShadowCore
 import ShadowJobs
 import ShadowStore
+import ShadowText
 
 enum FinalizeReviewPipelineError: ShadowError {
   case malformedState(step: String)

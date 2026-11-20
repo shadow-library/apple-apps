@@ -1,5 +1,6 @@
 import Foundation
 import ShadowStore
+import ShadowText
 
 public enum ChatPassageRefusal: Error, Equatable, Sendable {
   case empty

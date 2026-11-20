@@ -3,7 +3,7 @@ import ShadowCore
 import ShadowTestSupport
 import Testing
 
-@testable import NovelForgeCore
+@testable import ShadowText
 
 struct JSOrderingTests {
   private let iterations = 300

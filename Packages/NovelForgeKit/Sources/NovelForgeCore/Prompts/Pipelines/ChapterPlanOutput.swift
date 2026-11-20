@@ -1,5 +1,6 @@
 import Foundation
 import ShadowAI
+import ShadowText
 
 extension PlannedChapter {
   init?(json: OrderedJSON) {

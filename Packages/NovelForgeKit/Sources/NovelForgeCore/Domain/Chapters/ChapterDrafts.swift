@@ -1,6 +1,7 @@
 import Foundation
 import ShadowCore
 import ShadowStore
+import ShadowText
 
 // apps/novel-forge-server/src/modules/generation/draft-save.ts:10
 public let handEditFoldWindow: TimeInterval = 600

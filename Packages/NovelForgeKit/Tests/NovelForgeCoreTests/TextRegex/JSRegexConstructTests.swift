@@ -1,7 +1,7 @@
 import ShadowTestSupport
 import Testing
 
-@testable import NovelForgeCore
+@testable import ShadowText
 
 /// Constructs the reference does not use but the engine accepts, compared with JavaScript on short inputs over a case-folding alphabet.
 struct JSRegexConstructTests {

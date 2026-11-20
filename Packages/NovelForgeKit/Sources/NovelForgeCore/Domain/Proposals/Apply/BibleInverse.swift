@@ -1,5 +1,6 @@
 import Foundation
 import ShadowCore
+import ShadowText
 
 /// A page as an inverse writes it back (bible-document.handler.ts:17): frontmatter and body exactly as they stood, an empty one `null`.
 struct DocumentRestore: Sendable, Equatable {

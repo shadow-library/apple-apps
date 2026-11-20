@@ -1,3 +1,5 @@
+import ShadowText
+
 // apps/novel-forge-server/src/modules/refinement/passage-rewrite.ts:13
 struct DroppedRewrite: Sendable, Equatable {
   let chapter: Int

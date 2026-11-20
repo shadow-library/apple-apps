@@ -1,6 +1,7 @@
 import Foundation
 import ShadowCore
 import ShadowStore
+import ShadowText
 
 // apps/novel-forge-server/src/classes/app-error-code.ts:166, :225-230
 public enum IdeaRejectionError: ShadowError, Equatable {

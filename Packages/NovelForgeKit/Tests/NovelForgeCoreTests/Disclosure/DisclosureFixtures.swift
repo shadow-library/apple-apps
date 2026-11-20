@@ -1,5 +1,6 @@
 import CryptoKit
 import Foundation
+import ShadowText
 
 @testable import NovelForgeCore
 

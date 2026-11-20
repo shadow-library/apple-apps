@@ -1,4 +1,5 @@
 import ShadowCore
+import ShadowText
 
 // apps/novel-forge-server/src/modules/refinement/chat-turn-trace.ts:48-49
 private let toolLimit = 64

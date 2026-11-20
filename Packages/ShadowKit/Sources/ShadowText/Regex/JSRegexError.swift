@@ -1,13 +1,13 @@
 import Foundation
 import ShadowCore
 
-enum JSRegexError: ShadowError, Equatable {
+public enum JSRegexError: ShadowError, Equatable {
   case invalidFlags(String)
   case unsupportedFlag(Character)
   case syntax(String, offset: Int)
   case unsupported(String, offset: Int)
 
-  var code: String {
+  public var code: String {
     switch self {
     case .invalidFlags: "js-regex.invalid-flags"
     case .unsupportedFlag: "js-regex.unsupported-flag"
@@ -16,7 +16,7 @@ enum JSRegexError: ShadowError, Equatable {
     }
   }
 
-  var errorDescription: String? {
+  public var errorDescription: String? {
     switch self {
     case .invalidFlags(let flags): "\"\(flags)\" is not a valid set of regular expression flags."
     case .unsupportedFlag(let flag): "The regular expression flag \"\(flag)\" is not supported."

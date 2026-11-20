@@ -1,6 +1,7 @@
 import Foundation
 import ShadowCore
 import ShadowStore
+import ShadowText
 
 // apps/novel-forge-server/src/modules/refinement/apply/premise.handler.ts:9-11 and the fields of the projects row each one restores
 enum PremiseField: String, CaseIterable, Sendable {

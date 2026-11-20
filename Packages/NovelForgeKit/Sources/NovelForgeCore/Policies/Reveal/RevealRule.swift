@@ -1,4 +1,5 @@
 import ShadowCore
+import ShadowText
 
 public enum MilestoneState: String, CaseIterable, Sendable, Codable {
   case open

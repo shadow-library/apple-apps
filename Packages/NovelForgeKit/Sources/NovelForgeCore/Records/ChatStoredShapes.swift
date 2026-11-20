@@ -1,4 +1,5 @@
 import ShadowCore
+import ShadowText
 
 enum ChatPassageContextMember: String, CaseIterable, FieldName {
   case kind

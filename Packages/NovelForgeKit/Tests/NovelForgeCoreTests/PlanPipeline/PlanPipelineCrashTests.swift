@@ -3,6 +3,7 @@ import ShadowAI
 import ShadowCore
 import ShadowStore
 import ShadowTestSupport
+import ShadowText
 import Testing
 
 @testable import NovelForgeCore

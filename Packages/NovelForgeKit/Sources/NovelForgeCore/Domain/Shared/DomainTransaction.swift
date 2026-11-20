@@ -1,6 +1,7 @@
 import Foundation
 import ShadowCore
 import ShadowStore
+import ShadowText
 
 extension VaultStore {
   public func writeDomain<T: Sendable>(_ body: @Sendable (inout WriteTransaction) throws(DomainError) -> T) async throws(DomainError) -> T {

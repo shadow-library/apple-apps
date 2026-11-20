@@ -1,3 +1,5 @@
+import ShadowText
+
 protocol WriterTextScrubbing {
   mutating func scrub(_ text: String, _ field: WriterField) throws(DisclosureError) -> String
   mutating func scrubLeakLine(_ line: String) throws(DisclosureError) -> String

@@ -1,6 +1,7 @@
 import Foundation
 import ShadowCore
 import ShadowStore
+import ShadowText
 
 extension UndoImpacts {
   /// apps/novel-forge-server/src/modules/refinement/proposal.service.ts:347-354 for the whole card (its applied changes), :361-370 for change `index` alone,

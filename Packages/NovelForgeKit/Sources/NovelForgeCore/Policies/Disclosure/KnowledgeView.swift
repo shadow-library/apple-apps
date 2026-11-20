@@ -1,3 +1,5 @@
+import ShadowText
+
 // apps/novel-forge-server/src/modules/bible/fact/knowledge-view.ts:32
 struct PovMember: Equatable, Sendable {
   let entityKey: String

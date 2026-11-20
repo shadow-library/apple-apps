@@ -1,6 +1,6 @@
 /// A backtracking matcher with an explicit stack, so input length never deepens the call stack; only nested lookarounds recurse.
 /// A choice whose guard refuses the input is never pushed, and a greedy atom backs off straight to a position its follow admits.
-struct JSRegexMachine {
+public struct JSRegexMachine {
   private struct Read {
     let value: UInt32
     let next: Int
@@ -61,7 +61,7 @@ struct JSRegexMachine {
   }
 
   /// The first match starting at or after `start`; with `u`, a start inside a surrogate pair begins at the pair, as RegExpBuiltinExec reads code points.
-  mutating func search(from start: Int) -> [Int]? {
+  public mutating func search(from start: Int) -> [Int]? {
     var index = max(start, 0)
     if unicode, index > 0, index < units.count, Self.isLow(units[index]), Self.isHigh(units[index - 1]) { index -= 1 }
     while index <= units.count {

@@ -1,4 +1,5 @@
 import ShadowCore
+import ShadowText
 
 private let sectionPriority = ["project", "plot", "world", "power", "lore", "story_state", "ai"]
 private let coreSections: Set<String> = ["plot", "world", "power"]

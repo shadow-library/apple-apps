@@ -2,6 +2,7 @@ import Foundation
 import ShadowAI
 import ShadowCore
 import ShadowStore
+import ShadowText
 
 extension JobEngine {
   /// apps/novel-forge-server/src/modules/generation/generation.service.ts:768-799: a helper call outside any job, through the engine's routers and the novel's

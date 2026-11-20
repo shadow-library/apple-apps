@@ -1,6 +1,7 @@
 import Foundation
 import ShadowAI
 import ShadowCore
+import ShadowText
 import Testing
 
 @testable import NovelForgeCore

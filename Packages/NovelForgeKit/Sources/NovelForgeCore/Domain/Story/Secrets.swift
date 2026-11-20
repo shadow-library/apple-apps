@@ -1,6 +1,7 @@
 import Foundation
 import ShadowCore
 import ShadowStore
+import ShadowText
 
 public struct SecretChanges: Sendable, Equatable {
   public var subjects: FieldChange<[String]?> = .keep

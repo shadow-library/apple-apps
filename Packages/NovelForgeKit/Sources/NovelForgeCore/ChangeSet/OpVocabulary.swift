@@ -1,3 +1,5 @@
+import ShadowText
+
 private let rationaleNote =
   "rationale, on any op, is one short sentence saying why that change is being made. It is shown to the author beside the op when they review the proposal and is never written into the story itself."
 

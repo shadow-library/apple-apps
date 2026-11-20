@@ -1,3 +1,5 @@
+import ShadowText
+
 struct StockPhrase: Sendable {
   let label: String
   let pattern: JSRegex

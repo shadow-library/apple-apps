@@ -1,6 +1,7 @@
 import Foundation
 import GRDB
 import ShadowStore
+import ShadowText
 
 public struct RemovedStory: Sendable, Equatable {
   public let volumes: StructureSection<VolumeRecord>

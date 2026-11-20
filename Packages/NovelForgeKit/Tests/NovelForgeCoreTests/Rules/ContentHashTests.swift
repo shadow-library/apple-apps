@@ -1,5 +1,6 @@
 import ShadowCore
 import ShadowTestSupport
+import ShadowText
 import Testing
 
 @testable import NovelForgeCore

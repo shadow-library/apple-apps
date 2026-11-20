@@ -1,7 +1,7 @@
 import Foundation
 import ShadowTestSupport
 
-@testable import NovelForgeCore
+@testable import ShadowText
 
 struct RegexInputs {
   private indirect enum Shape {

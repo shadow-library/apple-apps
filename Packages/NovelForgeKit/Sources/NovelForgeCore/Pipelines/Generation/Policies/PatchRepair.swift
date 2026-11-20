@@ -1,3 +1,5 @@
+import ShadowText
+
 enum RepairMode: String, CaseIterable, Sendable {
   case patch
   case rewrite

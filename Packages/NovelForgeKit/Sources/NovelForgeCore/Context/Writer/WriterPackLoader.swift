@@ -2,6 +2,7 @@ import Foundation
 import GRDB
 import ShadowCore
 import ShadowStore
+import ShadowText
 
 /// A part of the vault the writer pack is built from: one that cannot be read refuses the pack, as nothing could be scrubbed against it or the writer would draft
 /// without the characters' standing state.

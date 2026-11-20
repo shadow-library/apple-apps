@@ -1,6 +1,6 @@
 import ShadowCore
 
-enum OrderedJSON: Sendable {
+public enum OrderedJSON: Sendable {
   case null
   case bool(Bool)
   /// Keeps its exact value beyond 2^53, where JavaScript would round it.
@@ -11,35 +11,35 @@ enum OrderedJSON: Sendable {
   case object(OrderedJSONObject)
 }
 
-struct OrderedJSONObject: Sendable {
-  struct Entry: Sendable {
-    let key: String
-    let value: OrderedJSON
+public struct OrderedJSONObject: Sendable {
+  public struct Entry: Sendable {
+    public let key: String
+    public let value: OrderedJSON
   }
 
-  let entries: [Entry]
+  public let entries: [Entry]
 
-  init(_ pairs: [(key: String, value: OrderedJSON)]) {
+  public init(_ pairs: [(key: String, value: OrderedJSON)]) {
     var values: [JSString: OrderedJSON] = [:]
     var insertionOrder: [String] = []
     for pair in pairs where values.updateValue(pair.value, forKey: JSString(pair.key)) == nil { insertionOrder.append(pair.key) }
     entries = JSText.ownPropertyKeyOrder(insertionOrder).compactMap { key in values[JSString(key)].map { Entry(key: key, value: $0) } }
   }
 
-  var keys: [String] { entries.map(\.key) }
+  public var keys: [String] { entries.map(\.key) }
 
-  subscript(key: String) -> OrderedJSON? {
+  public subscript(key: String) -> OrderedJSON? {
     entries.first { $0.key.jsEquals(key) }?.value
   }
 }
 
 extension OrderedJSON {
-  var stringValue: String? {
+  public var stringValue: String? {
     guard case .string(let value) = self else { return nil }
     return value
   }
 
-  var numberValue: Double? {
+  public var numberValue: Double? {
     switch self {
     case .int(let value): Double(value)
     case .double(let value): value
@@ -47,18 +47,18 @@ extension OrderedJSON {
     }
   }
 
-  var arrayValue: [OrderedJSON]? {
+  public var arrayValue: [OrderedJSON]? {
     guard case .array(let value) = self else { return nil }
     return value
   }
 
-  var objectValue: OrderedJSONObject? {
+  public var objectValue: OrderedJSONObject? {
     guard case .object(let value) = self else { return nil }
     return value
   }
 
   /// Lossy: canonically equivalent keys have already collapsed in the dictionary and its order is unknown, so keys come out in code-unit order.
-  init(_ value: JSONValue) {
+  public init(_ value: JSONValue) {
     switch value {
     case .null: self = .null
     case .bool(let flag): self = .bool(flag)
@@ -71,7 +71,7 @@ extension OrderedJSON {
 }
 
 extension OrderedJSON: Equatable {
-  static func == (left: OrderedJSON, right: OrderedJSON) -> Bool {
+  public static func == (left: OrderedJSON, right: OrderedJSON) -> Bool {
     switch (left, right) {
     case (.null, .null): true
     case (.bool(let a), .bool(let b)): a == b
@@ -86,29 +86,29 @@ extension OrderedJSON: Equatable {
 }
 
 extension OrderedJSONObject: Equatable {
-  static func == (left: OrderedJSONObject, right: OrderedJSONObject) -> Bool {
+  public static func == (left: OrderedJSONObject, right: OrderedJSONObject) -> Bool {
     left.entries == right.entries
   }
 }
 
 extension OrderedJSONObject.Entry: Equatable {
-  static func == (left: OrderedJSONObject.Entry, right: OrderedJSONObject.Entry) -> Bool {
+  public static func == (left: OrderedJSONObject.Entry, right: OrderedJSONObject.Entry) -> Bool {
     left.key.jsEquals(right.key) && left.value == right.value
   }
 }
 
-enum OrderedJSONParseError: ShadowError, Equatable {
+public enum OrderedJSONParseError: ShadowError, Equatable {
   case syntax(offset: Int)
   case tooDeep(limit: Int)
 
-  var code: String {
+  public var code: String {
     switch self {
     case .syntax: "ordered-json.syntax"
     case .tooDeep: "ordered-json.too-deep"
     }
   }
 
-  var errorDescription: String? {
+  public var errorDescription: String? {
     switch self {
     case .syntax(let offset): "The text is not JSON (at byte \(offset))."
     case .tooDeep(let limit): "The JSON nests deeper than \(limit) levels."
@@ -121,7 +121,7 @@ extension OrderedJSON {
   static let maximumParsingDepth = 128
 
   /// Accepts what `JSON.parse` accepts. An integer without fraction or exponent that fits Int64 is `.int` except `-0`, which is `.double(-0.0)`; every other number is `.double`, nearest-rounded as JavaScript does.
-  init(parsing text: String) throws(OrderedJSONParseError) {
+  public init(parsing text: String) throws(OrderedJSONParseError) {
     var parser = OrderedJSONParser(bytes: Array(text.utf8))
     self = try parser.parse()
   }

@@ -1,7 +1,7 @@
 import Foundation
 import Testing
 
-@testable import NovelForgeCore
+@testable import ShadowText
 
 struct SwiftDefaultsTests {
   @Test func shouldCountCodeUnitsWhereSwiftCountsGraphemes() {

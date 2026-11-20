@@ -1,6 +1,7 @@
 import Foundation
 import ShadowCore
 import ShadowStore
+import ShadowText
 
 /// A domain read or write inside a content handler. A record this device cannot read is refused as unreadable, never taken for an absent one: named by
 /// `artifact` when it is `record`, else by its kind and key.

@@ -1,3 +1,5 @@
+import ShadowText
+
 // apps/novel-forge-server/src/modules/refinement/passage-rewrite.ts
 enum PassageRewrite {
   // passage-rewrite.ts:58

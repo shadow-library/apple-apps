@@ -1,3 +1,5 @@
+import ShadowText
+
 // apps/novel-forge-server/src/modules/refinement/write-policy.ts:8
 enum OpSide: String, Sendable {
   case direct

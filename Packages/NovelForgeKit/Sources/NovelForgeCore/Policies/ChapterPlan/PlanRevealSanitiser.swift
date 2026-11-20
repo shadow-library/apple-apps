@@ -1,3 +1,5 @@
+import ShadowText
+
 private let learnsField = "knowledgeContract.learns"
 private let sentencePattern = ProseRegex.literal(#"[^.!?]+(?:[.!?]+["'”’)\]]*|$)\s*|[.!?]+\s*"#, "gu")
 private let trailingSpace = ProseRegex.literal(#"\s*$"#, "u")

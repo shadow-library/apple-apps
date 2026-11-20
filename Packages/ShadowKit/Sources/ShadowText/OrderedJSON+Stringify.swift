@@ -1,6 +1,6 @@
 extension OrderedJSON {
   /// `JSON.stringify(value)`; every number goes through a double, as JavaScript would read it, and a number that is not finite is `null`.
-  var jsonText: String {
+  public var jsonText: String {
     var out = ""
     append(to: &out)
     return out

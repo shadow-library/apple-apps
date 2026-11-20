@@ -4,6 +4,7 @@ import OSLog
 import ShadowCore
 import ShadowJobs
 import ShadowStore
+import ShadowText
 
 public enum ChapterPlanError: ShadowError {
   case notNextChapter(chapter: Int, next: Int)

@@ -2,6 +2,7 @@ import Foundation
 import GRDB
 import ShadowCore
 import ShadowStore
+import ShadowText
 
 public struct FinalizeReadinessQuery: Sendable, Hashable {
   public let novel: UUID

@@ -1,3 +1,5 @@
+import ShadowText
+
 struct WritePolicy: Sendable {
   static let shared: WritePolicy? = QuoteRule.shared.map(WritePolicy.init)
 

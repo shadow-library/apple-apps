@@ -1,4 +1,5 @@
 import Foundation
+import ShadowText
 
 struct ChatFoldPlan: Equatable, Sendable {
   // chat-compaction.service.ts:25-26

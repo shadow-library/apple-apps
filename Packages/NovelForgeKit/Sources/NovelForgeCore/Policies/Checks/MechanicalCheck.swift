@@ -1,3 +1,5 @@
+import ShadowText
+
 struct WordCountBounds: Equatable, Sendable {
   let min: Double
   let max: Double

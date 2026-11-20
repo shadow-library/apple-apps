@@ -1,4 +1,5 @@
 import ShadowCore
+import ShadowText
 
 /// The milestones a final chapter reached. Without a review it reaches what its contract claims
 /// (apps/novel-forge-server/src/modules/ai/graphs/chapter-finalization.graph.ts:177); with one, only what the author kept: a claim the review left unreached

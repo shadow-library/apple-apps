@@ -1,5 +1,6 @@
 import Foundation
 import ShadowCore
+import ShadowText
 
 extension ChatLookupReader {
   // tools/get-bible-document.tool.ts:17

@@ -1,6 +1,7 @@
 import Foundation
 import ShadowCore
 import ShadowStore
+import ShadowText
 
 // apps/novel-forge-server/src/modules/refinement/apply/{bible-document,entity}.handler.ts; an undo over a tombstone keeps what the inverse does not name
 enum BibleHandlers: ContentOpHandler {

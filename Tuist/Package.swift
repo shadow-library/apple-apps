@@ -7,7 +7,7 @@ import PackageDescription
 
   let libraryTargets = [
     "ShadowCore", "ShadowNetworking", "ShadowKeychain", "ShadowStore", "ShadowSync", "ShadowSyncS3", "ShadowSyncOneDrive", "ShadowSyncGoogleDrive", "ShadowSyncCloudKit",
-    "ShadowSyncRuntime", "ShadowAI", "ShadowJobs",
+    "ShadowSyncRuntime", "ShadowText", "ShadowAI", "ShadowJobs",
     "ShadowDesignSystem", "ShadowTestSupport", "NovelForgeCore", "MemoirCore",
   ]
 

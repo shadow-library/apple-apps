@@ -1,4 +1,5 @@
 import Foundation
+import ShadowText
 
 public enum LibraryLimits {
   public static let titleCharactersOnCreate = 255

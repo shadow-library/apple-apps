@@ -2,6 +2,7 @@ import Foundation
 import NovelForgeCore
 import ShadowCore
 import ShadowStore
+import ShadowText
 import Testing
 
 @Suite("NovelForge merge", TestTimeLimit.standard)

@@ -1,3 +1,5 @@
+import ShadowText
+
 enum OpValue<Value: Sendable & Equatable>: Sendable, Equatable {
   case omitted
   case null

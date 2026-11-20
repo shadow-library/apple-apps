@@ -1,6 +1,7 @@
 import Foundation
 import GRDB
 import ShadowStore
+import ShadowText
 
 public enum NovelExport {
   public static func manuscript(novel: UUID, in transaction: ReadTransaction) throws(ExportError) -> String {

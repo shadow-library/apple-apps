@@ -1,6 +1,7 @@
 import Foundation
 import ShadowCore
 import ShadowStore
+import ShadowText
 
 // apps/novel-forge-server/src/modules/refinement/proposal.service.ts:48-69 (CreateProposalInput). Deviations: the card stores no scope, so a plugin's
 // supersession by scope (proposal.service.ts:86-87) is not ported; a plan pass card's diagnostics (plan-diagnostics.ts:216) come from the caller.

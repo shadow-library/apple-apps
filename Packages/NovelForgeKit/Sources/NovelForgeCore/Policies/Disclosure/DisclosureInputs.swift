@@ -1,4 +1,5 @@
 import ShadowCore
+import ShadowText
 
 /// A stored unlock the app cannot read (from a newer version, or malformed) never holds: the reference could not have stored it, and treating it as absent would unlock the fact.
 enum FactUnlock: Equatable, Sendable {

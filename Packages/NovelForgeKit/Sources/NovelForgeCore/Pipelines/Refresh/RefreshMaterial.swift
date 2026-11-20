@@ -1,4 +1,5 @@
 import ShadowCore
+import ShadowText
 
 // apps/novel-forge-server/src/modules/audit/bible-audit-material.ts:7-9
 struct RefreshDocumentRow: Sendable, Equatable {

@@ -1,4 +1,5 @@
 import ShadowCore
+import ShadowText
 
 private let segmentBreak = builtInPattern(#"[.!?;\n]+|"\s*,\s*""#)
 

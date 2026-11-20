@@ -1,6 +1,7 @@
 import Foundation
 import ShadowCore
 import ShadowStore
+import ShadowText
 
 public enum PageSaved: Sendable, Equatable {
   case unchanged

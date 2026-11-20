@@ -1,3 +1,5 @@
+import ShadowText
+
 struct WriterBriefInput: Equatable, Sendable {
   var body: String?
   var pov: String?

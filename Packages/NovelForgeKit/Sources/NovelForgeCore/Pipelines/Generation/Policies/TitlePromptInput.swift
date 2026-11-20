@@ -1,3 +1,5 @@
+import ShadowText
+
 struct TitleReferenceChapter: Equatable, Sendable {
   let number: Int
   let title: String?

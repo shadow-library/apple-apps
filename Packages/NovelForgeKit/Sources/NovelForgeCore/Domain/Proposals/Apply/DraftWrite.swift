@@ -1,4 +1,5 @@
 import ShadowCore
+import ShadowText
 
 /// A whole-draft write: a change set's `draft.update`, or the restore an inverse carries (draft.handler.ts:15, `DraftRestoreOp`), whose `null` title or
 /// summary clears the field and whose containment brings an isolated draft back isolated.

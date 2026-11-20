@@ -1,3 +1,5 @@
+import ShadowText
+
 enum FindingRepetition {
   // apps/novel-forge-server/src/modules/ai/graphs/chapter-generation.graph.ts:232
   static func normalized(_ text: String) -> String {

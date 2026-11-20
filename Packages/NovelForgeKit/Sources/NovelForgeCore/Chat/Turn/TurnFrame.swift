@@ -1,4 +1,5 @@
 import Foundation
+import ShadowText
 
 /// One stored event of a turn, as the reference's `TurnEventRecord` (apps/novel-forge-server/src/modules/refinement/turn-stream.types.ts:15): `data` is the
 /// event's JSON text, and a reader at `sequence` n has seen every frame below it that was kept.

@@ -1,4 +1,5 @@
 import Foundation
+import ShadowText
 
 // apps/novel-forge-server/src/modules/eval/bible-readiness.ts:54
 struct BibleRole: Sendable, Equatable {

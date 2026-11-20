@@ -1,4 +1,5 @@
 import ShadowCore
+import ShadowText
 
 public struct KnowledgeReveal: Sendable, Codable {
   public let entityKey: String

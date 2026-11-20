@@ -1,3 +1,5 @@
+import ShadowText
+
 struct EndingModeEntry: Sendable {
   let chapter: Int
   let hookType: String?

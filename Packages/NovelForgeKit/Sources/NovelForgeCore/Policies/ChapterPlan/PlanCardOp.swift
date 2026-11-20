@@ -1,3 +1,5 @@
+import ShadowText
+
 struct PlanCardOp: Equatable, Sendable {
   var update: BriefUpdate
   var rationale: String?

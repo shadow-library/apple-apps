@@ -1,6 +1,7 @@
 import Foundation
 import ShadowCore
 import ShadowStore
+import ShadowText
 
 enum CurrentRecord: Sendable, Equatable {
   case fields(OrderedJSONObject)

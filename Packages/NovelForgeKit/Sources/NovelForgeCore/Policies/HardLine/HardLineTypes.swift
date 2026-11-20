@@ -1,4 +1,5 @@
 import ShadowCore
+import ShadowText
 
 enum HardLineScope: String, Sendable {
   case supplied

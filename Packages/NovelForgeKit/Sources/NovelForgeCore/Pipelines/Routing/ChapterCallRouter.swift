@@ -2,6 +2,7 @@ import Foundation
 import OSLog
 import ShadowAI
 import ShadowCore
+import ShadowText
 
 /// One model call about a chapter. The plan head carries the chapter's mode, copied from the novel's when the plan was made, so changing the novel's mode never
 /// re-routes a chapter (chapter-route.ts:34). `isolated` is whether the prose the call reads is walled off: a draft's or canon's own flag, false for a call that

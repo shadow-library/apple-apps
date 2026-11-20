@@ -1,3 +1,5 @@
+import ShadowText
+
 struct EndingContract: Sendable, Equatable {
   var hookType: HookType
   var emotionalBeat: String

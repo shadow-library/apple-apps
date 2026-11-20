@@ -2,6 +2,7 @@ import Foundation
 import GRDB
 import ShadowCore
 import ShadowStore
+import ShadowText
 
 /// The exchange a keyed turn records with its reply: the segment it continues or opens, and the sections its context update leaves the model holding.
 struct ChatExchangePlan: Equatable, Sendable {

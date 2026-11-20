@@ -1,3 +1,5 @@
+import ShadowText
+
 enum ChatTraceStatus: String, Sendable, Equatable {
   case ok
   case error

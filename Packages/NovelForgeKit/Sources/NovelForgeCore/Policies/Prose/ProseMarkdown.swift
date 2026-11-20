@@ -1,4 +1,5 @@
 import Foundation
+import ShadowText
 
 enum ProseMarkdownRegex {
   // apps/novel-forge-server/src/common/sanitize-content.ts:3

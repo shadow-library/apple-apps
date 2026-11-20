@@ -1,3 +1,5 @@
+import ShadowText
+
 private let underscores = builtInPattern("_", flags: "g")
 private let chapterPrefix = "chapter:"
 

@@ -2,6 +2,7 @@ import Foundation
 import ShadowCore
 import ShadowJobs
 import ShadowStore
+import ShadowText
 
 /// The plan job (plan-job.service.ts:141-168): one structured call whose vetted plan is checkpointed, then the card staged in the commit that ends the attempt.
 enum PlanPipeline {

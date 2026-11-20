@@ -1,3 +1,5 @@
+import ShadowText
+
 // apps/novel-forge-server/src/modules/review/review-prompts.ts:5
 struct SettledFinding: Equatable, Sendable {
   var fingerprint: String

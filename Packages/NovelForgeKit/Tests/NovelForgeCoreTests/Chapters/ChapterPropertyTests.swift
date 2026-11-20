@@ -2,6 +2,7 @@ import Foundation
 import ShadowCore
 import ShadowStore
 import ShadowTestSupport
+import ShadowText
 import Synchronization
 import Testing
 

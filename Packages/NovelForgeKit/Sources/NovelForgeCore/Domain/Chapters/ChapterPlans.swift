@@ -1,6 +1,7 @@
 import Foundation
 import ShadowCore
 import ShadowStore
+import ShadowText
 
 // apps/novel-forge-server/src/modules/ai/schemas/knowledge-contract.schema.ts:3
 private let contractKey = ProseRegex.literal("^[a-z0-9_]+$")

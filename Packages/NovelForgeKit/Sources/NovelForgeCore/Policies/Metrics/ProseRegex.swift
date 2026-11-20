@@ -1,3 +1,5 @@
+import ShadowText
+
 enum ProseRegex {
   static func literal(_ source: String, _ flags: String = "") -> JSRegex {
     do {

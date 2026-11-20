@@ -1,3 +1,5 @@
+import ShadowText
+
 struct SimileFrame: Sendable {
   let label: String
   let pattern: JSRegex

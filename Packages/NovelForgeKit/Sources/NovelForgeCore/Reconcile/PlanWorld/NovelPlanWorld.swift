@@ -2,6 +2,7 @@ import Foundation
 import GRDB
 import ShadowCore
 import ShadowStore
+import ShadowText
 import Synchronization
 
 public enum ClaimBasis: String, Codable, CaseIterable, Sendable {

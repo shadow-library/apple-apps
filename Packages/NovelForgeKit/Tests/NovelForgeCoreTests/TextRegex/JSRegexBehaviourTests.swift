@@ -2,7 +2,7 @@ import Foundation
 import ShadowTestSupport
 import Testing
 
-@testable import NovelForgeCore
+@testable import ShadowText
 
 struct JSRegexBehaviourTests {
   private static let sharedPattern = try? JSRegex(#"(?<![\p{L}\p{N}_])the heir(?![\p{L}\p{N}_])"#, flags: "giu")

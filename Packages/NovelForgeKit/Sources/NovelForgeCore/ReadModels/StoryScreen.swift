@@ -1,6 +1,7 @@
 import Foundation
 import GRDB
 import ShadowStore
+import ShadowText
 
 public struct StoryScreen: ReadModel {
   public let structure: StoryStructure

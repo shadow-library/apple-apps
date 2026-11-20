@@ -1,5 +1,6 @@
 import Foundation
 import ShadowCore
+import ShadowText
 
 enum GenerationJudgePass {
   static let unparseable = "judge output unparseable"

@@ -1,5 +1,6 @@
 import ShadowCore
 import ShadowStore
+import ShadowText
 
 enum WriterPackError: ShadowError {
   /// CTX_002: the writer's required material is over a limit or the budget.

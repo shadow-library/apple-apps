@@ -1,26 +1,26 @@
 extension String {
-  func jsSearch(_ pattern: JSRegex) -> Int {
+  public func jsSearch(_ pattern: JSRegex) -> Int {
     pattern.firstMatchSlots(in: jsCodeUnits, from: 0)?[0] ?? -1
   }
 
   /// `[...text.matchAll(re)]`, and `text.match(re)` for a global `re` as `.map(\.text)` (empty where JavaScript gives null); unlike `matchAll`, a non-global `re` is not refused.
-  func jsMatchAll(_ pattern: JSRegex) -> [JSRegexMatch] {
+  public func jsMatchAll(_ pattern: JSRegex) -> [JSRegexMatch] {
     let units = jsCodeUnits
     return pattern.allMatchSlots(in: units).map { JSRegexMatch(slots: $0, units: units) }
   }
 
   /// `text.replace(re, replacement)`, expanding `$$`, `$&`, `` $` ``, `$'` and `$1`…`$99`; a global `re` replaces every match.
-  func jsReplace(_ pattern: JSRegex, _ replacement: String) -> String {
+  public func jsReplace(_ pattern: JSRegex, _ replacement: String) -> String {
     let template = replacement.jsCodeUnits
     return replacing(pattern) { slots, units in Self.substitute(template, slots: slots, units: units) }
   }
 
-  func jsReplace(_ pattern: JSRegex, _ replacer: (JSRegexMatch) -> String) -> String {
+  public func jsReplace(_ pattern: JSRegex, _ replacer: (JSRegexMatch) -> String) -> String {
     replacing(pattern) { slots, units in replacer(JSRegexMatch(slots: slots, units: units)).jsCodeUnits }
   }
 
   /// `text.split(re, limit)`; a nil `limit` is `undefined`. JavaScript puts `undefined` where a capturing separator's group did not match; this puts "".
-  func jsSplit(_ separator: JSRegex, limit: Int? = nil) -> [String] {
+  public func jsSplit(_ separator: JSRegex, limit: Int? = nil) -> [String] {
     let bound = Int(limit.map { UInt32(truncatingIfNeeded: $0) } ?? UInt32.max)
     guard bound > 0 else { return [] }
     let units = jsCodeUnits

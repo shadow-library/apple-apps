@@ -1,6 +1,7 @@
 import NovelForgeCore
 import ShadowCore
 import ShadowDesignSystem
+import ShadowText
 import SwiftUI
 
 /// apps/novel-forge-web/src/features/chapter-workspace/FinalizeReviewItemCard.tsx:42-100: one update that needs the author's call, with its proposal, the line

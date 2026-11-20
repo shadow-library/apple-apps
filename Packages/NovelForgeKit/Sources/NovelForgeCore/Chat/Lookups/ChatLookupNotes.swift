@@ -1,5 +1,6 @@
 import Foundation
 import ShadowStore
+import ShadowText
 
 private let notesPartTokens = 800
 private let pageTokens = 3_000

@@ -1,3 +1,5 @@
+import ShadowText
+
 // apps/novel-forge-server/src/modules/refinement/passage-context.ts:10
 let maxPassageContexts = 10
 

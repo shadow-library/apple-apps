@@ -1,4 +1,5 @@
 import ShadowCore
+import ShadowText
 
 // The reference builds no pattern Swift's engine could refuse; were one refused, every caller stops rather than let a secret through, as the reference does when it throws.
 enum DisclosureError: ShadowError, Equatable {

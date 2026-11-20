@@ -1,3 +1,5 @@
+import ShadowText
+
 struct ChapterProse: Sendable {
   let prose: String
   let unclosedFence: String?

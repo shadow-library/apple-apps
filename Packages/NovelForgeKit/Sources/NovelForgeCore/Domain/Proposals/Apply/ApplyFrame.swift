@@ -1,6 +1,7 @@
 import Foundation
 import ShadowCore
 import ShadowStore
+import ShadowText
 
 public enum ApplyError: ShadowError, Equatable {
   case invalidSelection

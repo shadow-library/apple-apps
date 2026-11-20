@@ -2,6 +2,7 @@ import Foundation
 import ShadowCore
 import ShadowJobs
 import ShadowStore
+import ShadowText
 
 /// The novel, chapter and kind a job's key names, read back through `NovelJobAddress`.
 public struct NovelJobTarget: Sendable, Hashable {

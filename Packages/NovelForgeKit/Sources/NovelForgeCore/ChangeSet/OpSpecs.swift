@@ -1,3 +1,5 @@
+import ShadowText
+
 // apps/novel-forge-server/src/modules/refinement/change-set/op-specs.ts:3
 enum OpFieldKind: String, Sendable {
   case string = "string"

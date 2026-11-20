@@ -1,6 +1,7 @@
 import Foundation
 import ShadowCore
 import ShadowStore
+import ShadowText
 
 /// An applied card with what each index amounts to on this device, read by the undo, redo and revert of its changes.
 struct ProposalTurn: Sendable {

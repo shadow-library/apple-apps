@@ -1,3 +1,5 @@
+import ShadowText
+
 // apps/novel-forge-server/src/modules/refinement/passage-rewrite.ts:10; `generating` has no native draft state before the phase 7 pipelines, and
 // `unreadable` is native: a draft this device cannot read refuses any card that rewrites it, so a turn leaves the rewrite out
 enum RewriteDropReason: String, Sendable, Equatable {

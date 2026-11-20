@@ -1,4 +1,5 @@
 import Foundation
+import ShadowText
 
 // apps/novel-forge-server/src/modules/ai/prompts/chapter-plan.prompt.ts:45
 let chapterPlanVersion = "1.4.0"

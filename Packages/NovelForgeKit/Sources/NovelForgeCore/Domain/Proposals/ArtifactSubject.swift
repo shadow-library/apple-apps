@@ -1,6 +1,7 @@
 import Foundation
 import ShadowCore
 import ShadowStore
+import ShadowText
 
 enum ArtifactSubject: Sendable {
   case premise(NovelRecord)

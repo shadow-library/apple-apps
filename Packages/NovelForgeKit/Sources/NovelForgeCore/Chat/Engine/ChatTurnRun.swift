@@ -4,6 +4,7 @@ import OSLog
 import ShadowAI
 import ShadowCore
 import ShadowStore
+import ShadowText
 import Synchronization
 
 // apps/novel-forge-server/src/modules/refinement/chat.service.ts:119

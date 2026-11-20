@@ -3,6 +3,7 @@ import OSLog
 import ShadowAI
 import ShadowCore
 import ShadowStore
+import ShadowText
 
 enum ChatTurnAuthored: Sendable {
   case new(content: String, passages: [ChatTurnPassage], choices: ChatTurnChoices)

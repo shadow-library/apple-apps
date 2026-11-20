@@ -1,5 +1,6 @@
 import Foundation
 import ShadowStore
+import ShadowText
 
 struct ChatLookupCall: Equatable, Sendable {
   let tool: String

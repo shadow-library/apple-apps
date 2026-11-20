@@ -1,3 +1,5 @@
+import ShadowText
+
 // apps/novel-forge-server/src/modules/ai/retrieval/chunker.ts
 enum RetrievalChunker {
   // chunker.ts:6

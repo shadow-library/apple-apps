@@ -1,6 +1,6 @@
-enum JSMath {
+public enum JSMath {
   /// Halves round towards +∞ and [-0.5, 0) rounds to -0, where `rounded()` takes halves away from zero.
-  static func round(_ value: Double) -> Double {
+  public static func round(_ value: Double) -> Double {
     guard value.isFinite, value != 0 else { return value }
     if value > 0, value < 0.5 { return 0 }
     if value < 0, value >= -0.5 { return -0.0 }
@@ -9,11 +9,11 @@ enum JSMath {
   }
 }
 
-enum JSNumber {
+public enum JSNumber {
   static let maximumFixedDigits = 20
 
   /// NaN is 0, fractions truncate and infinities saturate.
-  static func integer(_ value: Double) -> Int {
+  public static func integer(_ value: Double) -> Int {
     if value.isNaN { return 0 }
     if value >= 0x1p63 { return Int.max }
     if value <= -0x1p63 { return Int.min }
@@ -21,7 +21,7 @@ enum JSNumber {
   }
 
   /// The empty string is 0, and `0x`, `0o` and `0b` literals parse only without a sign.
-  static func from(_ text: String) -> Double {
+  public static func from(_ text: String) -> Double {
     let literal = Array(text.jsTrim().utf8)
     guard !literal.isEmpty else { return 0 }
     if literal.count > 2, literal[0] == UInt8(ascii: "0"), let bits = radixBits(literal[1]) { return radixValue(literal[2...], bitsPerDigit: bits) }
@@ -92,10 +92,10 @@ enum JSNumber {
 }
 
 extension Double {
-  var jsIsInteger: Bool { isFinite && rounded(.towardZero) == self }
+  public var jsIsInteger: Bool { isFinite && rounded(.towardZero) == self }
 
   /// Integers print without a fraction, and an exponent appears only below 1e-6 or from 1e21.
-  var jsString: String {
+  public var jsString: String {
     if isNaN { return "NaN" }
     if self == 0 { return "0" }
     if isInfinite { return self < 0 ? "-Infinity" : "Infinity" }
@@ -111,7 +111,7 @@ extension Double {
   }
 
   /// Rounds the exact binary value with ties away from zero, where `String(format:)` ties to even; digits outside 0...20 clamp instead of throwing.
-  func jsToFixed(_ requestedDigits: Int) -> String {
+  public func jsToFixed(_ requestedDigits: Int) -> String {
     let fractionDigits = Swift.min(Swift.max(requestedDigits, 0), JSNumber.maximumFixedDigits)
     if isNaN { return "NaN" }
     if Swift.abs(self) >= 1e21 { return jsString }

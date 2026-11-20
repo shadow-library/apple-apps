@@ -23,6 +23,7 @@ let package = Package(
     .library(name: "ShadowSyncGoogleDrive", targets: ["ShadowSyncGoogleDrive"]),
     .library(name: "ShadowSyncCloudKit", targets: ["ShadowSyncCloudKit"]),
     .library(name: "ShadowSyncRuntime", targets: ["ShadowSyncRuntime"]),
+    .library(name: "ShadowText", targets: ["ShadowText"]),
     .library(name: "ShadowAI", targets: ["ShadowAI"]),
     .library(name: "ShadowJobs", targets: ["ShadowJobs"]),
     .library(name: "ShadowDesignSystem", targets: ["ShadowDesignSystem"]),
@@ -48,11 +49,12 @@ let package = Package(
       ],
       swiftSettings: swiftSettings
     ),
+    .target(name: "ShadowText", dependencies: ["ShadowCore"], swiftSettings: swiftSettings),
     .target(name: "ShadowAI", dependencies: ["ShadowCore", "ShadowNetworking", "ShadowStore"], swiftSettings: swiftSettings),
     .target(name: "ShadowJobs", dependencies: ["ShadowCore", "ShadowStore", .product(name: "GRDB", package: "GRDB.swift")], swiftSettings: swiftSettings),
     .target(name: "ShadowDesignSystem", swiftSettings: swiftSettings + [.defaultIsolation(MainActor.self)]),
     .target(
-      name: "ShadowTestSupport", dependencies: ["ShadowCore", "ShadowNetworking", "ShadowKeychain", "ShadowStore", "ShadowSync", "ShadowSyncCloudKit", "ShadowAI"],
+      name: "ShadowTestSupport", dependencies: ["ShadowCore", "ShadowNetworking", "ShadowKeychain", "ShadowStore", "ShadowSync", "ShadowSyncCloudKit", "ShadowAI", "ShadowText"],
       swiftSettings: swiftSettings),
 
     .testTarget(name: "ShadowCoreTests", dependencies: ["ShadowCore", "ShadowTestSupport"], swiftSettings: swiftSettings),
@@ -65,6 +67,7 @@ let package = Package(
     .testTarget(name: "ShadowSyncGoogleDriveTests", dependencies: ["ShadowSyncGoogleDrive", "ShadowTestSupport"], swiftSettings: swiftSettings),
     .testTarget(name: "ShadowSyncCloudKitTests", dependencies: ["ShadowSyncCloudKit", "ShadowTestSupport"], swiftSettings: swiftSettings),
     .testTarget(name: "ShadowSyncRuntimeTests", dependencies: ["ShadowSyncRuntime", "ShadowTestSupport"], swiftSettings: swiftSettings),
+    .testTarget(name: "ShadowTextTests", dependencies: ["ShadowText", "ShadowTestSupport"], swiftSettings: swiftSettings),
     .testTarget(name: "ShadowAITests", dependencies: ["ShadowAI", "ShadowTestSupport"], swiftSettings: swiftSettings),
     .testTarget(name: "ShadowJobsTests", dependencies: ["ShadowJobs", "ShadowTestSupport"], swiftSettings: swiftSettings),
     .testTarget(name: "ShadowDesignSystemTests", dependencies: ["ShadowDesignSystem"], swiftSettings: swiftSettings),

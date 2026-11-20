@@ -1,4 +1,5 @@
 import ShadowCore
+import ShadowText
 
 private let chapterCap = 50
 private let entityCap = 150
