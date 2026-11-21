@@ -12,6 +12,10 @@ public enum SyncStartupError: ShadowError, Equatable {
   case storage(StorageError)
   case keyRing(KeyRingError)
   case marker(String)
+  /// A move needs an attached vault.
+  case notAttached
+  /// The attached vault is in a phase that hands out nothing to sync with.
+  case unavailable(SyncPhase)
 
   public var code: String {
     switch self {
@@ -24,6 +28,8 @@ public enum SyncStartupError: ShadowError, Equatable {
     case .storage(let error): error.code
     case .keyRing(let error): error.code
     case .marker: "sync-startup.marker"
+    case .notAttached: "sync-startup.not-attached"
+    case .unavailable: "sync-startup.unavailable"
     }
   }
 
@@ -38,6 +44,8 @@ public enum SyncStartupError: ShadowError, Equatable {
     case .storage(let error): error.errorDescription
     case .keyRing(let error): error.errorDescription
     case .marker(let reason): "This device's sync marker could not be read or cleared (\(reason))."
+    case .notAttached: "No vault syncs with a location on this device."
+    case .unavailable: "The attached vault cannot sync right now."
     }
   }
 }

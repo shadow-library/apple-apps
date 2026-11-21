@@ -161,7 +161,7 @@ public final class VaultStore: Sendable {
   public func pendingClocks() async throws(StoreError) -> [HLCTimestamp] {
     try await reading { db in
       var clocks = [HLCTimestamp]()
-      let rows = try db.storeFetchCursor("SELECT line FROM change_log ORDER BY seq", [])
+      let rows = try db.storeFetchCursor("SELECT line FROM change_log WHERE relayed = 0 ORDER BY seq", [])
       while let row = try rows.next() { clocks.append(try Stored.record(row.stored("line")).clock) }
       return clocks
     }
@@ -181,9 +181,11 @@ public final class VaultStore: Sendable {
     try await writing { db in
       var row = try KernelRow.load(db)
       guard row.replica != newReplica else { throw StoreError.replicaReused(newReplica) }
-      let pending = try db.storeFetchAll("SELECT line FROM change_log ORDER BY seq", []).map { row throws(StoreError) in try Stored.record(row.stored("line")) }
+      let pending = try db.storeFetchAll("SELECT line, relayed FROM change_log ORDER BY seq", []).map { row throws(StoreError) in
+        (record: try Stored.record(row.stored("line")), relayed: (try row.stored("relayed") as Int64) == 1)
+      }
       let merge = MergeRoutine(registry: self.registry)
-      let relogged: [ChangeRecord]
+      let relogged: [(record: ChangeRecord, relayed: Bool)]
       let scopes: [StateScope]
       var touched = TouchedRefs()
       switch mode {
@@ -195,16 +197,24 @@ public final class VaultStore: Sendable {
         scopes = StateScope.allCases
         for scope in scopes { try KernelSchema.clear(scope, in: db) }
         let clock = HybridLogicalClock(replica: newReplica, wallClock: self.wallClock, latest: row.rebuildFloor)
-        relogged = pending.map { ChangeRecord(id: self.ids.next(), clock: clock.now(), schema: $0.schema, entity: $0.entity, key: $0.key, kind: $0.kind, fields: $0.fields) }
+        relogged = pending.map { change in
+          guard !change.relayed else { return change }
+          let record = change.record
+          return (
+            ChangeRecord(id: self.ids.next(), clock: clock.now(), schema: record.schema, entity: record.entity, key: record.key, kind: record.kind, fields: record.fields), false
+          )
+        }
         row.clock = clock.latest
       }
-      for record in relogged {
+      for (record, _) in relogged {
         for scope in scopes {
           if try merge.apply(record, scope: scope, in: db) { touched.insert(record.ref, scope: scope) }
         }
       }
       try db.execute(sql: "DELETE FROM change_log")
-      for (index, record) in relogged.enumerated() { try db.storeExecute("INSERT INTO change_log (seq, line) VALUES (?, ?)", [index + 1, record.canonicalBytes()]) }
+      for (index, change) in relogged.enumerated() {
+        try db.storeExecute("INSERT INTO change_log (seq, line, relayed) VALUES (?, ?, ?)", [index + 1, change.record.canonicalBytes(), change.relayed ? 1 : 0])
+      }
       row.replica = newReplica
       row.nextSequence = Int64(relogged.count) + 1
       try row.saveIdentity(db)

@@ -52,11 +52,14 @@ public actor SyncEngine {
   private let downloadCheckpoint: @Sendable (SyncDownloadStep) throws(SyncError) -> Void
   private let compactionCheckpoint: @Sendable (SyncCompactionStep) async throws(SyncError) -> Void
   private let adoptionCheckpoint: @Sendable (SyncAdoptionStep) async throws(SyncError) -> Void
+  private let moveCheckpoint: @Sendable (SyncMoveKernelStep) async throws(SyncError) -> Void
   private let publicFloor: @Sendable () async throws(SyncError) -> HLCTimestamp?
   private var readiness = Readiness.notStarted
   private var unsupportedFiles: [SyncFileID: Int] = [:]
   private var isBusy = false
   private var waiters: [CheckedContinuation<Void, Never>] = []
+
+  public nonisolated var replica: ReplicaID { store.replica }
 
   public private(set) var deviceClock = SyncDeviceClock.unchecked
   public private(set) var backupExclusionFailure: StoreError?
@@ -98,7 +101,8 @@ public actor SyncEngine {
     checkpoint: @escaping @Sendable (SyncUploadStep) async throws(SyncError) -> Void,
     downloadCheckpoint: @escaping @Sendable (SyncDownloadStep) throws(SyncError) -> Void = { _ throws(SyncError) in },
     compactionCheckpoint: @escaping @Sendable (SyncCompactionStep) async throws(SyncError) -> Void = { _ async throws(SyncError) in },
-    adoptionCheckpoint: @escaping @Sendable (SyncAdoptionStep) async throws(SyncError) -> Void = { _ async throws(SyncError) in }
+    adoptionCheckpoint: @escaping @Sendable (SyncAdoptionStep) async throws(SyncError) -> Void = { _ async throws(SyncError) in },
+    moveCheckpoint: @escaping @Sendable (SyncMoveKernelStep) async throws(SyncError) -> Void = { _ async throws(SyncError) in }
   ) {
     self.store = store
     self.provider = provider
@@ -112,13 +116,14 @@ public actor SyncEngine {
     self.downloadCheckpoint = downloadCheckpoint
     self.compactionCheckpoint = compactionCheckpoint
     self.adoptionCheckpoint = adoptionCheckpoint
+    self.moveCheckpoint = moveCheckpoint
     self.publicFloor = publicFloor
   }
 
   public static var migrations: [StoreMigration] {
     ReplicaLifecycle.migrations + [
       SyncEngineSchema.migration, SyncEngineSchema.heldMigration, SyncEngineSchema.compactionMigration, SyncEngineSchema.adoptionMigration, SyncEngineSchema.strayMigration,
-      RecoveryCopies.migration,
+      RecoveryCopies.migration, SyncMoveSchema.migration,
     ]
   }
 
@@ -167,6 +172,132 @@ public actor SyncEngine {
     await acquire()
     defer { release() }
     return try await postponing(.postponed) { () async throws(SyncError) in try await performAdoption() }
+  }
+
+  /// The notice read for this vault and not forgotten; nil also once the database continued as a new replica.
+  public func recordedMove() async throws(SyncError) -> VaultMoveNotice? {
+    await acquire()
+    defer { release() }
+    let (vault, ring) = (vault, ring)
+    return try await read { try SyncMoveNoticeTable.notice(of: vault, keys: { ring.key($0) }, in: $0.database) }
+  }
+
+  /// The user's choice to stay at this location after a move: uploads resume here and this notice is not recorded again, but changes made at the new
+  /// location never arrive and what is uploaded here from now on reaches only devices that stay too. A later, different notice is recorded afresh.
+  /// Changes already relayed for the move stay queued and go up here under this replica's prefix; a device whose own records are among them re-mints once
+  /// when it reads them, as for any collision.
+  public func forgetMove() async throws(SyncError) {
+    await acquire()
+    defer { release() }
+    let (replica, vault) = (store.replica, vault)
+    try await write(as: replica) { try SyncMoveNoticeTable.ignore(vault, in: $0.database) }
+  }
+
+  /// The move re-mint `moveOut(from:)` or `followMove(_:from:admitting:)` made for `origin`, if it made one.
+  public func moveRemint(of origin: ReplicaID) async throws(SyncError) -> SyncMoveRemint? {
+    await acquire()
+    defer { release() }
+    return try await read { db in
+      try SyncMoveRemintTable.load(origin: origin, role: .out, in: db.database) ?? SyncMoveRemintTable.load(origin: origin, role: .follow, in: db.database)
+    }
+  }
+
+  /// Continues this database as a new replica for a move it starts here; nothing is uploaded or deleted. `origin` names the move: a second call returns the
+  /// first call's re-mint, and a re-mint of another cause since `origin` was read does not stop this one.
+  public func moveOut(from origin: ReplicaID) async throws(SyncError) -> SyncMoveRemint {
+    await acquire()
+    defer { release() }
+    if let done = try await read({ try SyncMoveRemintTable.load(origin: origin, role: .out, in: $0.database) }) { return done }
+    let replica = try await claimedForMove()
+    try await refuseMoved()
+    let directory = try await lifecycleCall { () async throws(ReplicaLifecycleError) in try await lifecycle.directory() }
+    guard !directory.isRetired(replica) else { throw .replicaRetired(replica) }
+    return try await remintForMove(replica, origin: origin, role: .out)
+  }
+
+  /// Joins the whole merged state into this replica's own writes and seals it as one base that fits `capabilities`, announced before it is returned so a
+  /// self-check knows its parts. It refuses a state the upload clock check would correct and a change beyond the reader limit, since a base skips both.
+  /// Calling it again seals what the own writes hold then.
+  public func sealMoveBase(for capabilities: StorageCapabilities, partial recorded: Set<ReplicaID> = []) async throws(SyncError) -> SyncMoveBase {
+    await acquire()
+    defer { release() }
+    let replica = try await claimedForMove()
+    try await refuseMoved()
+    if try await isClockCorrectionNeeded() {
+      guard case .wrong(let skew) = deviceClock else { throw .storeClockUntrusted(skew: .zero) }
+      throw .storeClockUntrusted(skew: skew)
+    }
+    try await storeCall { () async throws(StoreError) in try await store.adoptVaultState { try SyncReplicaGuard.require(replica, in: $0) } }
+    let floor = try await raisedFloors(as: replica).key
+    guard let key = try await writingKey(floor: floor) else { throw .awaitingKey(floor: floor) }
+    let snapshot = try await storeCall { () async throws(StoreError) in try await store.ownSnapshot() }
+    guard snapshot.replica == replica else { throw .replicaChanged }
+    let partial = recorded.union(try await read { try SyncHeldTable.load($0.database) }.keys.map(\.replica))
+    let base = try SyncMoveSealer.seal(
+      snapshot, registry: store.registry, vault: vault, key: key, capabilities: capabilities, partBytes: configuration.basePartBytes, limit: try readerLimit(),
+      partial: partial)
+    let millis = millis
+    let parts = base.parts.count
+    try await write(as: replica) { transaction in
+      let earlier = try ReplicaHistory.entries(of: replica, in: transaction.database).first { $0.isBase && $0.point == base.point }
+      guard let earlier else { return try ReplicaHistory.announceBase(base.point, parts: parts, replica: replica, at: millis, in: transaction.database) }
+      guard earlier.parts == parts else { throw SyncError.corruptState("an earlier base of the same content was split into other parts") }
+    }
+    return base
+  }
+
+  /// Records a moved base once every part has been read back intact at its new location.
+  public func recordMoveBase(_ base: SyncMoveBase) async throws(SyncError) {
+    await acquire()
+    defer { release() }
+    let millis = millis
+    let parts = base.parts.count
+    try await write(as: base.replica) { try ReplicaHistory.recordBase(base.point, parts: parts, replica: base.replica, at: millis, in: $0.database) }
+  }
+
+  /// Continues this database as a new replica after `notice`. First, once per notice, it relays every change of the merged state the moved base may lack, so
+  /// the new replica uploads them at the new location unchanged; `policy` is that location's. `origin` names the move as for `moveOut(from:)`.
+  public func followMove(_ notice: VaultMoveNotice, from origin: ReplicaID, admitting policy: StorageClassPolicy) async throws(SyncError) -> SyncMoveRemint {
+    await acquire()
+    defer { release() }
+    if let done = try await read({ try SyncMoveRemintTable.load(origin: origin, role: .follow, in: $0.database) }) { return done }
+    let replica = try await claimedForMove()
+    let vault = vault
+    if try await read({ try SyncMoveNoticeTable.load(vault, in: $0.database)?.requeued != true }) {
+      let millis = millis
+      _ = try await storeCall { () async throws(StoreError) in
+        try await store.requeue(above: notice.frontier, admitting: { policy.admits($0.syncClass) }) { db in
+          try SyncReplicaGuard.require(replica, in: db)
+          guard try SyncMoveNoticeTable.load(vault, in: db)?.requeued != true else { throw SyncError.replicaChanged }
+          try SyncMoveNoticeTable.markRequeued(vault, at: millis, in: db)
+        }
+      }
+      try await moveCheckpoint(.requeued)
+    }
+    return try await remintForMove(replica, origin: origin, role: .follow)
+  }
+
+  private func claimedForMove() async throws(SyncError) -> ReplicaID {
+    guard try await resume() else { throw .lifecycle(.markerUnavailable) }
+    let replica = store.replica
+    try await requireClaimed(replica)
+    return replica
+  }
+
+  private func refuseMoved() async throws(SyncError) {
+    let vault = vault
+    guard try await !read({ try SyncMoveNoticeTable.refusesUploads(vault, in: $0.database) }) else { throw .vaultMoved }
+  }
+
+  private func remintForMove(_ replica: ReplicaID, origin: ReplicaID, role: SyncMoveRole) async throws(SyncError) -> SyncMoveRemint {
+    var remints = 0
+    guard try await remint(replica, reason: .vaultMoved, mode: .keepState, count: &remints, recording: (origin, role)) != nil else {
+      throw .lifecycle(.markerUnavailable)
+    }
+    guard let done = try await read({ try SyncMoveRemintTable.load(origin: origin, role: role, in: $0.database) }) else {
+      throw .corruptState("a move re-mint was not recorded")
+    }
+    return done
   }
 
   private static let postponedDownload = SyncDownloadOutcome(applied: [], held: [:], missingKeys: [:], reminted: false, postponed: true)
@@ -226,6 +357,7 @@ public actor SyncEngine {
     guard try await resume() else { return .postponed }
     var replica = store.replica
     try await requireClaimed(replica)
+    try await refuseMoved()
     try await refuseNewerSchema(as: replica)
     try await repairDroppedChanges(of: replica)
     var uploaded = try await finishInFlight(as: replica).map { [$0] } ?? []
@@ -292,7 +424,7 @@ public actor SyncEngine {
     defer { unsupportedFiles = session.unsupported }
     var remints = 0
     var postponed = false
-    var listing = try await listForeignFiles(excluding: replica)
+    var (listing, noticeListed) = try await listForeignFiles(excluding: replica)
     while case .collision(let found) = try await session.run(listing, as: replica) {
       guard let next = try await remint(replica, reason: .replicaCollision(found: found), mode: .keepState, count: &remints) else {
         postponed = true
@@ -300,7 +432,7 @@ public actor SyncEngine {
       }
       replica = next
       session.noteRemint()
-      listing = try await listForeignFiles(excluding: replica)
+      (listing, noticeListed) = try await listForeignFiles(excluding: replica)
     }
     let rows = session.retainedRows
     let listed = postponed ? nil : SyncListing.ids(listing)
@@ -310,7 +442,23 @@ public actor SyncEngine {
       if let listed { try SyncAppliedTable.prune(keeping: listed, excluding: own, in: transaction.database) }
     }
     if !postponed { _ = try await raisedFloors(as: replica) }
-    return session.outcome(postponed: postponed)
+    let moved = postponed ? nil : try await noteMove(listed: noticeListed, as: replica)
+    return session.outcome(postponed: postponed, moved: moved)
+  }
+
+  /// Read after the listing's files are applied, so a writer they retire is known as retired; a notice that does not open or comes from a retired writer is
+  /// ignored and read again on a later call.
+  private func noteMove(listed: Bool, as replica: ReplicaID) async throws(SyncError) -> VaultMoveNotice? {
+    let (vault, ring) = (vault, ring)
+    let saved = try await read { try SyncMoveNoticeTable.load(vault, in: $0.database) }
+    if let saved, !saved.ignored, saved.data != nil { return try await read { try SyncMoveNoticeTable.notice(of: vault, keys: { ring.key($0) }, in: $0.database) } }
+    guard listed, let data = try? await provider.get(VaultPath.moveNotice), saved.map({ !$0.ignored || $0.data != data }) ?? true else { return nil }
+    guard let notice = try? VaultMoveNoticeCodec.open(data, vault: vault, keys: { ring.key($0) }), notice.from != replica, notice.to != replica else { return nil }
+    let directory = try await lifecycleCall { () async throws(ReplicaLifecycleError) in try await lifecycle.directory() }
+    guard !directory.isRetired(notice.from) else { return nil }
+    let millis = millis
+    try await write(as: replica) { try SyncMoveNoticeTable.save(data, for: vault, at: millis, in: $0.database) }
+    return notice
   }
 
   private func requireClaimed(_ replica: ReplicaID) async throws(SyncError) {
@@ -340,12 +488,14 @@ public actor SyncEngine {
     throw .appUpdateRequired(minimumSchema: minimum, current: store.registry.version)
   }
 
-  private func listForeignFiles(excluding replica: ReplicaID) async throws(SyncError) -> [ReplicaID: SyncListedReplica] {
+  private func listForeignFiles(excluding replica: ReplicaID) async throws(SyncError) -> ([ReplicaID: SyncListedReplica], noticeListed: Bool) {
+    let objects: [StorageObject]
     do {
-      return SyncListing.group(try await provider.listAll(prefix: VaultPath.replicasPrefix), excluding: replica)
+      objects = try await provider.listAll(prefix: VaultPath.replicasPrefix)
     } catch {
       throw .storage(error)
     }
+    return (SyncListing.group(objects, excluding: replica), objects.contains { $0.key == VaultPath.moveNotice })
   }
 
   private func readerLimit() throws(SyncError) -> HLCTimestamp {
@@ -459,15 +609,25 @@ public actor SyncEngine {
   }
 
   /// Returns nil when the device marker cannot be read; the lifecycle checks it before changing anything.
-  private func remint(_ replica: ReplicaID, reason: RemintReason, mode: RemintMode, count: inout Int) async throws(SyncError) -> ReplicaID? {
+  private func remint(
+    _ replica: ReplicaID, reason: RemintReason, mode: RemintMode, count: inout Int, recording move: (origin: ReplicaID, role: SyncMoveRole)? = nil
+  ) async throws(SyncError) -> ReplicaID? {
     guard count < Self.maximumRemintsPerUpload else { throw .remintLimitReached(count) }
     count += 1
     try await requireClaimed(replica)
     let also: @Sendable (Database) throws -> Void = { db in
-      guard case .moving(_, let retiring, _, _) = try ReplicaLifecyclePhase.load(db), retiring == replica else { throw SyncError.replicaChanged }
+      guard case .moving(let next, let retiring, _, _) = try ReplicaLifecyclePhase.load(db), retiring == replica else { throw SyncError.replicaChanged }
+      if let move {
+        let held = move.role == .out ? Set(try SyncHeldTable.load(db).keys.map(\.replica)) : []
+        try SyncMoveRemintTable.save(origin: move.origin, role: move.role, SyncMoveRemint(retired: retiring, successor: next, partial: held), in: db)
+      }
       try SyncCompactionTable.clear(db)
       try SyncAdoptionTable.clear(db)
-      if mode == .rebuild { try SyncAppliedTable.clear(db) }
+      if mode == .rebuild || reason == .vaultMoved { try SyncAppliedTable.clear(db) }
+      if reason == .vaultMoved {
+        try SyncHeldTable.replace(with: [], in: db)
+        try SyncMoveNoticeTable.clear(db)
+      }
     }
     do {
       return try await lifecycle.remint(reason: reason, mode: mode, also: also)

@@ -160,6 +160,73 @@ public actor SyncRuntime {
     publish()
   }
 
+  /// Moves the attached vault to `settings` with `SyncMover`, or carries on the move in progress; no run starts until it returns. After `.moved` sync goes
+  /// on at the new location; after `.superseded` the phase is `vaultMoved` with the other device's notice.
+  public func moveVault(to settings: SyncProviderSettings) async throws(SyncMoveError) -> SyncMoveOutcome {
+    await acquire()
+    defer { release() }
+    return try await moving { () async throws(SyncMoveError) in
+      let context = try await moveContext(to: settings)
+      let engine = try await startedEngine(for: context.source)
+      let mover = SyncMover(
+        engine: engine, attachment: context.source, target: context.target, targetProvider: context.targetProvider, locations: context.locations,
+        wallClock: wallClock)
+      return await rebind(after: try await mover.run())
+    }
+  }
+
+  /// Follows the move recorded for the attached vault to `settings`, this device's reach of the notice's location, with `SyncMoveFollower`.
+  public func followMove(to settings: SyncProviderSettings) async throws(SyncMoveError) -> SyncMoveOutcome {
+    await acquire()
+    defer { release() }
+    return try await moving { () async throws(SyncMoveError) in
+      let context = try await moveContext(to: settings)
+      let engine = try await startedEngine(for: context.source)
+      let follower = SyncMoveFollower(
+        engine: engine, source: context.source.location, target: context.target, targetProvider: context.targetProvider, locations: context.locations)
+      if let closed = try follower.close() { return await rebind(after: closed) }
+      return await rebind(after: try await follower.run(try await notice(of: engine, at: context.source)))
+    }
+  }
+
+  /// Gives up the move or follow in progress as far as `SyncMover.abandon()` and `SyncMoveFollower.abandon()` allow; sync then goes on where it is attached.
+  /// A journal that cannot be read is discarded too, unless the notice at the attached location is this database's own.
+  public func abandonMove() async throws(SyncMoveError) {
+    await acquire()
+    defer { release() }
+    try await moving { () async throws(SyncMoveError) in
+      let context = try await moveContext(to: nil)
+      let journal = SyncMoveJournalStore(beside: context.locations)
+      let saved: SyncMoveJournal?
+      do throws(SyncMoveError) {
+        saved = try journal.load()
+      } catch {
+        guard case .journal = error else { throw error }
+        try await refuseOwnNotice(at: context.source, engine: try await startedEngine(for: context.source))
+        return try journal.clear()
+      }
+      guard case .movingOut(_, let target)? = saved else { return try journal.clear() }
+      let engine = try await startedEngine(for: context.source)
+      try await SyncMover(engine: engine, attachment: context.source, target: target, targetProvider: context.targetProvider, locations: context.locations).abandon()
+    }
+  }
+
+  /// Stays at the attached location after another device moved the vault; see `SyncEngine.forgetMove()` for what that gives up.
+  public func stayAfterMove() async throws(SyncMoveError) {
+    await acquire()
+    defer { release() }
+    try await moving { () async throws(SyncMoveError) in
+      let context = try await moveContext(to: nil)
+      if let pending = try SyncMoveJournalStore(beside: context.locations).load() { throw .moveInProgress(pending) }
+      let engine = try await startedEngine(for: context.source)
+      do throws(SyncError) {
+        try await engine.forgetMove()
+      } catch {
+        throw .sync(error)
+      }
+    }
+  }
+
   /// Cancels the timers and listeners and ends the status stream; a run in flight finishes, and calls waiting for it return after it.
   public func shutdown() {
     isShutDown = true
@@ -184,6 +251,85 @@ public actor SyncRuntime {
   func noteChange() {
     scheduler.request(.sync)
     pump()
+  }
+
+  /// Stops the engine while `body` runs and evaluates again after it: a new location, a notice that stopped the move, or the move still in progress.
+  private func moving<T>(_ body: () async throws(SyncMoveError) -> T) async throws(SyncMoveError) -> T {
+    engine = nil
+    scheduler.reset()
+    defer {
+      phase = nil
+      attention = SyncAttentionSlots()
+      scheduler.request(.launch)
+      publish()
+    }
+    return try await body()
+  }
+
+  private func rebind(after outcome: SyncMoveOutcome) async -> SyncMoveOutcome {
+    if case .moved = outcome { await startup.rebound() }
+    return outcome
+  }
+
+  private func moveContext(to settings: SyncProviderSettings?) async throws(SyncMoveError) -> SyncMoveContext {
+    do {
+      return try await startup.moveContext(to: settings)
+    } catch {
+      throw .startup(error)
+    }
+  }
+
+  private func startedEngine(for attachment: SyncAttachment) async throws(SyncMoveError) -> SyncEngine {
+    let made = attachment.engine(store: store, device: device, trustedClock: trustedClock, configuration: configuration, wallClock: wallClock)
+    do {
+      _ = try await made.start()
+    } catch {
+      throw .sync(error)
+    }
+    return made
+  }
+
+  /// The notice the engine recorded, or the one at the old location once the follow's re-mint cleared the record.
+  private func notice(of engine: SyncEngine, at source: SyncAttachment) async throws(SyncMoveError) -> VaultMoveNotice {
+    do {
+      if let recorded = try await engine.recordedMove() { return recorded }
+    } catch {
+      throw .sync(error)
+    }
+    guard let stored = try await storedNotice(at: source) else { throw .source(.notFound(VaultPath.moveNotice)) }
+    return stored
+  }
+
+  private func storedNotice(at source: SyncAttachment) async throws(SyncMoveError) -> VaultMoveNotice? {
+    let data: Data
+    do {
+      data = try await source.provider.get(VaultPath.moveNotice)
+    } catch {
+      guard case .notFound = error else { throw .source(error) }
+      return nil
+    }
+    do {
+      return try VaultMoveNoticeCodec.open(data, vault: source.vault) { source.ring.key($0) }
+    } catch {
+      throw .noticeUnreadable
+    }
+  }
+
+  /// A notice is this database's own when it names the replica syncing now, or one whose chain of successors ends there.
+  private func refuseOwnNotice(at source: SyncAttachment, engine: SyncEngine) async throws(SyncMoveError) {
+    guard let notice = try await storedNotice(at: source) else { return }
+    let directory: ReplicaDirectory
+    do {
+      directory = try await source.lifecycle(store: store, device: device, wallClock: wallClock).directory()
+    } catch {
+      throw .sync(.lifecycle(error))
+    }
+    var current = notice.to
+    var visited: Set<ReplicaID> = []
+    while current != engine.replica, visited.insert(current).inserted, let entry = directory.entry(for: current), entry.state == .retired, let next = entry.successor {
+      current = next
+    }
+    if current == engine.replica { throw .alreadyMoved(notice) }
   }
 
   private func noteCondition(_ condition: CloudKitStorageCondition) async {
@@ -230,6 +376,7 @@ public actor SyncRuntime {
     guard phase?.canSync == true, engine != nil else { return .completed }
     if let result = await startEngine() { return result }
     guard let attached = engine else { return .completed }
+    if let notice = try? await attached.engine.recordedMove() { return apply(.vaultMoved(notice)) ?? .completed }
     if work.contains(.download), let result = await download(with: attached) { return result }
     if work.contains(.upload), let result = await upload(with: attached) { return result }
     if work.contains(.evaluate), let result = await maintain(with: attached) { return result }
@@ -283,6 +430,8 @@ public actor SyncRuntime {
     case .accountChanged, .storageRemoved, .settingsUnreadable, .vaultMismatch, .vaultUnrecognized:
       stop(SyncAttentionReason(phase: phase), cadence: .idle)
       includeInBackup()
+    case .vaultMoved, .moveInProgress:
+      stop(SyncAttentionReason(phase: phase), cadence: .idle)
     }
     return nil
   }
@@ -345,6 +494,7 @@ public actor SyncRuntime {
     }
     guard !outcome.postponed else { return .failed(retry: .launch) }
     await startup.noteMissingKeys(outcome.missingKeys, vault: attached.location.vault)
+    if let notice = outcome.moved { return apply(.vaultMoved(notice)) ?? .completed }
     let replicas = Set(outcome.missingKeys.values.joined())
     attention.download = replicas.isEmpty ? nil : .keysMissing(replicas: replicas)
     publish()
@@ -431,7 +581,7 @@ public actor SyncRuntime {
     case .location:
       _ = apply(.settingsUnreadable)
       return .failed(retry: .launch)
-    case .alreadyAttached, .setup, .keyRing, .marker:
+    case .alreadyAttached, .setup, .keyRing, .marker, .notAttached, .unavailable:
       return failed(code: error.code, retry: .launch)
     }
   }
@@ -454,6 +604,9 @@ public actor SyncRuntime {
       return .failed(retry: .launch)
     case .replicaChanged:
       return .failed(retry: retry)
+    case .vaultMoved:
+      guard let notice = try? await engine?.engine.recordedMove() else { return apply(.moveInProgress) ?? .completed }
+      return apply(.vaultMoved(notice)) ?? .completed
     default:
       return failed(code: error.code, retry: retry)
     }

@@ -9,6 +9,7 @@ public enum VaultObject: Sendable, Equatable {
   case basePart(ReplicaID, upTo: Int64, tag: ContentTag, part: Int, parts: Int)
   case sealedKey(recipient: String, key: KeyID)
   case blobPart(name: String, part: Int, parts: Int)
+  case moveNotice
   case unknown
 }
 
@@ -17,6 +18,8 @@ public enum VaultPath {
   public static let maximumParts = 9999
   public static let hint = objectKey("vault.json")
   public static let replicasPrefix = "replicas/"
+  /// Beside the replica prefixes, so the listing every download makes already shows it.
+  public static let moveNotice = objectKey(replicasPrefix + "moved")
   static let sequenceWidth = 12
   static let partWidth = 4
   static let recipientLength = 16
@@ -65,6 +68,7 @@ public enum VaultPath {
     case ("vault.json", 1): return .hint
     case ("keys", 3): return classifySealedKey(recipient: components[1], key: components[2])
     case ("blobs", 3): return classifyBlobPart(name: components[1], part: components[2])
+    case ("replicas", 2) where components[1] == "moved": return .moveNotice
     case ("replicas", 3...5): return classifyReplicaObject(Array(components.dropFirst()))
     default: return .unknown
     }

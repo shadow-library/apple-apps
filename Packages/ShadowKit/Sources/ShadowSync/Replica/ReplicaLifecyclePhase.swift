@@ -93,6 +93,7 @@ extension RemintReason {
       case .unknownObject(let key): ["kind": "unknown-object", "key": .string(key.rawValue)]
       case .clockCorrected: ["kind": "clock-corrected"]
       case .replicaCollision(let found): ["kind": "replica-collision", "replica": .string(found.description)]
+      case .vaultMoved: ["kind": "vault-moved"]
       }
     return String(decoding: CanonicalJSON.encode(.object(members)), as: UTF8.self)
   }
@@ -104,6 +105,7 @@ extension RemintReason {
     case "marker-missing": self = .markerMissing
     case "retired": self = .retired
     case "clock-corrected": self = .clockCorrected
+    case "vault-moved": self = .vaultMoved
     case "marker-other":
       guard let replica = members["replica"]?.stringValue.flatMap(ReplicaID.init) else { return nil }
       self = .markerNamesOther(replica)

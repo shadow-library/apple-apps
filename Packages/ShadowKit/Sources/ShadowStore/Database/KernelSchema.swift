@@ -4,10 +4,11 @@ import ShadowCore
 
 enum KernelSchema {
   static let migrationIdentifier = "com.shadow.library.shadowstore.kernel.1"
+  static let relayMigrationIdentifier = "com.shadow.library.shadowstore.kernel.2"
   static let stateTables = ["field_state", "appended_item", "revision", "tombstone", "foreign_record", "opaque_line"]
 
   static func migrator(_ extra: [StoreMigration]) throws(StoreError) -> DatabaseMigrator {
-    var seen = [migrationIdentifier]
+    var seen = [migrationIdentifier, relayMigrationIdentifier]
     for migration in extra {
       // GRDB keys migrations by Swift String and traps on a duplicate, so uniqueness is checked under the same equality first.
       guard !seen.contains(migration.identifier) else { throw .duplicateMigration(migration.identifier) }
@@ -15,6 +16,7 @@ enum KernelSchema {
     }
     var migrator = DatabaseMigrator()
     migrator.registerMigration(migrationIdentifier, migrate: create)
+    migrator.registerMigration(relayMigrationIdentifier, migrate: addRelay)
     for migration in extra { migrator.registerMigration(migration.identifier, migrate: migration.migrate) }
     return migrator
   }
@@ -63,6 +65,11 @@ enum KernelSchema {
           line BLOB NOT NULL
         ) STRICT;
         """)
+  }
+
+  /// A relayed row carries another write's record unchanged, so a rebuild never re-stamps it and the clock check never weighs it.
+  private static func addRelay(_ db: Database) throws {
+    try db.execute(sql: "ALTER TABLE change_log ADD COLUMN relayed INTEGER NOT NULL DEFAULT 0 CHECK (relayed IN (0, 1))")
   }
 
   static func clear(_ scope: StateScope, in db: Database) throws {

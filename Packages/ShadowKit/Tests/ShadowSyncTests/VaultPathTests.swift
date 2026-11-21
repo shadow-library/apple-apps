@@ -157,6 +157,7 @@ struct VaultPathTests {
     case .basePart(let replica, let upTo, let tag, let part, let parts): VaultPath.basePart(replica, upTo: upTo, tag: tag, part: part, parts: parts)
     case .sealedKey(let recipient, let key): VaultPath.sealedKey(recipient: recipient, key: key)
     case .blobPart(let name, let part, let parts): VaultPath.blobPart(name: name, part: part, parts: parts)
+    case .moveNotice: VaultPath.moveNotice
     case .unknown: nil
     }
   }

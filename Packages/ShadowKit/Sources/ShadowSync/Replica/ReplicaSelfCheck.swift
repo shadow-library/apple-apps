@@ -37,6 +37,8 @@ public enum RemintReason: Sendable, Equatable {
   case clockCorrected
   /// A file under `found`'s prefix carries a change stamped with this replica's id, so another writer shares it.
   case replicaCollision(found: ReplicaID)
+  /// The vault moved to another location, where this database continues as a new replica.
+  case vaultMoved
 }
 
 public enum ReplicaSelfCheckVerdict: Sendable, Equatable {

@@ -42,13 +42,18 @@ public struct SyncDownloadOutcome: Sendable, Equatable {
   public let reminted: Bool
   /// The device marker could not be read to re-mint, so the call stopped early; `applied` holds what was applied before.
   public let postponed: Bool
+  /// The vault moved elsewhere: from now on this replica only downloads here and continues as a new replica at the notice's location.
+  public let moved: VaultMoveNotice?
 
-  public init(applied: [SyncFileID], held: [SyncFileID: SyncHoldReason], missingKeys: [KeyID: Set<ReplicaID>], reminted: Bool, postponed: Bool = false) {
+  public init(
+    applied: [SyncFileID], held: [SyncFileID: SyncHoldReason], missingKeys: [KeyID: Set<ReplicaID>], reminted: Bool, postponed: Bool = false, moved: VaultMoveNotice? = nil
+  ) {
     self.applied = applied
     self.held = held
     self.missingKeys = missingKeys
     self.reminted = reminted
     self.postponed = postponed
+    self.moved = moved
   }
 }
 

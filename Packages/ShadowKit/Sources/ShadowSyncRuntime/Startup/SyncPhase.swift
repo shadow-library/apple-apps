@@ -20,6 +20,10 @@ public enum SyncPhase: Sendable, Equatable {
   case vaultMismatch(expected: VaultID, found: VaultID)
   /// The location holds vault files but nothing names their vault.
   case vaultUnrecognized
+  /// The attached location holds a move notice: this device uploads nothing more there until it follows the move or stays.
+  case vaultMoved(VaultMoveNotice)
+  /// A move or a follow started on this device has not finished (`SyncMoveJournalStore`); nothing syncs until it does or is abandoned.
+  case moveInProgress
 
   public var canSync: Bool {
     guard case .vault(let state) = self else { return false }

@@ -42,6 +42,10 @@ public enum SyncAttentionReason: Sendable, Equatable {
   /// The saved sync location cannot be read; unlike a disconnect, the user did not turn sync off.
   case settingsUnreadable
   case storageUnreachable
+  /// The vault moved to the notice's location; follow it there, or stay and give up what changes there.
+  case vaultMoved(VaultMoveNotice)
+  /// A move or follow on this device is unfinished, or its journal cannot be read; run it again, or give it up with `SyncRuntime.abandonMove()`.
+  case moveInProgress
   case failed(code: String)
 
   public var stops: SyncStoppage {
@@ -50,7 +54,7 @@ public enum SyncAttentionReason: Sendable, Equatable {
     case .wrongClock(_, let stopsUploads): stopsUploads ? .uploads : .nothing
     case .keysMissing(let replicas): .downloads(from: replicas)
     case .accountUnavailable, .accountChanged, .storageRemoved, .zoneLost, .vaultMismatch, .vaultUnrecognized, .awaitingKey, .appUpdateRequired, .deviceLocked,
-      .settingsUnreadable, .storageUnreachable, .failed:
+      .settingsUnreadable, .storageUnreachable, .vaultMoved, .moveInProgress, .failed:
       .everything
     }
   }
@@ -68,6 +72,8 @@ public enum SyncAttentionReason: Sendable, Equatable {
     case .settingsUnreadable: self = .settingsUnreadable
     case .vaultMismatch(let expected, let found): self = .vaultMismatch(expected: expected, found: found)
     case .vaultUnrecognized: self = .vaultUnrecognized
+    case .vaultMoved(let notice): self = .vaultMoved(notice)
+    case .moveInProgress: self = .moveInProgress
     }
   }
 }

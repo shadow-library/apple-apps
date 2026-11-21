@@ -214,26 +214,9 @@ struct SyncCompactor {
     }
   }
 
-  /// Shrinks the part payload until every sealed part fits the provider, so a base that cannot fit is refused before anything is announced or put.
   private func sealParts(_ file: BaseFile) throws(SyncError) -> [SealedFile] {
-    let limit = context.provider.capabilities.maxObjectBytes
-    var budget = min(max(context.configuration.basePartBytes, 1), BaseCodec.maximumPartPayloadBytes)
-    while true {
-      let parts: [SealedFile]
-      do {
-        parts = try BaseCodec.seal(file, vault: context.vault, with: context.key, partPayloadBytes: budget)
-      } catch {
-        switch error {
-        case .lineTooLarge, .payloadTooLarge: throw .baseTooLarge(limit: min(budget, limit))
-        default: throw .codec(error)
-        }
-      }
-      let largest = parts.map(\.data.count).max() ?? 0
-      guard largest > limit else { return parts }
-      let next = min(budget - (largest - limit), budget - 1, budget - budget / 16)
-      guard next >= 1 else { throw .baseTooLarge(limit: limit) }
-      budget = next
-    }
+    try SyncBaseSealer.sealParts(
+      file, vault: context.vault, key: context.key, partBytes: context.configuration.basePartBytes, limit: context.provider.capabilities.maxObjectBytes)
   }
 
   /// Deletes only when the base completed last is fully listed, and only what it covers, by recorded names; each file is deleted before it is marked, so a crash repeats a delete rather than leaking a file.
@@ -349,6 +332,29 @@ struct SyncCompactor {
       return try await body()
     } catch {
       throw SyncError(converting: error)
+    }
+  }
+}
+
+enum SyncBaseSealer {
+  /// Shrinks the part payload until every sealed part fits the provider, so a base that cannot fit is refused before anything is announced or put.
+  static func sealParts(_ file: BaseFile, vault: VaultID, key: VaultKey, partBytes: Int, limit: Int) throws(SyncError) -> [SealedFile] {
+    var budget = min(max(partBytes, 1), BaseCodec.maximumPartPayloadBytes)
+    while true {
+      let parts: [SealedFile]
+      do {
+        parts = try BaseCodec.seal(file, vault: vault, with: key, partPayloadBytes: budget)
+      } catch {
+        switch error {
+        case .lineTooLarge, .payloadTooLarge: throw .baseTooLarge(limit: min(budget, limit))
+        default: throw .codec(error)
+        }
+      }
+      let largest = parts.map(\.data.count).max() ?? 0
+      guard largest > limit else { return parts }
+      let next = min(budget - (largest - limit), budget - 1, budget - budget / 16)
+      guard next >= 1 else { throw .baseTooLarge(limit: limit) }
+      budget = next
     }
   }
 }

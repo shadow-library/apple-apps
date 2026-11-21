@@ -111,13 +111,13 @@ struct SyncDownloadSession {
     own = context.store.replica
   }
 
-  func outcome(postponed: Bool) -> SyncDownloadOutcome {
+  func outcome(postponed: Bool, moved: VaultMoveNotice?) -> SyncDownloadOutcome {
     var missingKeys: [KeyID: Set<ReplicaID>] = [:]
     for file in held.values {
       guard case .missingKey(let key) = file.reason else { continue }
       missingKeys[key, default: []].insert(file.id.replica)
     }
-    return SyncDownloadOutcome(applied: appliedFiles, held: held.mapValues(\.reason), missingKeys: missingKeys, reminted: reminted, postponed: postponed)
+    return SyncDownloadOutcome(applied: appliedFiles, held: held.mapValues(\.reason), missingKeys: missingKeys, reminted: reminted, postponed: postponed, moved: moved)
   }
 
   /// A row outlives its file in the listing for a while, so a stale listing does not reset a rejected file's count.

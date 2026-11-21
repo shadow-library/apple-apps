@@ -7,6 +7,13 @@ import ShadowSync
 /// Works out where the vault stands on this device and, once it can, hands out what `SyncEngine` needs. Calls run one at a time.
 /// A saved location is never replaced here: a different account or a different vault at the location stops sync until the user decides, and an
 /// automatic provider attaches on its own only on first use, never after sync was turned off.
+struct SyncMoveContext: Sendable {
+  let source: SyncAttachment
+  let target: SyncLocation
+  let targetProvider: any StorageProvider
+  let locations: SyncLocationStore
+}
+
 public actor SyncStartup {
   private static let logger = Logger(category: "SyncStartup")
 
@@ -47,8 +54,53 @@ public actor SyncStartup {
     case .turnedOff(.disconnected): return SyncStartupResult(phase: .detached)
     case .turnedOff(.unreadable): return SyncStartupResult(phase: .settingsUnreadable)
     case .turnedOff(.newerFormat): return SyncStartupResult(phase: .appUpdateRequired)
-    case .attached(let location): return try await evaluate(location, known: nil)
+    case .attached(let location):
+      guard !isMoving() else { return SyncStartupResult(phase: .moveInProgress, location: location) }
+      return try await evaluate(location, known: nil)
     }
+  }
+
+  /// The attached vault's attachment, whatever a move in progress says, and the location `settings` names for it with this device's account binding;
+  /// nil names the attached location itself.
+  func moveContext(to requested: SyncProviderSettings?) async throws(SyncStartupError) -> SyncMoveContext {
+    await acquire()
+    defer { release() }
+    guard await environment.hasUnlockedSinceBoot() else { throw .deviceLocked }
+    let record: SyncLocationRecord
+    do {
+      record = try environment.locationStore.load()
+    } catch {
+      throw await locationFailure(error)
+    }
+    guard case .attached(let location) = record else { throw .notAttached }
+    let source = try await evaluate(location, known: nil)
+    guard let attachment = source.attachment else { throw .unavailable(source.phase) }
+    let settings = requested ?? location.settings
+    let binding: SyncAccountBinding?
+    switch await environment.account(settings) {
+    case .available(nil) where settings.kind.distinguishesAccounts: throw .accountUnavailable
+    case .available(let account): binding = account
+    case .noAccount: throw .noStorageAccount
+    case .temporarilyUnavailable: throw .accountUnavailable
+    }
+    let target = settings == location.settings ? location : SyncLocation(settings: settings, vault: location.vault, account: binding)
+    return SyncMoveContext(source: attachment, target: target, targetProvider: try provider(for: settings).provider, locations: environment.locationStore)
+  }
+
+  /// An unreadable journal counts as a move in progress: running the old engine under a half-moved replica is what the journal prevents.
+  private func isMoving() -> Bool {
+    do {
+      return try SyncMoveJournalStore(beside: environment.locationStore).load() != nil
+    } catch {
+      return true
+    }
+  }
+
+  /// After a move saved the new location: the attached provider and the key services that hold it belong to the old one, and missing keys were named there.
+  func rebound() {
+    attachedProvider = nil
+    cachedKeyServices = SyncKeyServices()
+    missingKeys = [:]
   }
 
   public func discover(_ settings: SyncProviderSettings) async throws(SyncStartupError) -> VaultDiscovery {

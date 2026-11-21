@@ -18,6 +18,13 @@ public enum SyncError: ShadowError {
   case storeClockUntrusted(skew: Duration)
   /// The database moved to another replica id during a call; the engine changes nothing under the new id and reports the call as postponed.
   case replicaChanged
+  /// A move notice was read for this replica: it uploads nothing more here and continues as a new replica at the notice's location.
+  case vaultMoved
+  /// The ring holds no key at or above the vault's key floor to seal with.
+  case awaitingKey(floor: KeyID?)
+  /// The state holds a change stamped beyond the reader limit, which readers would hold back.
+  case clockAhead(HLCTimestamp)
+  case replicaRetired(ReplicaID)
   case corruptState(String)
 
   public var code: String {
@@ -36,6 +43,10 @@ public enum SyncError: ShadowError {
     case .appUpdateRequired: "sync.app-update-required"
     case .storeClockUntrusted: "sync.store-clock-untrusted"
     case .replicaChanged: "sync.replica-changed"
+    case .vaultMoved: "sync.vault-moved"
+    case .awaitingKey: "sync.awaiting-key"
+    case .clockAhead: "sync.clock-ahead"
+    case .replicaRetired: "sync.replica-retired"
     case .corruptState: "sync.corrupt-state"
     }
   }
@@ -58,6 +69,10 @@ public enum SyncError: ShadowError {
     case .appUpdateRequired(let minimum, let current):
       "The vault needs schema \(minimum) but this app writes schema \(current). Update the app to keep syncing; unsent changes are kept."
     case .replicaChanged: "This device's sync identity changed during the call, so the call stopped without changes."
+    case .vaultMoved: "The vault moved to another storage location, so nothing more is uploaded here."
+    case .awaitingKey: "This device does not hold the vault's current key yet."
+    case .clockAhead(let clock): "A change is stamped \(clock), too far ahead of trusted time to be read by other devices."
+    case .replicaRetired(let replica): "Replica \(replica) is retired; it must continue as a new replica before it can move the vault."
     case .corruptState(let reason): "The sync bookkeeping is corrupt: \(reason)."
     }
   }
