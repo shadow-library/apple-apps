@@ -67,27 +67,36 @@ extension MemoirStoreKind {
   }
 }
 
-/// The only way to open a Memoir store: each kind gets its own registry, its admitted sync classes and its backup policy here and nowhere else.
+/// The only way to open a Memoir store: each kind gets its own registry, its admitted sync classes and its backup policy here and nowhere else. Only the
+/// main store holds commands, so only it takes the replay projection.
 public enum MemoirStore {
-  public static func open(_ store: MemoirStoreKind, in vault: MemoirVault, wallClock: @escaping @Sendable () -> Date = { Date() }) throws(StoreError) -> VaultStore {
-    try open(store, at: .file(vault.databaseURL(store)), wallClock: wallClock)
+  public static func open(
+    _ store: MemoirStoreKind, in vault: MemoirVault, wallClock: @escaping @Sendable () -> Date = { Date() }, projection: MemoirReconciler? = nil
+  ) throws(StoreError) -> VaultStore {
+    try open(store, at: .file(vault.databaseURL(store)), wallClock: wallClock, projection: projection)
   }
 
-  public static func openInMemory(_ store: MemoirStoreKind, wallClock: @escaping @Sendable () -> Date = { Date() }) throws(StoreError) -> VaultStore {
-    try open(store, at: .inMemory, wallClock: wallClock)
+  public static func openInMemory(
+    _ store: MemoirStoreKind, wallClock: @escaping @Sendable () -> Date = { Date() }, projection: MemoirReconciler? = nil
+  ) throws(StoreError) -> VaultStore {
+    try open(store, at: .inMemory, wallClock: wallClock, projection: projection)
   }
 
-  private static func open(_ store: MemoirStoreKind, at location: StoreLocation, wallClock: @escaping @Sendable () -> Date) throws(StoreError) -> VaultStore {
+  private static func open(
+    _ store: MemoirStoreKind, at location: StoreLocation, wallClock: @escaping @Sendable () -> Date, projection: MemoirReconciler?
+  ) throws(StoreError) -> VaultStore {
+    if store != .main, projection != nil { throw .invalidChange("only the main store holds commands, so only it takes the replay projection") }
     switch store {
     case .main:
-      try VaultStore.open(
-        location, registry: MemoirSchema.mainRegistry, migrations: SyncEngine.migrations, wallClock: wallClock, backup: .adjustable, admittedClasses: [.general])
+      return try VaultStore.open(
+        location, registry: MemoirSchema.mainRegistry, migrations: SyncEngine.migrations, wallClock: wallClock, reconciler: projection, backup: .adjustable,
+        admittedClasses: [.general])
     case .activity:
-      try VaultStore.open(
+      return try VaultStore.open(
         location, registry: MemoirSchema.activityRegistry, migrations: SyncEngine.migrations, wallClock: wallClock, backup: .alwaysExcluded,
         admittedClasses: [.general, .activity])
     case .restricted:
-      try VaultStore.open(
+      return try VaultStore.open(
         location, registry: MemoirSchema.restrictedRegistry, migrations: SyncEngine.migrations, wallClock: wallClock, backup: .alwaysExcluded,
         admittedClasses: [.general, .health])
     }

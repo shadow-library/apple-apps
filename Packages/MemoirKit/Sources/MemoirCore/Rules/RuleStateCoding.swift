@@ -175,3 +175,95 @@ extension RuleTable: Decodable where Value: Decodable {
     }
   }
 }
+
+extension AchievementID: Codable, CodingKeyRepresentable {}
+
+extension TitleID: Codable, CodingKeyRepresentable {}
+
+extension CosmeticID: Codable, CodingKeyRepresentable {}
+
+extension Halves: Decodable {
+  private enum DecodingKeys: String, CodingKey {
+    case halves
+  }
+
+  public init(from decoder: any Decoder) throws {
+    self.init(try decoder.container(keyedBy: DecodingKeys.self).decode(Int.self, forKey: .halves))
+  }
+}
+
+extension RewardAmount: Codable {
+  private enum CodingKeys: String, CodingKey {
+    case xp
+    case coins
+  }
+
+  public init(from decoder: any Decoder) throws {
+    let container = try decoder.container(keyedBy: CodingKeys.self)
+    let amount = RewardAmount(xp: try container.decode(Int.self, forKey: .xp), coins: try container.decode(Int.self, forKey: .coins))
+    guard amount.xp >= 0, amount.coins >= 0 else {
+      throw DecodingError.dataCorrupted(.init(codingPath: decoder.codingPath, debugDescription: "A reward grants no negative XP or coins."))
+    }
+    self = amount
+  }
+
+  public func encode(to encoder: any Encoder) throws {
+    var container = encoder.container(keyedBy: CodingKeys.self)
+    try container.encode(xp, forKey: .xp)
+    try container.encode(coins, forKey: .coins)
+  }
+}
+
+extension DayHP: Codable {
+  private enum CodingKeys: String, CodingKey {
+    case hpStart
+    case hpEnd
+    case hpMax
+    case spent
+  }
+
+  public init(from decoder: any Decoder) throws {
+    let container = try decoder.container(keyedBy: CodingKeys.self)
+    let hp = DayHP(
+      hpStart: try container.decode(Int.self, forKey: .hpStart), hpEnd: try container.decode(Int.self, forKey: .hpEnd),
+      hpMax: try container.decode(Int.self, forKey: .hpMax), spent: try container.decode(Int.self, forKey: .spent))
+    guard hp.spent >= 0, (0...hp.hpMax).contains(hp.hpStart), (0...hp.hpStart).contains(hp.hpEnd) else {
+      throw DecodingError.dataCorrupted(.init(codingPath: decoder.codingPath, debugDescription: "A day's HP stays within its maximum and only falls."))
+    }
+    self = hp
+  }
+
+  public func encode(to encoder: any Encoder) throws {
+    var container = encoder.container(keyedBy: CodingKeys.self)
+    try container.encode(hpStart, forKey: .hpStart)
+    try container.encode(hpEnd, forKey: .hpEnd)
+    try container.encode(hpMax, forKey: .hpMax)
+    try container.encode(spent, forKey: .spent)
+  }
+}
+
+extension ComebackTrigger: Decodable {
+  private enum Kind: String, Decodable {
+    case anchorMissYesterday = "anchor_miss_yesterday"
+    case missWithinDays = "miss_within_days"
+  }
+
+  private enum DecodingKeys: String, CodingKey {
+    case kind
+    case days
+    case strictness
+    case requiresColdMomentum
+  }
+
+  public init(from decoder: any Decoder) throws {
+    let container = try decoder.container(keyedBy: DecodingKeys.self)
+    switch try container.decode(Kind.self, forKey: .kind) {
+    case .anchorMissYesterday:
+      self = .anchorMissYesterday
+    case .missWithinDays:
+      self = .missWithinDays(
+        days: try container.decode(Int.self, forKey: .days), strictness: try container.decode([Strictness].self, forKey: .strictness),
+        requiresColdMomentum: try container.decode(Bool.self, forKey: .requiresColdMomentum))
+    }
+  }
+}

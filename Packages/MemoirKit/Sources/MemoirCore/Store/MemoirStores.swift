@@ -8,15 +8,17 @@ public struct MemoirStores: Sendable {
   public let activity: VaultStore
   public let restricted: VaultStore
 
-  public static func open(in vault: MemoirVault, wallClock: @escaping @Sendable () -> Date = { Date() }) throws(StoreError) -> MemoirStores {
+  public static func open(
+    in vault: MemoirVault, wallClock: @escaping @Sendable () -> Date = { Date() }, projection: MemoirReconciler? = nil
+  ) throws(StoreError) -> MemoirStores {
     MemoirStores(
-      main: try MemoirStore.open(.main, in: vault, wallClock: wallClock), activity: try MemoirStore.open(.activity, in: vault, wallClock: wallClock),
+      main: try MemoirStore.open(.main, in: vault, wallClock: wallClock, projection: projection), activity: try MemoirStore.open(.activity, in: vault, wallClock: wallClock),
       restricted: try MemoirStore.open(.restricted, in: vault, wallClock: wallClock))
   }
 
-  public static func openInMemory(wallClock: @escaping @Sendable () -> Date = { Date() }) throws(StoreError) -> MemoirStores {
+  public static func openInMemory(wallClock: @escaping @Sendable () -> Date = { Date() }, projection: MemoirReconciler? = nil) throws(StoreError) -> MemoirStores {
     MemoirStores(
-      main: try MemoirStore.openInMemory(.main, wallClock: wallClock), activity: try MemoirStore.openInMemory(.activity, wallClock: wallClock),
+      main: try MemoirStore.openInMemory(.main, wallClock: wallClock, projection: projection), activity: try MemoirStore.openInMemory(.activity, wallClock: wallClock),
       restricted: try MemoirStore.openInMemory(.restricted, wallClock: wallClock))
   }
 

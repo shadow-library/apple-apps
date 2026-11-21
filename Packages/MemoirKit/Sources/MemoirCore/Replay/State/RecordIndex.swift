@@ -2,14 +2,14 @@ import Foundation
 import ShadowStore
 
 /// A quick log whose reward replay decided; its words and values stay in the record of its own class.
-public struct QuickLogOutcome: Sendable, Hashable {
+public struct QuickLogOutcome: Sendable, Hashable, Codable {
   public let source: QuickLogSource
   public let date: LocalDate
   public let rewarded: Bool
 }
 
 /// A metric a command created; deletion only deactivates it, as the reference's does, so later commands still find it.
-public struct ReplayMetric: Sendable, Hashable {
+public struct ReplayMetric: Sendable, Hashable, Codable {
   public let metricClass: SyncClass
   public internal(set) var isActive: Bool
 }

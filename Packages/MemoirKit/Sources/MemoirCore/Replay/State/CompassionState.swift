@@ -1,13 +1,13 @@
 import Foundation
 
-public enum RecoveryQuestState: String, RuleKey {
+public enum RecoveryQuestState: String, RuleKey, Codable {
   case pending
   case completed
   case expired
 }
 
 /// A day's Recovery quest, spawned by the day walk after an anchor or routine miss and completed by `recovery.complete`.
-public struct RecoveryQuest: Sendable, Hashable {
+public struct RecoveryQuest: Sendable, Hashable, Codable {
   public let id: UUID
   public let date: LocalDate
   public let sourceQuest: UUID?
@@ -22,7 +22,7 @@ public struct RecoveryQuest: Sendable, Hashable {
 }
 
 /// The reference's `returner_events` row.
-public struct ReturnerEvent: Sendable, Hashable {
+public struct ReturnerEvent: Sendable, Hashable, Codable {
   public let date: LocalDate
   public let lastActiveDate: LocalDate
   public let daysAbsent: Int
@@ -32,7 +32,7 @@ public struct ReturnerEvent: Sendable, Hashable {
 }
 
 /// The compassion mechanics that outlive one day; each day's Comeback and plan lock live on its `ReplayDay`, and the intensity mode in `ReplaySettings`.
-public struct CompassionState: Sendable, Hashable {
+public struct CompassionState: Sendable, Hashable, Codable {
   public static let empty = CompassionState()
 
   public internal(set) var recoveries: [LocalDate: RecoveryQuest] = [:]

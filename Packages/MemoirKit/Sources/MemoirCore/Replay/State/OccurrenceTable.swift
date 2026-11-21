@@ -89,3 +89,31 @@ public struct OccurrenceTable<Value: Sendable & Hashable>: Sendable, Hashable {
     return low
   }
 }
+
+/// Entries in date order, then quest-id order, so equal tables encode alike; an occurrence listed twice is refused.
+extension OccurrenceTable: Codable where Value: Codable {
+  private struct Entry: Codable {
+    let quest: UUID
+    let date: LocalDate
+    let value: Value
+  }
+
+  public init(from decoder: any Decoder) throws {
+    var container = try decoder.unkeyedContainer()
+    var table = OccurrenceTable()
+    while !container.isAtEnd {
+      let entry = try container.decode(Entry.self)
+      let occurrence = Occurrence(quest: entry.quest, date: entry.date)
+      guard table[occurrence] == nil else {
+        throw DecodingError.dataCorruptedError(in: container, debugDescription: "The occurrence \(entry.quest) on \(entry.date) is listed twice.")
+      }
+      table[occurrence] = entry.value
+    }
+    self = table
+  }
+
+  public func encode(to encoder: any Encoder) throws {
+    var container = encoder.unkeyedContainer()
+    for entry in all { try container.encode(Entry(quest: entry.occurrence.quest, date: entry.occurrence.date, value: entry.value)) }
+  }
+}

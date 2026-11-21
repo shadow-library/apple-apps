@@ -1,4 +1,4 @@
-public enum Strictness: String, RuleKey, Encodable {
+public enum Strictness: String, RuleKey, Codable {
   case anchor
   case routine
   case goal
@@ -6,32 +6,32 @@ public enum Strictness: String, RuleKey, Encodable {
   case optional
 }
 
-public enum StatAffinity: String, RuleKey, Encodable {
+public enum StatAffinity: String, RuleKey, Codable {
   case discipline
   case body
   case wealth
   case mind
 }
 
-public enum IntensityMode: String, RuleKey, Encodable {
+public enum IntensityMode: String, RuleKey, Codable {
   case standard
   case lowIntensity = "low_intensity"
   case highIntensity = "high_intensity"
 }
 
-public enum SchedulingModel: String, RuleKey, Encodable {
+public enum SchedulingModel: String, RuleKey, Codable {
   case strictTime = "strict_time"
   case timeWindow = "time_window"
   case dayLevel = "day_level"
 }
 
-public enum StreakEligibility: String, RuleKey, Encodable {
+public enum StreakEligibility: String, RuleKey, Codable {
   case always
   case optIn = "opt_in"
   case never
 }
 
-public enum TimingBand: String, RuleKey, Encodable {
+public enum TimingBand: String, RuleKey, Codable {
   case onTime = "on_time"
   case late0To2h = "late_0_2h"
   case late2hPlus = "late_2h_plus"
@@ -41,12 +41,12 @@ public enum TimingBand: String, RuleKey, Encodable {
   case day4 = "day_4"
 }
 
-public enum CompletionKind: String, RuleKey, Encodable {
+public enum CompletionKind: String, RuleKey, Codable {
   case full
   case partial
 }
 
-public enum QuestLogState: String, RuleKey, Encodable {
+public enum QuestLogState: String, RuleKey, Codable {
   case completed
   case partial
   case late
@@ -57,13 +57,13 @@ public enum QuestLogState: String, RuleKey, Encodable {
   case recovery
 }
 
-public enum OneShotModifier: String, RuleKey, Encodable {
+public enum OneShotModifier: String, RuleKey, Codable {
   case none
   case returner
   case comeback
 }
 
-public enum StreakTierID: String, RuleKey, Encodable {
+public enum StreakTierID: String, RuleKey, Codable {
   case none
   case bronze
   case silver
@@ -71,25 +71,25 @@ public enum StreakTierID: String, RuleKey, Encodable {
   case platinum
 }
 
-public enum CrownCadence: String, RuleKey, Encodable {
+public enum CrownCadence: String, RuleKey, Codable {
   case daily
   case weekly
 }
 
-public enum MomentumBucket: String, RuleKey, Encodable {
+public enum MomentumBucket: String, RuleKey, Codable {
   case cold
   case steady
   case warm
 }
 
-public enum QuickLogSource: String, RuleKey, Encodable {
+public enum QuickLogSource: String, RuleKey, Codable {
   case journal
   case meal
   case weight
   case sideQuest = "side_quest"
 }
 
-public enum ReasonTag: String, RuleKey, Encodable {
+public enum ReasonTag: String, RuleKey, Codable {
   case forgot
   case tooTired = "too_tired"
   case taskTooBig = "task_too_big"

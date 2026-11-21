@@ -1,7 +1,7 @@
 import Foundation
 
 /// The reference's `hero_event_type`.
-public enum HeroEventType: String, RuleKey {
+public enum HeroEventType: String, RuleKey, Codable {
   case questComplete = "quest_complete"
   case questPartial = "quest_partial"
   case questLate = "quest_late"
@@ -24,7 +24,7 @@ public enum HeroEventType: String, RuleKey {
 }
 
 /// One entry of the append-only hero trail; `key` is the reference's dedupe key, so the same action reached twice grants once.
-public struct HeroEvent: Sendable, Hashable {
+public struct HeroEvent: Sendable, Hashable, Codable {
   public let key: String
   public let type: HeroEventType
   public let date: LocalDate
@@ -135,5 +135,48 @@ public struct HeroLedger: Sendable, Hashable {
     eventIndex[intent.key] = events.count
     events.append(event)
     return .applied(event)
+  }
+}
+
+/// The trail is the ledger: a decoded ledger's totals must be the sums of its events, and its key index is rebuilt from them.
+extension HeroLedger: Codable {
+  private enum CodingKeys: String, CodingKey {
+    case totalXP
+    case level
+    case coins
+    case stats
+    case events
+  }
+
+  public init(from decoder: any Decoder) throws {
+    let container = try decoder.container(keyedBy: CodingKeys.self)
+    var ledger = HeroLedger()
+    ledger.totalXP = try container.decode(Int.self, forKey: .totalXP)
+    ledger.level = try container.decode(Int.self, forKey: .level)
+    ledger.coins = try container.decode(Int.self, forKey: .coins)
+    ledger.stats = try container.decode(RuleTable<StatAffinity, Int>.self, forKey: .stats)
+    ledger.events = try container.decode([HeroEvent].self, forKey: .events)
+    for (index, event) in ledger.events.enumerated() {
+      guard ledger.eventIndex.updateValue(index, forKey: event.key) == nil else {
+        throw DecodingError.dataCorruptedError(forKey: .events, in: container, debugDescription: "The hero trail holds the key \(event.key) twice.")
+      }
+    }
+    let stats = RuleTable<StatAffinity, Int> { stat in Exact.sum(ledger.events.filter { $0.statAffinity == stat }.map(\.statDelta)) }
+    guard
+      ledger.level >= 1, ledger.totalXP == Exact.sum(ledger.events.map(\.xpDelta)), ledger.coins == Exact.sum(ledger.events.map(\.coinsDelta)), ledger.coins >= 0,
+      ledger.stats == stats
+    else {
+      throw DecodingError.dataCorrupted(.init(codingPath: decoder.codingPath, debugDescription: "The hero's totals are not the sums of the trail."))
+    }
+    self = ledger
+  }
+
+  public func encode(to encoder: any Encoder) throws {
+    var container = encoder.container(keyedBy: CodingKeys.self)
+    try container.encode(totalXP, forKey: .totalXP)
+    try container.encode(level, forKey: .level)
+    try container.encode(coins, forKey: .coins)
+    try container.encode(stats, forKey: .stats)
+    try container.encode(events, forKey: .events)
   }
 }

@@ -247,13 +247,21 @@ struct ReplaySnapshot: Decodable, Equatable {
 struct ReplayScenarioRun {
   private(set) var state = ReplayState.initial
   private(set) var outcomes: [ReplayScenario.StepOutcome] = []
+  /// The states `Replay.step` handed out before closing a day, as a checkpoint takes them.
+  private(set) var boundaries: [ReplayState] = []
+  /// How many steps started from the state decoded from its own canonical JSON.
+  private(set) var roundTrips = 0
+  private let roundTripping: Bool
   private var names: [String: UUID] = [:]
   private let scenario: ReplayScenario
 
   static let replica = ReplicaID(MemoirStoreFixture.uuid("0190f3a0-0000-7000-8000-00000000ffff"))
 
-  init(_ scenario: ReplayScenario) throws {
+  /// `roundTripping` replaces the state with its decoded canonical JSON before every step, as a device resuming from a checkpoint there would; a state
+  /// replay could not produce (seeded by hand, or left by the handlers alone without the walk) is refused and kept as it was.
+  init(_ scenario: ReplayScenario, roundTripping: Bool = false) throws {
     self.scenario = scenario
+    self.roundTripping = roundTripping
     for (index, step) in scenario.steps.enumerated() { try run(step, index: index) }
   }
 
@@ -287,6 +295,10 @@ struct ReplayScenarioRun {
   private mutating func run(_ step: ReplayScenario.Step, index: Int) throws {
     guard let instant = Self.millis(step.at) else { throw MemoirFixtureError(description: "\(scenario.id): \(step.at) is not an instant") }
     let payload = resolve(step.payload ?? .object([:])).objectValue ?? [:]
+    if roundTripping, let decoded = try? ReplayState(canonicalJSON: try state.canonicalJSON()) {
+      state = decoded
+      roundTrips += 1
+    }
     if step.type.hasPrefix("seed.") {
       try seed(step, payload: payload, instant: instant)
       outcomes.append(ReplayScenario.StepOutcome(status: "seed", code: nil, rejection: nil, capacity: nil, capacityWarning: nil))
@@ -310,7 +322,9 @@ struct ReplayScenarioRun {
     guard let clock = HLCTimestamp(wallMillis: Int64(index), counter: 0, replica: Self.replica) else { throw MemoirFixtureError(description: "clock") }
     let entry = ReplayCommand.readable(AppendedEntry(record: command, clock: clock))
     if scenario.walk == true {
-      Replay.step(entry, to: &state)
+      var captured = [ReplayState]()
+      Replay.step(entry, to: &state) { (boundary: ReplayState) in captured.append(boundary) }
+      boundaries += captured
     } else {
       Replay.apply(entry, to: &state)
     }

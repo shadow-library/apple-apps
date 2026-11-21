@@ -80,6 +80,30 @@ public struct QuestSchedule: Sendable, Hashable {
   }
 }
 
+/// A replay checkpoint holds a schedule in the payload shape `quest.create` carries, so it decodes through the same checks.
+extension QuestSchedule: Codable {
+  public init(from decoder: any Decoder) throws {
+    let container = try decoder.singleValueContainer()
+    guard let members = try container.decode(JSONValue.self).objectValue else {
+      throw DecodingError.dataCorruptedError(in: container, debugDescription: "A quest schedule is an object.")
+    }
+    var reader = PayloadReader(members)
+    do throws(CommandRefusal) {
+      self = try QuestSchedule(reading: &reader)
+      try reader.finish()
+    } catch {
+      throw DecodingError.dataCorruptedError(in: container, debugDescription: error.errorDescription ?? error.code)
+    }
+  }
+
+  public func encode(to encoder: any Encoder) throws {
+    var writer = PayloadWriter()
+    write(to: &writer)
+    var container = encoder.singleValueContainer()
+    try container.encode(JSONValue.object(writer.members))
+  }
+}
+
 /// `parseQuestPatch`, applied over the quest's current schedule. An anchor without a start time is refused here only when the patch itself clears the
 /// start time; whether the quest's current start time is missing is for replay to judge.
 public struct QuestSchedulePatch: Sendable, Hashable {

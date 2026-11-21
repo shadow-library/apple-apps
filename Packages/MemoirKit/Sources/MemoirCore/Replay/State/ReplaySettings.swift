@@ -23,7 +23,7 @@ public struct PendingSetting<Value: Sendable & Hashable>: Sendable, Hashable {
 
 /// The account settings replay reads, each a list of changes with the day it takes effect, and the staged changes the walk promotes on the next day it
 /// prepares. On a day, the change with the latest first day not after it governs, and of two for the same day the later in replay order.
-public struct ReplaySettings: Sendable, Hashable {
+public struct ReplaySettings: Sendable, Hashable, Codable {
   public static let empty = ReplaySettings()
 
   public internal(set) var timeZones: [SettingChange<String>] = []
@@ -56,3 +56,7 @@ public struct ReplaySettings: Sendable, Hashable {
     changes.filter { $0.firstDay <= date }.max { ($0.firstDay, $0.order) < ($1.firstDay, $1.order) }?.value
   }
 }
+
+extension SettingChange: Codable where Value: Codable {}
+
+extension PendingSetting: Codable where Value: Codable {}

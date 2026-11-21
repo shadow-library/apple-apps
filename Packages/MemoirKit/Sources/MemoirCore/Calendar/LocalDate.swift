@@ -1,4 +1,4 @@
-public struct LocalDate: Sendable, Hashable, Comparable, Codable, CustomStringConvertible {
+public struct LocalDate: Sendable, Hashable, Comparable, Codable, CodingKeyRepresentable, CustomStringConvertible {
   public enum Weekday: Int, Sendable, CaseIterable {
     case monday = 1
     case tuesday
@@ -37,6 +37,13 @@ public struct LocalDate: Sendable, Hashable, Comparable, Codable, CustomStringCo
       throw DecodingError.dataCorrupted(.init(codingPath: decoder.codingPath, debugDescription: "\"\(string)\" is not a yyyy-MM-dd date."))
     }
     self = date
+  }
+
+  /// A date keys a dictionary by its `yyyy-MM-dd` text, so a date-keyed table encodes as an object whose keys sort in date order.
+  public var codingKey: any CodingKey { RawKey(isoString) }
+
+  public init?<Key: CodingKey>(codingKey: Key) {
+    self.init(isoString: codingKey.stringValue)
   }
 
   private init(unchecked daysSinceEpoch: Int) {

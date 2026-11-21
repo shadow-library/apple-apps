@@ -2,7 +2,7 @@ import Foundation
 
 /// A quest's schedule as its create and update commands left it; the owner's words are its `QuestRecord`. Deletion only deactivates, as the
 /// reference's soft delete does, so its logs keep naming it.
-public struct ReplayQuest: Sendable, Hashable {
+public struct ReplayQuest: Sendable, Hashable, Codable {
   public let id: UUID
   public internal(set) var schedule: QuestSchedule
   /// Monotonic over creations; the most recently created quest wins a Returner tie, as the reference's serial id does.
@@ -51,14 +51,14 @@ public struct ReplayQuest: Sendable, Hashable {
   }
 }
 
-public struct QuestStreak: Sendable, Hashable {
+public struct QuestStreak: Sendable, Hashable, Codable {
   public internal(set) var state: StreakState
   public internal(set) var runStartDate: LocalDate?
   public internal(set) var lastCountedDate: LocalDate?
 }
 
 /// One quest occurrence's outcome, with the snapshot of the quest the reference logs beside it, so a later schedule change never rewrites it.
-public struct QuestLogEntry: Sendable, Hashable {
+public struct QuestLogEntry: Sendable, Hashable, Codable {
   /// The command or day close that first wrote the row; a yielding row's replacement keeps it, as the reference's upsert keeps the row id.
   public let id: UUID
   public internal(set) var state: QuestLogState
@@ -116,7 +116,7 @@ struct QuestLogWrite: Sendable, Hashable {
 }
 
 /// The reference's `reschedule_events` row: one per occurrence, kept even when the log it marked yields or is deleted.
-public struct RescheduleEntry: Sendable, Hashable {
+public struct RescheduleEntry: Sendable, Hashable, Codable {
   public let fromMinute: Int?
   public let toMinute: Int
   public let reasonTag: ReasonTag?

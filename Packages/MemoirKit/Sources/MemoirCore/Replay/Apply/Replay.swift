@@ -26,7 +26,7 @@ public enum ReplayCommand: Sendable, Equatable {
 }
 
 /// A command's place in replay order: the clock on the appended item, then its ref.
-public struct ReplayPosition: Sendable, Hashable, Comparable {
+public struct ReplayPosition: Sendable, Hashable, Comparable, Codable {
   public let clock: HLCTimestamp
   public let ref: EntityRef
 
@@ -71,16 +71,17 @@ public enum Replay {
 
   /// Every command item in the store, readable or not, in replay order.
   public static func commands<Source: RecordSource & ~Copyable>(in source: borrowing Source) throws(StoreError) -> [ReplayCommand] {
-    var commands = [ReplayCommand]()
-    for (ref, state) in try source.states(ofKind: MemoirKind.command.entityKind, scope: .vault) {
-      guard case .appended(let appended) = state else { continue }
-      switch MemoirCommand.reading(state, of: ref) {
-      case .absent: continue
-      case .readable(let entry): commands.append(.readable(entry))
-      case .unreadable: commands.append(.unreadable(ref: ref, clock: appended.clock))
-      }
+    ordered(try source.states(ofKind: MemoirKind.command.entityKind, scope: .vault).compactMap { ref, state in command(ref, in: state) })
+  }
+
+  /// The command an `mm_command` item holds, readable or not; nil when the item is absent or purged.
+  static func command(_ ref: EntityRef, in state: EntityState?) -> ReplayCommand? {
+    guard case .appended(let appended) = state else { return nil }
+    switch MemoirCommand.reading(state, of: ref) {
+    case .absent: return nil
+    case .readable(let entry): return .readable(entry)
+    case .unreadable: return .unreadable(ref: ref, clock: appended.clock)
     }
-    return ordered(commands)
   }
 
   /// The whole command log through `step` in replay order, then the days up to the horizon, the app's local day (`IssueClock.stamp` in the zone in force),
@@ -106,17 +107,31 @@ public enum Replay {
   /// earlier state, which is how a command delivered late reopens the days it falls into.
   @discardableResult
   public static func step(_ command: ReplayCommand, to state: inout ReplayState) -> ReplayStep {
+    step(command, to: &state, beforeClosingDays: nil as ((ReplayState) throws(Never) -> Void)?)
+  }
+
+  /// `step`, handing `beforeClosingDays` the state the earlier commands left whenever this command's walk is about to close a day: the state a full replay
+  /// of those commands gives, which any later command can extend, never one the walk has started on.
+  static func step<Failure: Error>(
+    _ command: ReplayCommand, to state: inout ReplayState, beforeClosingDays: ((ReplayState) throws(Failure) -> Void)?
+  ) throws(Failure) -> ReplayStep {
     if case .readable(let entry) = command, state.outcomes[entry.record.id] != nil { return .ignored }
     let position = command.position
     if let latest = state.position, position < latest { return .outOfOrder }
+    let previous = state.position
     state.position = position
     guard state.halt == nil else { return .ignored }
     guard let admitted = admit(command, to: &state) else { return state.halt == nil ? .ignored : .halted }
     let closing = max(admitted.ruleset.version, state.highestRulesetVersion ?? admitted.ruleset.version)
     let stored = admitted.command
-    state.walk(
-      to: WalkDriver(
-        date: stored.issuedOn, instantMillis: stored.instantMillis, utcOffsetMinutes: stored.utcOffsetMinutes, ruleset: Ruleset.version(closing) ?? admitted.ruleset))
+    let driver = WalkDriver(
+      date: stored.issuedOn, instantMillis: stored.instantMillis, utcOffsetMinutes: stored.utcOffsetMinutes, ruleset: Ruleset.version(closing) ?? admitted.ruleset)
+    if let beforeClosingDays, state.walkClosesDays(to: driver) {
+      var boundary = state
+      boundary.position = previous
+      try beforeClosingDays(boundary)
+    }
+    state.walk(to: driver)
     take(admitted, to: &state)
     return .taken
   }

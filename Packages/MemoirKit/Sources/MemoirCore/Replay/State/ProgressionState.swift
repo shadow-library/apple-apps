@@ -1,18 +1,18 @@
 import Foundation
 
-public enum CosmeticSource: String, RuleKey {
+public enum CosmeticSource: String, RuleKey, Codable {
   case coin
   case achievement
 }
 
-public struct OwnedCosmetic: Sendable, Hashable {
+public struct OwnedCosmetic: Sendable, Hashable, Codable {
   public let source: CosmeticSource
   public internal(set) var equipped: Bool
 }
 
 /// Achievements, titles and cosmetics with the counters their catalogues read. `counters` holds the lifetime counts the reference's
 /// `progress_counters` row stores; XP, level and stats come from the hero ledger and the 90-day reschedule window from the reschedule log when evaluated.
-public struct ProgressionState: Sendable, Hashable {
+public struct ProgressionState: Sendable, Hashable, Codable {
   public static let empty = ProgressionState()
 
   public internal(set) var counters = ProgressCounters.empty

@@ -1,7 +1,7 @@
 import Foundation
 
 /// The plan lock of one day: `plan.setLock` commits it on the open day and a postpone of a locked quest breaks it.
-public struct DayLock: Sendable, Hashable {
+public struct DayLock: Sendable, Hashable, Codable {
   public let committedAtMillis: Int64
   public let quests: [UUID]
   public internal(set) var brokenAtMillis: Int64?
@@ -9,7 +9,7 @@ public struct DayLock: Sendable, Hashable {
   public var isActive: Bool { brokenAtMillis == nil }
 }
 
-public enum ComebackEventKind: String, RuleKey {
+public enum ComebackEventKind: String, RuleKey, Codable, CodingKeyRepresentable {
   case armed
   case reArmed = "re_armed"
   case fired
@@ -17,7 +17,7 @@ public enum ComebackEventKind: String, RuleKey {
 }
 
 /// The reference's `comebackEvents` row, one per day and kind.
-public struct ComebackEvent: Sendable, Hashable {
+public struct ComebackEvent: Sendable, Hashable, Codable {
   public let kind: ComebackEventKind
   public let trigger: ComebackTrigger?
   public let sourceLog: UUID?
@@ -27,14 +27,14 @@ public struct ComebackEvent: Sendable, Hashable {
   public let intensityMode: IntensityMode
 }
 
-public struct DayCrown: Sendable, Hashable {
+public struct DayCrown: Sendable, Hashable, Codable {
   public internal(set) var state: CrownDayState
   public internal(set) var periodStart: LocalDate
   public internal(set) var banked: RewardAmount?
 }
 
 /// One day's `daily_states` row. The day walk opens and closes days; commands only touch the open ones.
-public struct ReplayDay: Sendable, Hashable {
+public struct ReplayDay: Sendable, Hashable, Codable {
   public let date: LocalDate
   public internal(set) var intensityMode: IntensityMode
   public internal(set) var rulesetVersion: Int

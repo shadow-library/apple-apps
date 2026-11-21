@@ -3,7 +3,7 @@ import ShadowCore
 import ShadowStore
 
 /// What replay did with one command. A refusal leaves the state as it was, as the reference's rolled-back transaction does.
-public enum ReplayOutcome: Sendable, Hashable {
+public enum ReplayOutcome: Sendable, Hashable, Codable {
   case applied
   /// A racing action got there first; the reference answers `superseded` and changes nothing.
   case superseded
@@ -12,13 +12,13 @@ public enum ReplayOutcome: Sendable, Hashable {
 }
 
 /// The reference's `status: 'rejected'` answers: nothing changes and the device is asked to decide.
-public enum ReplayRejection: String, Sendable, Hashable {
+public enum ReplayRejection: String, Sendable, Hashable, Codable {
   case rescheduleCap = "reschedule-cap"
   case weightNeedsConfirmation = "needs-confirmation"
 }
 
 /// A command the state no longer admits, named by the reference's `AppErrorCode`.
-public enum ReplayRefusal: ShadowError, Hashable {
+public enum ReplayRefusal: ShadowError, Hashable, Codable {
   case alreadyRescheduled
   case questNotFound
   case anchorNeedsStartTime
@@ -97,12 +97,12 @@ public enum ReplayRefusal: ShadowError, Hashable {
 }
 
 /// Something the owner is told about once replay settles, such as a purchase a merge withdrew.
-public enum ReplayNotice: Sendable, Hashable {
+public enum ReplayNotice: Sendable, Hashable, Codable {
   case purchaseWithdrawn(command: UUID, cosmetic: CosmeticID, balance: Int, price: Int)
 }
 
 /// Replay stops at the first command this app cannot read; the state stays as it was before that command, and the app asks to be updated.
-public enum ReplayHalt: Sendable, Hashable {
+public enum ReplayHalt: Sendable, Hashable, Codable {
   case unreadableCommand(EntityRef)
   case unknownCommandType(command: UUID, type: String)
   case rulesetUnavailable(command: UUID, version: Int)

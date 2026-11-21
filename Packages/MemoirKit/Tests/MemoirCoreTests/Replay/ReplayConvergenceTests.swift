@@ -10,50 +10,6 @@ import Testing
 struct ReplayConvergenceTests {
   private static let replicaCount = 3
   private static let offlineReplica = 2
-  private static let quests = (1...3).map { MemoirStoreFixture.uuid(String(format: "0190f3a0-0000-7000-8000-00000000c%03d", $0)) }
-  private static let firstDay = 20_517
-  private static let idEpoch = Date(timeIntervalSince1970: 1_700_000_000)
-  private static let millisPerDay: Int64 = 86_400_000
-
-  private static func schedules() throws -> [QuestSchedule] {
-    let recurrence = try RecurrenceRule(frequency: .daily, startDate: try MemoirStoreFixture.date("2026-03-01"))
-    return [
-      try QuestSchedule(strictness: .anchor, startTimeMinutes: 420, durationMinutes: 30, statAffinity: .discipline, recurrence: recurrence),
-      try QuestSchedule(strictness: .routine, startTimeMinutes: 480, durationMinutes: 60, statAffinity: .body, recurrence: recurrence),
-      try QuestSchedule(strictness: .goal, statAffinity: .wealth, recurrence: recurrence),
-    ]
-  }
-
-  /// A command some device could issue on its own day: a quest action (today's or an offline one for the days before), a log edit, a quick log, a purchase,
-  /// a setting, a lock or a Recovery completion.
-  private static func randomBody(on day: LocalDate, using generator: inout SeededGenerator) throws -> MemoirCommandBody {
-    let occurrence = Occurrence(quest: generator.pick(from: quests), date: try #require(day.adding(days: -generator.int(in: 0...2))))
-    let tag = generator.chance(0.5) ? generator.pick(from: ReasonTag.allCases) : nil
-    switch generator.int(in: 0...15) {
-    case 0, 1, 2: return .questComplete(occurrence)
-    case 3: return .questPartial(occurrence)
-    case 4: return .questSkip(QuestBreak(occurrence: occurrence, reasonTag: tag))
-    case 5: return .questPostpone(QuestBreak(occurrence: occurrence, reasonTag: tag))
-    case 6:
-      return .questReschedule(
-        try QuestReschedule(occurrence: occurrence, toMinute: generator.int(in: 0...1_439), acceptBeyondCap: generator.chance(0.5), reasonTag: tag))
-    case 7: return .questAttachReason(try QuestReason(occurrence: occurrence, reasonTag: tag ?? .other, hasNote: false))
-    case 8: return .questDeleteLog(occurrence)
-    case 9: return .journalSave(QuickLogEntry(id: UUID.v7(at: idEpoch, using: &generator), date: day))
-    case 10: return .sideQuestLog(SideQuestEntry(id: UUID.v7(at: idEpoch, using: &generator), date: day, statAffinity: generator.pick(from: StatAffinity.allCases)))
-    case 11: return .cosmeticPurchase(generator.pick(from: [CosmeticID.badgeBronze, .themeSunrise, .themeMidnight]))
-    case 12: return .accountSetIntensityMode(IntensityModeChange(mode: generator.pick(from: IntensityMode.allCases)))
-    case 13, 14: return generator.chance(0.8) ? .planSetLock(try PlanLock(locking: Array(generator.shuffled(quests).prefix(generator.int(in: 1...3))))) : .planSetLock(.unlocked)
-    default: return .recoveryComplete(RecoveryCompletion())
-    }
-  }
-
-  private static func command(_ body: MemoirCommandBody, at instant: Int64, offset: Int, using generator: inout SeededGenerator) throws -> MemoirCommand {
-    try MemoirCommand(
-      id: UUID.v7(at: idEpoch, using: &generator), body: body, instantMillis: instant, utcOffsetMinutes: offset,
-      issuedOn: try MemoirCommand.localDate(instantMillis: instant, utcOffsetMinutes: offset), rulesetVersion: Ruleset.v1.version)
-  }
-
   private static func commands(_ store: VaultStore) async throws -> [ReplayCommand] {
     try await store.read { transaction in try Replay.commands(in: transaction) }
   }
@@ -87,9 +43,9 @@ struct ReplayConvergenceTests {
     var banked = 0
     try await forAll(iterations: 10) { generator in
       let replicas = try await CausalReplicas(CausalReplicaSetup(count: Self.replicaCount, registry: MemoirSchema.mainRegistry, seed: generator.next()))
-      let created = Int64(Self.firstDay - 1) * Self.millisPerDay + 6 * 3_600_000
-      let creations = try zip(Self.quests, try Self.schedules()).map { quest, schedule in
-        try Self.command(.questCreate(QuestCreation(questId: quest, schedule: schedule)), at: created, offset: 0, using: &generator)
+      let created = Int64(ReplaySamples.firstDay - 1) * ReplaySamples.millisPerDay + 6 * 3_600_000
+      let creations = try zip(ReplaySamples.quests, try ReplaySamples.schedules()).map { quest, schedule in
+        try ReplaySamples.command(.questCreate(QuestCreation(questId: quest, schedule: schedule)), at: created, offset: 0, using: &generator)
       }
       _ = try await replicas.write(0) { transaction in for creation in creations { try creation.append(in: &transaction) } }
       try await replicas.settle()
@@ -105,11 +61,11 @@ struct ReplayConvergenceTests {
           await replicas.advanceClock(of: writer, by: .seconds(86_400))
         }
         await replicas.advanceClock(of: writer, by: .milliseconds(Int(generator.int(in: 1...5_000))))
-        let day = try #require(LocalDate(daysSinceEpoch: Self.firstDay + dayOf[writer]))
+        let day = try #require(LocalDate(daysSinceEpoch: ReplaySamples.firstDay + dayOf[writer]))
         let offset = writer == 1 ? 60 : 0
         let batch = try (0..<generator.int(in: 1...4)).map { _ in
-          let instant = Int64(day.daysSinceEpoch) * Self.millisPerDay + Int64(generator.int(in: 360...1_380)) * 60_000 - Int64(offset) * 60_000
-          return try Self.command(try Self.randomBody(on: day, using: &generator), at: instant, offset: offset, using: &generator)
+          let instant = Int64(day.daysSinceEpoch) * ReplaySamples.millisPerDay + Int64(generator.int(in: 360...1_380)) * 60_000 - Int64(offset) * 60_000
+          return try ReplaySamples.command(try ReplaySamples.randomBody(on: day, using: &generator), at: instant, offset: offset, using: &generator)
         }
         issued += batch.count
         _ = try await replicas.write(writer) { transaction in for command in batch { try command.append(in: &transaction) } }
@@ -149,8 +105,8 @@ struct ReplayConvergenceTests {
       var folded = ReplayState.initial
       for command in Replay.ordered(first) { #expect(Replay.step(command, to: &folded) != .outOfOrder) }
       #expect(folded == state, "stepping one command at a time in clock order is the same as running them all")
-      let horizon = try #require(LocalDate(daysSinceEpoch: Self.firstDay + 12))
-      let stamp = IssueStamp(instantMillis: Int64(horizon.daysSinceEpoch) * Self.millisPerDay, utcOffsetMinutes: 0, issuedOn: horizon)
+      let horizon = try #require(LocalDate(daysSinceEpoch: ReplaySamples.firstDay + 12))
+      let stamp = IssueStamp(instantMillis: Int64(horizon.daysSinceEpoch) * ReplaySamples.millisPerDay, utcOffsetMinutes: 0, issuedOn: horizon)
       #expect(Replay.run(first, through: stamp) == Replay.run(generator.shuffled(first), through: stamp))
 
       misses += state.logs.all.count { $0.value.state == .missed }

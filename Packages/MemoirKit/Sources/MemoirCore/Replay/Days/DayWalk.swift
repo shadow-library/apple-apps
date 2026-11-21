@@ -30,6 +30,11 @@ extension ReplayState {
     prepareDay(target, driver: driver)
   }
 
+  func walkClosesDays(to driver: WalkDriver) -> Bool {
+    guard let open = openDay else { return false }
+    return walkSpan(of: driver, from: open) != nil
+  }
+
   /// The day the zone in force has reached at the driver's instant, and the day the walk opens. With a zone change staged, the zone it replaces still
   /// measures the day, from the offset the change was issued under; once promoted, the new zone's date may be later, and the dates between were never
   /// lived, so never closed with every quest missed, or earlier, and the opened day then stays open until the new zone's date passes it (`inNewZone`).

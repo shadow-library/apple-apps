@@ -40,33 +40,33 @@ struct ReplayPerformanceTests {
     }
   }
 
-  /// The best of two runs, so one slow run on a busy machine does not decide the ratio.
-  private static func fastest(_ commands: [ReplayCommand]) -> (state: ReplayState, elapsed: Duration) {
+  /// The fastest of five runs of each history, taken alternately, so both see the same load from suites running alongside and one slow run decides
+  /// nothing.
+  private static func fastest(_ short: [ReplayCommand], _ long: [ReplayCommand]) -> (short: Duration, long: Duration, state: ReplayState) {
     let clock = ContinuousClock()
-    var best: (state: ReplayState, elapsed: Duration)?
-    for _ in 0..<2 {
-      let started = clock.now
-      let state = Replay.run(commands)
-      let elapsed = clock.now - started
-      if best.map({ elapsed < $0.elapsed }) ?? true { best = (state, elapsed) }
+    var times: (short: Duration?, long: Duration?) = (nil, nil)
+    var state = ReplayState.initial
+    for _ in 0..<5 {
+      var started = clock.now
+      _ = Replay.run(short)
+      times.short = min(times.short ?? .seconds(Int64.max), clock.now - started)
+      started = clock.now
+      state = Replay.run(long)
+      times.long = min(times.long ?? .seconds(Int64.max), clock.now - started)
     }
-    return best ?? (Replay.run(commands), .zero)
+    return (times.short ?? .zero, times.long ?? .zero, state)
   }
 
   @Test func shouldReplayAndWalkInTimeLinearInTheDaysOfHistory() throws {
     let half = try Self.commands(days: 200)
     let full = try Self.commands(days: 400)
     #expect(full.count >= 12_000)
-    let short = Self.fastest(half)
-    let long = Self.fastest(full)
-    let state = long.state
+    let (short, long, state) = Self.fastest(half, full)
     #expect(state.outcomes.count == full.count)
     #expect(state.logs.count == Self.questCount * 400)
     #expect(state.days.values.count(where: \.isClosed) == 399)
     #expect(state.logs.all.allSatisfy { $0.value.state != .missed }, "every occurrence has its own outcome before its day closes")
-    let ratio = Double(long.elapsed.components.seconds) + Double(long.elapsed.components.attoseconds) / 1e18
-    let base = Double(short.elapsed.components.seconds) + Double(short.elapsed.components.attoseconds) / 1e18
-    #expect(ratio / base < 3, "twice the history took \(long.elapsed) against \(short.elapsed)")
-    #expect(long.elapsed < .seconds(300), "a backstop well inside the standard tier: \(long.elapsed)")
+    #expect(long / short < 3, "twice the history took \(long) against \(short)")
+    #expect(long < .seconds(300), "a backstop well inside the standard tier: \(long)")
   }
 }
