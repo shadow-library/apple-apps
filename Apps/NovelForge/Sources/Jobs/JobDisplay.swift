@@ -34,17 +34,30 @@ enum JobDisplay {
     return Text(verbatim: ChecksDisplay.label(reviewKind))
   }
 
-  static func message(_ line: ChapterJobLine) -> Text {
+  /// Decision 8 of phase 8: a run elsewhere names its device, step and last renewal; a queued job says who starts it, when it was asked for and where its
+  /// last attempt stopped; a run stopped here says where and when.
+  static func message(_ line: ChapterJobLine, now: Date = Date()) -> Text {
+    Text(verbatim: summary(line, now: now))
+  }
+
+  static func summary(_ line: ChapterJobLine, now: Date) -> String {
     switch line.state {
-    case .runningHere(let step?): Text(verbatim: progress(line.kind, step))
-    case .runningHere(nil): Text("Running on this device", tableName: "Jobs")
-    case .runningOnAnotherDevice: Text("Running on another device", tableName: "Jobs")
-    case .resumingHere: Text("Resuming on this device", tableName: "Jobs")
-    case .runningInAnotherCopy: Text("Running in another copy of Novel Forge", tableName: "Jobs")
-    case .startedOnThisDevice: Text("Started on this device", tableName: "Jobs")
-    case .queued: Text("Waiting to start", tableName: "Jobs")
-    case .waitingForConsent: Text("Waiting for your permission to send this novel's text to the AI provider", tableName: "Jobs")
-    case .failed(let failure): Text(verbatim: JobsErrors.failure(failure))
+    case .runningHere(let step?): progress(line.kind, step)
+    case .runningHere(nil): String(localized: "Running on this device", table: "Jobs")
+    case .runningOnAnotherDevice(let elsewhere):
+      joined(
+        elsewhere.device.map { String(localized: "Running on \($0)", table: "Jobs") } ?? String(localized: "Running on another device", table: "Jobs"),
+        elsewhere.step.map { progress(line.kind, $0) }, elsewhere.renewed.map { String(localized: "updated \(relative($0, now: now))", table: "Jobs") })
+    case .resumingHere: String(localized: "Resuming on this device", table: "Jobs")
+    case .runningInAnotherCopy: String(localized: "Running in another copy of Novel Forge", table: "Jobs")
+    case .startedOnThisDevice: String(localized: "Started on this device", table: "Jobs")
+    case .queued(let wait):
+      joined(
+        starter(wait.starter), wait.requested.map { String(localized: "requested \(relative($0, now: now))", table: "Jobs") },
+        wait.stopped.flatMap { stop(line.kind, $0, now: now) })
+    case .interrupted(let stop): joined(String(localized: "Interrupted on this device", table: "Jobs"), self.stop(line.kind, stop, now: now))
+    case .waitingForConsent: String(localized: "Waiting for your permission to send this novel's text to the AI provider", table: "Jobs")
+    case .failed(let failure): JobsErrors.failure(failure)
     }
   }
 
@@ -52,9 +65,51 @@ enum JobDisplay {
     switch line.state {
     case .runningHere, .resumingHere, .runningOnAnotherDevice, .runningInAnotherCopy, .startedOnThisDevice: .info
     case .queued: .neutral
-    case .waitingForConsent: .warning
+    case .interrupted, .waitingForConsent: .warning
     case .failed: .danger
     }
+  }
+
+  static var resume: Text {
+    Text("Resume", tableName: "Jobs")
+  }
+
+  /// A moment in the past as "2 minutes ago"; one a clock ahead of this one stamped reads as now.
+  static func relative(_ date: Date, now: Date) -> String {
+    let formatter = RelativeDateTimeFormatter()
+    formatter.unitsStyle = .full
+    formatter.dateTimeStyle = .named
+    return formatter.localizedString(for: min(date, now), relativeTo: now)
+  }
+
+  /// The time of day, with the date when it is not today.
+  static func clockTime(_ date: Date, now: Date) -> String {
+    date.formatted(date: Calendar.current.isDate(date, inSameDayAs: now) ? .omitted : .abbreviated, time: .shortened)
+  }
+
+  private static func starter(_ starter: JobWait.Starter) -> String {
+    switch starter {
+    case .here: String(localized: "Waiting to start", table: "Jobs")
+    case .you: String(localized: "Waiting for you to run it", table: "Jobs")
+    case .worker(let name?): String(localized: "Waiting for \(name)", table: "Jobs")
+    case .worker(nil): String(localized: "Waiting for the Mac that runs jobs", table: "Jobs")
+    case .noWorker: String(localized: "No Mac runs jobs", table: "Jobs")
+    case .requester(let name?): String(localized: "Waiting for \(name)", table: "Jobs")
+    case .requester(nil): String(localized: "Waiting for the device that asked for it", table: "Jobs")
+    }
+  }
+
+  private static func stop(_ kind: NovelJobKind, _ stop: JobStop, now: Date) -> String? {
+    let time = stop.at.map { at in
+      stop.released
+        ? String(localized: "stopped at \(clockTime(at, now: now))", table: "Jobs") : String(localized: "last updated \(relative(at, now: now))", table: "Jobs")
+    }
+    let parts = [stop.step.map { progress(kind, $0) }, time].compactMap { $0 }
+    return parts.isEmpty ? nil : parts.joined(separator: " · ")
+  }
+
+  private static func joined(_ parts: String?...) -> String {
+    parts.compactMap { $0 }.joined(separator: " · ")
   }
 
   static var runHere: Text {

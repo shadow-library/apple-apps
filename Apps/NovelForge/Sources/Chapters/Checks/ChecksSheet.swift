@@ -19,7 +19,7 @@ struct ChecksSheet: View {
   @Environment(AIServices.self) private var services
   @Environment(\.dismiss) private var dismiss
   @State private var model: ChecksModel
-  @State private var jobs = ReadObserver<ChapterJobs>()
+  @State private var jobs = ReadObserver<ChapterJobBoard>()
   @State private var reread = 0
   @State private var failure: PresentedError?
   @State private var consent: AIConsentRequest?
@@ -45,8 +45,7 @@ struct ChecksSheet: View {
   var body: some View {
     let runtime = runtimes.existing(for: context.store)
     let clock = runtime?.clock ?? Self.fallbackClock
-    let status = ChapterWorkspaceStatus(
-      row: nil, jobs: jobs.state.value?.jobs, replica: context.store.replica, here: runtime?.here ?? .starting, consentNeeded: runtime?.consentNeeded != nil)
+    let status = ChapterWorkspaceStatus(row: nil, board: jobs.state.value, replica: context.store.replica, standing: runtime?.standing ?? .starting)
     let lines = ChecksDisplay.reviewJobs(status.lines)
     let phases = Dictionary(uniqueKeysWithValues: ChecksDisplay.kinds.compactMap { kind in ChecksDisplay.phase(lines, of: kind).map { (kind, $0) } })
     content(status: status, lines: lines, phases: phases, runtime: runtime)
@@ -58,9 +57,9 @@ struct ChecksSheet: View {
       .task(id: reloadToken) { await model.load() }
       .onChange(of: phases) { Task { await model.load() } }
       .task(id: reread) {
-        let query = ChapterJobsQuery(novel: context.novel, chapter: chapter, now: clock.now())
         let store = context.store
-        await jobs.run { store.observe(ChapterJobs.self, query) }
+        let query = ChapterJobBoardQuery(novel: context.novel, chapter: chapter, replica: store.replica, now: clock.now())
+        await jobs.run { store.observe(ChapterJobBoard.self, query) }
       }
       .task(id: jobs.state.value?.changesAt) {
         guard let changesAt = jobs.state.value?.changesAt else { return }
@@ -141,6 +140,12 @@ struct ChecksSheet: View {
           } label: {
             JobDisplay.runHere
           }
+        case .resume:
+          Button {
+            Task { failure = await runtime.resume(line.job) }
+          } label: {
+            JobDisplay.resume
+          }
         case .allow:
           Button {
             consent = runtime.consentNeeded
@@ -167,7 +172,10 @@ struct ChecksSheet: View {
   }
 
   private func start(_ kind: ChapterReviewKind, pace: Pace?, runtime: JobRuntime?) {
-    let request = ChecksModel.requester(store: context.store, novel: context.novel, chapter: chapter, engine: runtime?.engine) { runtime?.follow($0) }
+    let startsHere = runtime?.startsWhenAsked(.review) ?? false
+    let request = ChecksModel.requester(store: context.store, novel: context.novel, chapter: chapter, engine: runtime?.engine, startsHere: startsHere) {
+      runtime?.follow($0)
+    }
     Task { await model.run(kind, pace: pace, runsJobs: runtime?.runsJobs == true, using: request) }
   }
 }

@@ -46,8 +46,8 @@ private struct ChecksWorld {
     return ChecksWorld(store: store, novel: novel, engine: engine, model: ChecksModel(context: NovelContext(store: store, novel: novel), chapter: 1))
   }
 
-  func requester(handles: HandleBox = HandleBox()) -> ChecksModel.Requester {
-    ChecksModel.requester(store: store, novel: novel, chapter: 1, engine: engine) { handles.handles.append($0) }
+  func requester(handles: HandleBox = HandleBox(), startsHere: Bool = true) -> ChecksModel.Requester {
+    ChecksModel.requester(store: store, novel: novel, chapter: 1, engine: engine, startsHere: startsHere) { handles.handles.append($0) }
   }
 
   func run(_ kind: ChapterReviewKind, handles: HandleBox = HandleBox()) async {
@@ -108,6 +108,19 @@ struct ChecksModelTests {
     #expect(world.model.refusal == nil)
     #expect(handles.handles.count == 2)
     #expect(world.model.starting == nil)
+  }
+
+  @Test func shouldOnlyRequestAJudgeReviewWhereThisDeviceLeavesItToTheWorkerAndAnswerQuickKindsAtOnce() async throws {
+    let world = try await ChecksWorld.make()
+    let handles = HandleBox()
+
+    await world.model.run(.judge, pace: nil, runsJobs: true, using: world.requester(handles: handles, startsHere: false))
+    await world.model.run(.mechanics, pace: nil, runsJobs: true, using: world.requester(handles: handles, startsHere: false))
+
+    let jobs = try await world.store.load(ChapterJobs.self, ChapterJobsQuery(novel: world.novel, chapter: 1, now: LeaseClock(trusted: nil).now()))
+    let judge = try #require(jobs.latest(review: .judge))
+    #expect(judge.status == .queued && judge.latest == nil && handles.handles.isEmpty)
+    #expect(world.model.refusal == nil && !world.model.elsewhere && world.model.latest(.mechanics) != nil)
   }
 
   @Test func shouldRefuseAJobKindWhereThisCopyRunsNoJobs() async throws {
@@ -225,8 +238,9 @@ struct ChecksModelTests {
     let clock = LeaseClock(trusted: nil)
 
     func lines() async throws -> [ChapterJobLine] {
-      let jobs = try await world.store.load(ChapterJobs.self, ChapterJobsQuery(novel: world.novel, chapter: 1, now: clock.now()))
-      return ChapterWorkspaceStatus(row: nil, jobs: jobs.jobs, replica: world.store.replica, here: .running, consentNeeded: false).lines
+      let query = ChapterJobBoardQuery(novel: world.novel, chapter: 1, replica: world.store.replica, now: clock.now())
+      let board = try await world.store.load(ChapterJobBoard.self, query)
+      return ChapterWorkspaceStatus(row: nil, board: board, replica: world.store.replica, standing: JobsStanding(here: .running, platform: .mac)).lines
     }
 
     var current = try await lines()

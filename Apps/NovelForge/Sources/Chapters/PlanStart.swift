@@ -2,6 +2,7 @@ import Foundation
 import NovelForgeCore
 import Observation
 import ShadowAI
+import ShadowCore
 import ShadowDesignSystem
 import ShadowJobs
 import ShadowStore
@@ -180,7 +181,7 @@ struct PlanStart: View {
   @ViewBuilder
   private func jobLines(_ snapshot: PlanStartSnapshot, runtime: JobRuntime?) -> some View {
     let status = ChapterWorkspaceStatus(
-      row: nil, jobs: .available(snapshot.jobs), replica: context.store.replica, here: runtime?.here ?? .starting, consentNeeded: runtime?.consentNeeded != nil)
+      row: nil, jobs: .available(snapshot.jobs), placements: snapshot.placements, replica: context.store.replica, standing: runtime?.standing ?? .starting)
     ForEach(status.lines) { line in
       ShadowCallout(JobDisplay.title(line.kind), message: JobDisplay.message(line), intent: JobDisplay.intent(line)) {
         if let runtime { actions(line, runtime: runtime) }
@@ -212,6 +213,13 @@ struct PlanStart: View {
         Task { failure = await runtime.runHere(line.job) }
       } label: {
         JobDisplay.runHere
+      }
+    case .resume:
+      Button {
+        failure = nil
+        Task { failure = await runtime.resume(line.job) }
+      } label: {
+        JobDisplay.resume
       }
     case .allow:
       Button {
@@ -290,6 +298,7 @@ nonisolated struct PlanStartSnapshot: Equatable, Sendable {
   /// Nil while the chapters' derived state is faulted here.
   let next: Int?
   let jobs: [ChapterJob]
+  let placements: JobPlacements
   /// The next chapter's jobs, or the novel's job activity, are faulted here: the lines shown may be missing some.
   let jobsUnavailable: Bool
   /// A plan job for the next chapter is queued or running.
@@ -299,7 +308,7 @@ nonisolated struct PlanStartSnapshot: Equatable, Sendable {
   let cards: [UUID]
   let cardsUnavailable: Bool
 
-  static func load(novel: UUID, now: LeaseInstant, in transaction: ReadTransaction) throws -> PlanStartSnapshot {
+  static func load(novel: UUID, replica: ReplicaID, now: LeaseInstant, in transaction: ReadTransaction) throws -> PlanStartSnapshot {
     let next = try ChapterList.load(novel, in: transaction).rows.value.map(Self.nextWritable)
     let chapterJobs = try next.map { try ChapterJobs.load(ChapterJobsQuery(novel: novel, chapter: $0, now: now), in: transaction) }
     var jobs = (chapterJobs?.jobs.value ?? []).filter { $0.kind == .known(.plan) }
@@ -312,11 +321,13 @@ nonisolated struct PlanStartSnapshot: Equatable, Sendable {
       changes += [other.changesAt].compactMap { $0 }
       jobs += (other.jobs.value ?? []).filter { $0.kind == .known(.plan) && Self.isOpen($0) }
     }
+    let placements = try JobPlacements.load(JobPlacementQuery(jobs: jobs.map(\.job), replica: replica, now: now), in: transaction)
+    changes += [placements.changesAt].compactMap { $0 }
     let waiting = try ChatWaitingOnYou.load(novel, in: transaction).contents
     let plans = ((waiting.value?.cards ?? []) + (waiting.value?.conflicted ?? [])).filter { $0.session == .none && $0.state.kind == .known(.chapterPlan) }
     let cards = plans.sorted { $0.state.staged == $1.state.staged ? $0.state.ref < $1.state.ref : $0.state.staged < $1.state.staged }.map(\.state.proposal)
     return PlanStartSnapshot(
-      next: next, jobs: jobs, jobsUnavailable: chapterJobs?.jobs.isUnavailable == true || activity.isUnavailable, isPlanning: isPlanning,
+      next: next, jobs: jobs, placements: placements, jobsUnavailable: chapterJobs?.jobs.isUnavailable == true || activity.isUnavailable, isPlanning: isPlanning,
       changesAt: changes.min(), cards: cards, cardsUnavailable: waiting.isUnavailable)
   }
 
@@ -360,8 +371,9 @@ final class PlanStartModel {
 
   func observe(now: LeaseInstant) async {
     let (store, novel) = (context.store, context.novel)
+    let replica = store.replica
     await observer.run(
-      { store.observeReads { transaction in try PlanStartSnapshot.load(novel: novel, now: now, in: transaction) } },
+      { store.observeReads { transaction in try PlanStartSnapshot.load(novel: novel, replica: replica, now: now, in: transaction) } },
       onValue: { [weak self] snapshot in self?.keep(snapshot.cards) })
   }
 

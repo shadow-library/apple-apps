@@ -5,6 +5,7 @@ import ShadowCore
 import ShadowJobs
 import ShadowStore
 import ShadowTestSupport
+import SwiftUI
 import Synchronization
 import Testing
 
@@ -38,7 +39,7 @@ private final class RefusingStarter: Sendable {
 
   func count(_ job: EntityRef) -> Int { counts.withLock { $0[job] ?? 0 } }
 
-  var starter: JobRuntime.Starter {
+  var starter: JobEngineCalls.Start {
     { [self] _, job throws(JobEngineError) in
       counts.withLock { $0[job, default: 0] += 1 }
       throw .pipelineNotYetAvailable(.generate)
@@ -71,7 +72,7 @@ private final class HeldStarter: Sendable {
     held?.resume()
   }
 
-  var starter: JobRuntime.Starter {
+  var starter: JobEngineCalls.Start {
     { [self] _, _ throws(JobEngineError) in
       let first = state.withLock { state -> Bool in
         state.calls += 1
@@ -95,6 +96,22 @@ private final class HeldStarter: Sendable {
   }
 }
 
+private final class InterruptLog: Sendable {
+  let jobs = Mutex<[EntityRef]>([])
+}
+
+/// A host that keeps every run it is handed and counts the scene's moves.
+@MainActor
+private final class RecordingHost: JobRunHost {
+  private(set) var runs: [HostedJobRun] = []
+  private(set) var backgrounds = 0
+  private(set) var actives = 0
+
+  func host(_ run: HostedJobRun) { runs.append(run) }
+  func sceneEnteredBackground() { backgrounds += 1 }
+  func sceneBecameActive() { actives += 1 }
+}
+
 /// A vault with one novel whose job runtime calls a scripted model.
 @MainActor
 private struct JobsWorld {
@@ -107,8 +124,8 @@ private struct JobsWorld {
   let runtime: JobRuntime
 
   static func make(
-    _ calls: [[ScriptedModelProvider.Step]] = [], at location: StoreLocation = .inMemory, granted: Bool = true, starter: JobRuntime.Starter? = nil,
-    settler: ((VaultStore) -> CostSettler)? = nil
+    _ calls: [[ScriptedModelProvider.Step]] = [], at location: StoreLocation = .inMemory, granted: Bool = true, engine: JobEngineCalls = JobEngineCalls(),
+    host: any JobRunHost = ForegroundRunHost(), settler: ((VaultStore) -> CostSettler)? = nil
   ) async throws -> JobsWorld {
     let store =
       switch location {
@@ -132,12 +149,9 @@ private struct JobsWorld {
     }
     let assertion = JobPowerAssertion(activity: power.activity)
     let settler = settler?(store)
-    let runtime =
-      if let starter {
-        JobRuntime(store: store, clock: clock, power: assertion, takeOverDelay: .milliseconds(20), settler: settler, starter: starter, makeEngine: makeEngine)
-      } else {
-        JobRuntime(store: store, clock: clock, power: assertion, takeOverDelay: .milliseconds(20), settler: settler, makeEngine: makeEngine)
-      }
+    let runtime = JobRuntime(
+      store: store, clock: clock, platform: .mac, power: assertion, takeOverDelay: .milliseconds(20), settler: settler, host: host, calls: engine,
+      makeEngine: makeEngine)
     let world = JobsWorld(store: store, novel: novel, provider: provider, power: power, host: binding.host, makeEngine: makeEngine, runtime: runtime)
     if granted { try await world.decideConsent(.granted, at: 1) }
     return world
@@ -165,8 +179,8 @@ private struct JobsWorld {
 
   func status() async throws -> ChapterWorkspaceStatus {
     let row = try await store.load(ChapterList.self, novel).rows.value?.first { $0.chapter == 1 }
-    let jobs = try await store.load(ChapterJobs.self, ChapterJobsQuery(novel: novel, chapter: 1, now: runtime.clock.now()))
-    return ChapterWorkspaceStatus(row: row, jobs: jobs.jobs, replica: store.replica, here: runtime.here, consentNeeded: runtime.consentNeeded != nil)
+    let board = try await store.load(ChapterJobBoard.self, ChapterJobBoardQuery(novel: novel, chapter: 1, replica: store.replica, now: runtime.clock.now()))
+    return ChapterWorkspaceStatus(row: row, board: board, replica: store.replica, standing: runtime.standing)
   }
 
   func attempts(of job: EntityRef) async throws -> Int {
@@ -267,7 +281,7 @@ struct JobsRuntimeTests {
 
   @Test func shouldTryARefusedStartOncePerDistinctQueue() async throws {
     let refusing = RefusingStarter()
-    let world = try await JobsWorld.make(starter: refusing.starter)
+    let world = try await JobsWorld.make(engine: JobEngineCalls(run: refusing.starter))
     await world.runtime.launch()
     let engine = try #require(world.runtime.engine)
     let first = try await engine.request(world.generation("first")).ref
@@ -286,7 +300,7 @@ struct JobsRuntimeTests {
 
   @Test func shouldNeverStartASecondJobWhileOneRunsHoweverOftenTheQueueIsArmedAgain() async throws {
     let held = HeldStarter()
-    let world = try await JobsWorld.make(granted: false, starter: held.starter)
+    let world = try await JobsWorld.make(granted: false, engine: JobEngineCalls(run: held.starter))
     await world.runtime.launch()
     let engine = try #require(world.runtime.engine)
     _ = try await engine.request(world.generation("first"))
@@ -345,14 +359,85 @@ struct JobsRuntimeTests {
     world.runtime.shutDown()
   }
 
+  @Test func shouldHandEveryRunItFollowsToTheHostWithItsInterruptAndTellItOfTheScene() async throws {
+    let (host, interrupted) = (RecordingHost(), InterruptLog())
+    let engine = JobEngineCalls(interrupt: { _, job throws(JobEngineError) in
+      interrupted.jobs.withLock { $0.append(job) }
+      return .ended
+    })
+    let world = try await JobsWorld.make([[.failure(.server(status: 500))]], engine: engine, host: host)
+    await world.runtime.launch()
+    let job = try await #require(world.runtime.engine).request(world.generation()).ref
+
+    try await JobsWait.until("the run is handed to the host") { !host.runs.isEmpty }
+    let run = try #require(host.runs.first)
+    #expect(run.job == job && host.runs.count == 1)
+    guard case .settled(.failed) = await run.finished() else {
+      Issue.record("the run should end failed")
+      return
+    }
+    for await _ in run.progress {}
+    #expect(try await run.interrupt() == .ended && interrupted.jobs.withLock { $0 } == [job])
+
+    world.runtime.sceneEnteredBackground()
+    await world.runtime.sceneBecameActive()
+    #expect(host.backgrounds == 1 && host.actives == 1)
+  }
+
+  @Test func shouldShowARunGoingInThisProcessAsRunningNotAsStopped() async throws {
+    let world = try await GenerationWorld.make([[.delay(.seconds(60))] + GenerationScripts.draft()])
+    await world.runtime.launch()
+    #expect(await GenerationModel(novel: world.novel, chapter: 1).start(.generate, options: GenerationOptions(), runtime: world.runtime) == .started)
+    try await JobsWait.until("the run's model call is under way") { !world.provider.requests.isEmpty }
+
+    await world.runtime.sceneBecameActive()
+
+    #expect(world.runtime.resumable.isEmpty)
+    let line = try #require(try await world.status().lines.first)
+    guard case .runningHere = line.state else {
+      Issue.record("a run going here should read as running here")
+      return
+    }
+    #expect(line.actions == [.cancel])
+    #expect(await world.runtime.cancel(line.job) == nil)
+  }
+
+  @Test func shouldTellTheHostWhenTheSceneGoesToTheBackgroundAndComesBack() async throws {
+    let host = RecordingHost()
+    let runtimes = JobRuntimes(host: host)
+    let services = AIServices.live(defaults: try #require(UserDefaults(suiteName: "JobsRuntimeTests-\(UUID().uuidString)")))
+    await runtimes.phaseChanged(.background)
+    #expect(host.backgrounds == 0)
+
+    _ = runtimes.runtime(for: try NovelForgeStore.openInMemory(), services: services, trustedClock: TrustedClock())
+    await runtimes.phaseChanged(.background)
+    await runtimes.phaseChanged(.inactive)
+    await runtimes.phaseChanged(.active)
+
+    #expect(host.backgrounds == 1 && host.actives == 1)
+  }
+
+  @Test func shouldStampAndReadLeasesWithTheVaultsTrustedClock() async throws {
+    let runtimes = JobRuntimes()
+    let services = AIServices.live(defaults: try #require(UserDefaults(suiteName: "JobsRuntimeTests-\(UUID().uuidString)")))
+    let trusted = TrustedClock()
+    let ahead = Date().addingTimeInterval(3600)
+    trusted.record(serverDate: ahead)
+
+    let now = runtimes.runtime(for: try NovelForgeStore.openInMemory(), services: services, trustedClock: trusted).clock.now()
+
+    #expect(now.source == .trusted && abs(now.date.timeIntervalSince(ahead)) < 60)
+  }
+
   @Test func shouldKeepOneRuntimePerVaultAndLetViewsOnlyReadIt() async throws {
     let runtimes = JobRuntimes()
     let services = AIServices.live(defaults: try #require(UserDefaults(suiteName: "JobsRuntimeTests-\(UUID().uuidString)")))
     let store = try NovelForgeStore.openInMemory()
     #expect(runtimes.existing(for: store) == nil)
-    let runtime = runtimes.runtime(for: store, services: services)
-    #expect(runtimes.runtime(for: store, services: services) === runtime && runtimes.existing(for: store) === runtime)
-    #expect(runtimes.runtime(for: try NovelForgeStore.openInMemory(), services: services) !== runtime)
+    let clock = TrustedClock()
+    let runtime = runtimes.runtime(for: store, services: services, trustedClock: clock)
+    #expect(runtimes.runtime(for: store, services: services, trustedClock: clock) === runtime && runtimes.existing(for: store) === runtime)
+    #expect(runtimes.runtime(for: try NovelForgeStore.openInMemory(), services: services, trustedClock: clock) !== runtime)
     #expect(runtimes.existing(for: store) == nil)
   }
 

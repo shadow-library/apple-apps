@@ -14,7 +14,7 @@ struct ChapterWorkspaceStrip: View {
   let row: ChapterRow?
   @Environment(JobRuntimes.self) private var runtimes
   @Environment(AIServices.self) private var services
-  @State private var jobs = ReadObserver<ChapterJobs>()
+  @State private var jobs = ReadObserver<ChapterJobBoard>()
   @State private var reread = 0
   @State private var stopping: ChapterJobLine?
   @State private var failure: PresentedError?
@@ -25,8 +25,7 @@ struct ChapterWorkspaceStrip: View {
   var body: some View {
     let runtime = runtimes.existing(for: context.store)
     let clock = runtime?.clock ?? Self.fallbackClock
-    let status = ChapterWorkspaceStatus(
-      row: row, jobs: jobs.state.value?.jobs, replica: context.store.replica, here: runtime?.here ?? .starting, consentNeeded: runtime?.consentNeeded != nil)
+    let status = ChapterWorkspaceStatus(row: row, board: jobs.state.value, replica: context.store.replica, standing: runtime?.standing ?? .starting)
     VStack(alignment: .leading, spacing: Spacing.space3) {
       let chip = JobDisplay.chip(status.status)
       ShadowBadge(Text(verbatim: chip.label), intent: chip.intent, systemImage: chip.systemImage)
@@ -39,9 +38,9 @@ struct ChapterWorkspaceStrip: View {
       if let runtime { modeNote(runtime.mode) }
     }
     .task(id: reread) {
-      let query = ChapterJobsQuery(novel: context.novel, chapter: chapter, now: clock.now())
       let store = context.store
-      await jobs.run { store.observe(ChapterJobs.self, query) }
+      let query = ChapterJobBoardQuery(novel: context.novel, chapter: chapter, replica: store.replica, now: clock.now())
+      await jobs.run { store.observe(ChapterJobBoard.self, query) }
     }
     .task(id: jobs.state.value?.changesAt) {
       guard let changesAt = jobs.state.value?.changesAt else { return }
@@ -121,6 +120,12 @@ struct ChapterWorkspaceStrip: View {
         Task { failure = await runtime.runHere(line.job) }
       } label: {
         JobDisplay.runHere
+      }
+    case .resume:
+      Button {
+        Task { failure = await runtime.resume(line.job) }
+      } label: {
+        JobDisplay.resume
       }
     case .allow:
       Button {

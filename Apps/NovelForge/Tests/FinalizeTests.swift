@@ -23,7 +23,7 @@ private final class RecordingStarter: Sendable {
 
   var jobs: [EntityRef] { started.withLock { $0 } }
 
-  var starter: JobRuntime.Starter {
+  var starter: JobEngineCalls.Start {
     { [self] _, job throws(JobEngineError) in
       started.withLock { $0.append(job) }
       throw .pipelineNotYetAvailable(.finalizeReview)
@@ -115,7 +115,9 @@ struct FinalizeTests {
   @Test func shouldStartTheApprovedChaptersReadFromThisDevicesBacklog() async throws {
     let world = try await FinalizeWorld.make()
     let recorder = RecordingStarter()
-    let runtime = JobRuntime(store: world.store, clock: LeaseClock(trusted: nil), starter: recorder.starter) { [engine = world.engine] () throws(JobEngineError) in engine }
+    let runtime = JobRuntime(store: world.store, clock: LeaseClock(trusted: nil), platform: .mac, calls: JobEngineCalls(run: recorder.starter)) {
+      [engine = world.engine] () throws(JobEngineError) in engine
+    }
     await runtime.launch()
     defer { runtime.shutDown() }
     #expect(await world.model.approve(revision: try await world.head(), stale: nil))

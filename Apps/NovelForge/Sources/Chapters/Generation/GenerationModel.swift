@@ -11,6 +11,8 @@ nonisolated enum GenerationKind: Sendable, Equatable {
 
 enum GenerationOutcome: Equatable {
   case started
+  /// Requested for the device that runs it; its line offers Run here.
+  case queued
   case runningElsewhere
   case waitingForConsent
   case refused(PresentedError)
@@ -39,7 +41,7 @@ final class GenerationModel {
     notice = nil
     switch outcome {
     case .refused(let error): failure = error
-    case .started: break
+    case .started, .queued: break
     case .runningElsewhere, .waitingForConsent: notice = outcome
     }
     return outcome
@@ -54,6 +56,10 @@ final class GenerationModel {
   private func request(_ kind: GenerationKind, options: GenerationOptions, runtime: JobRuntime?) async -> GenerationOutcome {
     guard let runtime, let engine = runtime.engine else { return .refused(JobsErrors.notRunningHere) }
     do throws(GenerationRequestError) {
+      guard runtime.startsWhenAsked(.generate) else {
+        _ = try await engine.requestGeneration(novel: novel, chapter: chapter, options: options, regenerating: kind == .regenerate)
+        return .queued
+      }
       let started =
         switch kind {
         case .generate: try await engine.generateChapter(novel: novel, chapter: chapter, options: options)

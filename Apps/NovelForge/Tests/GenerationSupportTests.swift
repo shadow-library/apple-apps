@@ -56,7 +56,7 @@ enum GenerationScripts {
 }
 
 enum GenerationStarters {
-  static let refusing: JobRuntime.Starter = { _, _ throws(JobEngineError) in throw .pipelineNotYetAvailable(.generate) }
+  static let refusing: JobEngineCalls.Start = { _, _ throws(JobEngineError) in throw .pipelineNotYetAvailable(.generate) }
 }
 
 @MainActor
@@ -68,7 +68,9 @@ struct GenerationWorld {
   let makeEngine: JobRuntime.EngineFactory
   let runtime: JobRuntime
 
-  static func make(_ calls: [[ScriptedModelProvider.Step]] = [], plan: Bool = true, starter: JobRuntime.Starter? = nil) async throws -> GenerationWorld {
+  static func make(_ calls: [[ScriptedModelProvider.Step]] = [], plan: Bool = true, starter: JobEngineCalls.Start? = nil, platform: JobPlatform = .mac) async throws
+    -> GenerationWorld
+  {
     let store = try NovelForgeStore.openInMemory()
     let novel = UUID()
     try await store.write { transaction in
@@ -95,12 +97,8 @@ struct GenerationWorld {
         }, consent: consent.requirement, clock: clock)
     }
     let assertion = JobPowerAssertion(activity: power.activity)
-    let runtime =
-      if let starter {
-        JobRuntime(store: store, clock: clock, power: assertion, takeOverDelay: .milliseconds(20), starter: starter, makeEngine: makeEngine)
-      } else {
-        JobRuntime(store: store, clock: clock, power: assertion, takeOverDelay: .milliseconds(20), makeEngine: makeEngine)
-      }
+    let calls = starter.map { JobEngineCalls(run: $0) } ?? JobEngineCalls()
+    let runtime = JobRuntime(store: store, clock: clock, platform: platform, power: assertion, takeOverDelay: .milliseconds(20), calls: calls, makeEngine: makeEngine)
     return GenerationWorld(store: store, novel: novel, provider: provider, power: power, makeEngine: makeEngine, runtime: runtime)
   }
 
@@ -119,8 +117,12 @@ struct GenerationWorld {
 
   func status() async throws -> ChapterWorkspaceStatus {
     let row = try await store.load(ChapterList.self, novel).rows.value?.first { $0.chapter == 1 }
-    let jobs = try await store.load(ChapterJobs.self, ChapterJobsQuery(novel: novel, chapter: 1, now: runtime.clock.now()))
-    return ChapterWorkspaceStatus(row: row, jobs: jobs.jobs, replica: store.replica, here: runtime.here)
+    let board = try await store.load(ChapterJobBoard.self, ChapterJobBoardQuery(novel: novel, chapter: 1, replica: store.replica, now: runtime.clock.now()))
+    return ChapterWorkspaceStatus(row: row, board: board, replica: store.replica, standing: runtime.standing)
+  }
+
+  func engineCancel(_ job: EntityRef) async throws -> JobCancelOutcome {
+    try await #require(runtime.engine).cancel(job: job)
   }
 
   func versions() async throws -> GenerationVersions {

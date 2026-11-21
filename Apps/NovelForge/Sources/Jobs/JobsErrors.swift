@@ -26,6 +26,12 @@ enum JobsErrors {
     PresentedError(headline: String(localized: "Jobs aren't running in this copy of Novel Forge.", table: "Jobs"), detail: nil)
   }
 
+  /// Run here or Resume refused for another device's live run names that device, as the replica directory names it, when it can.
+  static func presented(_ error: JobEngineError, holder device: String?) -> PresentedError {
+    guard case .runningElsewhere = error, let device else { return presented(error) }
+    return PresentedError(headline: String(localized: "\(device) is running this job now. It goes on there.", table: "Jobs"), detail: error.code)
+  }
+
   static var readNeedsApproval: PresentedError {
     PresentedError(headline: String(localized: "This chapter has no approved version to read. Approve it again.", table: "Jobs"), detail: nil)
   }
@@ -45,6 +51,7 @@ enum JobsErrors {
     case "AI_015": String(localized: "The model's answer crossed a hard line, so nothing it wrote was kept.", table: "Jobs")
     case "job_engine.held_by_another_process": String(localized: "Another copy of Novel Forge is running this library's jobs.", table: "Jobs")
     case "job_engine.running_elsewhere", "job_run.another_attempt_live": String(localized: "Another device is running this job.", table: "Jobs")
+    case "job_engine.nothing_to_resume": String(localized: "This device has nothing left of this run to resume. Run it again instead.", table: "Jobs")
     case "job_engine.job_not_found", "job_run.job_unreadable": String(localized: "This job hasn't arrived on this device yet.", table: "Jobs")
     case "job_engine.pipeline_not_yet_available", "job_engine.not_a_novel_job": String(localized: "This version of Novel Forge can't run this job yet.", table: "Jobs")
     case "job_engine.pipeline_changed": String(localized: "This job was started by another version of Novel Forge.", table: "Jobs")

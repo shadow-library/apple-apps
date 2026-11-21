@@ -30,7 +30,7 @@ struct NovelForgeApp: App {
         .environment(settingsTabs)
         .task { await ai.loadOpenRouterModelsIfKeyed() }
         .task(id: vault.store.map(ObjectIdentifier.init)) { await chats.launch(vault.store, services: ai) }
-        .task(id: vault.store.map(ObjectIdentifier.init)) { await jobs.launch(vault.store, services: ai) }
+        .task(id: vault.store.map(ObjectIdentifier.init)) { await jobs.launch(vault.store, services: ai, trustedClock: vault.trustedClock) }
         .task(id: vault.store.map(ObjectIdentifier.init)) { await retrieval.launch(vault.store, embedders: ai.embedders) }
         .task(id: vault.store.map(ObjectIdentifier.init)) { await sync.launch(vault.store, trustedClock: vault.trustedClock) }
         .shadowTheme()
@@ -42,6 +42,7 @@ struct NovelForgeApp: App {
     .onChange(of: scenePhase, initial: true) { _, phase in
       Task { await retrieval.phaseChanged(phase) }
       Task { await sync.phaseChanged(phase) }
+      Task { await jobs.phaseChanged(phase) }
     }
     .commands { NovelForgeCommands() }
     #if os(macOS)

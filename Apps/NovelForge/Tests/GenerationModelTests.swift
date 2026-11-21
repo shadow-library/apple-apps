@@ -99,6 +99,31 @@ struct GenerationModelTests {
     #expect(await model.start(.generate, options: GenerationOptions(), runtime: world.runtime) != .refused(JobsErrors.notRunningHere))
   }
 
+  @Test func shouldOnlyRequestAGenerationOrRegenerationOnAPhoneAndLeaveItForTheWorker() async throws {
+    let world = try await GenerationWorld.make([GenerationScripts.draft(), GenerationScripts.judge()], platform: .phone)
+    await world.runtime.launch()
+    let model = GenerationModel(novel: world.novel, chapter: 1)
+
+    #expect(await model.start(.generate, options: GenerationOptions(), runtime: world.runtime) == .queued)
+
+    try await Task.sleep(for: .milliseconds(300))
+    let job = try #require(try await world.jobs().first { $0.kind == .known(.generate) })
+    #expect(job.status == .queued && job.latest == nil && world.provider.requests.isEmpty && world.power.begun == 0)
+    let line = try #require(try await world.status().lines.first { $0.kind == .generate })
+    guard case .queued(let wait) = line.state else {
+      Issue.record("the generation should wait for the worker")
+      return
+    }
+    #expect(wait.starter == .noWorker && line.actions == [.runHere, .cancel] && model.failure == nil && model.notice == nil)
+
+    _ = try await world.engineCancel(job.job)
+    _ = try await world.handDraft("Hand-written.")
+    #expect(await model.start(.regenerate, options: GenerationOptions(), runtime: world.runtime) == .queued)
+    try await Task.sleep(for: .milliseconds(300))
+    let regeneration = try #require(try await world.jobs().last { $0.kind == .known(.generate) })
+    #expect(regeneration.status == .queued && regeneration.latest == nil && world.provider.requests.isEmpty)
+  }
+
   @Test func shouldCallARunningOrQueuedGenerationBusy() async throws {
     let world = try await GenerationWorld.make(starter: GenerationStarters.refusing)
     await world.runtime.launch()
@@ -107,7 +132,7 @@ struct GenerationModelTests {
 
     let line = try #require(try await world.status().lines.first { $0.kind == .generate })
 
-    #expect(line.state == .queued && GenerationModel.isBusy(line))
+    #expect(line.isQueued && GenerationModel.isBusy(line))
   }
 
   @Test func shouldHeadlineEveryRefusalTheGateRaises() {

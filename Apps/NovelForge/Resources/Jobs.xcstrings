@@ -1,6 +1,17 @@
 {
   "sourceLanguage": "en",
   "strings": {
+    "%@ is running this job now. It goes on there.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ is running this job now. It goes on there."
+          }
+        }
+      }
+    },
     "A chapter of this novel is already being written. Wait for it to finish, or stop it.": {
       "extractionState": "manual",
       "localizations": {
@@ -243,6 +254,17 @@
         }
       }
     },
+    "Interrupted on this device": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Interrupted on this device"
+          }
+        }
+      }
+    },
     "It stops on every device. You can ask for it again later.": {
       "extractionState": "manual",
       "localizations": {
@@ -305,6 +327,17 @@
           "stringUnit": {
             "state": "translated",
             "value": "No AI key is set up. Add your key in AI settings."
+          }
+        }
+      }
+    },
+    "No Mac runs jobs": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No Mac runs jobs"
           }
         }
       }
@@ -408,6 +441,17 @@
         }
       }
     },
+    "Resume": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Resume"
+          }
+        }
+      }
+    },
     "Resuming on this device": {
       "extractionState": "manual",
       "localizations": {
@@ -470,6 +514,17 @@
           "stringUnit": {
             "state": "translated",
             "value": "Running in another copy of Novel Forge"
+          }
+        }
+      }
+    },
+    "Running on %@": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Running on %@"
           }
         }
       }
@@ -672,6 +727,17 @@
         }
       }
     },
+    "This device has nothing left of this run to resume. Run it again instead.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This device has nothing left of this run to resume. Run it again instead."
+          }
+        }
+      }
+    },
     "This job has already finished.": {
       "extractionState": "manual",
       "localizations": {
@@ -771,6 +837,50 @@
         }
       }
     },
+    "Waiting for %@": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Waiting for %@"
+          }
+        }
+      }
+    },
+    "Waiting for the Mac that runs jobs": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Waiting for the Mac that runs jobs"
+          }
+        }
+      }
+    },
+    "Waiting for the device that asked for it": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Waiting for the device that asked for it"
+          }
+        }
+      }
+    },
+    "Waiting for you to run it": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Waiting for you to run it"
+          }
+        }
+      }
+    },
     "Waiting for your permission to send this novel's text to the AI provider": {
       "extractionState": "manual",
       "localizations": {
@@ -800,6 +910,50 @@
           "stringUnit": {
             "state": "translated",
             "value": "Writing the chapter"
+          }
+        }
+      }
+    },
+    "last updated %@": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "last updated %@"
+          }
+        }
+      }
+    },
+    "requested %@": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "requested %@"
+          }
+        }
+      }
+    },
+    "stopped at %@": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "stopped at %@"
+          }
+        }
+      }
+    },
+    "updated %@": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "updated %@"
           }
         }
       }

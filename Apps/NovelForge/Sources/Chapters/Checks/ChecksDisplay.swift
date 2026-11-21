@@ -184,7 +184,7 @@ enum ChecksDisplay {
   static func phase(_ lines: [ChapterJobLine], of kind: ChapterReviewKind) -> ReviewJobPhase? {
     let jobs = lines.filter { $0.kind == .review && $0.reviewKind == kind }
     if jobs.contains(where: \.isRunning) { return .running }
-    if jobs.contains(where: { $0.state == .queued || $0.state == .waitingForConsent }) { return .queued }
+    if jobs.contains(where: { $0.isQueued || $0.state == .waitingForConsent }) { return .queued }
     return nil
   }
 }

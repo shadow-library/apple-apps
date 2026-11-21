@@ -11,7 +11,7 @@ struct GenerationControls: View {
   let chapter: Int
   let row: ChapterRow?
   @Environment(JobRuntimes.self) private var runtimes
-  @State private var jobs = ReadObserver<ChapterJobs>()
+  @State private var jobs = ReadObserver<ChapterJobBoard>()
   @State private var model: GenerationModel
   @State private var reread = 0
   @State private var options: GenerationKind?
@@ -28,7 +28,7 @@ struct GenerationControls: View {
   var body: some View {
     let runtime = runtimes.existing(for: context.store)
     let clock = runtime?.clock ?? Self.fallbackClock
-    let status = ChapterWorkspaceStatus(row: row, jobs: jobs.state.value?.jobs, replica: context.store.replica, here: runtime?.here ?? .starting)
+    let status = ChapterWorkspaceStatus(row: row, board: jobs.state.value, replica: context.store.replica, standing: runtime?.standing ?? .starting)
     let line = status.lines.first { $0.kind == .generate && GenerationModel.isBusy($0) }
     Group {
       if row?.stage != .final {
@@ -40,9 +40,9 @@ struct GenerationControls: View {
       }
     }
     .task(id: reread) {
-      let query = ChapterJobsQuery(novel: context.novel, chapter: chapter, now: clock.now())
       let store = context.store
-      await jobs.run { store.observe(ChapterJobs.self, query) }
+      let query = ChapterJobBoardQuery(novel: context.novel, chapter: chapter, replica: store.replica, now: clock.now())
+      await jobs.run { store.observe(ChapterJobBoard.self, query) }
     }
     .task(id: jobs.state.value?.changesAt) {
       guard let changesAt = jobs.state.value?.changesAt else { return }

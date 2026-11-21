@@ -5,10 +5,18 @@ import ShadowAI
 import ShadowJobs
 import ShadowStore
 
+/// What asking for a review did: answered at once, started here, requested for the device that runs it, or found running on another device.
+nonisolated enum ReviewAsk: Sendable, Equatable {
+  case reviewed
+  case started
+  case queued
+  case elsewhere
+}
+
 @MainActor
 @Observable
 final class ChecksModel {
-  typealias Requester = @MainActor (ChapterReviewKind, Pace?) async throws(ReviewRequestError) -> StartedReview
+  typealias Requester = @MainActor (ChapterReviewKind, Pace?) async throws(ReviewRequestError) -> ReviewAsk
 
   let context: NovelContext
   let chapter: Int
@@ -48,8 +56,7 @@ final class ChecksModel {
     defer { starting = nil }
     do throws(ReviewRequestError) {
       switch try await request(kind, pace) {
-      case .reviewed: break
-      case .running: break
+      case .reviewed, .started, .queued: break
       case .elsewhere: elsewhere = true
       }
     } catch {
@@ -86,19 +93,34 @@ final class ChecksModel {
     return succeeded
   }
 
-  static func requester(store: VaultStore, novel: UUID, chapter: Int, engine: JobEngine?, follow: @escaping @MainActor (JobRunHandle) -> Void) -> Requester {
+  /// `startsHere` is whether this device starts a review job it asks for (`JobRuntime.startsWhenAsked`); otherwise a judge or editorial review is only
+  /// requested, and the quick kinds answer at once either way.
+  static func requester(
+    store: VaultStore, novel: UUID, chapter: Int, engine: JobEngine?, startsHere: Bool, follow: @escaping @MainActor (JobRunHandle) -> Void
+  ) -> Requester {
     { kind, pace throws(ReviewRequestError) in
       guard ChecksDisplay.isModelKind(kind) else {
         do throws(ChapterReviewError) {
-          return .reviewed(try await store.reviewChapter(novel: novel, chapter: chapter, kind: kind))
+          _ = try await store.reviewChapter(novel: novel, chapter: chapter, kind: kind)
+          return .reviewed
         } catch {
           throw .review(error)
         }
       }
       guard let engine else { throw .engine(.heldByAnotherProcess) }
-      let started = try await engine.requestReview(novel: novel, chapter: chapter, kind: kind, pace: pace)
-      if case .running(let handle) = started { follow(handle) }
-      return started
+      guard startsHere else {
+        switch try await engine.queueReview(novel: novel, chapter: chapter, kind: kind, pace: pace) {
+        case .reviewed: return .reviewed
+        case .requested: return .queued
+        }
+      }
+      switch try await engine.requestReview(novel: novel, chapter: chapter, kind: kind, pace: pace) {
+      case .reviewed: return .reviewed
+      case .running(let handle):
+        follow(handle)
+        return .started
+      case .elsewhere: return .elsewhere
+      }
     }
   }
 }
