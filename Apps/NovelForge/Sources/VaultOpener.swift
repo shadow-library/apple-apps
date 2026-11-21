@@ -15,12 +15,21 @@ nonisolated enum VaultOpener {
     }
   }
 
+  static var isHostedByTests: Bool { ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] != nil }
+
+  /// The app's own vault, or an in-memory one while XCTest hosts the app.
+  static func appLocation() throws(VaultOpenError) -> StoreLocation {
+    guard !isHostedByTests else { return .inMemory }
+    return try defaultLocation()
+  }
+
+  /// `wallClock` stamps the store's changes; sync needs `SyncEngine.wallClock(preferring:)` of the trusted clock it is given.
   @concurrent
-  static func open(_ location: StoreLocation) async throws(VaultOpenError) -> VaultStore {
+  static func open(_ location: StoreLocation, wallClock: @escaping @Sendable () -> Date = { Date() }) async throws(VaultOpenError) -> VaultStore {
     do {
       switch location {
-      case .file(let url): return try NovelForgeStore.open(at: url)
-      case .inMemory: return try NovelForgeStore.openInMemory()
+      case .file(let url): return try NovelForgeStore.open(at: url, wallClock: wallClock)
+      case .inMemory: return try NovelForgeStore.openInMemory(wallClock: wallClock)
       }
     } catch {
       throw .openFailed(error.localizedDescription)

@@ -27,6 +27,8 @@ public enum AppCapability: Hashable, Sendable {
 
 struct AppCapabilities {
   static let sharedKeychainAccessGroup = "$(AppIdentifierPrefix)\(Organization.appBundleIdPrefix).shared"
+  /// The Info.plist dictionary naming the restricted capabilities this build was signed with, so the app never touches one it lacks.
+  static let infoPlistKey = "ShadowCapabilities"
 
   let entitlements: Entitlements?
   let infoPlist: [String: Plist.Value]
@@ -42,20 +44,24 @@ struct AppCapabilities {
     var entitlements: [String: Plist.Value] = [:]
     var infoPlist: [String: Plist.Value] = [:]
     var settings: SettingsDictionary = [:]
+    var signedWith: [String: Plist.Value] = [:]
 
     for capability in capabilities {
       switch capability {
       case .iCloud(let container):
         entitlements["com.apple.developer.icloud-container-identifiers"] = [.string(container ?? "iCloud.\(bundleId)")]
         entitlements["com.apple.developer.icloud-services"] = ["CloudKit"]
+        signedWith["CloudKitContainer"] = .string(container ?? "iCloud.\(bundleId)")
       case .pushNotifications:
         entitlements["$(SHADOW_APS_ENVIRONMENT_KEY)"] = "development"
         settings["SHADOW_APS_ENVIRONMENT_KEY"] = "aps-environment"
         settings["SHADOW_APS_ENVIRONMENT_KEY[sdk=macosx*]"] = "com.apple.developer.aps-environment"
+        signedWith["PushNotifications"] = true
       case .remoteNotificationBackgroundMode:
         if hasUIKit { infoPlist["UIBackgroundModes"] = ["remote-notification"] }
       case .keychainSharing:
         entitlements["keychain-access-groups"] = [.string("$(AppIdentifierPrefix)\(bundleId)"), .string(Self.sharedKeychainAccessGroup)]
+        signedWith["SharedKeychainGroup"] = .string(Self.sharedKeychainAccessGroup)
       case .camera(let usage):
         infoPlist["NSCameraUsageDescription"] = .string(usage)
         if hasMac { settings["ENABLE_RESOURCE_ACCESS_CAMERA[sdk=macosx*]"] = "YES" }
@@ -66,6 +72,7 @@ struct AppCapabilities {
       }
     }
 
+    if !signedWith.isEmpty { infoPlist[Self.infoPlistKey] = .dictionary(signedWith) }
     self.entitlements = entitlements.isEmpty ? nil : .dictionary(entitlements)
     self.infoPlist = infoPlist
     self.settings = settings

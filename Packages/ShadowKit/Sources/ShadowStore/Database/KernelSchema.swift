@@ -6,6 +6,7 @@ enum KernelSchema {
   static let migrationIdentifier = "com.shadow.library.shadowstore.kernel.1"
   static let relayMigrationIdentifier = "com.shadow.library.shadowstore.kernel.2"
   static let stateTables = ["field_state", "appended_item", "revision", "tombstone", "foreign_record", "opaque_line"]
+  static let changeLogTable = "change_log"
 
   static func migrator(_ extra: [StoreMigration]) throws(StoreError) -> DatabaseMigrator {
     var seen = [migrationIdentifier, relayMigrationIdentifier]

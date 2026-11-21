@@ -109,6 +109,25 @@ struct StoreObservationTests {
     consumer.cancel()
   }
 
+  @Test("should signal logged changes after a local write but not after an acknowledgement or a remote apply")
+  func shouldSignalOnlyLoggedChanges() async throws {
+    let store = try StoreFixture.open()
+    let signals = Reads()
+    let consumer = Task { for await _ in store.loggedChanges() { signals.bump() } }
+    try await Task.sleep(for: .milliseconds(300))
+    _ = try await store.write { transaction in try transaction.set(note, ["title": "a"]) }
+    try await settle { signals.value == 1 }
+    try await store.dropChanges(through: 1)
+    let change = Fixture.change(.set, other.kind, other.key, clock: Fixture.clock(1, replica: 1), fields: ["title": "remote"])
+    _ = try await store.applyRemote([change.canonicalBytes()])
+    try await Task.sleep(for: .milliseconds(300))
+    #expect(signals.value == 1)
+    #expect(try await store.pendingChanges(limit: 10).isEmpty)
+    _ = try await store.write { transaction in try transaction.set(note, ["title": "b"]) }
+    try await settle { signals.value == 2 }
+    consumer.cancel()
+  }
+
   @Test("should stop observing once the consumer is cancelled")
   func shouldRemoveTheObserverOnCancel() async throws {
     let store = try StoreFixture.open()

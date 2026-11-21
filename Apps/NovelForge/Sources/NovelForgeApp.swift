@@ -7,13 +7,17 @@ import SwiftUI
 struct NovelForgeApp: App {
   #if os(macOS)
     @NSApplicationDelegateAdaptor(NovelForgeAppDelegate.self) private var delegate
+  #else
+    @UIApplicationDelegateAdaptor(NovelForgeAppDelegate.self) private var delegate
   #endif
   @Environment(\.scenePhase) private var scenePhase
-  @State private var vault = VaultModel(locate: Self.locate)
   @State private var ai = AIServices.live()
   @State private var chats = ChatRuntimes()
   @State private var jobs = JobRuntimes()
   @State private var retrieval = RetrievalRuntimes()
+
+  private var vault: VaultModel { delegate.vault }
+  private var sync: SyncRuntimes { delegate.sync }
 
   var body: some Scene {
     WindowGroup {
@@ -21,25 +25,25 @@ struct NovelForgeApp: App {
         .environment(ai)
         .environment(chats)
         .environment(jobs)
+        .environment(sync)
         .task { await ai.loadOpenRouterModelsIfKeyed() }
         .task(id: vault.store.map(ObjectIdentifier.init)) { await chats.launch(vault.store, services: ai) }
         .task(id: vault.store.map(ObjectIdentifier.init)) { await jobs.launch(vault.store, services: ai) }
         .task(id: vault.store.map(ObjectIdentifier.init)) { await retrieval.launch(vault.store, embedders: ai.embedders) }
+        .task(id: vault.store.map(ObjectIdentifier.init)) { await sync.launch(vault.store, trustedClock: vault.trustedClock) }
         .shadowTheme()
         .flushingUnsavedWork()
         #if os(macOS)
           .frame(minWidth: 900, minHeight: 600)
         #endif
     }
-    .onChange(of: scenePhase, initial: true) { _, phase in Task { await retrieval.phaseChanged(phase) } }
+    .onChange(of: scenePhase, initial: true) { _, phase in
+      Task { await retrieval.phaseChanged(phase) }
+      Task { await sync.phaseChanged(phase) }
+    }
     .commands { NovelForgeCommands() }
     #if os(macOS)
       Settings { AISettingsScene(vault: vault, services: ai) }
     #endif
-  }
-
-  private nonisolated static func locate() throws(VaultOpenError) -> StoreLocation {
-    guard ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] == nil else { return .inMemory }
-    return try VaultOpener.defaultLocation()
   }
 }

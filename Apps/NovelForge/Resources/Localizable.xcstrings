@@ -33,6 +33,28 @@
           }
         }
       }
+    },
+    "Unlock this device to open your library": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Unlock this device to open your library"
+          }
+        }
+      }
+    },
+    "Your library opens as soon as this device has been unlocked once since it restarted.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your library opens as soon as this device has been unlocked once since it restarted."
+          }
+        }
+      }
     }
   },
   "version": "1.0"

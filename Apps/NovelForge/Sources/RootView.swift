@@ -11,6 +11,8 @@ struct RootView: View {
         ProgressView()
       case .ready(let store):
         NovelForgeShell(store: store)
+      case .locked:
+        VaultLockedView { Task { await vault.open() } }
       case .failed(let error):
         VaultFailureView(error: error) { Task { await vault.open() } }
       }
@@ -33,6 +35,20 @@ struct VaultFailureView: View {
         .foregroundStyle(ShadowColor.textSecondary)
         .textSelection(.enabled)
         .padding(Spacing.space4)
+    }
+    .background(ShadowColor.surfaceApp)
+  }
+}
+
+struct VaultLockedView: View {
+  let retry: () -> Void
+
+  var body: some View {
+    ShadowContentUnavailable(
+      Text("Unlock this device to open your library"), systemImage: "lock",
+      message: Text("Your library opens as soon as this device has been unlocked once since it restarted.")
+    ) {
+      Button("Try Again", action: retry)
     }
     .background(ShadowColor.surfaceApp)
   }

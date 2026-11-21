@@ -3,6 +3,12 @@ import ShadowDesignSystem
 import SwiftUI
 
 struct LibrarySidebar: View {
+  #if os(macOS)
+    private static let syncPlacement = ToolbarItemPlacement.automatic
+  #else
+    private static let syncPlacement = ToolbarItemPlacement.topBarLeading
+  #endif
+
   @Bindable var library: LibraryModel
 
   var body: some View {
@@ -10,6 +16,9 @@ struct LibrarySidebar: View {
       .navigationTitle(Text("Library", tableName: "Library"))
       .shadowColumnWidth(.sidebar)
       .toolbar {
+        ToolbarItem(placement: Self.syncPlacement) {
+          SyncStatusIndicator().shadowBarItem()
+        }
         ToolbarItem {
           Button {
             library.present(.create)

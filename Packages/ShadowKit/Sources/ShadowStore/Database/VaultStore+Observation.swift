@@ -16,6 +16,25 @@ extension VaultStore {
     observeReads(after: .writes(Set(tables.map { $0.lowercased() })), read)
   }
 
+  /// Signals after each committed transaction that logged changes for upload: a local write, or a re-mint logging the pending changes again. An upload's
+  /// acknowledgement and a remote apply never signal, and a slow consumer sees one signal for many commits.
+  public func loggedChanges() -> AsyncStream<Void> {
+    let (stream, signal) = AsyncStream<Void>.makeStream(bufferingPolicy: .bufferingNewest(1))
+    let observer = CommitObserver(signal, trigger: .inserts([KernelSchema.changeLogTable]))
+    let task = Task {
+      do {
+        try await addCommitObserver(observer)
+      } catch {
+        signal.finish()
+      }
+    }
+    signal.onTermination = { @Sendable _ in
+      task.cancel()
+      self.removeCommitObserver(observer)
+    }
+    return stream
+  }
+
   private func observeReads<Value: Sendable & Equatable>(
     after trigger: CommitObserver.Trigger, _ read: @escaping @Sendable (ReadTransaction) throws -> Value
   ) -> AsyncThrowingStream<Value, any Error> {
@@ -49,6 +68,7 @@ private final class CommitObserver: TransactionObserver, Sendable {
   enum Trigger: Sendable {
     case anyCommit
     case writes(Set<String>)
+    case inserts(Set<String>)
   }
 
   private let signal: AsyncStream<Void>.Continuation
@@ -62,7 +82,7 @@ private final class CommitObserver: TransactionObserver, Sendable {
 
   /// GRDB asks this before each statement runs, for every table the statement (with its triggers) may write; answering false keeps row events away.
   func observes(eventsOfKind eventKind: DatabaseEventKind) -> Bool {
-    if case .writes(let tables) = trigger, tables.contains(eventKind.tableName.lowercased()) { wrote.withLock { $0 = true } }
+    if trigger.matches(eventKind) { wrote.withLock { $0 = true } }
     return false
   }
 
@@ -73,11 +93,26 @@ private final class CommitObserver: TransactionObserver, Sendable {
       defer { wrote = false }
       return wrote
     }
-    if case .writes = trigger, !relevant { return }
+    if case .anyCommit = trigger {
+      signal.yield()
+      return
+    }
+    guard relevant else { return }
     signal.yield()
   }
 
   func databaseDidRollback(_ db: Database) {
     wrote.withLock { $0 = false }
+  }
+}
+
+extension CommitObserver.Trigger {
+  fileprivate func matches(_ eventKind: DatabaseEventKind) -> Bool {
+    switch (self, eventKind) {
+    case (.anyCommit, _): false
+    case (.writes(let tables), _): tables.contains(eventKind.tableName.lowercased())
+    case (.inserts(let tables), .insert(let table)): tables.contains(table.lowercased())
+    case (.inserts, .delete), (.inserts, .update): false
+    }
   }
 }

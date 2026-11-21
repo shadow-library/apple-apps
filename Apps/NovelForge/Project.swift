@@ -4,8 +4,14 @@ import ProjectDescriptionHelpers
 let project = Project.app(
   name: "NovelForge",
   platform: .phoneAndMac,
-  dependencies: [.product(.novelForgeCore), .shared(.store), .shared(.ai), .shared(.jobs), .shared(.keychain), .shared(.networking), .shared(.designSystem), .shared(.text)],
-  testDependencies: [.product(.novelForgeCore), .shared(.store), .shared(.keychain), .shared(.testSupport), .shared(.text)],
+  dependencies: [
+    .product(.novelForgeCore), .shared(.store), .shared(.ai), .shared(.jobs), .shared(.keychain), .shared(.networking), .shared(.designSystem), .shared(.text), .shared(.sync),
+    .shared(.syncRuntime), .shared(.syncCloudKit), .shared(.syncS3),
+  ],
+  testDependencies: [
+    .product(.novelForgeCore), .shared(.store), .shared(.keychain), .shared(.testSupport), .shared(.text), .shared(.sync), .shared(.syncRuntime), .shared(.syncCloudKit),
+    .shared(.syncS3),
+  ],
   infoPlist: [
     "UTExportedTypeDeclarations": [
       [
