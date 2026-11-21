@@ -21,7 +21,7 @@ struct AttemptRun: Sendable {
     watcher.cancel()
     await heartbeat.value
     await watcher.value
-    runner.release(id)
+    runner.release(id, control)
     return result
   }
 

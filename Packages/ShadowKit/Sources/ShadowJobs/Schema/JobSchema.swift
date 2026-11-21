@@ -3,6 +3,7 @@ import ShadowStore
 public enum JobSchema {
   public static let jobKind = makeKind("jobs_job")
   public static let attemptKind = makeKind("jobs_attempt")
+  public static let workerKind = makeKind("jobs_worker")
 
   public static let entities: [EntitySchema] = [
     EntitySchema(
@@ -25,6 +26,12 @@ public enum JobSchema {
       ]),
       syncClass: .general
     ),
+  ]
+
+  /// Apart from `entities`, whose kinds frozen registries already hold: an app opts in by adding these to a new registry version.
+  public static let workerEntities: [EntitySchema] = [
+    EntitySchema(
+      kind: workerKind, shape: .record(fields: [WorkerField.replica.rawValue: .register, WorkerField.since.rawValue: .register]), syncClass: .general)
   ]
 
   private static func makeKind(_ name: String) -> EntityKind {
@@ -99,4 +106,16 @@ public enum AttemptOutcome: String, CaseIterable, Sendable {
   case stoodDown = "stood_down"
   case cancelled
   case succeeded
+}
+
+/// Both written in one set, so every replica keeps the same writer's pair.
+public enum WorkerField: String, CaseIterable, Sendable {
+  /// The worker's replica id, or null once none is named.
+  case replica
+  case since
+}
+
+public enum WorkerSinceMember: String, CaseIterable, Sendable {
+  case millis
+  case clock
 }

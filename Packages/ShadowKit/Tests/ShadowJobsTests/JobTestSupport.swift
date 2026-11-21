@@ -8,7 +8,8 @@ import Testing
 
 enum JobFixture {
   static let outputKind = makeKind("jobs_test_output")
-  static let registry = SchemaRegistry(version: 1, entities: JobSchema.entities + [EntitySchema(kind: outputKind, shape: .appended, syncClass: .general)])
+  static let registry = SchemaRegistry(
+    version: 1, entities: JobSchema.entities + JobSchema.workerEntities + [EntitySchema(kind: outputKind, shape: .appended, syncClass: .general)])
   static let novel = "6f0c4d1e-0000-4000-8000-000000000001"
   static let epoch: Int64 = 1_700_000_000_000
 

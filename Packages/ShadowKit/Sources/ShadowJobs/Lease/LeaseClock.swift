@@ -54,6 +54,11 @@ extension AttemptLease {
     AttemptLease(expires: instant.adding(LeaseTerms.duration).millis, renewed: instant.millis, clock: instant.source)
   }
 
+  /// Lapsed from `instant` on: another replica's automatic attempt may start once its clock reaches it.
+  public static func released(at instant: LeaseInstant) -> AttemptLease {
+    AttemptLease(expires: instant.millis, renewed: instant.millis, clock: instant.source)
+  }
+
   public func isLive(at now: LeaseInstant) -> Bool {
     Self.isLive(expires: expires, at: now)
   }

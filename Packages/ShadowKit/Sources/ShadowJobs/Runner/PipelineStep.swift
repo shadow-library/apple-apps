@@ -40,8 +40,9 @@ public struct AttemptStepContext: Sendable {
 
   public var isStopping: Bool { control.stop != nil || control.isCrashed }
 
-  /// Joins the transaction that opens a ledger call.
+  /// Joins the transaction that opens a ledger call; refused once the run was interrupted, so the call is never sent.
   public func recordCall(_ call: UUID, in transaction: inout WriteTransaction) throws(JobRecordError) {
+    guard !control.isCrashed else { throw .attemptInterrupted(attempt.ref) }
     try AttemptRecords.recordCall(call, attempt: attempt, by: start.replica, in: &transaction)
     opened()
   }

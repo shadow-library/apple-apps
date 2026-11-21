@@ -9,6 +9,7 @@ public enum JobRecordError: ShadowError {
   case attemptUnreadable(EntityRef, String)
   case notWriter(EntityRef, owner: ReplicaID, writer: ReplicaID)
   case attemptSettled(EntityRef, AttemptOutcome)
+  case attemptInterrupted(EntityRef)
   case store(StoreError)
 
   public var code: String {
@@ -20,6 +21,7 @@ public enum JobRecordError: ShadowError {
     case .attemptUnreadable: "job_record.attempt_unreadable"
     case .notWriter: "job_record.not_writer"
     case .attemptSettled: "job_record.attempt_settled"
+    case .attemptInterrupted: "job_record.attempt_interrupted"
     case .store(let error): error.code
     }
   }
@@ -33,6 +35,7 @@ public enum JobRecordError: ShadowError {
     case .attemptUnreadable(let ref, let reason): "Attempt \(ref.key) cannot be read: \(reason)."
     case .notWriter(let ref, let owner, let writer): "Attempt \(ref.key) is written only by replica \(owner), not \(writer)."
     case .attemptSettled(let ref, let outcome): "Attempt \(ref.key) already ended \(outcome.rawValue)."
+    case .attemptInterrupted(let ref): "Attempt \(ref.key) was interrupted on this device and opens no more calls."
     case .store(let error): error.errorDescription
     }
   }

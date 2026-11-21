@@ -7,6 +7,8 @@ final class AttemptControl: Sendable {
     var crashed = false
     var writes = 0
     var cancelStep: (@Sendable () -> Void)?
+    var released = false
+    var releaseWaiters: [CheckedContinuation<Void, Never>] = []
   }
 
   let job: EntityRef
@@ -19,6 +21,27 @@ final class AttemptControl: Sendable {
   var stop: LocalStop? { state.withLock { $0.stop } }
 
   var isCrashed: Bool { state.withLock { $0.crashed } }
+
+  /// Called once by the runner's `release`, which every path that reserved the control reaches.
+  func markReleased() {
+    let waiters = state.withLock { state in
+      state.released = true
+      defer { state.releaseWaiters = [] }
+      return state.releaseWaiters
+    }
+    for waiter in waiters { waiter.resume() }
+  }
+
+  func released() async {
+    await withCheckedContinuation { (continuation: CheckedContinuation<Void, Never>) in
+      let done = state.withLock { state in
+        guard !state.released else { return true }
+        state.releaseWaiters.append(continuation)
+        return false
+      }
+      if done { continuation.resume() }
+    }
+  }
 
   func attach(_ cancel: @escaping @Sendable () -> Void) {
     let stopped = state.withLock { state in

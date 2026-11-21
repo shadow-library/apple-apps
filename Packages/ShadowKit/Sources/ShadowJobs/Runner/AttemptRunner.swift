@@ -10,6 +10,25 @@ public enum AttemptResult: Sendable, Hashable {
   case interrupted
 }
 
+public enum AttemptInterruption: Sendable, Hashable {
+  /// A run of it here stopped; the attempt resumes from its checkpoint.
+  case interrupted
+  /// It carries a stop mark (its job's cancel, a stand-down): the next `settleStopped` or resume settles it instead of resuming it.
+  case settling
+  /// Nothing of it was running here, but this device holds its checkpoint.
+  case notRunning
+  /// Nothing of it is here to resume: it settled, was forgotten or is another replica's.
+  case ended
+}
+
+/// A run this replica holds and is not running, with no stop mark: what `resume(_:pipeline:)` would continue from.
+public struct InterruptedRun: Sendable, Hashable {
+  public let attempt: AttemptID
+  public let job: EntityRef
+  public let step: AttemptStep
+  public let checkpoint: LocalCheckpoint
+}
+
 public struct AttemptHandle: Sendable {
   public let attempt: AttemptID
   public let job: EntityRef
@@ -106,7 +125,7 @@ public final class AttemptRunner: Sendable {
         return (record, snapshot.job)
       }
     } catch {
-      release(id)
+      release(id, control)
       throw error
     }
     return launch(AttemptRun(runner: self, record: begun.record, job: begun.job, pipeline: pipeline, control: control), from: checkpoint)
@@ -114,21 +133,22 @@ public final class AttemptRunner: Sendable {
 
   /// An attempt whose kind `pipeline` does not know is left for a launch that does (apps/novel-forge-server/src/modules/jobs/job.executor.ts:135-139).
   public func resumeInterrupted(pipeline: @escaping @Sendable (JobRecord) -> AttemptPipeline?) async throws(JobRunError) -> [AttemptHandle] {
-    try await resume(where: { _ in true }, pipeline: pipeline)
+    try await resumeInterrupted(where: { _ in true }, pipeline: pipeline)
   }
 
   /// `resumeInterrupted` for one attempt, as `start` answers `alreadyRunningHere` for a run this device holds but is not running: nil when the attempt is
   /// running here or its run settled, was forgotten or was left for a launch that knows its kind.
   public func resume(_ attempt: AttemptID, pipeline: @escaping @Sendable (JobRecord) -> AttemptPipeline?) async throws(JobRunError) -> AttemptHandle? {
-    try await resume(where: { $0.attempt == attempt }, pipeline: pipeline).first
+    try await resumeInterrupted(where: { $0.attempt == attempt }, pipeline: pipeline).first
   }
 
-  private func resume(
+  /// `resumeInterrupted` for the runs `included` takes; the others, stop marks included, are left as they are.
+  public func resumeInterrupted(
     where included: @escaping @Sendable (LocalRun) -> Bool, pipeline: @escaping @Sendable (JobRecord) -> AttemptPipeline?
   ) async throws(JobRunError) -> [AttemptHandle] {
     let replica = store.replica
     let now = clock.now()
-    let reserved = Mutex<[AttemptID]>([])
+    let reserved = Mutex<[(AttemptID, AttemptControl)]>([])
     let resumable: [Resumable]
     do {
       resumable = try await storeWrite { transaction in
@@ -143,7 +163,7 @@ public final class AttemptRunner: Sendable {
               try Self.settle(run.attempt, .stoodDown, by: replica, in: &transaction)
               continue
             }
-            reserved.withLock { $0.append(run.attempt) }
+            reserved.withLock { $0.append((run.attempt, entry.control)) }
             try AttemptRecords.update(run.attempt, AttemptUpdate(lease: .granted(at: now)), by: replica, in: &transaction)
             resumable.append(entry)
           case .settle(let settlement):
@@ -157,12 +177,85 @@ public final class AttemptRunner: Sendable {
         return resumable
       }
     } catch {
-      for id in reserved.withLock({ $0 }) { release(id) }
+      for (id, control) in reserved.withLock({ $0 }) { release(id, control) }
       throw error
     }
     return resumable.map { entry in
       launch(AttemptRun(runner: self, record: entry.record, job: entry.job, pipeline: entry.pipeline, control: entry.control), from: entry.checkpoint)
     }
+  }
+
+  /// Ends the attempt's run here as a crash ends it, and returns once the run released its reservation (a step that ignores cancellation holds it until the
+  /// step returns): nothing of the run is written afterwards and the checkpoint stays for `resume(_:pipeline:)`. A step commit that began before the call lands
+  /// whole, and the lease released here is written after it. A released lease expires at this device's lease instant, so a replica whose clock is behind
+  /// reads it live until its own clock passes that instant.
+  public func interrupt(_ attempt: AttemptID, releasingLease: Bool) async throws(JobRunError) -> AttemptInterruption {
+    let control = self.control(of: attempt)
+    control?.crash()
+    let (replica, now) = (store.replica, clock.now())
+    let held: Result<LocalRun?, JobRunError>
+    do {
+      held = .success(
+        try await storeWrite { transaction in
+          guard let run = try JobsLocal.run(attempt, in: transaction.database), let record = try AttemptRecords.read(attempt, in: transaction).record,
+            record.outcome == .running, record.start.replica == replica
+          else { return nil }
+          if releasingLease, let lease = record.lease, lease.expires > now.millis {
+            try AttemptRecords.update(attempt, AttemptUpdate(lease: .released(at: now)), by: replica, in: &transaction)
+          }
+          return run
+        })
+    } catch {
+      held = .failure(error)
+    }
+    await control?.released()
+    guard let run = try held.get() else { return .ended }
+    if run.stop != nil { return .settling }
+    return control == nil ? .notRunning : .interrupted
+  }
+
+  /// Settles the runs this device holds with a stop mark and forgets those whose attempt ended or whose job is gone, as a launch that resumes nothing should;
+  /// the other runs keep their checkpoints.
+  @discardableResult
+  public func settleStopped() async throws(JobRunError) -> [AttemptID] {
+    let replica = store.replica
+    return try await storeWrite { transaction in
+      try JobsLocal.cleanup(keeping: replica, in: transaction.database)
+      var settled: [AttemptID] = []
+      for run in try JobsLocal.runs(of: replica, in: transaction.database) where !self.isRunning(run.attempt) {
+        guard let record = try AttemptRecords.read(run.attempt, in: transaction).record, record.outcome == .running, record.start.replica == replica,
+          try JobRecords.read(run.job, in: transaction).record != nil
+        else {
+          try JobsLocal.forget(run.attempt, in: transaction.database)
+          continue
+        }
+        guard let stop = run.stop else { continue }
+        try Self.settle(run.attempt, stop.settlement, by: replica, in: &transaction)
+        settled.append(run.attempt)
+      }
+      return settled
+    }
+  }
+
+  /// Oldest first. A listed run may stand down or settle cancelled as soon as it resumes, when its job moved on elsewhere.
+  public func interruptedRuns() async throws(JobRunError) -> [InterruptedRun] {
+    let replica = store.replica
+    let runs: [InterruptedRun]
+    do {
+      runs = try await store.read { transaction in
+        var runs: [InterruptedRun] = []
+        for run in try JobsLocal.runs(of: replica, in: transaction.database) where run.stop == nil {
+          guard let record = try AttemptRecords.read(run.attempt, in: transaction).record, record.outcome == .running, record.start.replica == replica,
+            try JobRecords.read(run.job, in: transaction).record != nil, let checkpoint = try JobsLocal.checkpoint(run.attempt, in: transaction.database)
+          else { continue }
+          runs.append(InterruptedRun(attempt: run.attempt, job: run.job, step: AttemptStep(name: checkpoint.next, index: checkpoint.index), checkpoint: checkpoint))
+        }
+        return runs
+      }
+    } catch {
+      throw JobRunError(error)
+    }
+    return runs.filter { !isRunning($0.attempt) }
   }
 
   /// Requests the job's cancel and marks this device's attempts of it stopped in the same transaction, then aborts their steps.
@@ -252,11 +345,19 @@ public final class AttemptRunner: Sendable {
     if let existing { throw .alreadyRunningHere(existing) }
   }
 
+  func control(of id: AttemptID) -> AttemptControl? {
+    running.withLock { $0[id] }
+  }
+
   private func isRunning(_ id: AttemptID) -> Bool {
     running.withLock { $0[id] != nil }
   }
 
-  func release(_ id: AttemptID) {
-    _ = running.withLock { $0.removeValue(forKey: id) }
+  /// Only the run that reserved `id`: a run ending after its attempt was resumed here leaves the resumed run's reservation.
+  func release(_ id: AttemptID, _ control: AttemptControl) {
+    running.withLock { running in
+      if running[id] === control { running[id] = nil }
+    }
+    control.markReleased()
   }
 }
