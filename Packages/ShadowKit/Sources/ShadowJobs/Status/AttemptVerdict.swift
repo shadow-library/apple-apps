@@ -5,7 +5,9 @@ public enum StandDownReason: Sendable, Hashable {
   case outranked(AttemptID)
 }
 
-/// Plan, Leases, stopping and resuming; rank order makes two automatic attempts that see each other live agree on which one goes on.
+/// Plan, Leases, stopping and resuming. An attempt started by hand never stands down for a live one. An automatic attempt stands down for another replica's
+/// live attempt started by hand, whenever either started, and for an earlier live automatic one, so two automatic attempts that see each other agree on
+/// which one goes on.
 public enum AttemptVerdict: Sendable, Hashable {
   case proceed
   case cancel
@@ -17,10 +19,19 @@ public enum AttemptVerdict: Sendable, Hashable {
       self = .standDown(.succeeded(succeeded.id))
     } else if snapshot.job.cancel == .requested || others.contains(where: { $0.outcome == .cancelled }) {
       self = .cancel
-    } else if !attempt.start.byHand, let leader = others.first(where: { $0.isLive(at: now) && $0.outranks(attempt) }) {
+    } else if let leader = others.first(where: { $0.isLive(at: now) && attempt.yields(to: $0) }) {
       self = .standDown(.outranked(leader.id))
     } else {
       self = .proceed
     }
+  }
+}
+
+extension AttemptRecord {
+  /// Whether this attempt stands down while `other` is live: never when started by hand; for another replica's attempt started by hand, which never stands
+  /// down itself, so the two would both write; otherwise when `other` outranks it.
+  public func yields(to other: AttemptRecord) -> Bool {
+    guard !start.byHand else { return false }
+    return (other.start.byHand && other.start.replica != start.replica) || other.outranks(self)
   }
 }

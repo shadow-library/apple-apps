@@ -110,14 +110,16 @@ final class ChapterDevice: Sendable {
 
   /// The app starting again: the engine before it gave the vault up as a process that ended does.
   @discardableResult
-  func relaunch(_ faults: AttemptRunner.Faults = .none) throws -> JobEngine {
+  func relaunch(
+    _ faults: AttemptRunner.Faults = .none, catalog: @escaping @Sendable (NovelJobKind) -> NovelPipelineDefinition = PipelineCatalog.definition(for:)
+  ) throws -> JobEngine {
     current.withLock { $0 }?.relinquish()
     let (heartbeat, rereads, lease) = (heartbeat, rereads, lease)
     let timing = AttemptRunner.Timing(heartbeat: LeaseTerms.heartbeat) { _ in try await heartbeat.sleep() }
     let engine = try JobEngine(
       store: store, router: { [self] in router($0) }, consent: CompactionWorld.consent, clock: lease,
-      runner: AttemptRunner(store: store, clock: lease, timing: timing, faults: faults), timing: JobEngine.Timing { _ in try await rereads.sleep() },
-      unrestrictedAvailable: false)
+      runner: AttemptRunner(store: store, clock: lease, timing: timing, faults: faults), catalog: catalog,
+      timing: JobEngine.Timing { _ in try await rereads.sleep() }, unrestrictedAvailable: false)
     current.withLock { $0 = engine }
     return engine
   }

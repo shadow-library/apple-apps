@@ -104,36 +104,47 @@ extension JobEngine {
   public func generateChapter(novel: UUID, chapter: Int, options: GenerationOptions = GenerationOptions(), origin: JSONValue = .null) async throws(GenerationRequestError)
     -> StartedGeneration
   {
-    try await requestGeneration(novel: novel, chapter: chapter, options: options, origin: origin, refusingDraft: true)
+    try await startGeneration(novel: novel, chapter: chapter, options: options, origin: origin, regenerating: false)
   }
 
   /// generation.service.ts:236-273 with its gates in order; asks made together share one run, decided in the request's own write.
   public func regenerateChapter(novel: UUID, chapter: Int, options: GenerationOptions = GenerationOptions(), origin: JSONValue = .null) async throws(GenerationRequestError)
     -> StartedGeneration
   {
-    try await requestGeneration(novel: novel, chapter: chapter, options: options, origin: origin, refusingDraft: false)
+    try await startGeneration(novel: novel, chapter: chapter, options: options, origin: origin, regenerating: true)
   }
 
-  private func requestGeneration(
-    novel: UUID, chapter: Int, options: GenerationOptions, origin: JSONValue, refusingDraft: Bool
-  ) async throws(GenerationRequestError) -> StartedGeneration {
+  /// The generate job behind `generateChapter` (or `regenerateChapter` when `regenerating`), behind the same gates, requested and not started: for a
+  /// device that leaves it to the vault's worker.
+  public func requestGeneration(
+    novel: UUID, chapter: Int, options: GenerationOptions = GenerationOptions(), origin: JSONValue = .null, regenerating: Bool = false
+  ) async throws(GenerationRequestError) -> JobKey {
     let (now, unrestrictedAvailable) = (clock.now(), services.unrestrictedAvailable)
     let request: NovelJobRequest
     do {
       request = try await store.write { transaction in
         try GenerationRequests.jobRequest(
-          novel: novel, chapter: chapter, options: options, origin: origin, refusingDraft: refusingDraft, at: now, unrestrictedAvailable: unrestrictedAvailable, in: transaction)
+          novel: novel, chapter: chapter, options: options, origin: origin, refusingDraft: !regenerating, at: now, unrestrictedAvailable: unrestrictedAvailable,
+          in: transaction)
       }
     } catch {
       throw GenerationRequestError(error)
     }
     do throws(JobEngineError) {
-      let key = try await self.request(request)
-      do throws(JobEngineError) {
-        return .running(try await run(job: key.ref))
-      } catch .runningElsewhere {
-        return .elsewhere(key.ref)
-      }
+      return try await self.request(request)
+    } catch {
+      throw .engine(error)
+    }
+  }
+
+  private func startGeneration(
+    novel: UUID, chapter: Int, options: GenerationOptions, origin: JSONValue, regenerating: Bool
+  ) async throws(GenerationRequestError) -> StartedGeneration {
+    let key = try await requestGeneration(novel: novel, chapter: chapter, options: options, origin: origin, regenerating: regenerating)
+    do throws(JobEngineError) {
+      return .running(try await run(job: key.ref))
+    } catch .runningElsewhere {
+      return .elsewhere(key.ref)
     } catch {
       throw .engine(error)
     }

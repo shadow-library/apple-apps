@@ -1,10 +1,12 @@
 import Foundation
 import GRDB
+import OSLog
 import ShadowCore
 import Synchronization
 
 public final class VaultStore: Sendable {
   public static let maximumChangeBytes = 4 * 1024 * 1024
+  static let logger = Logger(category: "store")
 
   public let registry: SchemaRegistry
   let storedRegistryVersion: Int
@@ -265,9 +267,26 @@ public final class VaultStore: Sendable {
 
   func writing<T: Sendable>(_ body: @Sendable (Database) throws -> T) async throws(StoreError) -> T {
     do {
-      return try await writer.write(body)
+      return try await writer.writeWithoutTransaction { database in
+        try Self.leaveStrandedReadOnlyMode(database)
+        var result: T?
+        try database.inTransaction {
+          result = try body(database)
+          return .commit
+        }
+        guard let result else { preconditionFailure("a committed transaction ran its body") }
+        return result
+      }
     } catch {
       throw StoreError(converting: error)
     }
+  }
+
+  /// Under load a cancelled access has been seen to leave the connection in `PRAGMA query_only` with no read-only access open, so the next write's
+  /// `BEGIN IMMEDIATE` failed with SQLITE_READONLY; between accesses the connection is never meant to be read-only.
+  private static func leaveStrandedReadOnlyMode(_ database: Database) throws {
+    guard try Bool.fetchOne(database, sql: "PRAGMA query_only") == true else { return }
+    logger.notice("A write found the connection left read-only and made it writable again")
+    try database.execute(sql: "PRAGMA query_only = 0")
   }
 }

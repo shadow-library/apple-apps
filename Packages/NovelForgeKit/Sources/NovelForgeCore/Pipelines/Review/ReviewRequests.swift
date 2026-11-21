@@ -11,6 +11,11 @@ public enum StartedReview: Sendable {
   case elsewhere(EntityRef)
 }
 
+public enum QueuedReview: Sendable, Hashable {
+  case reviewed(UUID)
+  case requested(JobKey)
+}
+
 public enum ReviewRequestError: ShadowError {
   case review(ChapterReviewError)
   case summary(ChapterSummaryError)
@@ -45,6 +50,25 @@ extension JobEngine {
   public func requestReview(novel: UUID, chapter: Int, kind: ChapterReviewKind, unrestricted: Bool = false, pace: Pace? = nil) async throws(ReviewRequestError)
     -> StartedReview
   {
+    let key: JobKey
+    switch try await queueReview(novel: novel, chapter: chapter, kind: kind, unrestricted: unrestricted, pace: pace) {
+    case .reviewed(let review): return .reviewed(review)
+    case .requested(let requested): key = requested
+    }
+    do throws(JobEngineError) {
+      return .running(try await run(job: key.ref))
+    } catch .runningElsewhere {
+      return .elsewhere(key.ref)
+    } catch {
+      throw .engine(error)
+    }
+  }
+
+  /// `requestReview` for a device that leaves the job to the vault's worker: a judge or editorial review is requested and not started; the quick kinds
+  /// still answer at once.
+  public func queueReview(novel: UUID, chapter: Int, kind: ChapterReviewKind, unrestricted: Bool = false, pace: Pace? = nil) async throws(ReviewRequestError)
+    -> QueuedReview
+  {
     guard ChapterReviews.modelKinds.contains(kind) else {
       do {
         return .reviewed(try await store.reviewChapter(novel: novel, chapter: chapter, kind: kind, unrestricted: unrestricted))
@@ -63,12 +87,7 @@ extension JobEngine {
       throw ReviewRequestError(error)
     }
     do throws(JobEngineError) {
-      let key = try await self.request(request)
-      do throws(JobEngineError) {
-        return .running(try await run(job: key.ref))
-      } catch .runningElsewhere {
-        return .elsewhere(key.ref)
-      }
+      return .requested(try await self.request(request))
     } catch {
       throw .engine(error)
     }

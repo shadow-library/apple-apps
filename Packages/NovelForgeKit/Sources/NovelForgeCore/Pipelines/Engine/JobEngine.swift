@@ -154,7 +154,7 @@ public final class JobEngine: Sendable {
   }
 
   /// Runs the job here as the device that requested it does (orchestrator decision 9): it stands down for an attempt that started earlier and holds a live
-  /// lease.
+  /// lease, and is refused (`runningElsewhere`) beside another device's run by hand that holds one, unless the job already succeeded or was cancelled.
   @concurrent
   public func run(job: EntityRef) async throws(JobEngineError) -> JobRunHandle {
     try await start(job, byHand: false)
@@ -222,8 +222,8 @@ public final class JobEngine: Sendable {
   }
 
   /// Resume: continues this device's interrupted attempt of the job from its checkpoint. The resumed attempt keeps its start, so beside another device's
-  /// live attempt it is refused (`runningElsewhere`) unless that attempt would stand down for it: one started automatically later. A run of the job going
-  /// here is answered as it is.
+  /// live attempt it is refused (`runningElsewhere`) unless that attempt would stand down for it (`AttemptRecord.yields(to:)`): an automatic one, beside a
+  /// run started by hand or one started later. A run of the job going here is answered as it is.
   @concurrent
   public func resumeHere(job: EntityRef) async throws(JobEngineError) -> JobRunHandle {
     try await deduplicated(job) { [self] () async throws(JobEngineError) -> JobRunHandle in try await resume(job) }
@@ -299,9 +299,9 @@ public final class JobEngine: Sendable {
     guard let target = NovelJobTarget(snapshot.job.request.key) else { throw .notANovelJob(job) }
     let pipeline = try ready(target.kind)
     let now = clock.now()
-    if byHand, let live = snapshot.attempts.first(where: { $0.isLive(at: now) && $0.start.replica != store.replica }) {
-      throw .runningElsewhere(live.id, live.start.replica)
-    }
+    let settled = snapshot.job.cancel == .requested || snapshot.attempts.contains { $0.outcome == .succeeded || $0.outcome == .cancelled }
+    let blocking = snapshot.attempts.first { $0.isLive(at: now) && $0.start.replica != store.replica && (byHand || $0.start.byHand) }
+    if !settled, let blocking { throw .runningElsewhere(blocking.id, blocking.start.replica) }
     let (pins, mode) = try await pin(target, payload: snapshot.job.request.payload, pipeline: pipeline.version)
     if let missing = try await missingConsent(mode) { throw .consentRequired(missing) }
     if faults.crashes(.pinned) { throw .run(.interrupted) }
@@ -333,7 +333,7 @@ public final class JobEngine: Sendable {
     if let resumed = snapshot.attempts.first(where: { $0.id == held.attempt }) {
       let (replica, now) = (store.replica, clock.now())
       let blocking = snapshot.attempts.first { other in
-        other.id != resumed.id && other.start.replica != replica && other.isLive(at: now) && (other.start.byHand || !resumed.outranks(other))
+        other.id != resumed.id && other.start.replica != replica && other.isLive(at: now) && !other.yields(to: resumed)
       }
       if let blocking { throw .runningElsewhere(blocking.id, blocking.start.replica) }
     }

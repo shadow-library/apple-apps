@@ -146,13 +146,24 @@ struct AttemptVerdictTests {
     }
   }
 
-  @Test func shouldStandDownForAnEarlierLiveAttemptUnlessStartedByHand() throws {
-    let (snapshot, records) = try fixture([Attempt(seconds: 10, leaseFrom: 90), Attempt(seconds: 20, leaseFrom: 90, index: 1)])
-    #expect(AttemptVerdict(for: records[1], in: snapshot, at: Self.now) == .standDown(.outranked(records[0].id)))
-    #expect(AttemptVerdict(for: records[0], in: snapshot, at: Self.now) == .proceed)
-    let (manual, manualRecords) = try fixture([Attempt(seconds: 10, leaseFrom: 90), Attempt(seconds: 20, leaseFrom: 90, byHand: true, index: 1)])
-    #expect(AttemptVerdict(for: manualRecords[1], in: manual, at: Self.now) == .proceed)
-    #expect(AttemptVerdict(for: manualRecords[0], in: manual, at: Self.now) == .proceed)
+  /// Each row: how the judged attempt and the other replica's live attempt started, whether the other started earlier, and whether the judged one yields.
+  @Test(arguments: [
+    (false, false, true, true), (false, false, false, false), (false, true, true, true), (false, true, false, true),
+    (true, false, true, false), (true, false, false, false), (true, true, true, false), (true, true, false, false),
+  ])
+  func shouldStandAnAutomaticAttemptDownForAnEarlierLiveOneOrAnyLiveOneStartedByHand(byHand: Bool, otherByHand: Bool, otherEarlier: Bool, yields: Bool) throws {
+    let other = Attempt(seconds: otherEarlier ? 10 : 30, leaseFrom: 90, byHand: otherByHand, index: 1)
+    let (snapshot, records) = try fixture([Attempt(seconds: 20, leaseFrom: 90, byHand: byHand), other])
+    #expect(AttemptVerdict(for: records[0], in: snapshot, at: Self.now) == (yields ? .standDown(.outranked(records[1].id)) : .proceed))
+    #expect(records[0].yields(to: records[1]) == yields)
+  }
+
+  @Test func shouldNotStandDownForAnAttemptByHandWhoseLeaseLapsedOrThatRunsOnTheSameReplica() throws {
+    let (lapsed, lapsedRecords) = try fixture([Attempt(seconds: 20, leaseFrom: 90), Attempt(seconds: 30, leaseFrom: -300, byHand: true, index: 1)])
+    #expect(AttemptVerdict(for: lapsedRecords[0], in: lapsed, at: Self.now) == .proceed)
+    let (same, sameRecords) = try fixture([Attempt(seconds: 20, leaseFrom: 90), Attempt(seconds: 30, leaseFrom: 90, byHand: true)])
+    #expect(sameRecords[0].start.replica == sameRecords[1].start.replica && sameRecords[0].id != sameRecords[1].id)
+    #expect(AttemptVerdict(for: sameRecords[0], in: same, at: Self.now) == .proceed)
   }
 
   @Test func shouldIgnoreAnEarlierAttemptWhoseLeaseLapsedOrThatEnded() throws {
