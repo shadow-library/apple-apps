@@ -41,8 +41,22 @@ struct ClassIsolationTests {
 
   private func found(_ values: [String], in urls: [URL]) throws -> [String] {
     var bytes = Data()
-    for url in urls where FileManager.default.fileExists(atPath: url.path(percentEncoded: false)) { bytes.append(try Data(contentsOf: url)) }
+    for url in urls { bytes.append(try Self.contents(of: url)) }
     return values.filter { bytes.range(of: Data($0.utf8)) != nil }
+  }
+
+  private static func contents(of url: URL) throws -> Data {
+    var attempt = 0
+    while true {
+      do {
+        return try Data(contentsOf: url, options: .uncached)
+      } catch {
+        if !FileManager.default.fileExists(atPath: url.path(percentEncoded: false)) { return Data() }
+        attempt += 1
+        if attempt == 5 { throw error }
+        Thread.sleep(forTimeInterval: 0.02 * Double(attempt))
+      }
+    }
   }
 
   private func filled() async throws -> MemoirStores {
