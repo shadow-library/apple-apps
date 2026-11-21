@@ -28,6 +28,12 @@ public enum SecureStoreError: ShadowError {
     guard case .unexpectedStatus(let status) = self else { return false }
     return status == errSecInteractionNotAllowed
   }
+
+  /// The data protection keychain refuses every item to a build that carries no application identifier, such as one signed without a team.
+  public var isMissingEntitlement: Bool {
+    guard case .unexpectedStatus(let status) = self else { return false }
+    return status == errSecMissingEntitlement
+  }
 }
 
 public protocol SecureStore: Sendable {

@@ -181,17 +181,18 @@ struct RuntimeHarness {
   init(
     _ keychain: InMemoryKeychain.Device, provider: any StorageProvider, account: AccountSwitch = AccountSwitch(.available(Self.userOne)),
     directory: TemporaryDirectory? = nil, store: VaultStore? = nil, trustedClock: TrustedClock = TrustedClock(wallClock: { RuntimeFixture.start }),
-    wallClock: @escaping @Sendable () -> Date = { RuntimeFixture.start }, clock: ManualClock = ManualClock()
+    wallClock: @escaping @Sendable () -> Date = { RuntimeFixture.start }, clock: ManualClock = ManualClock(), stores: SyncSecureStores? = nil
   ) throws {
     try self.init(
-      keychain, makeProvider: { _ in provider }, account: account, directory: directory, store: store, trustedClock: trustedClock, wallClock: wallClock, clock: clock)
+      keychain, makeProvider: { _ in provider }, account: account, directory: directory, store: store, trustedClock: trustedClock, wallClock: wallClock, clock: clock,
+      stores: stores)
   }
 
   init(
     _ keychain: InMemoryKeychain.Device, makeProvider: @escaping @Sendable (SyncProviderSettings) -> any StorageProvider,
     account: AccountSwitch = AccountSwitch(.available(Self.userOne)), directory: TemporaryDirectory? = nil, store: VaultStore? = nil,
     trustedClock: TrustedClock = TrustedClock(wallClock: { RuntimeFixture.start }), wallClock: @escaping @Sendable () -> Date = { RuntimeFixture.start },
-    clock: ManualClock = ManualClock()
+    clock: ManualClock = ManualClock(), stores: SyncSecureStores? = nil
   ) throws {
     self.clock = clock
     self.keychain = keychain
@@ -200,7 +201,7 @@ struct RuntimeHarness {
     let store = try store ?? RuntimeFixture.openStore()
     self.store = store
     let environment = SyncStartupEnvironment(
-      locationStore: try directory.locationStore(), stores: RuntimeFixture.stores(keychain), automatic: RuntimeFixture.iCloud, provider: { makeProvider($0) },
+      locationStore: try directory.locationStore(), stores: stores ?? RuntimeFixture.stores(keychain), automatic: RuntimeFixture.iCloud, provider: { makeProvider($0) },
       account: { _ in account.current }, hasUnlockedSinceBoot: { true })
     runtime = SyncRuntime(
       environment: environment, store: store, device: RuntimeFixture.phone, trustedClock: trustedClock, clock: clock, wallClock: wallClock)

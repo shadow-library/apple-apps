@@ -69,6 +69,8 @@ public struct S3CredentialStore: Sendable, CustomStringConvertible, CustomDebugS
   public var customMirror: Mirror { Mirror(self, children: [], displayStyle: .struct) }
 
   private static func failure(_ error: SecureStoreError) -> SyncCredentialError {
-    error.isInteractionNotAllowed ? .deviceLocked : .keychain(error.reason)
+    if error.isInteractionNotAllowed { return .deviceLocked }
+    if error.isMissingEntitlement { return .keychainUnavailable }
+    return .keychain(error.reason)
   }
 }

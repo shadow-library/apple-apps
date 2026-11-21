@@ -5,6 +5,8 @@ public enum SyncPhase: Sendable, Equatable {
   case vault(VaultStartupState)
   /// Protected data, the keychain or the location file cannot be read before the first unlock after a restart.
   case deviceLocked
+  /// The keychain refuses this build because it carries no application identifier, as with a build signed without a team; no vault key can be read or kept.
+  case keychainUnavailable
   /// The attached location's account is signed out, unreachable for now, or cannot confirm which account it is.
   case accountUnavailable
   /// The signed-in account is not the one the location was attached with; nothing syncs until the user decides, so one account's data never reaches another.
@@ -37,6 +39,7 @@ public enum SyncPhase: Sendable, Equatable {
     case .storage(.unauthenticated): self = .accountUnavailable
     case .appUpdateRequired: self = .appUpdateRequired
     case .keyRing(.deviceLocked): self = .deviceLocked
+    case .keyRing(.keychainUnavailable): self = .keychainUnavailable
     default: return nil
     }
   }

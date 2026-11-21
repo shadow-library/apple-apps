@@ -18,6 +18,8 @@ public enum RecoveryError: ShadowError, Equatable {
   case recoveryCopiesRefused
   /// The copies opened, but none of their keys opened a file at this location yet, so none joined the ring.
   case keysUnconfirmed([KeyID])
+  /// The attachment these key services were opened for is gone (a disconnect, a move, an account change); nothing reached storage. Nil before the next evaluation.
+  case unavailable(SyncPhase?)
 
   public var code: String {
     switch self {
@@ -32,6 +34,7 @@ public enum RecoveryError: ShadowError, Equatable {
     case .noRecoveryCopies: "recovery.no-recovery-copies"
     case .recoveryCopiesRefused: "recovery.copies-refused"
     case .keysUnconfirmed: "recovery.keys-unconfirmed"
+    case .unavailable: "recovery.unavailable"
     }
   }
 
@@ -48,6 +51,7 @@ public enum RecoveryError: ShadowError, Equatable {
     case .noRecoveryCopies: "No keys for this vault are sealed to that recovery phrase."
     case .recoveryCopiesRefused: "The sealed keys found for that recovery phrase are not genuine."
     case .keysUnconfirmed(let keys): "\(keys.count) recovered keys open no file at this location yet, so they were not added."
+    case .unavailable: "The vault is no longer attached where these key services were opened; open them again."
     }
   }
 

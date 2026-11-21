@@ -165,6 +165,32 @@ struct LockedSecureStore: SecureStore {
   func allKeys() throws(SecureStoreError) -> [String] { throw Self.locked }
 }
 
+/// Answers as the data protection keychain answers a build without an application identifier: reads find nothing, and only adding, replacing or
+/// deleting an item fails with `errSecMissingEntitlement`. `refusesReads` fails reads too, as a keychain may for an access group the build lacks.
+struct MissingEntitlementSecureStore: SecureStore {
+  private static let refused = SecureStoreError.unexpectedStatus(errSecMissingEntitlement)
+
+  var refusesReads = false
+
+  static func stores() -> SyncSecureStores {
+    SyncSecureStores(ring: Self(), credentials: Self(), marker: Self(), tokens: Self())
+  }
+
+  func data(forKey key: String) throws(SecureStoreError) -> Data? {
+    if refusesReads { throw Self.refused }
+    return nil
+  }
+
+  func setData(_ data: Data, forKey key: String) throws(SecureStoreError) { throw Self.refused }
+  func insertData(_ data: Data, forKey key: String) throws(SecureStoreError) -> Bool { throw Self.refused }
+  func removeValue(forKey key: String) throws(SecureStoreError) { throw Self.refused }
+
+  func allKeys() throws(SecureStoreError) -> [String] {
+    if refusesReads { throw Self.refused }
+    return []
+  }
+}
+
 /// Holds every put of the vault hint until `writers` of them have arrived, so concurrent creators all pass discovery before any hint exists.
 final class HintRaceProvider: StorageProvider {
   private struct State {

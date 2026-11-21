@@ -39,6 +39,8 @@ public enum SyncAttentionReason: Sendable, Equatable {
   case wrongClock(skew: Duration, stopsUploads: Bool)
   case appUpdateRequired
   case deviceLocked
+  /// The keychain refuses this build, which carries no application identifier, so no vault key can be kept; only a build signed with a team syncs.
+  case keychainUnavailable
   /// The saved sync location cannot be read; unlike a disconnect, the user did not turn sync off.
   case settingsUnreadable
   case storageUnreachable
@@ -54,7 +56,7 @@ public enum SyncAttentionReason: Sendable, Equatable {
     case .wrongClock(_, let stopsUploads): stopsUploads ? .uploads : .nothing
     case .keysMissing(let replicas): .downloads(from: replicas)
     case .accountUnavailable, .accountChanged, .storageRemoved, .zoneLost, .vaultMismatch, .vaultUnrecognized, .awaitingKey, .appUpdateRequired, .deviceLocked,
-      .settingsUnreadable, .storageUnreachable, .vaultMoved, .moveInProgress, .failed:
+      .keychainUnavailable, .settingsUnreadable, .storageUnreachable, .vaultMoved, .moveInProgress, .failed:
       .everything
     }
   }
@@ -65,6 +67,7 @@ public enum SyncAttentionReason: Sendable, Equatable {
     case .vault: return nil
     case .detached: return nil
     case .deviceLocked: self = .deviceLocked
+    case .keychainUnavailable: self = .keychainUnavailable
     case .accountUnavailable: self = .accountUnavailable
     case .accountChanged: self = .accountChanged
     case .storageRemoved: self = .storageRemoved

@@ -45,6 +45,7 @@ public actor SyncRuntime {
 
   private var phase: SyncPhase?
   private var engine: AttachedEngine?
+  private var keyAttachment: SyncAttachment?
   private var attention = SyncAttentionSlots()
   private var isCatchingUp = false
   private var isIncludedInBackup = false
@@ -149,7 +150,14 @@ public actor SyncRuntime {
   public func detach() async throws(SyncStartupError) {
     await acquire()
     defer { release() }
-    try await startup.detach()
+    let held = keyAttachment
+    keyAttachment = nil
+    do {
+      try await startup.detach()
+    } catch {
+      keyAttachment = held
+      throw error
+    }
     phase = .detached
     scheduler.reset()
     stop(nil, cadence: .idle)
@@ -158,6 +166,16 @@ public actor SyncRuntime {
     includeInBackup()
     uploadedWrites = writes
     publish()
+  }
+
+  /// The key services of the attached vault, which also work while the phase is awaiting a key. Waits for the run in flight when no evaluation has
+  /// answered yet; throws `unavailable` for a phase that holds no attachment, and `notAttached` before the first evaluation.
+  public func keyServices() async throws(SyncStartupError) -> SyncKeyAccess {
+    if keyAttachment == nil { await untilIdle() }
+    guard let attachment = keyAttachment else { throw phase.map { .unavailable($0) } ?? .notAttached }
+    return SyncKeyAccess(
+      attachment: attachment, store: store, wallClock: wallClock, standing: { [weak self] in await self?.standing(of: attachment) ?? .gone(nil) },
+      imported: { [weak self] in await self?.keysImported() })
   }
 
   /// Moves the attached vault to `settings` with `SyncMover`, or carries on the move in progress; no run starts until it returns. After `.moved` sync goes
@@ -248,6 +266,20 @@ public actor SyncRuntime {
 
   var recoverySetup: RecoverySetup? { engine?.recovery }
 
+  /// Current while the runtime attaches the vault where `attachment` did, through the same provider: after an account change or a move the old provider
+  /// may reach another account's or location's storage.
+  private func standing(of attachment: SyncAttachment) -> SyncKeyAttachmentStanding {
+    guard let keyAttachment, keyAttachment.location == attachment.location, keyAttachment.providerID == attachment.providerID else { return .gone(phase) }
+    return .current
+  }
+
+  func keysImported() {
+    guard !isShutDown else { return }
+    engine?.needsRecoveryReconcile = true
+    scheduler.request(.launch)
+    pump()
+  }
+
   func noteChange() {
     scheduler.request(.sync)
     pump()
@@ -256,6 +288,7 @@ public actor SyncRuntime {
   /// Stops the engine while `body` runs and evaluates again after it: a new location, a notice that stopped the move, or the move still in progress.
   private func moving<T>(_ body: () async throws(SyncMoveError) -> T) async throws(SyncMoveError) -> T {
     engine = nil
+    keyAttachment = nil
     scheduler.reset()
     defer {
       phase = nil
@@ -400,6 +433,7 @@ public actor SyncRuntime {
   /// Returns the retry of a phase that passes on its own, nil otherwise.
   private func apply(_ phase: SyncPhase, attachment: SyncAttachment? = nil) -> SyncRunResult? {
     self.phase = phase
+    if case .vault = phase { keyAttachment = attachment } else { keyAttachment = nil }
     defer {
       listen()
       publish()
@@ -427,7 +461,7 @@ public actor SyncRuntime {
       return .failed(retry: .launch)
     case .appUpdateRequired:
       stop(.appUpdateRequired, cadence: .idle)
-    case .accountChanged, .storageRemoved, .settingsUnreadable, .vaultMismatch, .vaultUnrecognized:
+    case .accountChanged, .storageRemoved, .settingsUnreadable, .keychainUnavailable, .vaultMismatch, .vaultUnrecognized:
       stop(SyncAttentionReason(phase: phase), cadence: .idle)
       includeInBackup()
     case .vaultMoved, .moveInProgress:
@@ -573,6 +607,7 @@ public actor SyncRuntime {
     if let result = await conditionFailure() { return result }
     switch error {
     case .deviceLocked, .setup(.deviceLocked): return apply(.deviceLocked) ?? .completed
+    case .keychainUnavailable, .keyRing(.keychainUnavailable), .setup(.keyRing(.keychainUnavailable)): return apply(.keychainUnavailable) ?? .completed
     case .accountUnavailable, .noStorageAccount: return apply(.accountUnavailable) ?? .completed
     case .setup(.storage(let storage)), .storage(let storage): return failure(of: storage, retry: .launch)
     case .setup(.newerFormat): return apply(.appUpdateRequired) ?? .completed

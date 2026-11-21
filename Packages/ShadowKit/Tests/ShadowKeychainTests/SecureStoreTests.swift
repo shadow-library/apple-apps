@@ -1,4 +1,5 @@
 import Foundation
+import Security
 import ShadowKeychain
 import ShadowTestSupport
 import Testing
@@ -93,5 +94,12 @@ struct SecureStoreTests {
 
     #expect(winners.count == 1)
     #expect(try store.string(forKey: "token") == winners.first.map { "value-\($0)" })
+  }
+
+  @Test("should name a missing entitlement and nothing else as a keychain refusing the build")
+  func namesMissingEntitlement() {
+    #expect(SecureStoreError.unexpectedStatus(errSecMissingEntitlement).isMissingEntitlement)
+    #expect(!SecureStoreError.unexpectedStatus(errSecInteractionNotAllowed).isMissingEntitlement)
+    #expect(!SecureStoreError.decoding("x").isMissingEntitlement)
   }
 }

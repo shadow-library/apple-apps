@@ -386,6 +386,28 @@
         }
       }
     },
+    "Sync needs a signed build": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sync needs a signed build"
+          }
+        }
+      }
+    },
+    "This build cannot use the keychain that keeps your library's key, so nothing syncs here.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This build cannot use the keychain that keeps your library's key, so nothing syncs here."
+          }
+        }
+      }
+    },
     "Sync settings cannot be read": {
       "extractionState": "manual",
       "localizations": {

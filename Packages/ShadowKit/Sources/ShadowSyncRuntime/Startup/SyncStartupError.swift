@@ -4,6 +4,7 @@ import ShadowSync
 
 public enum SyncStartupError: ShadowError, Equatable {
   case deviceLocked
+  case keychainUnavailable
   case noStorageAccount
   case accountUnavailable
   case alreadyAttached
@@ -20,6 +21,7 @@ public enum SyncStartupError: ShadowError, Equatable {
   public var code: String {
     switch self {
     case .deviceLocked: "sync-startup.device-locked"
+    case .keychainUnavailable: "sync-startup.keychain-unavailable"
     case .noStorageAccount: "sync-startup.no-storage-account"
     case .accountUnavailable: "sync-startup.account-unavailable"
     case .alreadyAttached: "sync-startup.already-attached"
@@ -36,6 +38,7 @@ public enum SyncStartupError: ShadowError, Equatable {
   public var errorDescription: String? {
     switch self {
     case .deviceLocked: "Sync cannot start until the device has been unlocked."
+    case .keychainUnavailable: "Sync needs a build signed with a team: the keychain refuses this one."
     case .noStorageAccount: "No account is signed in for this storage."
     case .accountUnavailable: "The storage account cannot be reached right now."
     case .alreadyAttached: "This vault already syncs with a location; disconnect it first."

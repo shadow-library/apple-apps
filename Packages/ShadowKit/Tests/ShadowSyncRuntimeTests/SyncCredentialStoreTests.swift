@@ -91,6 +91,15 @@ struct SyncCredentialStoreTests {
     #expect(throws: SyncCredentialError.deviceLocked) { try store.load(for: try Self.s3Settings()) }
   }
 
+  @Test("should report a keychain that refuses the build when S3 credentials are saved")
+  func s3KeychainRefused() throws {
+    let store = S3CredentialStore(store: MissingEntitlementSecureStore())
+    let settings = try Self.s3Settings()
+
+    #expect(throws: SyncCredentialError.keychainUnavailable) { try store.save(try S3Credentials(accessKeyID: "AKIAEXAMPLE", secretAccessKey: Self.secret), for: settings) }
+    #expect(try store.load(for: settings) == nil)
+  }
+
   @Test("should round-trip OAuth tokens and clear them")
   func oauthRoundTrips() async throws {
     let keychain = InMemoryKeychain()

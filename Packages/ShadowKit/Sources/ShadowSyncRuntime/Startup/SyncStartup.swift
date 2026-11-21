@@ -16,6 +16,7 @@ struct SyncMoveContext: Sendable {
 
 public actor SyncStartup {
   private static let logger = Logger(category: "SyncStartup")
+  private static let keychainProbe = "keychain-probe"
 
   private struct CachedProvider {
     let id: Int
@@ -30,6 +31,7 @@ public actor SyncStartup {
   private var cachedRing: KeyRing?
   private var cachedKeyServices = SyncKeyServices()
   private var missingKeys: [KeyID: Set<ReplicaID>] = [:]
+  private var isKeychainWritable = false
   private var isBusy = false
   private var waiters: [CheckedContinuation<Void, Never>] = []
 
@@ -133,6 +135,7 @@ public actor SyncStartup {
     case .noAccount: throw .noStorageAccount
     case .temporarilyUnavailable: throw .accountUnavailable
     }
+    try probeKeychain()
     let setup = try setup(for: settings)
     let vault: VaultID
     do {
@@ -141,7 +144,7 @@ public actor SyncStartup {
       case .join(let chosen): vault = try await setup.join(chosen)
       }
     } catch {
-      throw error == .deviceLocked ? .deviceLocked : .setup(error)
+      throw Self.failure(of: error)
     }
     return try await bind(SyncLocation(settings: settings, vault: vault, account: binding))
   }
@@ -184,6 +187,7 @@ public actor SyncStartup {
     case .noAccount: return SyncStartupResult(phase: .vault(.noStorageAccount))
     case .temporarilyUnavailable: return SyncStartupResult(phase: .accountUnavailable)
     }
+    if let refused = try keychainRefusal() { return SyncStartupResult(phase: refused) }
     let setup = try setup(for: settings)
     let vault: VaultID
     do {
@@ -221,6 +225,7 @@ public actor SyncStartup {
         return SyncStartupResult(phase: binding == nil ? .accountUnavailable : .accountChanged, location: location)
       }
     }
+    if let refused = try keychainRefusal() { return SyncStartupResult(phase: refused, location: location) }
     let cached = try provider(for: location.settings)
     if attachedProvider?.id != cached.id {
       attachedProvider = cached
@@ -242,13 +247,16 @@ public actor SyncStartup {
       return SyncStartupResult(phase: .vaultMismatch(expected: location.vault, found: found), location: location)
     case .found: break
     }
-    guard try checkMarker(of: location.vault) else { return SyncStartupResult(phase: .deviceLocked, location: location) }
+    if let blocked = try checkMarker(of: location.vault) { return SyncStartupResult(phase: blocked, location: location) }
     let ring = ring(for: location.vault)
     do {
       try ring.refresh()
     } catch {
-      guard error == .deviceLocked else { throw .keyRing(error) }
-      return SyncStartupResult(phase: .deviceLocked, location: location)
+      switch error {
+      case .deviceLocked: return SyncStartupResult(phase: .deviceLocked, location: location)
+      case .keychainUnavailable: return SyncStartupResult(phase: .keychainUnavailable, location: location)
+      case .store, .conflictingKey: throw .keyRing(error)
+      }
     }
     let observation = VaultObservation(storage: .available, vault: location.vault, heldKeys: Set(ring.keyIDs), namedKeys: missingKeys)
     let attachment = SyncAttachment(
@@ -256,26 +264,54 @@ public actor SyncStartup {
     return SyncStartupResult(phase: .vault(VaultStartupState(observation)), location: location, attachment: attachment)
   }
 
-  /// False while the keychain is locked. A marker that is not a replica id is cleared once the device is unlocked, so the next start re-mints
-  /// the replica: claiming the store's id instead could give a copied database the original's id.
-  private func checkMarker(of vault: VaultID) throws(SyncStartupError) -> Bool {
+  private func keychainRefusal() throws(SyncStartupError) -> SyncPhase? {
+    do throws(SyncStartupError) {
+      try probeKeychain()
+    } catch .deviceLocked {
+      return .deviceLocked
+    } catch .keychainUnavailable {
+      return .keychainUnavailable
+    }
+    return nil
+  }
+
+  /// A build without an application identifier reads every item as missing and is refused only when it adds or deletes one (`errSecMissingEntitlement`),
+  /// so the probe writes, before any provider is made: S3 would read its credentials as missing. Only a success is kept, since entitlements never change.
+  private func probeKeychain() throws(SyncStartupError) {
+    guard !isKeychainWritable else { return }
+    let store = environment.stores.marker
+    do {
+      _ = try store.insertData(Data(), forKey: Self.keychainProbe)
+      try store.removeValue(forKey: Self.keychainProbe)
+    } catch {
+      if error.isInteractionNotAllowed { throw .deviceLocked }
+      if error.isMissingEntitlement { throw .keychainUnavailable }
+      throw .marker(error.reason)
+    }
+    isKeychainWritable = true
+  }
+
+  /// The phase that keeps the vault from starting while the keychain is locked or refuses this build, nil otherwise. A marker that is not a replica id is
+  /// cleared once the device is unlocked, so the next start re-mints the replica: claiming the store's id instead could give a copied database the original's id.
+  private func checkMarker(of vault: VaultID) throws(SyncStartupError) -> SyncPhase? {
     let marker = DeviceMarker(store: environment.stores.marker)
     let name = DeviceMarker.itemName(vault: vault)
     let data: Data?
     do {
       data = try environment.stores.marker.data(forKey: name)
     } catch {
-      guard error.isInteractionNotAllowed else { throw .marker(error.reason) }
-      return false
+      if error.isInteractionNotAllowed { return .deviceLocked }
+      if error.isMissingEntitlement { return .keychainUnavailable }
+      throw .marker(error.reason)
     }
-    guard let data, String(data: data, encoding: .utf8).flatMap(ReplicaID.init) == nil else { return true }
+    guard let data, String(data: data, encoding: .utf8).flatMap(ReplicaID.init) == nil else { return nil }
     do {
       try marker.clear(vault: vault)
     } catch {
       throw .marker(error.code)
     }
     Self.logger.warning("Cleared an unreadable device marker; the replica will be re-minted")
-    return true
+    return nil
   }
 
   /// A refused file means data protection only while the device has not been unlocked since it started; afterwards it is a real failure.
@@ -316,9 +352,18 @@ public actor SyncStartup {
     return ring
   }
 
+  private static func failure(of error: VaultSetupError) -> SyncStartupError {
+    switch error {
+    case .deviceLocked: .deviceLocked
+    case .keyRing(.keychainUnavailable): .keychainUnavailable
+    default: .setup(error)
+    }
+  }
+
   private static func phase(for error: VaultSetupError) -> SyncPhase? {
     switch error {
     case .deviceLocked: .deviceLocked
+    case .keyRing(.keychainUnavailable): .keychainUnavailable
     case .storage(.unauthenticated): .accountUnavailable
     case .newerFormat: .appUpdateRequired
     case .unrecognized: .vaultUnrecognized

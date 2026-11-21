@@ -120,6 +120,11 @@ nonisolated struct SyncIndicator: Equatable, Sendable {
         String(localized: "Unlock this device to sync", table: "Sync"),
         String(localized: "Sync starts once the device has been unlocked after it restarted.", table: "Sync")
       )
+    case .keychainUnavailable:
+      (
+        String(localized: "Sync needs a signed build", table: "Sync"),
+        String(localized: "This build cannot use the keychain that keeps your library's key, so nothing syncs here.", table: "Sync")
+      )
     case .settingsUnreadable:
       (
         String(localized: "Sync settings cannot be read", table: "Sync"),

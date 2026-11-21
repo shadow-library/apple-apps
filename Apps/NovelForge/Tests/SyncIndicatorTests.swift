@@ -20,7 +20,7 @@ struct SyncIndicatorTests {
     var reasons: [SyncAttentionReason] = [
       .quotaFull, .accountUnavailable, .accountChanged, .storageRemoved, .zoneLost(.missing), .zoneLost(.purged), .zoneLost(.encryptedDataReset),
       .vaultUnrecognized, .awaitingKey, .writingKeyMissing, .wrongClock(skew: .seconds(600), stopsUploads: true), .wrongClock(skew: .seconds(600), stopsUploads: false),
-      .appUpdateRequired, .deviceLocked, .settingsUnreadable, .storageUnreachable, .failed(code: "sync.example"),
+      .appUpdateRequired, .deviceLocked, .keychainUnavailable, .settingsUnreadable, .storageUnreachable, .failed(code: "sync.example"),
     ]
     if let replica { reasons.append(.keysMissing(replicas: [replica])) }
     if let expected = vaults.0, let found = vaults.1 { reasons.append(.vaultMismatch(expected: expected, found: found)) }
@@ -79,6 +79,8 @@ struct SyncIndicatorTests {
   @Test func shouldShowTheCodeOnlyForAnUnexpectedFailure() throws {
     #expect(try #require(SyncIndicator(.attentionNeeded(.failed(code: "sync.example")))).code == "sync.example")
     #expect(try #require(SyncIndicator(.attentionNeeded(.storageUnreachable))).code == nil)
+    let keychain = try #require(SyncIndicator(.attentionNeeded(.keychainUnavailable)))
+    #expect(keychain.headline == "Sync needs a signed build" && keychain.code == nil)
   }
 
   @Test(arguments: SyncIndicatorTests.reasons)

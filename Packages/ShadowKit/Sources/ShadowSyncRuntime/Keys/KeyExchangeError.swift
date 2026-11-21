@@ -16,6 +16,8 @@ public enum KeyExchangeError: ShadowError, Equatable {
   case exchangeFinished
   /// The code matched, but none of the received keys opened a file at this location yet, so none joined the ring.
   case keysUnconfirmed([KeyID])
+  /// The attachment these key services were opened for is gone (a disconnect, a move, an account change); nothing reached storage. Nil before the next evaluation.
+  case unavailable(SyncPhase?)
 
   public var code: String {
     switch self {
@@ -30,6 +32,7 @@ public enum KeyExchangeError: ShadowError, Equatable {
     case .exchangeAborted: "key-exchange.aborted"
     case .exchangeFinished: "key-exchange.finished"
     case .keysUnconfirmed: "key-exchange.keys-unconfirmed"
+    case .unavailable: "key-exchange.unavailable"
     }
   }
 
@@ -46,6 +49,7 @@ public enum KeyExchangeError: ShadowError, Equatable {
     case .exchangeAborted: "This exchange was stopped; start a new one."
     case .exchangeFinished: "This exchange is already complete."
     case .keysUnconfirmed(let keys): "\(keys.count) received keys open no file at this location yet, so they were not added."
+    case .unavailable: "The vault is no longer attached where these key services were opened; open them again."
     }
   }
 
