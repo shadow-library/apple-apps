@@ -29,5 +29,6 @@ let project = Project.app(
     .keychainSharing,
     .camera(usage: "Novel Forge uses the camera to scan the QR code that another of your devices shows when it shares its vault key."),
     .macSandbox,
+    .continuedProcessing(context: "job"),
   ]
 )

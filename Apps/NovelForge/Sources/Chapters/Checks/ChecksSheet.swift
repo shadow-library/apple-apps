@@ -126,6 +126,7 @@ struct ChecksSheet: View {
       ) {
         if let runtime { actions(line, runtime: runtime) }
       }
+      if runtime?.needsAppOpen(line.job) == true { ContinuedProcessingText.keepOpen.shadowFont(.caption).foregroundStyle(ShadowColor.textSecondary) }
     }
   }
 
@@ -174,7 +175,7 @@ struct ChecksSheet: View {
   private func start(_ kind: ChapterReviewKind, pace: Pace?, runtime: JobRuntime?) {
     let startsHere = runtime?.startsWhenAsked(.review) ?? false
     let request = ChecksModel.requester(store: context.store, novel: context.novel, chapter: chapter, engine: runtime?.engine, startsHere: startsHere) {
-      runtime?.follow($0)
+      runtime?.follow($0, origin: .person)
     }
     Task { await model.run(kind, pace: pace, runsJobs: runtime?.runsJobs == true, using: request) }
   }

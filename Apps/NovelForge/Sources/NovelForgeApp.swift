@@ -13,7 +13,7 @@ struct NovelForgeApp: App {
   @Environment(\.scenePhase) private var scenePhase
   @State private var ai = AIServices.live()
   @State private var chats = ChatRuntimes()
-  @State private var jobs = JobRuntimes()
+  @State private var jobs = JobRuntimes(host: JobRunHosts.system())
   @State private var retrieval = RetrievalRuntimes()
   @State private var settingsTabs = SettingsTabs()
 

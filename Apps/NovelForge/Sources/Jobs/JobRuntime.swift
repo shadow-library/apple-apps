@@ -135,6 +135,8 @@ final class JobRuntime {
   @ObservationIgnored private var draining: Task<Void, Never>?
   @ObservationIgnored private var repolling: Task<Void, Never>?
   @ObservationIgnored private var following: Set<AttemptID> = []
+  /// The jobs queued when the engine started: the drain starts them with no one asking, until consent given here starts the queue again.
+  @ObservationIgnored private var queuedAtLaunch: Set<EntityRef>? = []
   @ObservationIgnored private var listings = 0
 
   init(
@@ -257,28 +259,54 @@ final class JobRuntime {
   func consentAllowed() {
     guard consentNeeded != nil else { return }
     consentNeeded = nil
+    queuedAtLaunch = []
     guard let engine else { return }
     drain(engine)
   }
 
   /// Holds the Mac awake until the run ends and hands the run to the host; for runs started outside the runtime too, such as a generation asked for from its
   /// screen.
-  func follow(_ handle: JobRunHandle) {
+  func follow(_ handle: JobRunHandle, origin: JobRunOrigin) {
     guard following.insert(handle.attempt).inserted else { return }
     resumable[handle.job] = nil
     power.begin()
     let finished = Task { await handle.result }
-    if let engine { host.host(hosted(handle, finished: finished, engine: engine)) }
+    if let engine { hand(handle, origin: origin, finished: finished, engine: engine) }
     Task { [weak self] in
       _ = await finished.value
       self?.ended(handle.attempt)
     }
   }
 
-  private func hosted(_ handle: JobRunHandle, finished: Task<AttemptResult, Never>, engine: JobEngine) -> HostedJobRun {
+  /// True while the job's run here goes on only as long as the app stays open.
+  func needsAppOpen(_ job: EntityRef) -> Bool {
+    host.needsAppOpen(for: job)
+  }
+
+  /// The run's progress is observed at once so none is missed while the job's record is read for its kind and chapter.
+  private func hand(_ handle: JobRunHandle, origin: JobRunOrigin, finished: Task<AttemptResult, Never>, engine: JobEngine) {
+    let (store, job, progress) = (store, handle.job, calls.observeRun(engine, handle.attempt))
+    Task { [weak self] in
+      let target = try? await store.read { transaction in try Self.target(of: job, in: transaction) }
+      guard let self else { return }
+      self.host.host(self.hosted(handle, target: target, origin: origin, progress: progress, finished: finished, engine: engine))
+    }
+  }
+
+  nonisolated private static func target(of job: EntityRef, in transaction: ReadTransaction) throws(JobRecordError) -> NovelJobTarget? {
+    guard let key = try JobRecords.read(job, in: transaction).record?.request.key, let kind = NovelJobKind(rawValue: key.kind),
+      let novel = NovelJobAddress.novel(ofScope: key.scope), let chapter = NovelJobAddress.chapter(ofTarget: key.target)
+    else { return nil }
+    return NovelJobTarget(novel: novel, chapter: chapter, kind: kind)
+  }
+
+  private func hosted(
+    _ handle: JobRunHandle, target: NovelJobTarget?, origin: JobRunOrigin, progress: AsyncStream<JobRunProgress>, finished: Task<AttemptResult, Never>,
+    engine: JobEngine
+  ) -> HostedJobRun {
     let (calls, job) = (calls, handle.job)
     return HostedJobRun(
-      job: job, attempt: handle.attempt, progress: calls.observeRun(engine, handle.attempt),
+      job: job, attempt: handle.attempt, target: target, origin: origin, progress: progress,
       interrupt: { [weak self] () async throws(JobEngineError) -> JobInterruption in
         let interruption = try await calls.interrupt(engine, job)
         await self?.listResumable(engine)
@@ -300,7 +328,7 @@ final class JobRuntime {
     pending.insert(job)
     defer { pending.remove(job) }
     do throws(JobEngineError) {
-      follow(try await start(engine))
+      follow(try await start(engine), origin: .person)
       await listResumable(engine)
       return nil
     } catch .consentRequired(let request) {
@@ -338,6 +366,7 @@ final class JobRuntime {
     case .phone: await settle(engine)
     }
     await listResumable(engine)
+    queuedAtLaunch = await readQueued()
     drain(engine)
   }
 
@@ -353,7 +382,7 @@ final class JobRuntime {
     do throws(JobEngineError) {
       let resumed = try await calls.resumeInterrupted(engine)
       Self.logger.info("Resumed interrupted job attempts count=\(resumed.count, privacy: .public)")
-      for handle in resumed { follow(handle) }
+      for handle in resumed { follow(handle, origin: .automatic) }
     } catch {
       Self.logger.error("Interrupted job attempts could not be resumed code=\(error.code, privacy: .public)")
     }
@@ -443,7 +472,7 @@ final class JobRuntime {
       guard await isQueued(job) else { continue }
       do throws(JobEngineError) {
         let handle = try await begin(job, on: engine)
-        follow(handle)
+        follow(handle, origin: origin(of: job))
         _ = await handle.result
       } catch .consentRequired(let request) {
         return request
@@ -455,8 +484,22 @@ final class JobRuntime {
   }
 
   private func isQueued(_ job: EntityRef) async -> Bool {
+    await queued().contains(job)
+  }
+
+  private func queued() async -> Set<EntityRef> {
+    await readQueued() ?? []
+  }
+
+  private func readQueued() async -> Set<EntityRef>? {
     let (read, waiting) = (queueRead(), consentNeeded)
-    return (try? await store.read { transaction in try read(waiting, transaction) })?.jobs.contains(job) ?? false
+    return (try? await store.read { transaction in try read(waiting, transaction) }).map { Set($0.jobs) }
+  }
+
+  /// A launch whose queue could not be read treats every job as automatic, so no request reaches the system without a person's action.
+  private func origin(of job: EntityRef) -> JobRunOrigin {
+    guard let queuedAtLaunch, !queuedAtLaunch.contains(job) else { return .automatic }
+    return .person
   }
 
   /// A job whose last attempt is this device's stopped run continues that run rather than starting another attempt.

@@ -186,6 +186,7 @@ struct PlanStart: View {
       ShadowCallout(JobDisplay.title(line.kind), message: JobDisplay.message(line), intent: JobDisplay.intent(line)) {
         if let runtime { actions(line, runtime: runtime) }
       }
+      if runtime?.needsAppOpen(line.job) == true { note(ContinuedProcessingText.keepOpen) }
     }
     if snapshot.jobsUnavailable {
       note(Text("Whether a plan is being made can't be read on this device right now.", tableName: "PlanCard"))

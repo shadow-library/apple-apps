@@ -157,6 +157,12 @@ private struct JobsWorld {
     return world
   }
 
+  /// Through an engine of its own that gives the vault's jobs lock up again, since the runtime has not launched.
+  func requestWithoutTheRuntime(_ request: NovelJobRequest) async throws -> EntityRef {
+    let engine = try makeEngine()
+    return try await engine.request(request).ref
+  }
+
   func decideConsent(_ state: AIConsentState, at millis: Int64) async throws {
     let (consent, host) = (ConsentDisclosure.novelText, host)
     try await store.write { transaction in
@@ -324,8 +330,8 @@ struct JobsRuntimeTests {
     let job = try await engine.request(world.generation()).ref
     let handle = try await engine.run(job: job)
 
-    world.runtime.follow(handle)
-    world.runtime.follow(handle)
+    world.runtime.follow(handle, origin: .person)
+    world.runtime.follow(handle, origin: .person)
     #expect(world.power.begun == 1)
     _ = await handle.result
     try await JobsWait.until("the run's end releases the assertion") { world.power.ended == 1 }
@@ -336,7 +342,7 @@ struct JobsRuntimeTests {
     let world = try await JobsWorld.make()
     let engine = try world.makeEngine()
     let handle = try await engine.run(job: try await engine.request(world.generation()).ref)
-    world.runtime.follow(handle)
+    world.runtime.follow(handle, origin: .person)
     world.runtime.shutDown()
     #expect(world.power.ended == 1 && !world.runtime.isHoldingPower)
     _ = await handle.result
@@ -372,6 +378,7 @@ struct JobsRuntimeTests {
     try await JobsWait.until("the run is handed to the host") { !host.runs.isEmpty }
     let run = try #require(host.runs.first)
     #expect(run.job == job && host.runs.count == 1)
+    #expect(run.target == NovelJobTarget(novel: world.novel, chapter: 1, kind: .generate) && run.origin == .person)
     guard case .settled(.failed) = await run.finished() else {
       Issue.record("the run should end failed")
       return
@@ -382,6 +389,32 @@ struct JobsRuntimeTests {
     world.runtime.sceneEnteredBackground()
     await world.runtime.sceneBecameActive()
     #expect(host.backgrounds == 1 && host.actives == 1)
+  }
+
+  @Test func shouldHandAJobQueuedBeforeLaunchAsAutomaticAndOneAskedForSinceAsAPersons() async throws {
+    let host = RecordingHost()
+    let world = try await JobsWorld.make([[.failure(.server(status: 500))], [.failure(.server(status: 500))]], host: host)
+    let before = try await world.requestWithoutTheRuntime(world.generation("before"))
+    await world.runtime.launch()
+    try await JobsWait.until("the queued job is handed over") { host.runs.contains { $0.job == before } }
+    let since = try await #require(world.runtime.engine).request(world.generation("since", chapter: 2)).ref
+    try await JobsWait.until("the job asked for since launch is handed over") { host.runs.contains { $0.job == since } }
+
+    #expect(host.runs.first { $0.job == before }?.origin == .automatic)
+    #expect(host.runs.first { $0.job == since }?.origin == .person)
+  }
+
+  @Test func shouldHandAJobQueuedBeforeLaunchAsAPersonsOnceConsentIsGivenHere() async throws {
+    let host = RecordingHost()
+    let world = try await JobsWorld.make([[.failure(.server(status: 500))]], granted: false, host: host)
+    let before = try await world.requestWithoutTheRuntime(world.generation("before"))
+    await world.runtime.launch()
+    try await JobsWait.until("the start waits for consent") { world.runtime.consentNeeded != nil }
+
+    world.runtime.consentAllowed()
+    try await world.decideConsent(.granted, at: 2)
+    try await JobsWait.until("the job is handed over") { host.runs.contains { $0.job == before } }
+    #expect(host.runs.first { $0.job == before }?.origin == .person)
   }
 
   @Test func shouldShowARunGoingInThisProcessAsRunningNotAsStopped() async throws {

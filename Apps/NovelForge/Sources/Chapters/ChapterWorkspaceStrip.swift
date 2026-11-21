@@ -33,6 +33,7 @@ struct ChapterWorkspaceStrip: View {
         ShadowCallout(JobDisplay.title(line), message: JobDisplay.message(line), intent: JobDisplay.intent(line)) {
           if let runtime { actions(line, runtime: runtime) }
         }
+        if runtime?.needsAppOpen(line.job) == true { note(ContinuedProcessingText.keepOpen) }
       }
       if status.jobsUnavailable || isFailed { note(Text("This chapter's jobs can't be read on this device right now.", tableName: "Jobs")) }
       if let runtime { modeNote(runtime.mode) }

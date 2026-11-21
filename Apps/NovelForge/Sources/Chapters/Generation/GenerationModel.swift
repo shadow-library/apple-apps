@@ -67,7 +67,7 @@ final class GenerationModel {
         }
       switch started {
       case .running(let handle):
-        runtime.follow(handle)
+        runtime.follow(handle, origin: .person)
         return .started
       case .elsewhere: return .runningElsewhere
       }

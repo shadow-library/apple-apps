@@ -133,6 +133,17 @@
         }
       }
     },
+    "Checking chapter %lld": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Checking chapter %lld"
+          }
+        }
+      }
+    },
     "Checking the chapter": {
       "extractionState": "manual",
       "localizations": {
@@ -309,6 +320,17 @@
         }
       }
     },
+    "Keep Novel Forge open until this finishes.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Keep Novel Forge open until this finishes."
+          }
+        }
+      }
+    },
     "Needs review": {
       "extractionState": "manual",
       "localizations": {
@@ -364,6 +386,17 @@
         }
       }
     },
+    "Planning chapter %lld": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Planning chapter %lld"
+          }
+        }
+      }
+    },
     "Planning the chapter": {
       "extractionState": "manual",
       "localizations": {
@@ -408,6 +441,17 @@
         }
       }
     },
+    "Reading the Story Bible updates for chapter %lld": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reading the Story Bible updates for chapter %lld"
+          }
+        }
+      }
+    },
     "Reading the Story Bible updates from this chapter failed. Read them again.": {
       "extractionState": "manual",
       "localizations": {
@@ -426,6 +470,17 @@
           "stringUnit": {
             "state": "translated",
             "value": "Refreshing the Story Bible"
+          }
+        }
+      }
+    },
+    "Refreshing the Story Bible after chapter %lld": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Refreshing the Story Bible after chapter %lld"
           }
         }
       }
@@ -507,6 +562,17 @@
         }
       }
     },
+    "Running a chapter job": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Running a chapter job"
+          }
+        }
+      }
+    },
     "Running in another copy of Novel Forge": {
       "extractionState": "manual",
       "localizations": {
@@ -580,6 +646,17 @@
           "stringUnit": {
             "state": "translated",
             "value": "Started on this device"
+          }
+        }
+      }
+    },
+    "Starting": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Starting"
           }
         }
       }
@@ -899,6 +976,17 @@
           "stringUnit": {
             "state": "translated",
             "value": "Waiting to start"
+          }
+        }
+      }
+    },
+    "Writing chapter %lld": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Writing chapter %lld"
           }
         }
       }

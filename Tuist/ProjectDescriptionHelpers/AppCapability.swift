@@ -7,6 +7,9 @@ public enum AppCapability: Hashable, Sendable {
   case keychainSharing
   case camera(usage: String)
   case macSandbox
+  /// `BGContinuedProcessingTaskRequest` identifiers `<bundle id>.<context>.<suffix>`, permitted by the wildcard `<bundle id>.<context>.*`. Apple documents no
+  /// background mode for it, unlike `processing` for `BGProcessingTask` and `fetch` for `BGAppRefreshTask`.
+  case continuedProcessing(context: String)
 
   var supportedPlatforms: Set<Platform> {
     switch self {
@@ -14,13 +17,14 @@ public enum AppCapability: Hashable, Sendable {
     case .remoteNotificationBackgroundMode: [.iOS, .visionOS, .tvOS]
     case .camera: [.iOS, .macOS, .visionOS]
     case .macSandbox: [.macOS]
+    case .continuedProcessing: [.iOS]
     }
   }
 
   var needsSigningTeam: Bool {
     switch self {
     case .iCloud, .pushNotifications, .keychainSharing: true
-    case .remoteNotificationBackgroundMode, .camera, .macSandbox: false
+    case .remoteNotificationBackgroundMode, .camera, .macSandbox, .continuedProcessing: false
     }
   }
 }
@@ -38,6 +42,7 @@ struct AppCapabilities {
     let platforms = platform.destinations.platforms
     let hasUIKit = !platforms.isDisjoint(with: [.iOS, .visionOS, .tvOS])
     let hasMac = platforms.contains(.macOS)
+    let hasIOS = platforms.contains(.iOS)
     let signed = !team.isEmpty
     let capabilities = Self.validated(requested, platforms: platforms).filter { signed || !$0.needsSigningTeam }
 
@@ -45,6 +50,7 @@ struct AppCapabilities {
     var infoPlist: [String: Plist.Value] = [:]
     var settings: SettingsDictionary = [:]
     var signedWith: [String: Plist.Value] = [:]
+    var backgroundModes: [String] = []
 
     for capability in capabilities {
       switch capability {
@@ -58,7 +64,7 @@ struct AppCapabilities {
         settings["SHADOW_APS_ENVIRONMENT_KEY[sdk=macosx*]"] = "com.apple.developer.aps-environment"
         signedWith["PushNotifications"] = true
       case .remoteNotificationBackgroundMode:
-        if hasUIKit { infoPlist["UIBackgroundModes"] = ["remote-notification"] }
+        if hasUIKit { backgroundModes.append("remote-notification") }
       case .keychainSharing:
         entitlements["keychain-access-groups"] = [.string("$(AppIdentifierPrefix)\(bundleId)"), .string(Self.sharedKeychainAccessGroup)]
         signedWith["SharedKeychainGroup"] = .string(Self.sharedKeychainAccessGroup)
@@ -69,9 +75,12 @@ struct AppCapabilities {
         settings["ENABLE_APP_SANDBOX[sdk=macosx*]"] = "YES"
         settings["ENABLE_OUTGOING_NETWORK_CONNECTIONS[sdk=macosx*]"] = "YES"
         settings["ENABLE_USER_SELECTED_FILES[sdk=macosx*]"] = "readwrite"
+      case .continuedProcessing(let context):
+        if hasIOS { infoPlist["BGTaskSchedulerPermittedIdentifiers"] = [.string("\(bundleId).\(context).*")] }
       }
     }
 
+    if !backgroundModes.isEmpty { infoPlist["UIBackgroundModes"] = .array(backgroundModes.map { .string($0) }) }
     if !signedWith.isEmpty { infoPlist[Self.infoPlistKey] = .dictionary(signedWith) }
     self.entitlements = entitlements.isEmpty ? nil : .dictionary(entitlements)
     self.infoPlist = infoPlist
@@ -85,6 +94,9 @@ struct AppCapabilities {
       precondition(kinds.insert(kind).inserted, "capability \(kind) declared more than once")
       precondition(!platforms.isDisjoint(with: capability.supportedPlatforms), "capability \(kind) applies to none of the app's destinations")
       if case .camera(let usage) = capability { precondition(!usage.isEmpty, "camera capability needs a purpose string") }
+      if case .continuedProcessing(let context) = capability {
+        precondition(!context.isEmpty && !context.contains("*") && !context.hasPrefix(".") && !context.hasSuffix("."), "continued processing needs a context such as \"job\"")
+      }
     }
     return requested
   }
