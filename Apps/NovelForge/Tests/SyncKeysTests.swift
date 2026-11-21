@@ -72,6 +72,8 @@ struct KeysDevice {
 @MainActor
 @Suite("Sync keys", TestTimeLimit.standard)
 struct SyncKeysTests {
+  private static let notAWord = "not-a-word"
+
   private static func setup(_ model: SyncKeysModel) throws -> RecoveryPhraseSetupModel {
     guard case .setup(let setup)? = model.flow else { throw KeysTestFailure("no setup flow: \(String(describing: model.failure))") }
     return setup
@@ -105,7 +107,7 @@ struct SyncKeysTests {
     #expect(setup.words.isEmpty)
     let positions = setup.positions
     #expect(positions.count == 3)
-    for position in positions { setup.entries[position] = "wrong" }
+    for position in positions { setup.entries[position] = Self.notAWord }
     await setup.confirm()
 
     #expect(setup.step == .confirming && setup.mismatched == positions && setup.failure != nil)
