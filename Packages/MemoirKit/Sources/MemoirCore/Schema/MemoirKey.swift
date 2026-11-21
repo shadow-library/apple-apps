@@ -9,6 +9,7 @@ public enum MemoirKey: Hashable, Sendable {
   case metricDay(SyncClass, metric: UUID, date: LocalDate)
   case weight(LocalDate)
   case accountSettings
+  case healthSettings
 
   public static let scope = "com.shadow.library.memoircore"
 
@@ -19,6 +20,7 @@ public enum MemoirKey: Hashable, Sendable {
     case .metricDay(let syncClass, _, _): MemoirKind.metricDay(syncClass)
     case .weight: .weight
     case .accountSettings: .accountSettings
+    case .healthSettings: .healthSettings
     }
   }
 
@@ -46,7 +48,11 @@ public enum MemoirKey: Hashable, Sendable {
     case .accountSettings:
       guard members.isEmpty else { throw .invalid(field: CommonField.naturalKey.rawValue) }
       self = .accountSettings
-    case .command, .commandNote, .quest, .journalEntry, .meal, .mealPreset, .sideQuest, .expense, .subscription, .receipt, .generalMetric, .activityMetric, .healthMetric:
+    case .healthSettings:
+      guard members.isEmpty else { throw .invalid(field: CommonField.naturalKey.rawValue) }
+      self = .healthSettings
+    case .command, .commandNote, .quest, .journalEntry, .meal, .mealPreset, .sideQuest, .expense, .subscription, .receipt, .generalMetric, .activityMetric, .healthMetric,
+      .generalQuestThreshold, .activityQuestThreshold, .healthQuestThreshold:
       throw .identity(ref)
     }
     guard self.ref == ref else { throw .keyMismatch(ref) }
@@ -58,7 +64,7 @@ public enum MemoirKey: Hashable, Sendable {
     case .fxRate(let base, let quote, let date): [("base", base.code), ("quote", quote.code), ("date", date.isoString)]
     case .metricDay(_, let metric, let date): [("metric", metric.lowercasedString), ("date", date.isoString)]
     case .weight(let date): [("date", date.isoString)]
-    case .accountSettings: []
+    case .accountSettings, .healthSettings: []
     }
   }
 }

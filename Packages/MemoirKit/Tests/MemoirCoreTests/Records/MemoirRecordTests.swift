@@ -47,14 +47,24 @@ struct MemoirRecordTests {
         schedule: try #require(ScheduleWindow(start: 420, end: 60)), weekStart: 0), in: main)
     try await roundTrip(MetricRecord<GeneralMetric>(id: MetricID(recordUUID: Self.id), name: "Pages read", valueType: .known(.count), direction: .known(.higher)), in: main)
     try await roundTrip(
-      MetricDayRecord<GeneralMetric>(metric: MetricID(recordUUID: Self.id), date: day, value: try MemoirStoreFixture.decimal("12"), source: .known(.manual)), in: main)
+      MetricDayRecord<GeneralMetric>(metric: MetricID(recordUUID: Self.id), date: day, entry: MetricEntry(value: try MemoirStoreFixture.decimal("12"))), in: main)
     try await roundTrip(MetricRecord<ActivityMetric>(id: MetricID(recordUUID: Self.id), name: "Steps", valueType: .known(.count), direction: .known(.higher)), in: activity)
     try await roundTrip(
-      MetricDayRecord<ActivityMetric>(metric: MetricID(recordUUID: Self.id), date: day, value: try MemoirStoreFixture.decimal("8042"), source: .known(.health)), in: activity)
+      MetricDayRecord<ActivityMetric>(
+        metric: MetricID(recordUUID: Self.id), date: day, entry: MetricEntry(value: try MemoirStoreFixture.decimal("8000"), source: .known(.food)),
+        imported: try MemoirStoreFixture.decimal("8042")), in: activity)
+    try await roundTrip(
+      QuestThresholdRecord<ActivityMetric>(quest: Self.id, metric: MetricID(recordUUID: Self.id), value: try MemoirStoreFixture.decimal("8000"), comparison: .known(.atLeast)),
+      in: activity)
     try await roundTrip(
       MetricRecord<HealthMetric>(id: MetricID(recordUUID: Self.id), name: "Resting heart rate", unit: "bpm", valueType: .known(.number), direction: .known(.lower)), in: restricted)
     try await roundTrip(
-      MetricDayRecord<HealthMetric>(metric: MetricID(recordUUID: Self.id), date: day, value: try MemoirStoreFixture.decimal("58"), source: .known(.health)), in: restricted)
+      MetricDayRecord<HealthMetric>(metric: MetricID(recordUUID: Self.id), date: day, imported: try MemoirStoreFixture.decimal("58")), in: restricted)
+    try await roundTrip(
+      QuestThresholdRecord<HealthMetric>(quest: Self.id, metric: MetricID(recordUUID: Self.id), value: try MemoirStoreFixture.decimal("7.5"), comparison: .known(.atMost)),
+      in: restricted)
+    try await roundTrip(
+      HealthSettingsRecord(reader: HealthReaderDesignation(device: Self.id, name: "Phone", claimedAtMillis: 9), activityOnICloud: true), in: main)
     try await roundTrip(WeightRecord(date: day, kilograms: try MemoirStoreFixture.decimal("72.45"), loggedAtMillis: 5), in: restricted)
   }
 
@@ -207,7 +217,7 @@ struct MemoirRecordTests {
 
   @Test func shouldKeyAMetricDayByTheUUIDInsideItsClassTypedID() throws {
     let id = MetricID<HealthMetric>(recordUUID: MemoirStoreFixture.metric)
-    let day = MetricDayRecord<HealthMetric>(metric: id, date: try MemoirStoreFixture.date("2026-11-20"), value: try MemoirStoreFixture.decimal("58"), source: .known(.health))
+    let day = MetricDayRecord<HealthMetric>(metric: id, date: try MemoirStoreFixture.date("2026-11-20"), imported: try MemoirStoreFixture.decimal("58"))
     #expect(day.key == .metricDay(.health, metric: MemoirStoreFixture.metric, date: day.date))
     #expect(id.stored == MemoirStoreFixture.metric.stored)
     #expect(MetricRecord<HealthMetric>.ref(id).key == EntityKey(uuid: MemoirStoreFixture.metric))

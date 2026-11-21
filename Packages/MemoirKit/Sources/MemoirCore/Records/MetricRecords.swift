@@ -52,11 +52,6 @@ public enum MetricDirection: String, CaseIterable, Hashable, Sendable {
   case neutral
 }
 
-public enum MetricDaySource: String, CaseIterable, Hashable, Sendable {
-  case manual
-  case health
-}
-
 /// A metric's class is its kind, so its definition and its days live in that class's store; changing the class is a delete and a create.
 public struct MetricRecord<Class: MetricClass>: IdentifiedRecord, RemovableMemoirRecord {
   public static var kind: MemoirKind { MemoirKind.metric(Class.syncClass) }
@@ -100,33 +95,129 @@ public struct MetricRecord<Class: MetricClass>: IdentifiedRecord, RemovableMemoi
   }
 }
 
-/// One summary per metric and day, keyed by both, so two devices reading the same day converge on one record.
+/// The owner's own value for a metric's day, with the `metric.register` source token that wrote it; stored as one register.
+public struct MetricEntry: Sendable, Hashable, StoredValue {
+  public var value: DecimalText
+  public var source: StoredChoice<MetricEntrySource>
+
+  public init(value: DecimalText, source: StoredChoice<MetricEntrySource> = .known(.manual)) {
+    self.value = value
+    self.source = source
+  }
+
+  public init?(stored: JSONValue) {
+    guard
+      let entry = MemberReader<MetricEntryMember>.nested(
+        stored, { reader throws(MemoirUnreadable) in MetricEntry(value: try reader.required(.value), source: try reader.required(.source)) })
+    else { return nil }
+    self = entry
+  }
+
+  public var stored: JSONValue {
+    var members = RecordMembers<MetricEntryMember>()
+    members.put(.value, value)
+    members.put(.source, source)
+    return members.json
+  }
+}
+
+/// One summary per metric and day, keyed by both, so two devices reading the same day converge on one record. The owner's entry and the Health import
+/// are separate registers, so neither overwrites the other when two devices write the day at once, and the owner's entry wins while it is set.
 public struct MetricDayRecord<Class: MetricClass>: NaturalKeyRecord, RemovableMemoirRecord {
   public static var kind: MemoirKind { MemoirKind.metricDay(Class.syncClass) }
 
   public let metric: MetricID<Class>
   public let date: LocalDate
-  public var value: DecimalText
-  public var source: StoredChoice<MetricDaySource>
+  public var entry: MetricEntry?
+  public var imported: DecimalText?
 
-  public init(metric: MetricID<Class>, date: LocalDate, value: DecimalText, source: StoredChoice<MetricDaySource>) {
+  public init(metric: MetricID<Class>, date: LocalDate, entry: MetricEntry? = nil, imported: DecimalText? = nil) {
     self.metric = metric
     self.date = date
-    self.value = value
-    self.source = source
+    self.entry = entry
+    self.imported = imported
   }
 
   public init(key: MemoirKey, reading reader: MemberReader<MetricDayField>) throws(MemoirUnreadable) {
     guard case .metricDay(let syncClass, let metric, let date) = key, syncClass == Class.syncClass else { throw .identity(key.ref) }
-    self.init(metric: MetricID(recordUUID: metric), date: date, value: try reader.required(.value), source: try reader.required(.source))
+    self.init(metric: MetricID(recordUUID: metric), date: date, entry: try reader.optional(.entry), imported: try reader.optional(.imported))
   }
 
   public var key: MemoirKey { .metricDay(Class.syncClass, metric: metric.recordUUID, date: date) }
 
+  public var value: DecimalText? { entry?.value ?? imported }
+
   public var members: RecordMembers<MetricDayField> {
     var members = RecordMembers<MetricDayField>()
-    members.put(.value, value)
-    members.put(.source, source)
+    members.put(.entry, entry)
+    members.put(.imported, imported)
     return members
+  }
+}
+
+public enum ThresholdComparison: String, CaseIterable, Hashable, Sendable {
+  case atLeast = "gte"
+  case atMost = "lte"
+}
+
+/// A quest's health threshold (`quests.health_threshold`), kept in the store of its metric's class because its value is that class's data; it is
+/// identified by the quest's id, so a quest has at most one per class. Metric, value and comparison are one register, so they always change together.
+public struct QuestThresholdRecord<Class: MetricClass>: IdentifiedRecord, RemovableMemoirRecord {
+  public static var kind: MemoirKind { MemoirKind.questThreshold(Class.syncClass) }
+
+  public let id: UUID
+  public var metric: MetricID<Class>
+  public var value: DecimalText
+  public var comparison: StoredChoice<ThresholdComparison>
+
+  public init(quest: UUID, metric: MetricID<Class>, value: DecimalText, comparison: StoredChoice<ThresholdComparison>) {
+    id = quest
+    self.metric = metric
+    self.value = value
+    self.comparison = comparison
+  }
+
+  public init(id: UUID, reading reader: MemberReader<QuestThresholdField>) throws(MemoirUnreadable) {
+    let threshold: StoredThreshold<Class> = try reader.required(.threshold)
+    self.init(quest: id, metric: threshold.metric, value: threshold.value, comparison: threshold.comparison)
+  }
+
+  public var quest: UUID { id }
+
+  public var members: RecordMembers<QuestThresholdField> {
+    var members = RecordMembers<QuestThresholdField>()
+    members.put(.threshold, StoredThreshold(metric: metric, value: value, comparison: comparison))
+    return members
+  }
+}
+
+private struct StoredThreshold<Class: MetricClass>: StoredValue {
+  let metric: MetricID<Class>
+  let value: DecimalText
+  let comparison: StoredChoice<ThresholdComparison>
+
+  init(metric: MetricID<Class>, value: DecimalText, comparison: StoredChoice<ThresholdComparison>) {
+    self.metric = metric
+    self.value = value
+    self.comparison = comparison
+  }
+
+  init?(stored: JSONValue) {
+    guard
+      let threshold = MemberReader<QuestThresholdMember>.nested(
+        stored,
+        { reader throws(MemoirUnreadable) in
+          StoredThreshold(metric: try reader.required(.metric), value: try reader.required(.value), comparison: try reader.required(.comparison))
+        })
+    else { return nil }
+    self = threshold
+  }
+
+  var stored: JSONValue {
+    var members = RecordMembers<QuestThresholdMember>()
+    members.put(.metric, metric)
+    members.put(.value, value)
+    members.put(.comparison, comparison)
+    return members.json
   }
 }

@@ -140,9 +140,39 @@ public enum MetricField: String, MemoirField {
   case glyph
 }
 
+/// `value` and `source` are v1's and stay declared, but nothing writes them: v2 keeps the owner's entry as one register, `entry`, so two devices
+/// writing it at once can never leave a value without its source.
 public enum MetricDayField: String, MemoirField {
   case value
   case source
+  case imported
+  case entry
+}
+
+public enum MetricEntryMember: String, MemoirField {
+  case value
+  case source
+}
+
+public enum QuestThresholdField: String, MemoirField {
+  case threshold
+}
+
+public enum QuestThresholdMember: String, MemoirField {
+  case metric
+  case value
+  case comparison
+}
+
+public enum HealthSettingsField: String, MemoirField {
+  case reader
+  case activityOnICloud = "activity_on_icloud"
+}
+
+public enum HealthReaderMember: String, MemoirField {
+  case device
+  case name
+  case claimedAtMillis = "claimed_at_millis"
 }
 
 public enum WeightField: String, MemoirField {

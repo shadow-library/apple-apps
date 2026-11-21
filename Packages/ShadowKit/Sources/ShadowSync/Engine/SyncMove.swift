@@ -137,8 +137,8 @@ enum SyncMoveSealer {
   /// Refuses, before anything is sealed, a change stamped beyond `limit` and a kind the target may not hold. The frontier records the highest clock of each
   /// stamping replica, leaving out `partial` ones: with a file of theirs held, their records here need not be every one below that clock.
   static func seal(
-    _ snapshot: OwnSnapshot, registry: SchemaRegistry, vault: VaultID, key: VaultKey, capabilities: StorageCapabilities, partBytes: Int, limit: HLCTimestamp,
-    partial: Set<ReplicaID>
+    _ snapshot: OwnSnapshot, registry: SchemaRegistry, vault: VaultID, key: VaultKey, capabilities: StorageCapabilities, configuration: SyncConfiguration,
+    limit: HLCTimestamp, partial: Set<ReplicaID>
   ) throws(SyncError) -> SyncMoveBase {
     var frontier: [ReplicaID: HLCTimestamp] = [:]
     var admitted: Set<EntityKind> = []
@@ -147,12 +147,12 @@ enum SyncMoveSealer {
       guard record.clock <= limit else { throw .clockAhead(record.clock) }
       if !partial.contains(record.clock.replica) { frontier[record.clock.replica] = max(frontier[record.clock.replica] ?? record.clock, record.clock) }
       guard admitted.insert(record.entity).inserted, let schema = registry[record.entity] else { continue }
-      guard capabilities.classPolicy.admits(schema.syncClass) else { throw .syncClassRefused(kind: record.entity, syncClass: schema.syncClass) }
+      guard capabilities.classPolicy.admits(schema.syncClass, under: configuration) else { throw .syncClassRefused(kind: record.entity, syncClass: schema.syncClass) }
     }
     guard let header = BaseHeader(replica: snapshot.replica, upTo: 0, through: nil, schema: snapshot.schema), let file = BaseFile(header: header, lines: snapshot.lines) else {
       throw .corruptState("the merged state does not form a base")
     }
-    let parts = try SyncBaseSealer.sealParts(file, vault: vault, key: key, partBytes: partBytes, limit: capabilities.maxObjectBytes)
+    let parts = try SyncBaseSealer.sealParts(file, vault: vault, key: key, partBytes: configuration.basePartBytes, limit: capabilities.maxObjectBytes)
     guard let tag = parts.first?.tag else { throw .corruptState("a sealed base has no parts") }
     return SyncMoveBase(replica: snapshot.replica, point: StreamPoint(last: 0, tag: tag), parts: parts, frontier: frontier)
   }

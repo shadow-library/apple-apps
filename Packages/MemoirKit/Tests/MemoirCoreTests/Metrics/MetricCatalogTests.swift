@@ -1,0 +1,181 @@
+import Foundation
+import ShadowCore
+import ShadowStore
+import ShadowSync
+import Testing
+
+@testable import MemoirCore
+
+@Suite("MetricCatalog", TestTimeLimit.standard)
+struct MetricCatalogTests {
+  private static let issuer = CommandIssuer(clock: HealthFixture.utc, wallClock: HealthFixture.wallClock())
+  private static let glucose = MetricDefinition(name: "Glucose", unit: "mmol/L", valueType: .number, direction: .range)
+
+  private func commandTypes(_ stores: MemoirStores) async throws -> [String] {
+    try await stores.main.read { transaction in try MemoirCommand.listing(in: transaction) }.entries.map(\.record.type.name).sorted()
+  }
+
+  @Test func shouldFixTheBuiltinsClassesAndIDs() {
+    #expect(BuiltinMetric.allCases.filter { $0.syncClass == .activity } == [.steps, .workoutMinutes])
+    #expect(BuiltinMetric.allCases.filter { $0.syncClass == .health } == [.activeEnergy, .weight, .restingHeartRate, .sleep, .waistCircumference, .water])
+    #expect(BuiltinMetric.sleep.definition.unit == "min")
+    #expect(Set(BuiltinMetric.allCases.map(\.id)).count == BuiltinMetric.allCases.count)
+    #expect(BuiltinMetric.steps.id == derivedID("com.shadow.library.memoircore.builtin-metric", "steps"))
+    for metric in BuiltinMetric.allCases { #expect(BuiltinMetric(id: metric.id) == metric) }
+  }
+
+  @Test func shouldCreateAnOwnersMetricInTheHealthStoreUnlessTheOwnerSaysOtherwise() async throws {
+    let stores = try MemoirStores.openInMemory()
+    let catalog = MetricCatalog(stores: stores, issuer: Self.issuer)
+
+    let glucose = try await catalog.create(Self.glucose)
+    let pages = try await catalog.create(MetricDefinition(name: "Pages read", valueType: .count, direction: .higher), as: .general)
+
+    #expect(glucose.metricClass == .health && pages.metricClass == .general)
+    #expect(try await HealthFixture.entityCount(.healthMetric, in: stores.restricted) == 1)
+    #expect(try await HealthFixture.entityCount(.generalMetric, in: stores.main) == 1)
+    #expect(try await commandTypes(stores) == ["metric.create", "metric.create"])
+    await #expect(throws: MetricsError.self) { try await catalog.create(MetricDefinition(name: "", valueType: .number, direction: .neutral)) }
+  }
+
+  @Test func shouldRefuseToChangeOrDeleteABuiltinAndToWriteAnAbsentMetric() async throws {
+    let stores = try MemoirStores.openInMemory()
+    let catalog = MetricCatalog(stores: stores, issuer: Self.issuer)
+    for attempt in [
+      { () async throws(MetricsError) in try await catalog.update(BuiltinMetric.weight.reference, to: Self.glucose) },
+      { () async throws(MetricsError) in try await catalog.delete(BuiltinMetric.steps.reference) },
+      { () async throws(MetricsError) in _ = try await catalog.reclassify(BuiltinMetric.sleep.reference, as: .general) },
+    ] {
+      do {
+        try await attempt()
+        Issue.record("a built-in changed")
+      } catch {
+        #expect(error.referenceCode == "MET_003")
+      }
+    }
+    let absent = MetricReference(id: UUID(), metricClass: .health)
+    do {
+      try await catalog.register(HealthFixture.decimal("5"), for: absent, on: HealthFixture.today)
+      Issue.record("an absent metric took a value")
+    } catch {
+      #expect(error.referenceCode == "MET_002")
+    }
+    do {
+      try await catalog.register(HealthFixture.decimal("5"), for: BuiltinMetric.steps.reference, on: HealthFixture.today, source: .questLog)
+      Issue.record("a quest-log entry without its occurrence was written")
+    } catch {
+      guard case .refused(.invalidField(field: "questLogId", problem: .required)) = error else { throw error }
+    }
+    #expect(try await commandTypes(stores) == [])
+    #expect(try await HealthFixture.entityCount(.healthMetricDay, in: stores.restricted) == 0)
+  }
+
+  @Test func shouldChangeAClassByCreatingAMetricInTheNewStoreAndRemovingTheOld() async throws {
+    let stores = try MemoirStores.openInMemory()
+    let catalog = MetricCatalog(stores: stores, issuer: Self.issuer)
+    let glucose = try await catalog.create(Self.glucose)
+    try await catalog.register(HealthFixture.decimal("5.4"), for: glucose, on: HealthFixture.today)
+
+    let general = try await catalog.reclassify(glucose, as: .general)
+
+    #expect(general.metricClass == .general && general.id != glucose.id)
+    #expect(try await catalog.reclassify(general, as: .general) == general)
+    let moved = try await stores.main.read { transaction in try MetricRecord<GeneralMetric>.read(id: MetricID(recordUUID: general.id), in: transaction) }
+    #expect(moved.entry?.record.name == "Glucose" && moved.entry?.isRemoved == false)
+    let old = try await stores.restricted.read { transaction in try MetricRecord<HealthMetric>.read(id: MetricID(recordUUID: glucose.id), in: transaction) }
+    #expect(old.entry?.isRemoved == true)
+    #expect(try await HealthFixture.entityCount(.generalMetricDay, in: stores.main) == 0)
+    #expect(try await HealthFixture.entityCount(.healthMetricDay, in: stores.restricted) == 1)
+    #expect(try await commandTypes(stores) == ["metric.create", "metric.create", "metric.delete"])
+    do {
+      try await catalog.register(HealthFixture.decimal("5.5"), for: glucose, on: HealthFixture.today)
+      Issue.record("a removed metric took a value")
+    } catch {
+      #expect(error.referenceCode == "MET_002")
+    }
+  }
+
+  @Test func shouldAppendMetricRegisterOnlyForAGeneralMetric() async throws {
+    let stores = try MemoirStores.openInMemory()
+    let catalog = MetricCatalog(stores: stores, issuer: Self.issuer)
+    let glucose = try await catalog.create(Self.glucose)
+    let pages = try await catalog.create(MetricDefinition(name: "Pages read", valueType: .count, direction: .higher), as: .general)
+    let before = try await stores.main.pendingChanges(limit: .max).count
+
+    try await catalog.register(HealthFixture.decimal("5.4"), for: glucose, on: HealthFixture.today)
+    try await catalog.register(HealthFixture.decimal("9000"), for: BuiltinMetric.steps.reference, on: HealthFixture.today)
+    try await catalog.register(HealthFixture.decimal("70.2"), for: BuiltinMetric.weight.reference, on: HealthFixture.today)
+    #expect(try await stores.main.pendingChanges(limit: .max).count == before)
+    #expect(try await HealthFixture.entityCount(.healthMetricDay, in: stores.restricted) == 2)
+    #expect(try await HealthFixture.entityCount(.activityMetricDay, in: stores.activity) == 1)
+
+    try await catalog.register(HealthFixture.decimal("30"), for: pages, on: HealthFixture.today)
+    #expect(try await commandTypes(stores) == ["metric.create", "metric.create", "metric.register"])
+    #expect(try await HealthFixture.entityCount(.generalMetricDay, in: stores.main) == 1)
+  }
+
+  @Test func shouldKeepAClaimAndAnActivityToggleMadeOnTwoDevicesAtOnce() async throws {
+    let phone = try MemoirStores.openInMemory()
+    let mac = try MemoirStores.openInMemory()
+    _ = try await HealthFixture.claim(HealthFixture.phone, in: phone)
+    _ = try await mac.main.write { transaction in try HealthSettings.setActivityOnICloud(true, in: &transaction) }
+
+    try await MemoirStoreFixture.exchange(phone.main, mac.main)
+
+    for stores in [phone, mac] {
+      let record = try await stores.main.read { transaction in try HealthSettingsRecord.read(key: .healthSettings, in: transaction) }.entry?.record
+      #expect(record?.reader?.device == HealthFixture.phone.id)
+      #expect(record?.isActivityOnICloud == true)
+    }
+    _ = try await phone.main.write { transaction in try HealthSettings.release(HealthFixture.phone, in: &transaction) }
+    #expect(try await phone.main.read { transaction in try HealthSettings.designation(in: transaction) } == nil)
+    #expect(try await phone.main.read { transaction in try HealthSettings.isActivityOnICloud(in: transaction) })
+  }
+
+  @Test func shouldTreatAnUnreadableSettingsRecordAsActivityOff() async throws {
+    let stores = try MemoirStores.openInMemory()
+    let ref = MemoirKey.healthSettings.ref
+    _ = try await stores.main.write { transaction in try transaction.set(ref, ["natural_key": MemoirKey.healthSettings.stored, "activity_on_icloud": "yes"]) }
+    #expect(try await stores.main.read { transaction in try HealthSettings.isActivityOnICloud(in: transaction) } == false)
+    #expect(try await MemoirSyncRouting.routes(for: .iCloud, settingsIn: stores.main).map(\.store) == [.main])
+  }
+}
+
+@Suite("QuickLogWriter", TestTimeLimit.standard)
+struct QuickLogWriterTests {
+  @Test func shouldWriteAWeightToTheRestrictedStoreAndOnlyItsCommandToTheMainStore() async throws {
+    let stores = try MemoirStores.openInMemory()
+    let writer = QuickLogWriter(stores: stores, issuer: CommandIssuer(clock: HealthFixture.utc, wallClock: HealthFixture.wallClock()))
+    let day = HealthFixture.today
+
+    guard case .saved = try await writer.saveWeight(HealthFixture.decimal("72.4"), on: day) else { throw MemoirFixtureError(description: "the weight was not saved") }
+    let second = try await writer.saveWeight(HealthFixture.decimal("72.9"), on: day)
+    guard case .needsConfirmation(let existing) = second else { throw MemoirFixtureError(description: "expected a confirmation, got \(second)") }
+    #expect(existing.kilograms == HealthFixture.decimal("72.4"))
+    guard case .saved = try await writer.saveWeight(HealthFixture.decimal("72.9"), on: day, confirmedReplacement: true) else {
+      throw MemoirFixtureError(description: "the confirmed weight was not saved")
+    }
+
+    let weight = try await stores.restricted.read { transaction in try WeightRecord.read(key: .weight(day), in: transaction) }
+    #expect(weight.entry?.record.kilograms == HealthFixture.decimal("72.9"))
+    #expect(try await HealthFixture.entityCount(.command, in: stores.main) == 2)
+    await #expect(throws: QuickLogError.self) { try await writer.saveWeight(HealthFixture.decimal("0"), on: day) }
+    #expect(try await HealthFixture.entityCount(.command, in: stores.main) == 2)
+  }
+
+  @Test func shouldWriteAGeneralQuickLogAndItsCommandInOneMainStoreWrite() async throws {
+    let stores = try MemoirStores.openInMemory()
+    let writer = QuickLogWriter(stores: stores, issuer: CommandIssuer(clock: HealthFixture.utc, wallClock: HealthFixture.wallClock()))
+    let id = UUID()
+    let side = SideQuestRecord(id: id, date: HealthFixture.today, name: "Fixed the bike", loggedAtMillis: 1)
+
+    try await writer.log(side, as: .sideQuestLog(SideQuestEntry(id: id, date: HealthFixture.today)))
+    await #expect(throws: QuickLogError.self) {
+      try await writer.log(
+        SideQuestRecord(id: UUID(), date: HealthFixture.today, name: "", loggedAtMillis: 1), as: .sideQuestLog(SideQuestEntry(id: id, date: HealthFixture.today)))
+    }
+
+    #expect(try await HealthFixture.entityCount(.sideQuest, in: stores.main) == 1)
+    #expect(try await HealthFixture.entityCount(.command, in: stores.main) == 1)
+  }
+}

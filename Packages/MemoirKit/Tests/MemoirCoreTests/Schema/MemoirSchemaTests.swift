@@ -10,6 +10,7 @@ import Testing
 struct MemoirSchemaTests {
   private static let frozen: [(store: MemoirStoreKind, path: String, version: Int)] = [
     (.main, "schema/registry-v1.json", 1), (.activity, "schema/activity-registry-v1.json", 1), (.restricted, "schema/restricted-registry-v1.json", 1),
+    (.main, "schema/registry-v2.json", 2), (.activity, "schema/activity-registry-v2.json", 2), (.restricted, "schema/restricted-registry-v2.json", 2),
   ]
 
   @Test func shouldMatchTheFrozenRegistryDescriptions() throws {
@@ -41,8 +42,8 @@ struct MemoirSchemaTests {
     }
     let mainClasses = Set(MemoirSchema.entities(of: .main).map(\.syncClass))
     #expect(mainClasses == [.general])
-    #expect(MemoirStoreKind.restricted.kinds == [.healthMetric, .healthMetricDay, .weight])
-    #expect(MemoirStoreKind.activity.kinds == [.activityMetric, .activityMetricDay])
+    #expect(MemoirStoreKind.restricted.kinds == [.healthMetric, .healthMetricDay, .weight, .healthQuestThreshold])
+    #expect(MemoirStoreKind.activity.kinds == [.activityMetric, .activityMetricDay, .activityQuestThreshold])
   }
 
   @Test func shouldRefuseAHealthKindDeclaredInTheMainStore() throws {
@@ -65,8 +66,7 @@ struct MemoirSchemaTests {
     let weight = WeightRecord(date: try MemoirStoreFixture.date("2026-11-20"), kilograms: try MemoirStoreFixture.decimal("72.4"), loggedAtMillis: 1)
     let quest = QuestRecord(id: MemoirStoreFixture.quest, name: "Run")
     let heartRate = MetricDayRecord<HealthMetric>(
-      metric: MetricID(recordUUID: MemoirStoreFixture.metric), date: try MemoirStoreFixture.date("2026-11-20"), value: try MemoirStoreFixture.decimal("61"), source: .known(.health)
-    )
+      metric: MetricID(recordUUID: MemoirStoreFixture.metric), date: try MemoirStoreFixture.date("2026-11-20"), imported: try MemoirStoreFixture.decimal("61"))
     await #expect(throws: StoreError.self) { try await main.write { transaction in try weight.create(in: &transaction) } }
     await #expect(throws: StoreError.self) { try await activity.write { transaction in try heartRate.create(in: &transaction) } }
     await #expect(throws: StoreError.self) { try await restricted.write { transaction in try quest.create(in: &transaction) } }
@@ -95,6 +95,7 @@ struct MemoirSchemaTests {
       (.metricDay(.health, metric: MemoirStoreFixture.metric, date: date), "n:4c994bfe7b8ecb1821a5dbedbd19b90eaf78c611"),
       (.weight(date), "n:1a3df681100da0e1e630378496b6ba978e3b5e9e"),
       (.accountSettings, "n:e6b97cc7ab9e3c985780d7bba26e604befd06c44"),
+      (.healthSettings, "n:94e1707da641c2bc97d562d091c0a0b68d3834b4"),
     ]
     for (key, pinned) in keys {
       #expect(key.ref.key.rawValue == pinned, "\(key.kind.rawValue) hashes its components differently; never reorder or rename them")

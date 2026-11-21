@@ -234,8 +234,7 @@ public actor SyncEngine {
     guard snapshot.replica == replica else { throw .replicaChanged }
     let partial = recorded.union(try await read { try SyncHeldTable.load($0.database) }.keys.map(\.replica))
     let base = try SyncMoveSealer.seal(
-      snapshot, registry: store.registry, vault: vault, key: key, capabilities: capabilities, partBytes: configuration.basePartBytes, limit: try readerLimit(),
-      partial: partial)
+      snapshot, registry: store.registry, vault: vault, key: key, capabilities: capabilities, configuration: configuration, limit: try readerLimit(), partial: partial)
     let millis = millis
     let parts = base.parts.count
     try await write(as: replica) { transaction in
@@ -265,8 +264,9 @@ public actor SyncEngine {
     let vault = vault
     if try await read({ try SyncMoveNoticeTable.load(vault, in: $0.database)?.requeued != true }) {
       let millis = millis
+      let configuration = configuration
       _ = try await storeCall { () async throws(StoreError) in
-        try await store.requeue(above: notice.frontier, admitting: { policy.admits($0.syncClass) }) { db in
+        try await store.requeue(above: notice.frontier, admitting: { policy.admits($0.syncClass, under: configuration) }) { db in
           try SyncReplicaGuard.require(replica, in: db)
           guard try SyncMoveNoticeTable.load(vault, in: db)?.requeued != true else { throw SyncError.replicaChanged }
           try SyncMoveNoticeTable.markRequeued(vault, at: millis, in: db)
@@ -539,7 +539,15 @@ public actor SyncEngine {
       try await write(as: replica) { try SyncOutbox.clear($0.database) }
       return nil
     }
+    try await refuseUnstorable(inFlight: entry)
     return try await finish(entry)
+  }
+
+  /// A segment sealed while the configuration admitted its classes may resume under one that no longer does, and is then kept, not put.
+  private func refuseUnstorable(inFlight entry: SyncOutboxEntry) async throws(SyncError) {
+    let count = Int(clamping: entry.last - entry.first + 1)
+    let logged = try await storeCall { () async throws(StoreError) in try await store.pendingChanges(limit: count) }
+    try refuseUnstorable(try decode(logged.filter { (entry.first...entry.last).contains($0.sequence) }))
   }
 
   private func finish(_ entry: SyncOutboxEntry) async throws(SyncError) -> StreamPoint {
@@ -679,7 +687,7 @@ public actor SyncEngine {
     let policy = provider.capabilities.classPolicy
     for change in pending {
       let syncClass = store.registry[change.record.entity]?.syncClass
-      guard let syncClass, policy.admits(syncClass) else { throw .syncClassRefused(kind: change.record.entity, syncClass: syncClass) }
+      guard let syncClass, policy.admits(syncClass, under: configuration) else { throw .syncClassRefused(kind: change.record.entity, syncClass: syncClass) }
     }
   }
 

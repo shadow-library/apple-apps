@@ -210,7 +210,7 @@ struct SyncCompactor {
     for line in lines {
       guard let json = try? CanonicalJSON.decode(line), let record = try? ChangeRecord(json: json), admitted.insert(record.entity).inserted else { continue }
       guard let schema = context.store.registry[record.entity] else { continue }
-      guard policy.admits(schema.syncClass) else { throw .syncClassRefused(kind: record.entity, syncClass: schema.syncClass) }
+      guard policy.admits(schema.syncClass, under: context.configuration) else { throw .syncClassRefused(kind: record.entity, syncClass: schema.syncClass) }
     }
   }
 

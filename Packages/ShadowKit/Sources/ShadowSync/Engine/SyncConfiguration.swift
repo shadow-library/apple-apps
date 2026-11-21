@@ -23,6 +23,8 @@ public struct SyncConfiguration: Sendable, Equatable {
   public var adoptionDelay: Duration
   /// How long a base's missing parts or a held file must stay unlisted before an adopter gives up waiting for them; timed on trusted time when the engine has a sample, otherwise on the device clock, which a forward jump cuts short.
   public var adoptionAbandonDelay: Duration
+  /// The owner's opt-in that lets activity-class changes reach an `.iCloud` provider; health class never does (App Store guideline 5.1.3(ii)).
+  public var activityOnICloud: Bool
 
   public init(
     maximumSegmentBytes: Int = 512 * 1024,
@@ -38,7 +40,8 @@ public struct SyncConfiguration: Sendable, Equatable {
     compactionInterval: Duration = .seconds(30 * 24 * 60 * 60),
     basePartBytes: Int = BaseCodec.defaultPartPayloadBytes,
     adoptionDelay: Duration = .seconds(30 * 24 * 60 * 60),
-    adoptionAbandonDelay: Duration? = nil
+    adoptionAbandonDelay: Duration? = nil,
+    activityOnICloud: Bool = false
   ) {
     self.maximumSegmentBytes = maximumSegmentBytes
     self.maximumSegmentLines = maximumSegmentLines
@@ -54,6 +57,7 @@ public struct SyncConfiguration: Sendable, Equatable {
     self.basePartBytes = basePartBytes
     self.adoptionDelay = adoptionDelay
     self.adoptionAbandonDelay = adoptionAbandonDelay ?? adoptionDelay
+    self.activityOnICloud = activityOnICloud
   }
 }
 
@@ -79,10 +83,11 @@ public enum SyncDeviceClock: Sendable, Equatable {
 }
 
 extension StorageClassPolicy {
-  func admits(_ syncClass: SyncClass) -> Bool {
-    switch self {
-    case .unrestricted: true
-    case .iCloud: syncClass == .general
+  func admits(_ syncClass: SyncClass, under configuration: SyncConfiguration) -> Bool {
+    switch (self, syncClass) {
+    case (.unrestricted, _), (.iCloud, .general): true
+    case (.iCloud, .activity): configuration.activityOnICloud
+    case (.iCloud, .health): false
     }
   }
 }

@@ -6,6 +6,14 @@ public enum MemoirStoreKind: String, CaseIterable, Sendable {
   case activity
   case restricted
 
+  public init(holding syncClass: SyncClass) {
+    switch syncClass {
+    case .general: self = .main
+    case .activity: self = .activity
+    case .health: self = .restricted
+    }
+  }
+
   public var syncClass: SyncClass {
     switch self {
     case .main: .general
@@ -28,9 +36,9 @@ public enum MemoirStoreKind: String, CaseIterable, Sendable {
 }
 
 public enum MemoirSchema {
-  public static let mainVersion = 1
-  public static let activityVersion = 1
-  public static let restrictedVersion = 1
+  public static let mainVersion = 2
+  public static let activityVersion = 2
+  public static let restrictedVersion = 2
 
   static let journalRetention = 20
 
@@ -90,6 +98,10 @@ public enum MemoirSchema {
       record(kind, removable(keyed(registers(MetricDayField.self))))
     case .weight:
       record(kind, removable(keyed(registers(WeightField.self))))
+    case .generalQuestThreshold, .activityQuestThreshold, .healthQuestThreshold:
+      record(kind, removable(registers(QuestThresholdField.self)))
+    case .healthSettings:
+      record(kind, keyed(registers(HealthSettingsField.self)))
     }
   }
 

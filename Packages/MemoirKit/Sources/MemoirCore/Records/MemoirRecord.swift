@@ -127,8 +127,18 @@ extension MemoirRecord {
 
   @discardableResult
   public func create(in transaction: inout WriteTransaction) throws(MemoirRecordError) -> [ChangeRecord] {
+    try create(storedMembers, in: &transaction)
+  }
+
+  /// Writes the record without marking it present, so a removal made on a device whose writes have not arrived yet stays in force after the merge.
+  @discardableResult
+  func createKeepingRemoval(in transaction: inout WriteTransaction) throws(MemoirRecordError) -> [ChangeRecord] {
+    try create(members.values.merging(identityMembers) { $1 }, in: &transaction)
+  }
+
+  private func create(_ fields: [String: JSONValue], in transaction: inout WriteTransaction) throws(MemoirRecordError) -> [ChangeRecord] {
     do throws(StoreError) {
-      var changes = [try transaction.set(ref, storedMembers)]
+      var changes = [try transaction.set(ref, fields)]
       if let body { changes.append(try transaction.revise(ref, body: body).record) }
       return changes
     } catch {
