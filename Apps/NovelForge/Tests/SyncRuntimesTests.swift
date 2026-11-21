@@ -21,18 +21,27 @@ struct SyncWorld {
   let wiring: SyncWiring
   let provider: CountingProvider
 
-  init(cloudKit: CloudKitAccess? = nil) throws {
+  /// `storage` shares one storage folder between worlds; `stores` replaces the in-memory keychain of `keychain`.
+  init(
+    cloudKit: CloudKitAccess? = nil, keychain: InMemoryKeychain.Device = InMemoryKeychain().device("mac"), storage: URL? = nil, stores: SyncSecureStores? = nil,
+    s3Transport: StubHTTPTransport? = nil
+  ) throws {
     directory = FileManager.default.temporaryDirectory.appending(path: "NovelForgeSyncTests-\(UUID().uuidString)", directoryHint: .isDirectory)
-    folder = directory.appending(path: "Storage", directoryHint: .isDirectory)
+    folder = storage ?? directory.appending(path: "Storage", directoryHint: .isDirectory)
     let support = directory.appending(path: "Application Support", directoryHint: .isDirectory)
     let paths = SyncPaths(
       applicationSupport: support, bundleIdentifier: "com.shadow.apps.novelforge.tests",
       vaultDirectory: support.appending(path: "com.shadow.apps.novelforge.tests/Vaults/Default", directoryHint: .isDirectory))
-    let keychain = InMemoryKeychain().device("mac")
-    let stores = SyncSecureStores(
-      ring: keychain.store(service: "\(SyncWiring.app).sync", scope: .synced), credentials: keychain.store(service: "\(SyncWiring.app).sync.credentials", scope: .synced),
-      marker: keychain.store(service: "\(SyncWiring.app).sync.device", scope: .device), tokens: keychain.store(service: "\(SyncWiring.app).sync.tokens", scope: .device))
-    wiring = SyncWiring(paths: paths, stores: stores, cloudKit: cloudKit, device: Self.device)
+    let stores =
+      stores
+      ?? SyncSecureStores(
+        ring: keychain.store(service: "\(SyncWiring.app).sync", scope: .synced), credentials: keychain.store(service: "\(SyncWiring.app).sync.credentials", scope: .synced),
+        marker: keychain.store(service: "\(SyncWiring.app).sync.device", scope: .device), tokens: keychain.store(service: "\(SyncWiring.app).sync.tokens", scope: .device))
+    if let s3Transport {
+      wiring = SyncWiring(paths: paths, stores: stores, cloudKit: cloudKit, device: Self.device, s3Transport: s3Transport)
+    } else {
+      wiring = SyncWiring(paths: paths, stores: stores, cloudKit: cloudKit, device: Self.device)
+    }
     provider = try CountingProvider(root: folder)
   }
 

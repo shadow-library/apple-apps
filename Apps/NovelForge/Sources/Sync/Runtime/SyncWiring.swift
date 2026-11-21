@@ -1,6 +1,7 @@
 import Foundation
 import OSLog
 import ShadowCore
+import ShadowNetworking
 import ShadowStore
 import ShadowSync
 import ShadowSyncRuntime
@@ -24,13 +25,18 @@ nonisolated struct SyncWiring: Sendable {
   let cloudKit: CloudKitAccess?
   let device: ReplicaDevice
   let folders: LocalFolderAccess
+  let s3Transport: any HTTPTransport
 
-  init(paths: SyncPaths, stores: SyncSecureStores, cloudKit: CloudKitAccess?, device: ReplicaDevice, folders: LocalFolderAccess = LocalFolderAccess()) {
+  init(
+    paths: SyncPaths, stores: SyncSecureStores, cloudKit: CloudKitAccess?, device: ReplicaDevice, folders: LocalFolderAccess = LocalFolderAccess(),
+    s3Transport: any HTTPTransport = URLSessionTransport()
+  ) {
     self.paths = paths
     self.stores = stores
     self.cloudKit = cloudKit
     self.device = device
     self.folders = folders
+    self.s3Transport = s3Transport
   }
 
   @MainActor
@@ -41,10 +47,14 @@ nonisolated struct SyncWiring: Sendable {
       cloudKit: capabilities.cloudKit.map { CloudKitAccess.live(configuration: $0, paths: paths) }, device: thisDevice())
   }
 
+  func locationStore() throws(SyncLocationError) -> SyncLocationStore {
+    try SyncLocationStore(url: paths.location, outside: [paths.vaultDirectory])
+  }
+
   func environment() throws(SyncLocationError) -> SyncStartupEnvironment {
     let firstUnlock = FirstUnlockProbe(url: paths.firstUnlock)
     return SyncStartupEnvironment(
-      locationStore: try SyncLocationStore(url: paths.location, outside: [paths.vaultDirectory]), stores: stores, automatic: cloudKit.map { .iCloud($0.settings) },
+      locationStore: try locationStore(), stores: stores, automatic: cloudKit.map { .iCloud($0.settings) },
       provider: { settings throws(StorageError) in try provider(for: settings) }, account: { settings in await account(for: settings) },
       hasUnlockedSinceBoot: { firstUnlock.hasUnlockedSinceBoot() })
   }
@@ -63,7 +73,9 @@ nonisolated struct SyncWiring: Sendable {
       guard let cloudKit else { throw .unavailable("This build of Novel Forge cannot sync with iCloud.") }
       return try cloudKit.provider(for: iCloud)
     case .localFolder(let folder):
-      return try LocalFolderProvider(root: try folders.root(for: folder))
+      let resolved = try folders.resolve(folder)
+      if let refreshed = resolved.refreshed { saveRefreshedBookmark(refreshed, replacing: folder) }
+      return try LocalFolderProvider(root: resolved.url)
     case .s3(let s3):
       return try s3Provider(s3)
     case .oneDrive, .googleDrive:
@@ -94,7 +106,24 @@ nonisolated struct SyncWiring: Sendable {
       throw .unavailable(error.localizedDescription)
     }
     guard let credentials else { throw .unauthenticated }
-    return S3StorageProvider(configuration: configuration, credentials: credentials)
+    return s3Provider(configuration, credentials: credentials)
+  }
+
+  func s3Provider(_ configuration: S3Configuration, credentials: S3Credentials) -> S3StorageProvider {
+    S3StorageProvider(configuration: configuration, credentials: credentials, transport: s3Transport)
+  }
+
+  /// Only over the attached location that still names `folder`, and never while a move is recorded: a move compares the saved location with its target.
+  private func saveRefreshedBookmark(_ refreshed: SyncLocalFolderSettings, replacing folder: SyncLocalFolderSettings) {
+    do {
+      let store = try locationStore()
+      guard case .attached(let location) = try store.load(), location.settings == .localFolder(folder) else { return }
+      guard try SyncMoveJournalStore(beside: store).load() == nil else { return }
+      try store.save(SyncLocation(settings: .localFolder(refreshed), vault: location.vault, account: location.account))
+      Self.logger.info("Renewed the sync folder's stale bookmark")
+    } catch {
+      Self.logger.warning("The sync folder's renewed bookmark was not saved code=\((error as? any ShadowError)?.code ?? "unknown", privacy: .public)")
+    }
   }
 
   @MainActor

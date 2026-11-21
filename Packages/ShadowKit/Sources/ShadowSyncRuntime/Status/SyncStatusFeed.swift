@@ -1,7 +1,9 @@
 import Foundation
 import Synchronization
 
-/// Hands every subscriber the current status first and then each change, in order.
+/// Hands every subscriber the current status first and then each change, in order. A continuation is never resumed under the lock: cancelling a waiting
+/// subscriber holds its task's status lock while `onTermination` takes this one, and resuming that subscriber takes the two in the other order.
+/// Publishing outside the lock keeps the order because only the runtime's actor publishes.
 final class SyncStatusFeed: Sendable {
   private struct State {
     var current: SyncStatus
@@ -19,11 +21,12 @@ final class SyncStatusFeed: Sendable {
   var current: SyncStatus { state.withLock { $0.current } }
 
   func publish(_ status: SyncStatus) {
-    state.withLock { state in
-      guard !state.isFinished, state.current != status else { return }
+    let subscribers = state.withLock { state -> [AsyncStream<SyncStatus>.Continuation] in
+      guard !state.isFinished, state.current != status else { return [] }
       state.current = status
-      for subscriber in state.subscribers.values { subscriber.yield(status) }
+      return Array(state.subscribers.values)
     }
+    for subscriber in subscribers { subscriber.yield(status) }
   }
 
   func stream() -> AsyncStream<SyncStatus> {

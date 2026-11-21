@@ -47,6 +47,7 @@ private struct SyncStatusDetail: View {
       if let code = indicator.code {
         Text(verbatim: code).shadowFont(.caption).foregroundStyle(ShadowColor.textTertiary).textSelection(.enabled)
       }
+      SyncSettingsButton().buttonStyle(.shadowPlain)
     }
     .fixedSize(horizontal: false, vertical: true)
     .frame(idealWidth: 300, maxWidth: 360, alignment: .leading)

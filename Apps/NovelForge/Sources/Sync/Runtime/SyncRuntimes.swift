@@ -22,7 +22,9 @@ final class SyncRuntimes {
   private(set) var status = SyncStatus.off
   /// The names of the replicas the status lists, read from the vault's replica directory when it lists any.
   private(set) var deviceNames: [ReplicaID: String] = [:]
-  @ObservationIgnored private(set) var runtime: SyncRuntime?
+  private(set) var runtime: SyncRuntime?
+  /// What the sync settings read and connect through; nil when nothing syncs.
+  @ObservationIgnored let wiring: SyncWiring?
   @ObservationIgnored private let factory: Factory?
   @ObservationIgnored private let background: SyncBackgroundWork.Runner
   @ObservationIgnored private let activationInterval: Duration
@@ -33,8 +35,12 @@ final class SyncRuntimes {
   @ObservationIgnored private var lastForeground: ContinuousClock.Instant?
 
   /// A nil factory syncs nothing, as while XCTest hosts the app.
-  init(factory: Factory?, background: @escaping SyncBackgroundWork.Runner = SyncBackgroundWork.system, activationInterval: Duration = SyncRuntimes.activationInterval) {
+  init(
+    factory: Factory?, wiring: SyncWiring? = nil, background: @escaping SyncBackgroundWork.Runner = SyncBackgroundWork.system,
+    activationInterval: Duration = SyncRuntimes.activationInterval
+  ) {
     self.factory = factory
+    self.wiring = wiring
     self.background = background
     self.activationInterval = activationInterval
   }
@@ -48,14 +54,15 @@ final class SyncRuntimes {
       logger.error("Sync is off: its files have no place code=\(error.code, privacy: .public)")
       return SyncRuntimes(factory: nil)
     }
-    return SyncRuntimes { store, trustedClock in
-      do throws(SyncLocationError) {
-        return try wiring.runtime(store: store, trustedClock: trustedClock)
-      } catch {
-        logger.error("Sync is off: its location file cannot be used code=\(error.code, privacy: .public)")
-        return nil
-      }
-    }
+    return SyncRuntimes(
+      factory: { store, trustedClock in
+        do throws(SyncLocationError) {
+          return try wiring.runtime(store: store, trustedClock: trustedClock)
+        } catch {
+          logger.error("Sync is off: its location file cannot be used code=\(error.code, privacy: .public)")
+          return nil
+        }
+      }, wiring: wiring)
   }
 
   /// Once per vault; a call for the vault being launched waits for that launch, and nil shuts the current runtime down.

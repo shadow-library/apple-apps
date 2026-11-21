@@ -15,6 +15,7 @@ struct NovelForgeApp: App {
   @State private var chats = ChatRuntimes()
   @State private var jobs = JobRuntimes()
   @State private var retrieval = RetrievalRuntimes()
+  @State private var settingsTabs = SettingsTabs()
 
   private var vault: VaultModel { delegate.vault }
   private var sync: SyncRuntimes { delegate.sync }
@@ -26,6 +27,7 @@ struct NovelForgeApp: App {
         .environment(chats)
         .environment(jobs)
         .environment(sync)
+        .environment(settingsTabs)
         .task { await ai.loadOpenRouterModelsIfKeyed() }
         .task(id: vault.store.map(ObjectIdentifier.init)) { await chats.launch(vault.store, services: ai) }
         .task(id: vault.store.map(ObjectIdentifier.init)) { await jobs.launch(vault.store, services: ai) }
@@ -43,7 +45,7 @@ struct NovelForgeApp: App {
     }
     .commands { NovelForgeCommands() }
     #if os(macOS)
-      Settings { AISettingsScene(vault: vault, services: ai) }
+      Settings { NovelForgeSettingsScene(vault: vault, services: ai, sync: sync, tabs: settingsTabs) }
     #endif
   }
 }

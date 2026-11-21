@@ -149,6 +149,19 @@ public actor SyncStartup {
     return try await bind(SyncLocation(settings: settings, vault: vault, account: binding))
   }
 
+  /// False only when the keychain refuses this build (`errSecMissingEntitlement`), so nothing can be created or joined; a locked device answers true, since
+  /// attaching reports that itself.
+  public func keychainUsable() async -> Bool {
+    await acquire()
+    defer { release() }
+    do throws(SyncStartupError) {
+      try probeKeychain()
+    } catch {
+      return error != .keychainUnavailable
+    }
+    return true
+  }
+
   /// Turns sync off: forgets the location and keeps the automatic provider from attaching again. The vault's files and keys stay where they are.
   public func detach() async throws(SyncStartupError) {
     await acquire()

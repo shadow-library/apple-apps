@@ -168,6 +168,11 @@ public actor SyncRuntime {
     publish()
   }
 
+  /// Whether sync can keep keys in this build at all; see `SyncStartup.keychainUsable()`. Asked before turning sync on, while nothing is attached.
+  public func keychainUsable() async -> Bool {
+    await startup.keychainUsable()
+  }
+
   /// The key services of the attached vault, which also work while the phase is awaiting a key. Waits for the run in flight when no evaluation has
   /// answered yet; throws `unavailable` for a phase that holds no attachment, and `notAttached` before the first evaluation.
   public func keyServices() async throws(SyncStartupError) -> SyncKeyAccess {

@@ -292,6 +292,20 @@ struct SyncRuntimeKeysTests {
     await #expect(throws: SyncStartupError.unavailable(.keychainUnavailable)) { try await harness.runtime.keyServices() }
   }
 
+  @Test("should tell a keychain that refuses this build before anything is attached, and touch no storage")
+  func keychainUsableBeforeAttaching() async throws {
+    let provider = InMemoryStorageProvider()
+    let refused = try RuntimeHarness(InMemoryKeychain().device("tablet"), provider: provider, stores: MissingEntitlementSecureStore.stores())
+    defer { Task { await refused.runtime.shutdown() } }
+    let healthy = try RuntimeHarness(InMemoryKeychain().device("phone"), provider: provider)
+    defer { Task { await healthy.runtime.shutdown() } }
+    let before = provider.callCounts
+
+    #expect(await !refused.runtime.keychainUsable())
+    #expect(await healthy.runtime.keychainUsable())
+    #expect(provider.callCounts == before)
+  }
+
   @Test("should report that sync needs a signed build, not a missing key, when a team-less build first meets a vault")
   func keychainRefusesFirstJoin() async throws {
     let keychain = InMemoryKeychain()
