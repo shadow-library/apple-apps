@@ -25,6 +25,10 @@ public enum MemoirKind: String, CaseIterable, Sendable {
   case activityQuestThreshold = "mm_quest_threshold_activity"
   case healthQuestThreshold = "mm_quest_threshold_health"
   case healthSettings = "mm_health_settings"
+  case insightSchedule = "mm_insight_schedule"
+  case generalInsight = "mm_insight_general"
+  case activityInsight = "mm_insight_activity"
+  case healthInsight = "mm_insight_health"
 
   public static func metric(_ syncClass: SyncClass) -> MemoirKind {
     switch syncClass {
@@ -50,12 +54,20 @@ public enum MemoirKind: String, CaseIterable, Sendable {
     }
   }
 
+  public static func insight(_ syncClass: SyncClass) -> MemoirKind {
+    switch syncClass {
+    case .general: .generalInsight
+    case .activity: .activityInsight
+    case .health: .healthInsight
+    }
+  }
+
   public var syncClass: SyncClass {
     switch self {
-    case .activityMetric, .activityMetricDay, .activityQuestThreshold: .activity
-    case .healthMetric, .healthMetricDay, .weight, .healthQuestThreshold: .health
+    case .activityMetric, .activityMetricDay, .activityQuestThreshold, .activityInsight: .activity
+    case .healthMetric, .healthMetricDay, .weight, .healthQuestThreshold, .healthInsight: .health
     case .command, .commandNote, .quest, .journalEntry, .meal, .mealPreset, .sideQuest, .expense, .expenseCategory, .subscription, .receipt, .fxRate, .accountSettings,
-      .generalMetric, .generalMetricDay, .generalQuestThreshold, .healthSettings:
+      .generalMetric, .generalMetricDay, .generalQuestThreshold, .healthSettings, .insightSchedule, .generalInsight:
       .general
     }
   }

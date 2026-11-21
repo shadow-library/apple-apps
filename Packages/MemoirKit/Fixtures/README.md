@@ -83,3 +83,15 @@ PLATFORM_REPO=<path to the platform checkout> bun Packages/MemoirKit/Fixtures/re
 - Scenarios cover the literal cases of `tests/quests/day-stamp.spec.ts`, `compassion-commands.service.spec.ts`, `lock-capacity.spec.ts`, `reschedule-window.spec.ts` and `tests/quick-logs/quick-log-day.spec.ts`, then flows through bands, streaks and shields, Comeback fire and re-fire after a Recovery, the lock bonus and its break, first-terminal convergence and yielding misses, log reasons and the edit window, every occurrence refusal, cosmetics and overspend, achievements and level-ups, quick-log rewards, a metric's soft delete, a compassion command that arrives after the open day passed it, and a non-UTC offset.
 - `scenarios.json` holds one scenario per line with `expected.steps` and `expected.state`: the hero totals and trail (ledger keys naming the occurrence or day instead of the reference's serial ids), logs, reschedules, streaks, shield uses, counters, achievements, titles, cosmetics, days (lock, Comeback, open-day Crown), Comeback events, Recovery quests, metrics and quick-log rewards.
 - `tests/commands/hero-ledger.service.spec.ts` drives the ledger with intents no single command produces (several spends in one grant, a jump of three levels); `ReplayTests` checks those literal cases against `HeroLedger` directly.
+
+## guardrails
+
+```sh
+PLATFORM_REPO=<path to the platform checkout> bun Packages/MemoirKit/Fixtures/guardrails/generate.ts
+```
+
+- Imports `src/modules/ai-worker/guardrails.ts` and `prompt-contract.ts`, with `@server/classes` (`AppErrorCode`), `@modules/inference` and `@server/database` mocked; the guardrails and the prompt are real.
+- `guardrails.json`: `applyGuardrails` over every literal input of `tests/ai/guardrails.spec.ts` (`spec`), then 1,500 seeded drafts (`seeded`) drawn with the rules' LCG from phrase pools on, inside and just outside every pattern, quotes of the seeded sources with case, punctuation and accent changes, and the Unicode a JavaScript regex treats specially (Kelvin sign, dotted and dotless i, long s, fullwidth letters, NBSP, U+2028, zero-width joiners, astral characters). Each draft is first passed through `parseDraft`, as the executor does, so suggestions with missing, numeric, null or array members reach the guardrails as they would. The output is the reference's outcome as `JSON.stringify` writes it, compared by its JSON text.
+- `quotes.json`: `findVerbatimQuote` over the spec's literal, probes at the shingle edges and through the normalisation, and 400 seeded outputs built from whole short sources, seven-to-nine-word stretches of long ones (re-cased, re-punctuated, wrapped, or with a word or an accent changed) and random fragments; the reference finds a quote in 231 of them, and in 247 of all the cases.
+- `parse.json`: `parseDraft(JSON.parse(raw))` for every seeded reply and literal edge cases (duplicate keys, wrong member types, non-objects), as the draft or `{"error": "AI_009"}`.
+- `prompts.json` and `contract.json`: `buildPrompt` over two contexts (Unicode, control characters, decimals) and the reference's allowed kinds, crisis answer and system prompt.

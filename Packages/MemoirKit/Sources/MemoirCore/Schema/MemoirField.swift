@@ -179,3 +179,30 @@ public enum WeightField: String, MemoirField {
   case kilograms
   case loggedAtMillis = "logged_at_millis"
 }
+
+public enum InsightScheduleField: String, MemoirField {
+  case question
+  case active
+  case minuteOfDay = "minute_of_day"
+  case setOn = "set_on"
+  case setAtMinute = "set_at_minute"
+}
+
+public enum InsightField: String, MemoirField {
+  case job
+  case question
+  case answer
+  case patterns
+  case suggestions
+  case limitationNote = "limitation_note"
+  case citations
+  case model
+  case promptVersion = "prompt_version"
+  case createdMillis = "created_millis"
+}
+
+public enum InsightSuggestionMember: String, MemoirField {
+  case kind
+  case quest
+  case text
+}

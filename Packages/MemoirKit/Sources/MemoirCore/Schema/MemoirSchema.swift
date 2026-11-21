@@ -1,3 +1,5 @@
+import ShadowAI
+import ShadowJobs
 import ShadowStore
 import ShadowSync
 
@@ -36,15 +38,16 @@ public enum MemoirStoreKind: String, CaseIterable, Sendable {
 }
 
 public enum MemoirSchema {
-  public static let mainVersion = 2
-  public static let activityVersion = 2
-  public static let restrictedVersion = 2
+  public static let mainVersion = 3
+  public static let activityVersion = 3
+  public static let restrictedVersion = 3
 
   static let journalRetention = 20
 
   public static let entities: [EntitySchema] = MemoirKind.allCases.map(schema(of:))
 
-  public static let mainRegistry = SyncKernelSchema.registry(version: mainVersion, adding: entities(of: .main))
+  /// The main store also holds the model-call ledger, AI consent and jobs, so insights route, ledger and run where their consent is kept.
+  public static let mainRegistry = SyncKernelSchema.registry(version: mainVersion, adding: entities(of: .main) + LedgerSchema.entities + JobSchema.entities)
   public static let activityRegistry = SyncKernelSchema.registry(version: activityVersion, adding: entities(of: .activity))
   public static let restrictedRegistry = SyncKernelSchema.registry(version: restrictedVersion, adding: entities(of: .restricted))
 
@@ -102,6 +105,10 @@ public enum MemoirSchema {
       record(kind, removable(registers(QuestThresholdField.self)))
     case .healthSettings:
       record(kind, keyed(registers(HealthSettingsField.self)))
+    case .insightSchedule:
+      record(kind, keyed(registers(InsightScheduleField.self)))
+    case .generalInsight, .activityInsight, .healthInsight:
+      record(kind, removable(registers(InsightField.self, firstWriter: Array(InsightField.allCases))))
     }
   }
 

@@ -34,4 +34,15 @@ struct TaskRouterConsentTests {
     let unbound = RoutingFixture.router(store: store, clock: clock)
     #expect(try await unbound.missingConsent(consent) == nil)
   }
+
+  @Test func shouldReportTheSpendCapACallWouldMeetWithoutSendingAnything() async throws {
+    let clock = LedgerTestClock()
+    let store = try LedgerFixture.store(clock)
+    let provider = ScriptedModelProvider()
+    let open = RoutingFixture.router(anthropic: provider, store: store, clock: clock)
+    #expect(try await open.spendDecision() == .allowed)
+    let capped = RoutingFixture.router(RoutingFixture.configuration(limits: SpendLimits(daily: Cost(nanoUSD: 0))), anthropic: provider, store: store, clock: clock)
+    #expect(try await capped.spendDecision() == .dailyLimitReached(spent: .zero, limit: Cost(nanoUSD: 0)))
+    #expect(provider.requests.isEmpty)
+  }
 }

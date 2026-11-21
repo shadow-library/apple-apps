@@ -1,5 +1,7 @@
 import Foundation
+import ShadowAI
 import ShadowCore
+import ShadowJobs
 import ShadowStore
 import ShadowSync
 import Testing
@@ -11,6 +13,7 @@ struct MemoirSchemaTests {
   private static let frozen: [(store: MemoirStoreKind, path: String, version: Int)] = [
     (.main, "schema/registry-v1.json", 1), (.activity, "schema/activity-registry-v1.json", 1), (.restricted, "schema/restricted-registry-v1.json", 1),
     (.main, "schema/registry-v2.json", 2), (.activity, "schema/activity-registry-v2.json", 2), (.restricted, "schema/restricted-registry-v2.json", 2),
+    (.main, "schema/registry-v3.json", 3), (.activity, "schema/activity-registry-v3.json", 3), (.restricted, "schema/restricted-registry-v3.json", 3),
   ]
 
   @Test func shouldMatchTheFrozenRegistryDescriptions() throws {
@@ -42,8 +45,11 @@ struct MemoirSchemaTests {
     }
     let mainClasses = Set(MemoirSchema.entities(of: .main).map(\.syncClass))
     #expect(mainClasses == [.general])
-    #expect(MemoirStoreKind.restricted.kinds == [.healthMetric, .healthMetricDay, .weight, .healthQuestThreshold])
-    #expect(MemoirStoreKind.activity.kinds == [.activityMetric, .activityMetricDay, .activityQuestThreshold])
+    #expect(MemoirStoreKind.restricted.kinds == [.healthMetric, .healthMetricDay, .weight, .healthQuestThreshold, .healthInsight])
+    #expect(MemoirStoreKind.activity.kinds == [.activityMetric, .activityMetricDay, .activityQuestThreshold, .activityInsight])
+    for kind in LedgerSchema.entities.map(\.kind) + JobSchema.entities.map(\.kind) {
+      #expect(MemoirStoreKind.allCases.filter { $0.registry[kind] != nil } == [.main], "\(kind.rawValue) belongs in the main store only")
+    }
   }
 
   @Test func shouldRefuseAHealthKindDeclaredInTheMainStore() throws {
@@ -96,6 +102,7 @@ struct MemoirSchemaTests {
       (.weight(date), "n:1a3df681100da0e1e630378496b6ba978e3b5e9e"),
       (.accountSettings, "n:e6b97cc7ab9e3c985780d7bba26e604befd06c44"),
       (.healthSettings, "n:94e1707da641c2bc97d562d091c0a0b68d3834b4"),
+      (.insightSchedule, "n:eb5f029bb4f0ee614ad24c6b7296743dfe1dd778"),
     ]
     for (key, pinned) in keys {
       #expect(key.ref.key.rawValue == pinned, "\(key.kind.rawValue) hashes its components differently; never reorder or rename them")

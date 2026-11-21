@@ -110,6 +110,19 @@ public struct TaskRouter: Sendable {
     return granted ? nil : AIConsentRequest(provider: provider, host: host, dataClass: consent.dataClass, disclosure: consent.disclosure)
   }
 
+  /// The spend cap a call would meet now, read as `prepare` reads it, so work that has to call can wait before it starts.
+  public func spendDecision() async throws(TaskRouterError) -> SpendDecision {
+    let (now, calendar, limits) = (now(), calendar, configuration.spendLimits)
+    let summary: SpendSummary?
+    do {
+      summary = try await store.read { transaction in try Spend.summary(in: transaction, now: now, calendar: calendar) }
+    } catch {
+      throw .ledger(error)
+    }
+    guard let summary else { throw .spendUnavailable }
+    return Spend.decision(for: summary, limits: limits)
+  }
+
   private func binding(for provider: ModelProviderKind) -> ProviderBinding? {
     switch provider {
     case .anthropic: anthropic
