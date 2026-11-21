@@ -5,7 +5,28 @@ import Synchronization
 
 public typealias ModelCallBeginHook = @Sendable (_ call: UUID, _ transaction: inout WriteTransaction) throws -> Void
 
+public typealias ModelOutputObserver = @Sendable (ModelOutputEvent) -> Void
+
+/// What a ledgered stream reports about its output, per attempt: `started`, then `delta`s, then one `finished`. A retried attempt finishes as `.failed` and a new
+/// `started` follows under the same `call`, so a consumer keeping a monotone total sums finished attempts and takes the maximum with the live one.
+public enum ModelOutputEvent: Sendable, Equatable {
+  case started(call: UUID, maxOutputTokens: Int)
+  /// An estimate of ceil(UTF-8 bytes / 4), at least one for a non-empty delta, which undercounts non-Latin text so progress never runs ahead of the reply.
+  case delta(call: UUID, estimatedTokens: Int)
+  /// `outputTokens` is the provider's reported usage when `outcome` is `.completed` and it arrived, otherwise the running estimate.
+  case finished(call: UUID, outputTokens: Int, outcome: ModelOutputOutcome)
+}
+
+public enum ModelOutputOutcome: Sendable, Equatable {
+  case completed
+  case failed
+  case cancelled
+}
+
 public enum ModelCallHooks {
+  /// Seen by every stream the task creates, repair re-asks and retried attempts included; unset, a stream does no extra work.
+  @TaskLocal public static var output: ModelOutputObserver?
+
   /// Runs inside the write that begins each ledger call, for every stream the task opens (repair retries included), before anything is sent: a throw rolls
   /// that write back and ends the stream unsent with `ModelError.notRecorded`.
   @TaskLocal public static var begin: ModelCallBeginHook?
@@ -59,6 +80,38 @@ final class CallJournal: Sendable {
 
   func recorded(_ entries: [ModelCallEntry]) {
     state.withLock { $0.entries += entries }
+  }
+}
+
+struct OutputProgress {
+  let observer: ModelOutputObserver?
+  let call: UUID
+  private var tokens = 0
+  private var isOpen = false
+
+  init(_ observer: ModelOutputObserver?, call: UUID) {
+    self.observer = observer
+    self.call = call
+  }
+
+  mutating func begin(maxOutputTokens: Int) {
+    guard let observer else { return }
+    tokens = 0
+    isOpen = true
+    observer(.started(call: call, maxOutputTokens: maxOutputTokens))
+  }
+
+  mutating func add(_ text: String) {
+    guard let observer, isOpen, !text.isEmpty else { return }
+    let estimate = (text.utf8.count + 3) / 4
+    tokens += estimate
+    observer(.delta(call: call, estimatedTokens: estimate))
+  }
+
+  mutating func end(_ outcome: ModelOutputOutcome, reported: Int? = nil) {
+    guard let observer, isOpen else { return }
+    isOpen = false
+    observer(.finished(call: call, outputTokens: reported ?? tokens, outcome: outcome))
   }
 }
 
@@ -133,6 +186,7 @@ struct LedgeredProvider: ModelProvider {
   func stream(_ request: ModelRequest) -> ModelStream {
     let journals = [ledger.journal] + (CallJournal.collector.map { [$0] } ?? [])
     let hook = ModelCallHooks.begin
+    let observer = ModelCallHooks.output
     let opened: @Sendable () -> Void = { for journal in journals { journal.opened() } }
     return ModelStream(onStart: opened) { continuation throws(ModelError) in
       defer { for journal in journals { journal.closed() } }
@@ -148,15 +202,29 @@ struct LedgeredProvider: ModelProvider {
       for journal in journals.dropFirst() { journal.began(call.id) }
       var events: [ModelEvent] = []
       var isIdentified = false
+      var progress = OutputProgress(observer, call: call.id)
+      progress.begin(maxOutputTokens: request.maxOutputTokens)
       do throws(ModelError) {
         for try await event in base.stream(request) {
           Self.append(event, to: &events)
+          switch event {
+          case .textDelta(let text):
+            progress.add(text)
+          case .retrying:
+            progress.end(.failed)
+            progress.begin(maxOutputTokens: request.maxOutputTokens)
+          case .finished(let usage, _, _):
+            progress.end(.completed, reported: usage.output > 0 ? usage.output : nil)
+          case .started:
+            break
+          }
           try continuation.yield(event)
           guard !isIdentified, case .started(let requestID, let generationID) = event, requestID != nil || generationID != nil else { continue }
           isIdentified = true
           await ledger.identify(call, requestID: requestID, generationID: generationID)
         }
       } catch {
+        progress.end(error == .cancelled || Task.isCancelled ? .cancelled : .failed)
         let hasFinished = events.contains { if case .finished = $0 { true } else { false } }
         guard hasFinished || (error != .cancelled && !Task.isCancelled) else {
           TaskRouter.logger.notice("A call was cancelled before it finished; its cost stays pending call=\(call.id.uuidString, privacy: .public)")
@@ -166,6 +234,7 @@ struct LedgeredProvider: ModelProvider {
         await ledger.finish(call, events: events, endedWith: error)
         throw error
       }
+      progress.end(.failed)
       await ledger.finish(call, events: events, endedWith: nil)
     }
   }
