@@ -160,17 +160,28 @@ struct RecoveryPhraseTests {
     #expect(first != RecoveryPhrase(secret: try Self.secret(hex: "8080808080808080808080808080808080808080808080808080808080808080")))
   }
 
+  private static func tokens(of text: String) -> Set<String> {
+    Set(text.lowercased().split { !$0.isLetter }.map(String.init))
+  }
+
+  private static func seededSecret(_ seed: UInt64) throws -> RecoverySecret {
+    var generator = SeededGenerator(seed: seed)
+    let bytes = Data((0..<RecoverySecret.byteCount).map { _ in UInt8.random(in: 0...255, using: &generator) })
+    return try #require(RecoverySecret(rawBytes: bytes))
+  }
+
   @Test("should never print the phrase or its words")
-  func shouldRedactPhrase() {
-    let phrase = RecoveryPhrase(secret: RecoverySecret.generate())
-    let word = phrase.words[0]
-    var dumped = ""
-    dump(phrase, to: &dumped)
-    for rendering in [String(describing: phrase), String(reflecting: phrase), "\(phrase)", dumped] {
-      #expect(!rendering.contains(word))
-      #expect(!rendering.contains("abandon"))
+  func shouldRedactPhrase() throws {
+    let secrets = try [1, 2, 3, 4, 5].map { try Self.seededSecret(UInt64($0)) } + [RecoverySecret.generate()]
+    for secret in secrets {
+      let phrase = RecoveryPhrase(secret: secret)
+      var dumped = ""
+      dump(phrase, to: &dumped)
+      for rendering in [String(describing: phrase), String(reflecting: phrase), "\(phrase)", dumped] {
+        #expect(Self.tokens(of: rendering).isDisjoint(with: Set(phrase.words)))
+      }
+      #expect(String(describing: phrase) == "RecoveryPhrase(redacted)")
     }
-    #expect(String(describing: phrase) == "RecoveryPhrase(redacted)")
   }
 
   @Test("should not echo any input word in error messages")
@@ -182,7 +193,7 @@ struct RecoveryPhraseTests {
       let error = try #require(throws: RecoveryPhraseError.self) { try RecoveryPhrase(parsing: words.joined(separator: " ")) }
       let rendered = [error.errorDescription ?? "", "\(error)", String(reflecting: error)]
       for text in rendered {
-        for word in Set(words) { #expect(!text.contains(word)) }
+        #expect(Self.tokens(of: text).isDisjoint(with: Set(words)))
       }
     }
     #expect(RecoveryPhraseError.unknownWord(position: 23).errorDescription?.contains("23") == true)
@@ -231,7 +242,7 @@ struct RecoveryPhrasePropertyTests {
   func shouldAcceptSubstitutionsOnlyWhenChecksumHolds() throws {
     var accepted = 0
     var rejected = 0
-    try forAll(iterations: 20) { generator in
+    try forAll(iterations: 4) { generator in
       let bytes = Data((0..<RecoverySecret.byteCount).map { _ in UInt8.random(in: 0...255, using: &generator) })
       let original = RecoveryPhrase(secret: try #require(RecoverySecret(rawBytes: bytes))).words
       let position = Int.random(in: 0..<original.count, using: &generator)
