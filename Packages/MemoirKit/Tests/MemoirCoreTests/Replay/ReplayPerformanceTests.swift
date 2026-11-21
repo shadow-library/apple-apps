@@ -6,11 +6,10 @@ import Testing
 
 @Suite("Memoir replay performance", TestTimeLimit.standard)
 struct ReplayPerformanceTests {
-  private static let questCount = 50
-  private static let dayCount = 400
+  private static let questCount = 30
 
-  /// Fifty daily quests over 400 days, each occurrence completed, skipped or rescheduled: a long life of commands.
-  private static func commands() throws -> [ReplayCommand] {
+  /// Thirty daily quests, each occurrence completed, skipped or rescheduled, with the walk closing every day.
+  private static func commands(days dayCount: Int) throws -> [ReplayCommand] {
     let start = try MemoirStoreFixture.date("2025-01-01")
     let recurrence = try RecurrenceRule(frequency: .daily, startDate: start)
     let quests = (0..<questCount).map { MemoirStoreFixture.uuid(String(format: "0190f3a0-0000-7000-8000-0000000d%04x", $0)) }
@@ -41,15 +40,33 @@ struct ReplayPerformanceTests {
     }
   }
 
-  @Test func shouldReplayTwentyThousandCommandsInLinearTime() throws {
-    let commands = try Self.commands()
-    #expect(commands.count >= 20_000)
+  /// The best of two runs, so one slow run on a busy machine does not decide the ratio.
+  private static func fastest(_ commands: [ReplayCommand]) -> (state: ReplayState, elapsed: Duration) {
     let clock = ContinuousClock()
-    let started = clock.now
-    let state = Replay.run(commands)
-    let elapsed = clock.now - started
-    #expect(state.outcomes.count == commands.count)
-    #expect(state.logs.count == Self.questCount * Self.dayCount)
-    #expect(elapsed < .seconds(60), "replay took \(elapsed)")
+    var best: (state: ReplayState, elapsed: Duration)?
+    for _ in 0..<2 {
+      let started = clock.now
+      let state = Replay.run(commands)
+      let elapsed = clock.now - started
+      if best.map({ elapsed < $0.elapsed }) ?? true { best = (state, elapsed) }
+    }
+    return best ?? (Replay.run(commands), .zero)
+  }
+
+  @Test func shouldReplayAndWalkInTimeLinearInTheDaysOfHistory() throws {
+    let half = try Self.commands(days: 200)
+    let full = try Self.commands(days: 400)
+    #expect(full.count >= 12_000)
+    let short = Self.fastest(half)
+    let long = Self.fastest(full)
+    let state = long.state
+    #expect(state.outcomes.count == full.count)
+    #expect(state.logs.count == Self.questCount * 400)
+    #expect(state.days.values.count(where: \.isClosed) == 399)
+    #expect(state.logs.all.allSatisfy { $0.value.state != .missed }, "every occurrence has its own outcome before its day closes")
+    let ratio = Double(long.elapsed.components.seconds) + Double(long.elapsed.components.attoseconds) / 1e18
+    let base = Double(short.elapsed.components.seconds) + Double(short.elapsed.components.attoseconds) / 1e18
+    #expect(ratio / base < 3, "twice the history took \(long.elapsed) against \(short.elapsed)")
+    #expect(long.elapsed < .seconds(300), "a backstop well inside the standard tier: \(long.elapsed)")
   }
 }

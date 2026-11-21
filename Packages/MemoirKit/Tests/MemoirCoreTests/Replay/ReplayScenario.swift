@@ -16,6 +16,7 @@ struct ReplayScenario: Decodable {
     let type: String
     let occurrence: OccurrenceName?
     let payload: JSONValue?
+    let offsetMinutes: Int?
   }
 
   struct StepOutcome: Decodable, Equatable, CustomStringConvertible {
@@ -36,6 +37,7 @@ struct ReplayScenario: Decodable {
   let id: String
   let source: String
   let offsetMinutes: Int
+  let walk: Bool?
   let steps: [Step]
   let expected: Expected
 
@@ -150,7 +152,25 @@ struct ReplaySnapshot: Decodable, Equatable {
       let periodStart: String
     }
 
+    struct HP: Decodable, Equatable {
+      let start: Int
+      let end: Int
+      let max: Int
+    }
+
+    struct Banked: Decodable, Equatable {
+      let xp: Int
+      let coins: Int
+    }
+
     let date: String
+    let closed: Bool
+    let intensityMode: String
+    let hp: HP?
+    let missedCount: Int
+    let momentum: String
+    let returnerFired: Bool
+    let banked: Banked?
     let lock: Lock?
     let comeback: Comeback
     let crown: Crown
@@ -166,6 +186,17 @@ struct ReplaySnapshot: Decodable, Equatable {
   struct Recovery: Decodable, Equatable {
     let date: String
     let state: String
+    let sourceQuest: String?
+    let triggers: [String]
+    let isReturnerDay: Bool
+  }
+
+  struct ReturnerEvent: Decodable, Equatable {
+    let date: String
+    let lastActiveDate: String
+    let daysAbsent: Int
+    let shieldTarget: String?
+    let shieldPending: Bool
   }
 
   struct Metric: Decodable, Equatable {
@@ -190,9 +221,12 @@ struct ReplaySnapshot: Decodable, Equatable {
   let cosmetics: [Cosmetic]
   let displayedTitle: String?
   let pendingReturnerShields: Int
+  let openDay: String?
+  let lastActiveDate: String?
   let days: [Day]
   let comebackEvents: [ComebackEvent]
   let recoveries: [Recovery]
+  let returnerEvents: [ReturnerEvent]
   let metrics: [Metric]
   let quickLogs: [QuickLog]
 
@@ -201,13 +235,15 @@ struct ReplaySnapshot: Decodable, Equatable {
       hero: hero, events: events, logs: logs.sorted { ($0.quest, $0.date) < ($1.quest, $1.date) },
       reschedules: reschedules.sorted { ($0.quest, $0.date) < ($1.quest, $1.date) }, streaks: streaks.sorted { $0.quest < $1.quest },
       shieldConsumptions: shieldConsumptions.sorted(), counters: counters, achievements: achievements.sorted(), titles: titles.sorted(),
-      cosmetics: cosmetics.sorted { $0.id < $1.id }, displayedTitle: displayedTitle, pendingReturnerShields: pendingReturnerShields,
-      days: days.sorted { $0.date < $1.date }, comebackEvents: comebackEvents.sorted { ($0.date, $0.kind) < ($1.date, $1.kind) },
-      recoveries: recoveries.sorted { $0.date < $1.date }, metrics: metrics.sorted { $0.id < $1.id }, quickLogs: quickLogs.sorted { $0.entry < $1.entry })
+      cosmetics: cosmetics.sorted { $0.id < $1.id }, displayedTitle: displayedTitle, pendingReturnerShields: pendingReturnerShields, openDay: openDay,
+      lastActiveDate: lastActiveDate, days: days.sorted { $0.date < $1.date }, comebackEvents: comebackEvents.sorted { ($0.date, $0.kind) < ($1.date, $1.kind) },
+      recoveries: recoveries.sorted { $0.date < $1.date }, returnerEvents: returnerEvents.sorted { $0.date < $1.date }, metrics: metrics.sorted { $0.id < $1.id },
+      quickLogs: quickLogs.sorted { $0.entry < $1.entry })
   }
 }
 
-/// Runs a scenario's steps through `Replay.apply` in step order, seeding what the day walk would have written.
+/// Runs a scenario's steps in step order: through `Replay.step` and `Replay.walk` when the scenario walks the days, otherwise through `Replay.apply`,
+/// seeding what the day walk would have written.
 struct ReplayScenarioRun {
   private(set) var state = ReplayState.initial
   private(set) var outcomes: [ReplayScenario.StepOutcome] = []
@@ -227,6 +263,7 @@ struct ReplayScenarioRun {
   }
 
   private mutating func id(_ name: String) -> UUID {
+    if let builtin = BuiltinMetric(rawValue: String(name.dropFirst("@builtin-".count))), name.hasPrefix("@builtin-") { return builtin.id }
     if let id = names[name] { return id }
     let id = MemoirStoreFixture.commandID(0x10_0000 + names.count)
     names[name] = id
@@ -255,17 +292,28 @@ struct ReplayScenarioRun {
       outcomes.append(ReplayScenario.StepOutcome(status: "seed", code: nil, rejection: nil, capacity: nil, capacityWarning: nil))
       return
     }
-    let issuedOn = try MemoirCommand.localDate(instantMillis: instant, utcOffsetMinutes: scenario.offsetMinutes)
+    let offset = step.offsetMinutes ?? scenario.offsetMinutes
+    let issuedOn = try MemoirCommand.localDate(instantMillis: instant, utcOffsetMinutes: offset)
+    if step.type == "horizon" {
+      Replay.walk(&state, through: IssueStamp(instantMillis: instant, utcOffsetMinutes: offset, issuedOn: issuedOn))
+      outcomes.append(ReplayScenario.StepOutcome(status: "horizon", code: nil, rejection: nil, capacity: nil, capacityWarning: nil))
+      return
+    }
     let body = try MemoirCommandBody(type: try CommandType(step.type), payload: payload, occurrence: try occurrence(step))
     let command = try MemoirCommand(
-      id: MemoirStoreFixture.commandID(index + 1), body: body, instantMillis: instant, utcOffsetMinutes: scenario.offsetMinutes, issuedOn: issuedOn,
+      id: MemoirStoreFixture.commandID(index + 1), body: body, instantMillis: instant, utcOffsetMinutes: offset, issuedOn: issuedOn,
       rulesetVersion: Ruleset.v1.version)
     var capacity: LockCapacity?
     if case .planSetLock(.locked(let quests)) = body {
       capacity = state.lockCapacity(on: state.accountDay(issuedOn: issuedOn), plannedLoad: quests.count, ruleset: .v1)
     }
     guard let clock = HLCTimestamp(wallMillis: Int64(index), counter: 0, replica: Self.replica) else { throw MemoirFixtureError(description: "clock") }
-    Replay.apply(.readable(AppendedEntry(record: command, clock: clock)), to: &state)
+    let entry = ReplayCommand.readable(AppendedEntry(record: command, clock: clock))
+    if scenario.walk == true {
+      Replay.step(entry, to: &state)
+    } else {
+      Replay.apply(entry, to: &state)
+    }
     outcomes.append(Self.outcome(state.outcomes[command.id], capacity: capacity))
   }
 
@@ -356,11 +404,20 @@ struct ReplayScenarioRun {
       achievements: state.progression.achievements.keys.map(\.rawValue), titles: state.progression.titles.keys.map(\.rawValue),
       cosmetics: state.progression.cosmetics.map { ReplaySnapshot.Cosmetic(id: $0.key.rawValue, source: $0.value.source.rawValue, equipped: $0.value.equipped) },
       displayedTitle: state.progression.displayedTitle?.rawValue, pendingReturnerShields: state.compassion.pendingReturnerShields,
-      days: state.days.values.map(day(_:)),
+      openDay: state.openDay?.isoString, lastActiveDate: state.compassion.lastActiveDate?.isoString, days: state.days.values.map(day(_:)),
       comebackEvents: state.days.values.flatMap { day in
         day.comebackEvents.values.map { ReplaySnapshot.ComebackEvent(date: day.date.isoString, kind: $0.kind.rawValue, xpBonus: $0.xpBonus, coinBonus: $0.coinBonus) }
       },
-      recoveries: state.compassion.recoveries.values.map { ReplaySnapshot.Recovery(date: $0.date.isoString, state: $0.state.rawValue) },
+      recoveries: state.compassion.recoveries.values.map { recovery in
+        ReplaySnapshot.Recovery(
+          date: recovery.date.isoString, state: recovery.state.rawValue, sourceQuest: name(of: recovery.sourceQuest), triggers: recovery.triggerLogs.map(occurrence(ofLog:)),
+          isReturnerDay: recovery.isReturnerDay)
+      },
+      returnerEvents: state.compassion.returnerEvents.values.map { event in
+        ReplaySnapshot.ReturnerEvent(
+          date: event.date.isoString, lastActiveDate: event.lastActiveDate.isoString, daysAbsent: event.daysAbsent, shieldTarget: name(of: event.shieldTarget),
+          shieldPending: event.shieldPending)
+      },
       metrics: state.records.metrics.map { ReplaySnapshot.Metric(id: name(of: $0.key) ?? "", active: $0.value.isActive) },
       quickLogs: state.records.quickLogs.map { ReplaySnapshot.QuickLog(entry: name(of: $0.key) ?? "", rewarded: $0.value.rewarded) })
   }
@@ -382,7 +439,10 @@ struct ReplayScenarioRun {
   private func day(_ day: ReplayDay) -> ReplaySnapshot.Day {
     let crown = day.crown
     return ReplaySnapshot.Day(
-      date: day.date.isoString, lock: day.lock.map { ReplaySnapshot.Day.Lock(quests: $0.quests.map { name(of: $0) ?? "" }, broken: !$0.isActive) },
+      date: day.date.isoString, closed: day.isClosed, intensityMode: day.intensityMode.rawValue,
+      hp: day.hp.map { ReplaySnapshot.Day.HP(start: $0.hpStart, end: $0.hpEnd, max: $0.hpMax) }, missedCount: day.missedCount, momentum: day.momentum.rawValue,
+      returnerFired: day.returnerFired, banked: crown?.banked.map { ReplaySnapshot.Day.Banked(xp: $0.xp, coins: $0.coins) },
+      lock: day.lock.map { ReplaySnapshot.Day.Lock(quests: $0.quests.map { name(of: $0) ?? "" }, broken: !$0.isActive) },
       comeback: ReplaySnapshot.Day.Comeback(armed: day.comeback.armed, fires: day.comeback.fires, armedViaRecovery: day.comeback.armedViaRecovery),
       crown: ReplaySnapshot.Day.Crown(
         grantedXP: crown?.state.grantedXP ?? 0, remainingXP: crown?.state.remainingXP ?? 0, grantedCoins: crown?.state.grantedCoins ?? 0,
@@ -393,7 +453,14 @@ struct ReplayScenarioRun {
     switch event.type {
     case .questComplete, .questPartial, .questLate: "xp:\(name(of: event.quest) ?? ""):\(event.date)"
     case .recoveryCompleted: "recovery_completed:\(event.date)"
+    case .recoveryExpired:
+      "recovery_expired:\(state.compassion.recoveries.values.first { event.key == "recovery_expired_\($0.id.lowercasedString)" }?.date.isoString ?? "")"
+    case .crownForfeit: "crownforfeit:\(name(of: event.quest) ?? ""):\(event.date)"
     default: event.key
     }
+  }
+
+  private func occurrence(ofLog id: UUID) -> String {
+    state.logs.all.first { $0.value.id == id }.map { "\(name(of: $0.occurrence.quest) ?? ""):\($0.occurrence.date)" } ?? id.lowercasedString
   }
 }

@@ -230,20 +230,13 @@ struct CommandBodyTests {
     }
   }
 
-  @Test func shouldTimeSettingsFromTheNextDayBoundaryOfTheAccountsDay() throws {
-    let issuedOn = try MemoirStoreFixture.date("2026-11-20")
-    let ahead = try MemoirStoreFixture.date("2026-11-21")
-    #expect(MemoirCommandKind.accountSetTimeZone.settingTiming == .nextDayBoundary)
-    #expect(MemoirCommandKind.accountSetIntensityMode.settingTiming == .nextDayBoundary)
+  @Test func shouldStageTheZoneAndIntensityButApplyTheThresholdAndFirstZoneAtOnce() throws {
+    #expect(MemoirCommandKind.accountSetTimeZone.settingTiming == .staged)
+    #expect(MemoirCommandKind.accountSetIntensityMode.settingTiming == .staged)
     #expect(MemoirCommandKind.accountSetReturnerThreshold.settingTiming == .immediate)
     #expect(MemoirCommandKind.allCases.filter { $0.settingTiming != nil }.count == 3)
-    #expect(SettingTiming.nextDayBoundary.firstDay(issuedOn: issuedOn, openDay: nil, replacingValueInForce: true) == ahead)
-    #expect(SettingTiming.nextDayBoundary.firstDay(issuedOn: issuedOn, openDay: try MemoirStoreFixture.date("2026-11-19"), replacingValueInForce: true) == ahead)
-    #expect(SettingTiming.nextDayBoundary.firstDay(issuedOn: issuedOn, openDay: ahead, replacingValueInForce: true) == (try MemoirStoreFixture.date("2026-11-22")))
-    #expect(SettingTiming.immediate.firstDay(issuedOn: issuedOn, openDay: ahead, replacingValueInForce: true) == ahead)
-    #expect(SettingTiming.nextDayBoundary.firstDay(issuedOn: .latest, openDay: nil, replacingValueInForce: true) == nil)
-    #expect(SettingTiming.nextDayBoundary.firstDay(issuedOn: issuedOn, openDay: nil, replacingValueInForce: false) == issuedOn)
-    #expect(SettingTiming.nextDayBoundary.firstDay(issuedOn: issuedOn, openDay: ahead, replacingValueInForce: false) == ahead)
-    #expect(SettingTiming.immediate.firstDay(issuedOn: .latest, openDay: nil, replacingValueInForce: false) == .latest)
+    #expect(SettingTiming.staged.isStaged(replacingValueInForce: true))
+    #expect(!SettingTiming.staged.isStaged(replacingValueInForce: false), "with no value in force a staged setting applies at once")
+    #expect(!SettingTiming.immediate.isStaged(replacingValueInForce: true))
   }
 }

@@ -38,6 +38,22 @@ public struct OccurrenceTable<Value: Sendable & Hashable>: Sendable, Hashable {
     (byDate[date] ?? [:]).sorted { $0.key.uuidString < $1.key.uuidString }.map { (occurrence: Occurrence(quest: $0.key, date: date), value: $0.value) }
   }
 
+  /// The day's values in no particular order, for readers that sort or count them themselves.
+  func unorderedEntries(on date: LocalDate) -> [(occurrence: Occurrence, value: Value)] {
+    (byDate[date] ?? [:]).map { (occurrence: Occurrence(quest: $0.key, date: date), value: $0.value) }
+  }
+
+  func unorderedEntries(from start: LocalDate, through end: LocalDate) -> [(occurrence: Occurrence, value: Value)] {
+    guard start <= end else { return [] }
+    var entries = [(occurrence: Occurrence, value: Value)]()
+    var index = firstIndex(atOrAfter: start)
+    while index < dates.count, dates[index] <= end {
+      entries += unorderedEntries(on: dates[index])
+      index += 1
+    }
+    return entries
+  }
+
   public func count(on date: LocalDate, where isIncluded: (Value) -> Bool) -> Int {
     byDate[date]?.values.count(where: isIncluded) ?? 0
   }

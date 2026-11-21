@@ -348,7 +348,80 @@ const world = (db: Database) => {
     },
   };
   const dailyState = (date: string) => rows('dailyStates').find(row => row['date'] === date) ?? null;
+  const dailyDefaults = (date: string): Row => ({
+    accountId: ACCOUNT_ID,
+    date,
+    committedAt: null,
+    lockedQuestIds: [],
+    lockBrokenAt: null,
+    comebackArmed: false,
+    comebackFired: false,
+    comebackFiredAt: null,
+    comebackArmedViaRecovery: false,
+    comebackReFired: false,
+    returnerActive: false,
+    returnerFired: false,
+    momentumBucket: 'steady',
+    missedCount: 0,
+    crownXpGranted: 0,
+    crownXpRemaining: 0,
+    crownCoinsGranted: 0,
+    crownCoinsRemaining: 0,
+    crownBankedXp: null,
+    crownBankedCoins: null,
+    rolloverAt: null,
+  });
   const rollover = {
+    runSerialized: async (_: bigint, operation: (tx: unknown) => Promise<unknown>) => operation(db.tx()),
+    readCurrency: async () => ({ timezone: account()['timezone'], lastHpDate: account()['lastHpDate'], deletionState: 'none' }),
+    updateAccount: async (_: unknown, __: bigint, values: Row) => void Object.assign(account(), values),
+    listDailyStates: async (_: unknown, __: bigint, from: string, to: string) =>
+      byKeys(
+        rows('dailyStates').filter(row => (row['date'] as string) >= from && (row['date'] as string) <= to),
+        'date',
+      ),
+    upsertDailyState: async (_: unknown, values: Row) => {
+      const existing = dailyState(values['date'] as string);
+      if (!existing) return void db.insertRow('dailyStates', { ...dailyDefaults(values['date'] as string), ...values });
+      if (existing['rolloverAt'] !== null) return;
+      Object.assign(existing, values);
+    },
+    insertMisses: async (_: unknown, values: Row[]) =>
+      values.flatMap(value =>
+        rows('questLogs').some(row => row['questId'] === value['questId'] && row['date'] === value['date'])
+          ? []
+          : [
+              db.insertRow('questLogs', {
+                xpAwarded: 0,
+                coinsAwarded: 0,
+                reasonTag: null,
+                reasonNote: null,
+                reflectionText: null,
+                rescheduledToMin: null,
+                postponedToDate: null,
+                performedAt: null,
+                createdAt: new Date(now),
+                ...value,
+              }),
+            ],
+      ),
+    lockStreak: async (_: unknown, __: bigint, questId: bigint) => streaks.readForUpdate(_, questId),
+    lockStreaks: async (_: unknown, __: bigint, questIds: bigint[]) =>
+      new Map(await Promise.all(questIds.filter(questId => streakRow(questId)).map(async questId => [questId, await streaks.readForUpdate(_, questId)] as const))),
+    writeStreak: async (_: unknown, __: bigint, questId: bigint, date: string, state: Row) => streaks.write(_, questId, date, state),
+    insertShieldConsumption: async (_: unknown, __: bigint, questId: bigint, date: string) => streaks.insertShieldConsumption(_, questId, date),
+    listShieldedQuests: async (_: unknown, __: bigint, date: string) => new Set(rows('shieldConsumptions').filter(row => row['date'] === date).map(row => row['questId'])),
+    expirePendingRecovery: async (_: unknown, __: bigint, date: string) => {
+      const expired = rows('recoveryQuests').filter(row => (row['date'] as string) <= date && row['state'] === 'pending');
+      for (const row of expired) row['state'] = 'expired';
+      return expired;
+    },
+    insertRecoveryQuest: async (_: unknown, __: bigint, draft: Row) =>
+      rows('recoveryQuests').some(row => row['date'] === draft['date'])
+        ? null
+        : db.insertRow('recoveryQuests', { accountId: ACCOUNT_ID, state: 'pending', reflectionText: null, completedAt: null, ...draft }),
+    insertReturnerEvent: async (_: unknown, __: bigint, draft: Row) =>
+      rows('returnerEvents').some(row => row['date'] === draft['date']) ? null : db.insertRow('returnerEvents', { ...draft }),
     lockAccount: async () => account(),
     lockDailyState: async (_: unknown, __: bigint, date: string) => dailyState(date),
     findDailyState: async (_: unknown, __: bigint, date: string) => dailyState(date),
@@ -491,12 +564,14 @@ const services = (db: Database) => {
     telemetry,
   ).onModuleInit();
   new MetricsCommandsService(bus, store.metrics, store.metricEntries, telemetry).onModuleInit();
-  return { handlers, store };
+  return { handlers, store, rolloverService };
 };
 
 /** A step as both sides read it: the native payload with `@name` standing for an id, the occurrence, and the instant it is issued at. */
 interface Step {
   at: string;
+  /** The offset the native command is stamped with, when it is not the scenario's. */
+  offsetMinutes?: number;
   /** A command that reaches the reference late: its server handles it at `processedAt`, and the issuing device stamped it with the open day it knew. */
   processedAt?: string;
   issuerOpenDay?: string | null;
@@ -509,8 +584,18 @@ interface Scenario {
   source: string;
   timeZone: string;
   offsetMinutes: number;
+  /** The reference's rollover gate runs before every step, as `RolloverGate` runs it before every command, and native replay walks the days. */
+  walk?: boolean;
   steps: Step[];
 }
+
+/** The reference sets these through `PATCH /account`, staging the zone and intensity (`account.service.ts:137-139`); native replay has them as commands. */
+const SETTINGS: Record<string, { key: string; column: string }> = {
+  'account.setTimeZone': { key: 'timezone', column: 'pendingTimezone' },
+  'account.setIntensityMode': { key: 'intensityMode', column: 'pendingIntensityMode' },
+  'account.setReturnerThreshold': { key: 'returnerThresholdDays', column: 'returnerThresholdDays' },
+};
+const BUILTIN_METRICS = ['steps', 'active_energy', 'workout_minutes', 'weight', 'resting_heart_rate', 'sleep', 'waist_circumference', 'water'];
 
 /** A quest or preset no step created, as the reference's digit-string id. */
 const UNKNOWN_ID = '999';
@@ -518,10 +603,10 @@ const NOTE = 'Felt tired after work';
 const REFLECTION = 'Rested and ready again';
 
 /** The native payload as the reference's wire payload: digit-string ids, the occurrence as `occurrenceId`, and the texts and content put back. */
-const toReference = (step: Step, ids: Map<string, bigint>): JsonObject => {
+const toReference = (step: Step, ids: Map<string, bigint>, builtins: Map<string, bigint>): JsonObject => {
   const id = (value: Json | undefined): Json => {
     if (typeof value !== 'string' || !value.startsWith('@')) return value ?? null;
-    const known = ids.get(value);
+    const known = ids.get(value) ?? builtins.get(value);
     return known === undefined ? UNKNOWN_ID : String(known);
   };
   const payload = step.payload ?? {};
@@ -669,18 +754,41 @@ const run = async (scenario: Scenario): Promise<JsonObject> => {
     statMind: 0,
     pendingReturnerShields: 0,
     displayedTitleId: null,
+    lastActiveDate: null,
+    returnerThresholdDays: 7,
+    pendingTimezone: null,
+    pendingIntensityMode: null,
+    deletionState: 'none',
   });
-  const { handlers, store } = services(db);
   const ids = new Map<string, bigint>();
+  const builtins = new Map(BUILTIN_METRICS.map(name => [`@builtin-${name}`, db.insertRow('metrics', { builtin: true, isHealth: true, active: true, name })['id'] as bigint]));
+  const { handlers, store, rolloverService } = services(db);
   const logOccurrences = new Map<bigint, string>();
   const recoveryDates = new Map<bigint, string>();
   const outcomes: Json[] = [];
+
+  const remember = (): void => {
+    for (const log of db.rows('questLogs')) logOccurrences.set(log['id'] as bigint, `${symbolOf(ids, log['questId'])}:${log['date']}`);
+    for (const recovery of db.rows('recoveryQuests')) recoveryDates.set(recovery['id'] as bigint, recovery['date'] as string);
+  };
 
   for (const [index, step] of scenario.steps.entries()) {
     now = iso(step.at);
     if (step.type.startsWith('seed.')) {
       seed(db, step, ids, scenario);
       outcomes.push({ status: 'seed' });
+      continue;
+    }
+    if (scenario.walk) await rolloverService.catchUp(ACCOUNT_ID);
+    remember();
+    if (step.type === 'horizon') {
+      outcomes.push({ status: 'horizon' });
+      continue;
+    }
+    const setting = SETTINGS[step.type];
+    if (setting) {
+      (db.rows('accounts')[0] as Row)[setting.column] = step.payload?.[setting.key] ?? null;
+      outcomes.push({ status: 'applied' });
       continue;
     }
     const handler = handlers.get(step.type);
@@ -691,7 +799,7 @@ const run = async (scenario: Scenario): Promise<JsonObject> => {
     if (step.processedAt) now = iso(step.processedAt);
     const capacityBefore = step.type === 'plan.setLock' && step.payload?.['locked'] === true;
     try {
-      const outcome = await handler({ accountId: ACCOUNT_ID, tx: db.tx(), envelope: { commandId: `c${index}`, type: step.type, payload: toReference(step, ids), localDate } });
+      const outcome = await handler({ accountId: ACCOUNT_ID, tx: db.tx(), envelope: { commandId: `c${index}`, type: step.type, payload: toReference(step, ids, builtins), localDate } });
       if (step.type === 'quest.create') ids.set(step.payload!['questId'] as string, BigInt(outcome.result['id'] as string));
       if (step.type === 'metric.create') ids.set(step.payload!['id'] as string, BigInt(outcome.result['id'] as string));
       if (step.type === 'meal.savePreset') ids.set(step.payload!['id'] as string, BigInt(outcome.result['id'] as string));
@@ -706,8 +814,7 @@ const run = async (scenario: Scenario): Promise<JsonObject> => {
       if (error instanceof CodedError) outcomes.push({ status: 'refused', code: error.code });
       else throw new Error(`${scenario.id} step ${index} (${step.type}) crashed: ${(error as Error).stack}`);
     }
-    for (const log of db.rows('questLogs')) logOccurrences.set(log['id'] as bigint, `${symbolOf(ids, log['questId'])}:${log['date']}`);
-    for (const recovery of db.rows('recoveryQuests')) recoveryDates.set(recovery['id'] as bigint, recovery['date'] as string);
+    remember();
   }
   return { ...scenario, expected: { steps: outcomes, state: snapshot(db, store, ids, logOccurrences, recoveryDates) } } as unknown as JsonObject;
 };
@@ -726,8 +833,10 @@ const byKeys = <T extends Row>(rows: T[], ...keys: string[]): T[] =>
 const normalizedKey = (key: string, logOccurrences: Map<bigint, string>, recoveryDates: Map<bigint, string>): string => {
   const xp = /^(\d+)_xp$/.exec(key);
   if (xp) return `xp:${logOccurrences.get(BigInt(xp[1]!))}`;
-  const recovery = /^recovery_completed_(\d+)$/.exec(key);
-  if (recovery) return `recovery_completed:${recoveryDates.get(BigInt(recovery[1]!))}`;
+  const recovery = /^recovery_(completed|expired)_(\d+)$/.exec(key);
+  if (recovery) return `recovery_${recovery[1]}:${recoveryDates.get(BigInt(recovery[2]!))}`;
+  const forfeit = /^crownforfeit_(\d+)$/.exec(key);
+  if (forfeit) return `crownforfeit:${logOccurrences.get(BigInt(forfeit[1]!))}`;
   return key;
 };
 
@@ -795,8 +904,17 @@ const snapshot = (db: Database, store: ReturnType<typeof world>, ids: Map<string
     cosmetics: byKeys(db.rows('cosmetics'), 'cosmeticId').map(row => ({ id: row['cosmeticId'] as string, source: row['source'] as string, equipped: row['equipped'] as boolean })),
     displayedTitle: (account['displayedTitleId'] as string | null) ?? null,
     pendingReturnerShields: account['pendingReturnerShields'] as number,
+    openDay: (account['lastHpDate'] as string | null) ?? null,
+    lastActiveDate: (account['lastActiveDate'] as string | null) ?? null,
     days: byKeys(db.rows('dailyStates'), 'date').map(day => ({
       date: day['date'] as string,
+      closed: day['rolloverAt'] !== null && day['rolloverAt'] !== undefined,
+      intensityMode: day['intensityMode'] as string,
+      hp: day['hpStart'] === undefined ? null : { start: day['hpStart'] as number, end: day['hpEnd'] as number, max: day['hpMax'] as number },
+      missedCount: (day['missedCount'] as number | undefined) ?? 0,
+      momentum: (day['momentumBucket'] as string | undefined) ?? 'steady',
+      returnerFired: (day['returnerFired'] as boolean | undefined) ?? false,
+      banked: day['crownBankedXp'] === null || day['crownBankedXp'] === undefined ? null : { xp: day['crownBankedXp'] as number, coins: day['crownBankedCoins'] as number },
       lock:
         day['committedAt'] === null
           ? null
@@ -820,8 +938,24 @@ const snapshot = (db: Database, store: ReturnType<typeof world>, ids: Map<string
       xpBonus: event['xpBonus'] as number,
       coinBonus: event['coinBonus'] as number,
     })),
-    recoveries: byKeys(db.rows('recoveryQuests'), 'date').map(recovery => ({ date: recovery['date'] as string, state: recovery['state'] as string })),
-    metrics: byKeys(db.rows('metrics'), 'id').map(metric => ({ id: sym(metric['id']) as string, active: metric['active'] as boolean })),
+    recoveries: byKeys(db.rows('recoveryQuests'), 'date').map(recovery => ({
+      date: recovery['date'] as string,
+      state: recovery['state'] as string,
+      sourceQuest: sym(recovery['sourceQuestId']),
+      triggers: ((recovery['triggerLogIds'] as bigint[] | undefined) ?? []).map(id => logOccurrences.get(id) ?? String(id)),
+      isReturnerDay: (recovery['isReturnerDay'] as boolean | undefined) ?? false,
+    })),
+    returnerEvents: byKeys(db.rows('returnerEvents'), 'date').map(event => ({
+      date: event['date'] as string,
+      lastActiveDate: event['lastActiveDate'] as string,
+      daysAbsent: event['daysAbsent'] as number,
+      shieldTarget: sym(event['shieldTargetQuestId']),
+      shieldPending: event['shieldPending'] as boolean,
+    })),
+    metrics: byKeys(
+      db.rows('metrics').filter(metric => metric['builtin'] !== true),
+      'id',
+    ).map(metric => ({ id: sym(metric['id']) as string, active: metric['active'] as boolean })),
     quickLogs: byKeys([...db.rows('journals'), ...db.rows('meals'), ...db.rows('sideQuests')], 'id').map(entry => ({
       entry: String(entry['id']).slice(1),
       rewarded: entry['rewarded'] as boolean,
@@ -850,6 +984,10 @@ const ANCHOR = { strictness: 'anchor', startTimeMinutes: 420, durationMinutes: 3
 const utc = (id: string, source: string, steps: Step[]): Scenario => ({ id, source, timeZone: 'UTC', offsetMinutes: 0, steps });
 const repeat = <T>(count: number, make: (index: number) => T): T[] => Array.from({ length: count }, (_, index) => make(index));
 const day = (base: string, offset: number): string => rules.formatLocalDate(rules.addDays(rules.parseLocalDate(base), offset));
+const walked = (id: string, source: string, steps: Step[], timeZone = 'UTC', offsetMinutes = 0): Scenario => ({ id, source, timeZone, offsetMinutes, walk: true, steps });
+const horizon = (at: string, offsetMinutes?: number): Step => ({ at, type: 'horizon', ...(offsetMinutes === undefined ? {} : { offsetMinutes }) });
+const stamped = (step: Step, offsetMinutes: number): Step => ({ ...step, offsetMinutes });
+const ROLLOVER_SPEC = 'tests/rollover/rollover.service.spec.ts';
 
 const scenarios: Scenario[] = [
   ...['quest.complete', 'quest.partial', 'quest.skip'].map(type =>
@@ -1099,6 +1237,134 @@ const scenarios: Scenario[] = [
       act('2026-03-12T18:25:00Z', 'quest.complete', 'q1', '2026-03-14'),
     ],
   },
+  utc('metric-builtin-is-fixed', 'scenario', [
+    command('2026-03-10T08:00:00Z', 'metric.update', { id: '@builtin-steps', metricClass: 'activity' }),
+    command('2026-03-10T08:01:00Z', 'metric.delete', { id: '@builtin-weight', metricClass: 'health', detach: true }),
+    command('2026-03-10T08:02:00Z', 'metric.register', { metricId: '@builtin-steps', metricClass: 'activity', date: '2026-03-10' }),
+    command('2026-03-10T08:03:00Z', 'metric.create', { id: '@n1', metricClass: 'general' }),
+    command('2026-03-10T08:04:00Z', 'metric.delete', { id: '@n1', metricClass: 'general' }),
+  ]),
+  walked('walk-closes-the-prepared-day-once', ROLLOVER_SPEC, [
+    create('2026-03-10T12:00:00Z', 'q1', ROUTINE),
+    horizon('2026-03-11T12:00:00Z'),
+    horizon('2026-03-11T12:00:00Z'),
+    horizon('2026-03-13T12:00:00Z'),
+  ]),
+  walked('walk-records-every-miss-and-breaks-streaks', ROLLOVER_SPEC, [
+    ...repeat(6, index => create('2026-03-06T06:00:00Z', `q${index + 1}`, ROUTINE)),
+    ...repeat(4, index => act(`${day('2026-03-06', index)}T08:10:00Z`, 'quest.complete', 'q2', day('2026-03-06', index))),
+    horizon('2026-03-10T06:00:00Z'),
+    act('2026-03-10T08:10:00Z', 'quest.complete', 'q6', '2026-03-10'),
+    horizon('2026-03-11T12:00:00Z'),
+  ]),
+  walked('walk-dates-the-last-activity', ROLLOVER_SPEC, [
+    create('2026-03-10T06:00:00Z', 'q1', ROUTINE),
+    act('2026-03-10T08:10:00Z', 'quest.complete', 'q1', '2026-03-10'),
+    horizon('2026-03-11T12:00:00Z'),
+  ]),
+  walked('walk-fires-the-returner', ROLLOVER_SPEC, [
+    create('2026-03-10T06:00:00Z', 'q1', ROUTINE),
+    act('2026-03-10T08:10:00Z', 'quest.complete', 'q1', '2026-03-10'),
+    horizon('2026-03-18T12:00:00Z'),
+    act('2026-03-18T12:10:00Z', 'quest.complete', 'q1', '2026-03-18'),
+    horizon('2026-03-19T12:00:00Z'),
+  ]),
+  walked('walk-returner-shield-goes-to-the-longest-run', 'scenario', [
+    create('2026-03-01T05:00:00Z', 'q1', ROUTINE),
+    create('2026-03-01T05:00:00Z', 'q2', ROUTINE),
+    ...repeat(4, index => act(`${day('2026-03-01', index)}T08:10:00Z`, 'quest.complete', 'q1', day('2026-03-01', index))),
+    ...repeat(2, index => act(`${day('2026-03-03', index)}T08:20:00Z`, 'quest.complete', 'q2', day('2026-03-03', index))),
+    horizon('2026-03-12T12:00:00Z'),
+  ]),
+  walked('walk-expires-the-recovery', ROLLOVER_SPEC, [
+    create('2026-03-08T06:00:00Z', 'q1', ANCHOR),
+    horizon('2026-03-09T12:00:00Z'),
+    horizon('2026-03-10T12:00:00Z'),
+  ]),
+  walked('walk-recovery-and-comeback-on-the-day-after-a-miss', 'scenario', [
+    create('2026-03-08T05:00:00Z', 'q1', ANCHOR),
+    create('2026-03-08T05:00:00Z', 'q2', { ...ANCHOR, startTimeMinutes: 600 }),
+    horizon('2026-03-09T06:00:00Z'),
+    act('2026-03-09T07:10:00Z', 'quest.complete', 'q1', '2026-03-09'),
+    command('2026-03-09T09:00:00Z', 'recovery.complete', { reflectionText: true }),
+    act('2026-03-09T10:05:00Z', 'quest.complete', 'q2', '2026-03-09'),
+    horizon('2026-03-10T12:00:00Z'),
+  ]),
+  walked('walk-catch-up-limit-strands-old-days', ROLLOVER_SPEC, [
+    create('2025-10-31T06:00:00Z', 'q1', { ...ANCHOR, recurrence: daily('2025-10-01') }),
+    horizon('2025-11-01T12:00:00Z'),
+    horizon('2026-03-10T12:00:00Z'),
+  ]),
+  walked('walk-forward-zone-change-skips-the-day-it-jumps', ROLLOVER_SPEC, [
+    command('2026-03-09T08:00:00Z', 'account.setTimeZone', { timezone: 'UTC' }),
+    create('2026-03-09T08:01:00Z', 'q1', ROUTINE),
+    command('2026-03-09T09:00:00Z', 'account.setTimeZone', { timezone: 'Pacific/Kiritimati' }),
+    horizon('2026-03-10T11:00:00Z', 840),
+    horizon('2026-03-10T11:00:00Z', 840),
+    horizon('2026-03-11T11:00:00Z', 840),
+  ]),
+  walked(
+    'walk-backward-zone-change-holds-the-open-day',
+    ROLLOVER_SPEC,
+    [
+      command('2026-03-09T20:00:00Z', 'account.setTimeZone', { timezone: 'Pacific/Kiritimati' }),
+      create('2026-03-09T20:01:00Z', 'q1', ROUTINE),
+      command('2026-03-09T21:00:00Z', 'account.setTimeZone', { timezone: 'UTC' }),
+      horizon('2026-03-10T11:00:00Z', 0),
+      horizon('2026-03-10T20:00:00Z', 0),
+      horizon('2026-03-11T20:00:00Z', 0),
+      horizon('2026-03-12T01:00:00Z', 0),
+    ],
+    'Pacific/Kiritimati',
+    840,
+  ),
+  walked('walk-intensity-change-takes-effect-the-next-day', 'scenario', [
+    create('2026-03-09T06:00:00Z', 'q1', ANCHOR),
+    create('2026-03-09T06:00:00Z', 'q2', ROUTINE),
+    act('2026-03-10T07:10:00Z', 'quest.complete', 'q1', '2026-03-10'),
+    act('2026-03-10T08:30:00Z', 'quest.skip', 'q2', '2026-03-10'),
+    command('2026-03-10T09:00:00Z', 'account.setIntensityMode', { intensityMode: 'high_intensity' }),
+    horizon('2026-03-11T12:00:00Z'),
+    act('2026-03-11T12:30:00Z', 'quest.skip', 'q1', '2026-03-11'),
+    horizon('2026-03-13T12:00:00Z'),
+  ]),
+  walked('walk-staged-intensity-waits-for-the-day-the-walk-prepares', 'scenario', [
+    create('2026-03-09T06:00:00Z', 'q1', ANCHOR),
+    command('2026-03-09T09:00:00Z', 'account.setIntensityMode', { intensityMode: 'high_intensity' }),
+    horizon('2026-03-12T12:00:00Z'),
+  ]),
+  walked('walk-weekly-crown-banks-on-the-period-close', 'scenario', [
+    command('2026-03-01T05:00:00Z', 'account.setIntensityMode', { intensityMode: 'low_intensity' }),
+    create('2026-03-02T05:00:00Z', 'q1', ANCHOR),
+    create('2026-03-02T05:00:00Z', 'q2', ROUTINE),
+    ...repeat(7, index => act(`${day('2026-03-02', index)}T08:10:00Z`, index === 2 ? 'quest.skip' : 'quest.complete', 'q2', day('2026-03-02', index))),
+    ...repeat(7, index => index === 4 ? null : act(`${day('2026-03-02', index)}T07:10:00Z`, 'quest.complete', 'q1', day('2026-03-02', index))).filter(
+      (step): step is Step => step !== null,
+    ),
+    horizon('2026-03-09T12:00:00Z'),
+    act('2026-03-09T07:10:00Z', 'quest.complete', 'q1', '2026-03-09'),
+    horizon('2026-03-11T12:00:00Z'),
+  ]),
+  walked('walk-locked-day-cleared', 'scenario', [
+    create('2026-03-09T05:00:00Z', 'q1', ROUTINE),
+    create('2026-03-09T05:00:00Z', 'q2', ROUTINE),
+    command('2026-03-10T06:00:00Z', 'plan.setLock', { locked: true, questIds: ['@q1'] }),
+    act('2026-03-10T08:10:00Z', 'quest.complete', 'q1', '2026-03-10'),
+    horizon('2026-03-11T12:00:00Z'),
+  ]),
+  walked('walk-offline-completion-replaces-the-miss', 'scenario', [
+    create('2026-03-09T05:00:00Z', 'q1', ROUTINE),
+    horizon('2026-03-11T06:00:00Z'),
+    act('2026-03-11T07:00:00Z', 'quest.complete', 'q1', '2026-03-10'),
+    horizon('2026-03-12T06:00:00Z'),
+  ]),
+  walked('walk-empty-days-late-quests-and-exceptions', 'scenario', [
+    create('2026-03-02T05:00:00Z', 'q1', { ...ROUTINE, recurrence: weekly('2026-03-02', [1]) }),
+    act('2026-03-02T08:10:00Z', 'quest.complete', 'q1', '2026-03-02'),
+    create('2026-03-04T06:00:00Z', 'q2', { ...ROUTINE, recurrence: daily('2026-03-01') }),
+    create('2026-03-04T06:01:00Z', 'q3', { ...ROUTINE, recurrence: { ...daily('2026-03-01'), exceptions: ['2026-03-04', '2026-03-05'] } }),
+    horizon('2026-03-07T12:00:00Z'),
+  ]),
 ];
 
 const results: JsonObject[] = [];

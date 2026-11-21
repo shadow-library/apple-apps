@@ -3,14 +3,14 @@ import Testing
 
 @testable import MemoirCore
 
-/// `Fixtures/replay/scenarios.json`: the reference's quest, compassion, progression and quick-log handlers over the same steps.
+/// `Fixtures/replay/scenarios.json`: the reference's quest, compassion, progression, quick-log and metric handlers, and its rollover walk, over the same steps.
 @Suite("Memoir replay scenario vectors", TestTimeLimit.quick)
 struct ReplayScenarioVectorTests {
   @Test func shouldCoverTheReferenceSpecsItPorts() throws {
     let sources = Set(try ReplayScenario.all().map(\.source))
     let specs: Set<String> = [
       "tests/quests/day-stamp.spec.ts", "tests/quests/compassion-commands.service.spec.ts", "tests/quests/lock-capacity.spec.ts",
-      "tests/quests/reschedule-window.spec.ts", "tests/quick-logs/quick-log-day.spec.ts",
+      "tests/quests/reschedule-window.spec.ts", "tests/quick-logs/quick-log-day.spec.ts", "tests/rollover/rollover.service.spec.ts",
     ]
     #expect(specs.isSubset(of: sources))
   }

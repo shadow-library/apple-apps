@@ -66,7 +66,7 @@ extension ReplayState {
 
   /// Whether an active quest linked to this module is scheduled on the day, completed or not; either way the log's own reward is withheld.
   public func linkedQuestExists(_ link: QuestModuleLink, on date: LocalDate) -> Bool {
-    quests.values.contains { $0.isActive && $0.schedule.moduleLink == link && $0.occurs(on: date) }
+    quests.values.contains { $0.isActive && $0.schedule.moduleLink == link && recurrenceCursors.occurs($0, on: date) }
   }
 
   private mutating func grantFirstOfDay(

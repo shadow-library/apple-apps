@@ -35,10 +35,9 @@ struct CommandIssuerTests {
   @Test func shouldDateACommandByTheZonesDayEvenWhenTheOpenDayRunsAhead() throws {
     let change = MemoirCommandBody.accountSetIntensityMode(IntensityModeChange(mode: .highIntensity))
     let command = try issuer("America/New_York").command(change)
-    let openDay = try MemoirStoreFixture.date("2026-11-21")
     #expect(command.issuedOn == (try MemoirStoreFixture.date("2026-11-20")))
     #expect(command.issuedOn == (try IssueClock(timeZone: try #require(TimeZone(identifier: "America/New_York"))).stamp(at: Self.instant).issuedOn))
-    #expect(change.kind.settingTiming?.firstDay(issuedOn: command.issuedOn, openDay: openDay, replacingValueInForce: true) == (try MemoirStoreFixture.date("2026-11-22")))
+    #expect(change.kind.settingTiming == .staged)
   }
 
   @Test func shouldIssueEveryKindIntoTheStoreAndReadItBack() async throws {

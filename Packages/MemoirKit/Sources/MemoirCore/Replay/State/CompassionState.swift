@@ -17,6 +17,8 @@ public struct RecoveryQuest: Sendable, Hashable {
   /// The command whose `CommandNoteRecord` holds the reflection.
   public internal(set) var reflection: UUID?
   public internal(set) var completedAtMillis: Int64?
+  /// The start of the next day at the offset the walk recorded when it spawned the quest, as the reference stores `expires_at`; the day's close expires it.
+  public internal(set) var expiresAtMillis: Int64?
 }
 
 /// The reference's `returner_events` row.

@@ -36,6 +36,7 @@ public enum ReplayRefusal: ShadowError, Hashable {
   case cosmeticNotOwned(CosmeticID)
   case titleNotEarned(TitleID)
   case metricNotFound
+  case builtinMetric
   case expenseNotFound
   case subscriptionNotFound
   case mealPresetNotFound
@@ -59,6 +60,7 @@ public enum ReplayRefusal: ShadowError, Hashable {
     case .cosmeticNotOwned: "CSM_003"
     case .titleNotEarned: "TTL_001"
     case .metricNotFound: "MET_002"
+    case .builtinMetric: "MET_003"
     case .expenseNotFound: "FIN_003"
     case .subscriptionNotFound: "FIN_004"
     case .mealPresetNotFound: "QLG_001"
@@ -86,6 +88,7 @@ public enum ReplayRefusal: ShadowError, Hashable {
     case .cosmeticNotOwned(let cosmetic): "The cosmetic \(cosmetic.rawValue) was not unlocked."
     case .titleNotEarned(let title): "The title \(title.rawValue) was not earned."
     case .metricNotFound: "The metric does not exist."
+    case .builtinMetric: "A built-in metric keeps its definition and cannot be deleted."
     case .expenseNotFound: "The expense does not exist."
     case .subscriptionNotFound: "The subscription does not exist or was deleted."
     case .mealPresetNotFound: "The meal preset does not exist or was deleted."

@@ -3,8 +3,9 @@ import Foundation
 /// Everything replay derives from the command log: quests and their logs, the hero ledger, streaks, compassion mechanics, the settings in force,
 /// each day's state, and what happened to every command. A pure value: the same ordered commands and records always give the same state.
 ///
-/// Commands apply through `Replay.apply`; the day walk (closing days, misses, HP, Crown settlement, rollover) writes the same fields through the
-/// internal operations below, which both share, as the reference's handlers and its rollover share one ledger and one log.
+/// Commands apply through `Replay.step`, which first walks the days (`Replay/Days`: closing days, misses, HP, Crown settlement, opening the next) and
+/// then runs the handler; both write the same fields through the internal operations below, as the reference's handlers and its rollover share one
+/// ledger and one log.
 public struct ReplayState: Sendable, Hashable {
   public static let initial = ReplayState()
 
@@ -22,6 +23,8 @@ public struct ReplayState: Sendable, Hashable {
   public internal(set) var days: [LocalDate: ReplayDay] = [:]
   public internal(set) var settings = ReplaySettings.empty
   public internal(set) var records = RecordIndex.empty
+  /// The latest command `Replay.step` has examined; a command placed before it needs a replay from an earlier state.
+  public internal(set) var position: ReplayPosition?
   /// The day the account lives in, which the day walk advances; nil before it has opened one.
   public internal(set) var openDay: LocalDate?
   /// The latest `issuedOn` replay has seen, the day the walk closes up to.
@@ -36,6 +39,7 @@ public struct ReplayState: Sendable, Hashable {
   public internal(set) var questCount = 0
   /// The account's day when its first quest was created, which with the earliest log bounds the days the lock capacity counts.
   public internal(set) var earliestQuestDay: LocalDate?
+  var recurrenceCursors = RecurrenceCursors()
 
   public func streak(of quest: UUID) -> StreakState {
     streaks[quest]?.state ?? .empty
@@ -53,7 +57,7 @@ public struct ReplayState: Sendable, Hashable {
 
   /// Active quests other than Recovery ones scheduled on the day, as the day walk and the open-day Crown count them.
   public func scheduledQuests(on date: LocalDate) -> [ReplayQuest] {
-    quests.values.filter { $0.isActive && $0.schedule.strictness != .recovery && $0.occurs(on: date) }.sorted { $0.createdOrder < $1.createdOrder }
+    quests.values.filter { $0.isActive && $0.schedule.strictness != .recovery && recurrenceCursors.occurs($0, on: date) }.sorted { $0.createdOrder < $1.createdOrder }
   }
 }
 

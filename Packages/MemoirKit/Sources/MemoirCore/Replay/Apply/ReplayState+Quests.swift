@@ -191,7 +191,7 @@ extension ReplayState {
 
   private func occurringQuest(_ occurrence: Occurrence) throws(ReplayRefusal) -> ReplayQuest {
     guard let quest = quests[occurrence.quest], quest.isActive else { throw .questNotFound }
-    guard quest.occurs(on: occurrence.date) else { throw .noOccurrence(occurrence.date) }
+    guard recurrenceCursors.occurs(quest, on: occurrence.date) else { throw .noOccurrence(occurrence.date) }
     return quest
   }
 

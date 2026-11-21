@@ -46,6 +46,11 @@ enum ReplayFixture {
     Occurrence(quest: quest, date: try MemoirStoreFixture.date(date))
   }
 
+  /// The handlers alone, in clock order, without the day walk: for checks of one handler against days the test sets up.
+  static func fold(_ commands: [ReplayCommand], from initial: ReplayState = .initial) -> ReplayState {
+    Replay.ordered(commands).reduce(into: initial) { state, command in Replay.apply(command, to: &state) }
+  }
+
   static func state(coins: Int) -> ReplayState {
     var state = ReplayState.initial
     state.hero.coins = coins

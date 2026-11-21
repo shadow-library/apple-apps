@@ -4,27 +4,18 @@ public enum OccurrenceUse: Sendable, Hashable {
   case none
 }
 
-/// When a settings command takes effect. The reference stages a time-zone or intensity change and promotes it once the open day has closed
-/// (`account.service.ts:137-139`, `rollover.service.ts:427-436`); its returner threshold applies at once, and so does the first time zone, which
-/// onboarding sets outright (`account.service.ts:159-176`) because no day can be lived without one.
-///
-/// For replay: after a forward zone change the first day lived is the new zone's date, and the dates it jumps over were never lived, so they are not
-/// closed with every quest missed (`rollover.service.ts:437-447`, `inNewZone`); after a backward change the open day stays open until the new zone's
-/// date passes it. `firstDay` reads the account's day at the command, where the reference promotes at whichever rollover walk next reaches today, so
-/// when the open day is stale (no command for some days) the reference keeps the old setting until that walk and replay applies it from the day after
-/// the account's day, the same on every device.
+/// When a settings command takes effect. The reference stages a time-zone or intensity change and promotes it when its rollover walk next prepares a day,
+/// after every elapsed day has closed under the settings it was lived under (`account.service.ts:137-139`, `rollover.service.ts:369,427-436`); its
+/// returner threshold applies at once, and so does the first time zone, which onboarding sets outright (`account.service.ts:159-176`) because no day can be
+/// lived without one. Replay's day walk does the same, so the days an absence leaves close under the old setting.
 public enum SettingTiming: Sendable, Hashable {
   case immediate
-  case nextDayBoundary
+  /// Held until the day walk next prepares a day, which is then the first day lived under it.
+  case staged
 
-  /// The first day lived under the new setting, given the account's day when the command was issued, `max(issuedOn, open day)`, since a backward zone
-  /// change can leave the open day ahead of the zone's date (`rules/time.ts:157-161`). With no value in force yet it applies at once.
-  public func firstDay(issuedOn: LocalDate, openDay: LocalDate?, replacingValueInForce: Bool) -> LocalDate? {
-    let accountDay = max(issuedOn, openDay ?? issuedOn)
-    switch (self, replacingValueInForce) {
-    case (.immediate, _), (.nextDayBoundary, false): return accountDay
-    case (.nextDayBoundary, true): return accountDay.adding(days: 1)
-    }
+  /// With no value in force yet a staged setting applies at once.
+  public func isStaged(replacingValueInForce: Bool) -> Bool {
+    self == .staged && replacingValueInForce
   }
 }
 
@@ -93,7 +84,7 @@ public enum MemoirCommandKind: String, CaseIterable, Sendable, Hashable {
 
   public var settingTiming: SettingTiming? {
     switch self {
-    case .accountSetTimeZone, .accountSetIntensityMode: .nextDayBoundary
+    case .accountSetTimeZone, .accountSetIntensityMode: .staged
     case .accountSetReturnerThreshold: .immediate
     default: nil
     }
