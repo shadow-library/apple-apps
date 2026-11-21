@@ -61,42 +61,29 @@ nonisolated enum ChatTrayActivity: Equatable, Sendable {
 nonisolated struct ChatTrayCards: Equatable, Sendable {
   let cards: [ChatTrayCard]
   let actions: [ChatTrayActions]
-}
 
-/// Everything the tray lists, read in one transaction: the novel's waiting cards and actions (ChatWaitingOnYou), and every active chat's newest message.
-nonisolated struct ChatTraySnapshot: Equatable, Sendable {
-  let cards: Derived<ChatTrayCards>
-  let lasts: [ChatTrayLast]
-
-  static func load(novel: UUID, in transaction: ReadTransaction) throws -> ChatTraySnapshot {
-    let lasts = try Self.lasts(novel: novel, in: transaction)
+  /// The novel's waiting cards (ChatWaitingOnYou), pending and conflicted by age, and the applied cards whose actions wait on the author.
+  static func load(novel: UUID, in transaction: ReadTransaction) throws -> Derived<ChatTrayCards> {
     switch try ChatWaitingOnYou.load(novel, in: transaction).contents {
     case .unavailable(let faults):
-      return ChatTraySnapshot(cards: .unavailable(faults), lasts: lasts)
+      return .unavailable(faults)
     case .available(let contents):
       let standings = try ChatPendingActionStanding.load(novel: novel, in: transaction)
       let titles = try Self.titles(contents.actions.map(\.proposal), in: transaction)
       let staged = (contents.cards + contents.conflicted).sorted { $0.state.staged == $1.state.staged ? $0.state.ref < $1.state.ref : $0.state.staged < $1.state.staged }
-      let cards = ChatTrayCards(
-        cards: staged.map {
-          ChatTrayCard(
-            proposal: $0.state.proposal, session: $0.session, title: $0.card.map(ChatTrayTitles.title), conflicts: $0.conflict?.indexes,
-            isPlan: $0.state.kind == .known(.chapterPlan))
-        },
-        actions: contents.actions.compactMap { action in
-          Self.standing(standings[action.proposal].map { ($0.fault, $0.isGivenUp) }).map {
-            ChatTrayActions(proposal: action.proposal, session: action.session, title: titles[action.proposal], indexes: action.indexes, standing: $0)
-          }
-        })
-      return ChatTraySnapshot(cards: .available(cards), lasts: lasts)
+      return .available(
+        ChatTrayCards(
+          cards: staged.map {
+            ChatTrayCard(
+              proposal: $0.state.proposal, session: $0.session, title: $0.card.map(ChatTrayTitles.title), conflicts: $0.conflict?.indexes,
+              isPlan: $0.state.kind == .known(.chapterPlan))
+          },
+          actions: contents.actions.compactMap { action in
+            ChatTraySnapshot.standing(standings[action.proposal].map { ($0.fault, $0.isGivenUp) }).map {
+              ChatTrayActions(proposal: action.proposal, session: action.session, title: titles[action.proposal], indexes: action.indexes, standing: $0)
+            }
+          }))
     }
-  }
-
-  /// A row with no fault yet belongs to an apply running its actions now, or to a sweep that has not finished: neither waits on the author.
-  static func standing(_ row: (fault: String?, isGivenUp: Bool)?) -> ChatTrayActionStanding? {
-    guard let row else { return .notHere }
-    guard row.fault != nil || row.isGivenUp else { return nil }
-    return .faulted(code: row.fault, givenUp: row.isGivenUp)
   }
 
   private static func titles(_ proposals: [UUID], in transaction: ReadTransaction) throws -> [UUID: String] {
@@ -106,6 +93,23 @@ nonisolated struct ChatTraySnapshot: Equatable, Sendable {
       titles[proposal] = ChatTrayTitles.title(card)
     }
     return titles
+  }
+}
+
+/// Everything the tray lists, read in one transaction: the novel's waiting cards and actions (ChatWaitingOnYou), and every active chat's newest message.
+nonisolated struct ChatTraySnapshot: Equatable, Sendable {
+  let cards: Derived<ChatTrayCards>
+  let lasts: [ChatTrayLast]
+
+  static func load(novel: UUID, in transaction: ReadTransaction) throws -> ChatTraySnapshot {
+    ChatTraySnapshot(cards: try ChatTrayCards.load(novel: novel, in: transaction), lasts: try Self.lasts(novel: novel, in: transaction))
+  }
+
+  /// A row with no fault yet belongs to an apply running its actions now, or to a sweep that has not finished: neither waits on the author.
+  static func standing(_ row: (fault: String?, isGivenUp: Bool)?) -> ChatTrayActionStanding? {
+    guard let row else { return .notHere }
+    guard row.fault != nil || row.isGivenUp else { return nil }
+    return .faulted(code: row.fault, givenUp: row.isGivenUp)
   }
 
   /// Archived chats take no turn, so what waits in them is left out; their cards still wait, novel-wide.

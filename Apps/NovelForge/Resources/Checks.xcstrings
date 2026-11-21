@@ -12,6 +12,17 @@
         }
       }
     },
+    "%@ is queued — it starts when the device that runs jobs takes it, or when you run it here.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ is queued — it starts when the device that runs jobs takes it, or when you run it here."
+          }
+        }
+      }
+    },
     "%@ is reading the chapter — this can take a minute.": {
       "extractionState": "manual",
       "localizations": {
@@ -19,6 +30,17 @@
           "stringUnit": {
             "state": "translated",
             "value": "%@ is reading the chapter — this can take a minute."
+          }
+        }
+      }
+    },
+    "%@ is waiting for your permission to send this novel's text.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ is waiting for your permission to send this novel's text."
           }
         }
       }

@@ -1,27 +1,30 @@
 import ShadowDesignSystem
+import ShadowStore
 import SwiftUI
 
 struct CompactNovelView: View {
   let navigator: NovelNavigator
   let readers: NovelReaders
   let context: NovelContext
-  @State private var badge = WaitingBadgeModel()
+  @State private var pending = PendingModel()
+  @Environment(JobRuntimes.self) private var runtimes
 
   var body: some View {
+    let standing = runtimes.existing(for: context.store)?.standing ?? .starting
     NavigationStack(path: navigator.compactBinding) {
       ChatView(context: context)
-        .toolbar { CompactToolbar(navigator: navigator, waiting: badge.count) }
+        .toolbar { CompactToolbar(navigator: navigator, waiting: pending.list(replica: context.store.replica, standing: standing).count) }
         .navigationDestination(for: CompactStop.self) { stop in destination(stop) }
     }
     .environment(navigator)
-    .task(id: context.novel) { await badge.observe(context) }
+    .pendingObservation(pending, context: context)
   }
 
   @ViewBuilder
   private func destination(_ stop: CompactStop) -> some View {
     switch stop {
     case .section(let section): NovelSectionContent(section: section, readers: readers, context: context).environment(navigator)
-    case .pending: PendingView(context: context).environment(navigator)
+    case .pending: PendingView(context: context, model: pending).environment(navigator)
     }
   }
 }
@@ -50,9 +53,13 @@ private struct CompactToolbar: ToolbarContent {
       Button {
         navigator.push(CompactStop.pending)
       } label: {
-        Label(title: { Text("Waiting on you", tableName: "Navigation") }, icon: { Image(systemName: "tray") })
+        HStack(spacing: Spacing.space1) {
+          Image(systemName: waiting > 0 ? "tray.full" : "tray")
+          if waiting > 0 { ShadowBadge(count: waiting).fixedSize() }
+        }
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(Text("Waiting on you", tableName: "Navigation"))
       }
-      .overlay(alignment: .topTrailing) { if waiting > 0 { ShadowBadge(count: waiting).offset(x: Spacing.space2, y: -Spacing.space2) } }
       .accessibilityValue(Text("\(waiting) waiting", tableName: "Navigation"))
       .shadowBarItem()
       Spacer()

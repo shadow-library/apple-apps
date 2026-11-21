@@ -200,13 +200,29 @@ struct JobDerivationTests {
   @Test func shouldReadThroughIndexesWithAStatementCountIndependentOfTheNumberOfJobs() async throws {
     let (_, small) = try World.store()
     let (_, large) = try World.store()
+    let failure = AttemptFailure(code: "ai.timeout", message: "The call timed out.")
     for (store, chapters) in [(small, 2), (large, 12)] {
       for chapter in 1...chapters {
         let job = try await World.request(try World.key(chapter: chapter), in: store)
         let attempt = try await World.start(job, at: Int64(chapter), seed: UInt64(chapter), in: store)
         try await World.update(attempt, AttemptUpdate(call: World.calls[chapter % 4]), in: store)
       }
+      for chapter in 1...2 {
+        let review = try await World.request(try World.key(chapter: chapter, kind: .review), in: store)
+        try await World.start(review, at: 1, seed: UInt64(100 + chapter), in: store)
+      }
+      for chapter in 20..<(18 + chapters) {
+        for (offset, kind) in [NovelJobKind.generate, .review].enumerated() {
+          let failed = try await World.request(try World.key(chapter: chapter, kind: kind), in: store)
+          let first = try await World.start(failed, at: 1, seed: UInt64(200 + 2 * chapter + offset), in: store)
+          try await World.update(first, AttemptUpdate(settlement: .failed(failure)), in: store)
+          let again = try await World.request(try World.key(chapter: chapter, kind: kind, run: 2), in: store)
+          let second = try await World.start(again, at: 2, seed: UInt64(300 + 2 * chapter + offset), in: store)
+          try await World.update(second, AttemptUpdate(settlement: .succeeded), in: store)
+        }
+      }
     }
+    #expect(try await large.load(NovelChapterJobs.self, NovelChapterJobsQuery(novel: World.novel, now: World.instant(5))).chapters.value?.keys.sorted() == Array(1...12))
     let job = try World.key(chapter: 1).ref
     let loads: [(name: String, load: @Sendable (ReadTransaction) throws -> Void)] = [
       ("JobActivity", { _ = try JobActivity.load(JobActivityQuery(novel: World.novel, now: World.instant(5)), in: $0) }),
@@ -214,6 +230,8 @@ struct JobDerivationTests {
       ("JobCosts", { _ = try JobCosts.load(.chapter(novel: World.novel, chapter: 1), in: $0) }),
       ("WorkerBacklog", { _ = try WorkerBacklog.load(WorkerBacklogQuery(replica: World.replicas[0], now: World.instant(5)), in: $0) }),
       ("JobPlacements", { _ = try JobPlacements.load(JobPlacementQuery(jobs: [job], replica: World.replicas[0], now: World.instant(5)), in: $0) }),
+      ("NovelChapterJobs", { _ = try NovelChapterJobs.load(NovelChapterJobsQuery(novel: World.novel, now: World.instant(5)), in: $0) }),
+      ("ChapterJobs", { _ = try ChapterJobs.load(ChapterJobsQuery(novel: World.novel, chapter: 1, now: World.instant(5)), in: $0) }),
     ]
     for (name, load) in loads {
       let few = try await plans(in: small, load)
@@ -221,6 +239,42 @@ struct JobDerivationTests {
       #expect(few.count == many.count, "\(name): \(few.count) vs \(many.count)")
       #expect(many.scans.isEmpty, "\(name) scans: \(many.scans)")
     }
+  }
+
+  @Test func shouldReadEveryChapterWithAnUnendedJobAsChapterJobsReadsItAndLeaveTheRestOut() async throws {
+    let (_, store) = try World.store()
+    let failed = try await World.request(try World.key(chapter: 1), in: store)
+    let attempt = try await World.start(failed, at: 0, seed: 1, in: store)
+    try await World.update(attempt, AttemptUpdate(settlement: .failed(AttemptFailure(code: "ai.timeout", message: "The call timed out."))), in: store)
+    try await World.request(try World.key(chapter: 1, kind: .review), in: store)
+    let running = try await World.request(try World.key(chapter: 2), in: store)
+    try await World.start(running, at: 0, replica: World.replicas[1], seed: 2, in: store)
+    let succeeded = try await World.request(try World.key(chapter: 3), in: store)
+    let done = try await World.start(succeeded, at: 0, seed: 3, in: store)
+    try await World.update(done, AttemptUpdate(settlement: .succeeded), in: store)
+    let cancelled = try await World.request(try World.key(chapter: 4), in: store)
+    _ = try await Projection.write(store) { transaction in try JobRecords.cancel(cancelled, in: &transaction) }
+    try await World.request(try World.key(chapter: 9, kind: .finalizeReview), in: store)
+    try await World.request(try World.key(novel: World.otherNovel, chapter: 1), in: store)
+
+    let read = try await store.load(NovelChapterJobs.self, NovelChapterJobsQuery(novel: World.novel, now: World.instant(10)))
+    let chapters = try #require(read.chapters.value)
+    #expect(chapters.keys.sorted() == [1, 2, 9])
+    for chapter in [1, 2, 9] {
+      let own = try await store.load(ChapterJobs.self, ChapterJobsQuery(novel: World.novel, chapter: chapter, now: World.instant(10)))
+      #expect(chapters[chapter] == own.jobs.value, "chapter \(chapter)")
+    }
+    #expect(read.jobs.map(\.job) == (chapters[1] ?? []).map(\.job) + (chapters[2] ?? []).map(\.job) + (chapters[9] ?? []).map(\.job))
+    #expect(read.changesAt == date(360))
+    #expect(try await store.load(NovelChapterJobs.self, NovelChapterJobsQuery(novel: World.novel, now: World.instant(400))).changesAt == nil)
+  }
+
+  @Test func shouldReadNovelChapterJobsUnavailableWhileTheJobDerivationIsFaulted() async throws {
+    let (_, store) = try World.store()
+    try await World.request(try World.key(chapter: 1), in: store)
+    try await insertFault(JobEntry.databaseTableName, key: ProjectionFaults.wholeDerivation, in: store)
+    let read = try await store.load(NovelChapterJobs.self, NovelChapterJobsQuery(novel: World.novel, now: World.instant(10)))
+    #expect(read.chapters.isUnavailable && read.jobs.isEmpty)
   }
 
   @Test func shouldKeepACallsCostOffAnEntryForgedUnderAnotherCallAtItsAttemptSlot() async throws {

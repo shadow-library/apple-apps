@@ -15,8 +15,22 @@ nonisolated struct FindingGroup: Equatable, Sendable {
 }
 
 nonisolated enum ReviewJobPhase: Equatable, Sendable {
-  case queued
+  /// Who a queued review waits for, from its job line: an iPhone or iPad never starts a review it was not told to run.
+  enum Wait: Equatable, Sendable {
+    /// This device's runtime starts it with nobody asking.
+    case startsHere
+    case permission
+    /// Another device, or Run here or Resume on this one.
+    case elsewhere
+  }
+
+  case queued(Wait)
   case running
+
+  var isQueued: Bool {
+    guard case .queued = self else { return false }
+    return true
+  }
 }
 
 /// apps/novel-forge-web/src/lib/chapter-checks.ts:1-330 and features/chapter-workspace/ChecksPanel.tsx.
@@ -147,7 +161,7 @@ enum ChecksDisplay {
 
   static func status(_ review: ChapterReviewView?, job: ReviewJobPhase?) -> (label: String, intent: ShadowBadgeIntent) {
     if job == .running { return (String(localized: "Reviewing…", table: "Checks"), .info) }
-    if job == .queued { return (String(localized: "Queued", table: "Checks"), .info) }
+    if job?.isQueued == true { return (String(localized: "Queued", table: "Checks"), .info) }
     guard let review else { return (String(localized: "Not run", table: "Checks"), .neutral) }
     if review.review.disposition == .known(.failed) { return (String(localized: "Not assessed", table: "Checks"), .neutral) }
     if review.stale { return (String(localized: "Out of date", table: "Checks"), .warning) }
@@ -184,7 +198,9 @@ enum ChecksDisplay {
   static func phase(_ lines: [ChapterJobLine], of kind: ChapterReviewKind) -> ReviewJobPhase? {
     let jobs = lines.filter { $0.kind == .review && $0.reviewKind == kind }
     if jobs.contains(where: \.isRunning) { return .running }
-    if jobs.contains(where: { $0.isQueued || $0.state == .waitingForConsent }) { return .queued }
+    if jobs.contains(where: { if case .queued(let wait) = $0.state { wait.starter == .here } else { false } }) { return .queued(.startsHere) }
+    if jobs.contains(where: { $0.state == .waitingForConsent }) { return .queued(.permission) }
+    if jobs.contains(where: \.isQueued) { return .queued(.elsewhere) }
     return nil
   }
 }

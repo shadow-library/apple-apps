@@ -82,6 +82,55 @@ struct CompactNavigationTests {
     #expect(navigator.compactPath.isEmpty)
   }
 
+  @Test("should open a chapter above waiting on you and come back to it with the chat's section")
+  func opensAboveWaitingOnYou() {
+    let navigator = NovelNavigator(layout: .compact)
+    navigator.push(CompactStop.pending)
+    navigator.openAbove(.reader, ReaderRoute.chapter(4))
+    #expect(navigator.section == .reader && navigator.compactPath.count == 3)
+    #expect(!navigator.isAtRoot(.reader))
+
+    navigator.pop(.reader)
+    #expect(navigator.isAtRoot(.reader) && navigator.compactPath.count == 2)
+    navigator.pop(.reader)
+    #expect(navigator.compactPath.count == 2)
+
+    navigator.compactBinding.wrappedValue.removeLast()
+    #expect(navigator.section == .chat && navigator.compactPath.count == 1 && navigator.isAtRoot(.chat) == false)
+
+    navigator.compactBinding.wrappedValue.removeLast()
+    #expect(navigator.section == .chat && navigator.compactPath.isEmpty)
+    navigator.show(.reader)
+    #expect(navigator.section == .reader && navigator.compactPath.count == 1 && navigator.isAtRoot(.reader))
+    navigator.push(ReaderRoute.chapter(2))
+    navigator.pop(.reader)
+    #expect(navigator.compactPath.count == 1)
+  }
+
+  @Test("should show the chapters from the bar after coming back from a chapter opened above waiting on you")
+  func showsChaptersAfterComingBack() {
+    let navigator = NovelNavigator(layout: .compact)
+    navigator.push(CompactStop.pending)
+    navigator.openAbove(.reader, ReaderRoute.chapter(4))
+    navigator.compactBinding.wrappedValue = NavigationPath([CompactStop.pending])
+    #expect(navigator.section == .chat)
+
+    navigator.show(.reader)
+    #expect(navigator.section == .reader && navigator.compactPath.count == 1 && navigator.isAtRoot(.reader))
+    navigator.compactBinding.wrappedValue.removeLast()
+    #expect(navigator.section == .chat && navigator.compactPath.isEmpty)
+  }
+
+  @Test("should open above as a plain deep link in the regular layout")
+  func opensAboveInRegular() {
+    let navigator = NovelNavigator()
+    navigator.open(.reader, ReaderRoute.chapter(1))
+    navigator.push(ReaderRoute.versions(1))
+    navigator.show(.chat)
+    navigator.openAbove(.reader, ReaderRoute.chapter(4))
+    #expect(navigator.section == .reader && navigator.path(for: .reader).wrappedValue.count == 1 && navigator.compactPath.isEmpty)
+  }
+
   @Test("should ignore a pop at the root or for a section that is not shown")
   func ignoresPops() {
     let navigator = NovelNavigator(layout: .compact)

@@ -14,6 +14,10 @@ final class NovelNavigator {
   private(set) var paths: [NovelSection: NavigationPath] = [:]
   private(set) var compactPath = NavigationPath()
   @ObservationIgnored private var chosen = false
+  /// In compact, how many stops sit below the current section's own: nonzero only after `openAbove`.
+  @ObservationIgnored private var sectionDepth = 0
+  /// What each `openAbove` covered, so Back to that prefix shows its section again.
+  @ObservationIgnored private var covered: [(depth: Int, section: NovelSection, sectionDepth: Int)] = []
 
   init(layout: NovelLayout = .regular) {
     self.layout = layout
@@ -27,6 +31,10 @@ final class NovelNavigator {
       get: { self.compactPath },
       set: {
         self.compactPath = $0
+        while let layer = self.covered.last, $0.count <= layer.depth {
+          self.covered.removeLast()
+          (self.section, self.sectionDepth) = (layer.section, layer.sectionDepth)
+        }
         if $0.isEmpty { self.section = .chat }
       })
   }
@@ -38,7 +46,7 @@ final class NovelNavigator {
     }
     guard section != compactSection || section == .chat else { return }
     self.section = section
-    compactPath = Self.stops(for: section)
+    replaceCompactPath(Self.stops(for: section))
   }
 
   func open(_ section: NovelSection, _ route: some Hashable) {
@@ -49,7 +57,17 @@ final class NovelNavigator {
     }
     var path = Self.stops(for: section)
     path.append(route)
-    compactPath = path
+    replaceCompactPath(path)
+  }
+
+  /// `open`, except that in compact the stops already shown stay beneath the section, so Back returns to them with their section.
+  func openAbove(_ section: NovelSection, _ route: some Hashable) {
+    guard layout == .compact else { return open(section, route) }
+    covered.append((compactPath.count, compactSection, sectionDepth))
+    sectionDepth = compactPath.count
+    self.section = section
+    if section != .chat { compactPath.append(CompactStop.section(section)) }
+    compactPath.append(route)
   }
 
   func push(_ route: some Hashable) {
@@ -68,13 +86,13 @@ final class NovelNavigator {
       paths[section] = path
       return
     }
-    guard section == compactSection, compactPath.count > Self.stops(for: section).count else { return }
+    guard section == compactSection, compactPath.count > rootDepth(of: section) else { return }
     compactPath.removeLast()
   }
 
   func isAtRoot(_ section: NovelSection) -> Bool {
     guard layout == .compact else { return paths[section]?.isEmpty ?? true }
-    return section != compactSection || compactPath.count <= Self.stops(for: section).count
+    return section != compactSection || compactPath.count <= rootDepth(of: section)
   }
 
   func path(for section: NovelSection) -> Binding<NavigationPath> {
@@ -83,7 +101,7 @@ final class NovelNavigator {
 
   private func layoutChanged(from old: NovelLayout) {
     guard layout != old else { return }
-    if layout == .compact { enterCompact() } else { compactPath = NavigationPath() }
+    if layout == .compact { enterCompact() } else { replaceCompactPath(NavigationPath()) }
   }
 
   private func enterCompact() {
@@ -91,8 +109,16 @@ final class NovelNavigator {
     let current = compactSection
     section = current
     paths[current] = nil
-    compactPath = Self.stops(for: current)
+    replaceCompactPath(Self.stops(for: current))
   }
+
+  private func replaceCompactPath(_ path: NavigationPath) {
+    compactPath = path
+    sectionDepth = 0
+    covered = []
+  }
+
+  private func rootDepth(of section: NovelSection) -> Int { sectionDepth + Self.stops(for: section).count }
 
   private static func stops(for section: NovelSection) -> NavigationPath {
     section == .chat ? NavigationPath() : NavigationPath([CompactStop.section(section)])

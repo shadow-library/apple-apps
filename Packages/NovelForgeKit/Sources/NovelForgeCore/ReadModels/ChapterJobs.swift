@@ -50,21 +50,28 @@ public struct ChapterJobs: ReadModel {
       let entries = try transaction.query { database in
         try JobEntry.filter(Column("novel") == query.novel && Column("chapter") == query.chapter).fetchAll(database)
       }
-      var latest = [String: (entry: JobEntry, reviewKind: ChapterReviewKind?)]()
-      for entry in entries {
-        let reviewKind = try reviewKind(of: entry, in: transaction)
-        let group = reviewKind.map { "\(entry.kind):\($0.rawValue)" } ?? entry.kind
-        if latest[group].map({ precedes($0.entry, entry) }) ?? true { latest[group] = (entry, reviewKind) }
-      }
-      let kept = latest.values.sorted { precedes($0.entry, $1.entry) }.map { ($0.entry, $0.reviewKind) }
-      changes = kept.compactMap { $0.0.standing.changes(after: query.now) }.min()
-      return kept.map { entry, reviewKind in
-        ChapterJob(
-          job: entry.ref, kind: entry.jobKind, run: entry.run, requester: entry.requester, status: entry.status(at: query.now), reviewKind: reviewKind,
-          runner: entry.standing.holder(at: query.now), latest: entry.latest)
-      }
+      let latest = try latest(of: entries, at: query.now, in: transaction)
+      changes = latest.changes
+      return latest.jobs
     }
     return ChapterJobs(jobs: jobs, changesAt: changes.map { Date(timeIntervalSince1970: Double($0) / 1000) }, faults: report.relevant)
+  }
+
+  /// One chapter's entries down to the latest job of each kind, a review's kind counting apart, and the next moment one of them changes with no write.
+  static func latest(of entries: [JobEntry], at now: LeaseInstant, in transaction: ReadTransaction) throws(StoreError) -> (jobs: [ChapterJob], changes: Int64?) {
+    var latest = [String: (entry: JobEntry, reviewKind: ChapterReviewKind?)]()
+    for entry in entries {
+      let reviewKind = try reviewKind(of: entry, in: transaction)
+      let group = reviewKind.map { "\(entry.kind):\($0.rawValue)" } ?? entry.kind
+      if latest[group].map({ precedes($0.entry, entry) }) ?? true { latest[group] = (entry, reviewKind) }
+    }
+    let kept = latest.values.sorted { precedes($0.entry, $1.entry) }.map { ($0.entry, $0.reviewKind) }
+    let jobs = kept.map { entry, reviewKind in
+      ChapterJob(
+        job: entry.ref, kind: entry.jobKind, run: entry.run, requester: entry.requester, status: entry.status(at: now), reviewKind: reviewKind,
+        runner: entry.standing.holder(at: now), latest: entry.latest)
+    }
+    return (jobs, kept.compactMap { $0.0.standing.changes(after: now) }.min())
   }
 
   private static func reviewKind(of entry: JobEntry, in transaction: ReadTransaction) throws(StoreError) -> ChapterReviewKind? {
@@ -76,6 +83,60 @@ public struct ChapterJobs: ReadModel {
     if first.requested != second.requested { return first.requested < second.requested }
     if first.run != second.run { return first.run < second.run }
     return first.job.rawValue.utf8.lexicographicallyPrecedes(second.job.rawValue.utf8)
+  }
+}
+
+public struct NovelChapterJobsQuery: Sendable, Hashable {
+  public let novel: UUID
+  public let now: LeaseInstant
+
+  public init(novel: UUID, now: LeaseInstant) {
+    self.novel = novel
+    self.now = now
+  }
+}
+
+/// `ChapterJobs` of every chapter of the novel that may still show a line, in one read, whether or not the chapter still has a draft or a plan: one with a
+/// job neither succeeded nor cancelled that no later job of its kind replaced. A later review replaces one only with the same fingerprint, which names its
+/// review kind; reviews of other text are kept, since only their request says which kind they are.
+public struct NovelChapterJobs: ReadModel {
+  /// Each listed chapter's jobs as `ChapterJobs.jobs` reads them.
+  public let chapters: Derived<[Int: [ChapterJob]]>
+  public let changesAt: Date?
+  public let faults: [ReadFault]
+
+  private static let tables = [JobEntry.databaseTableName]
+  /// The wall time and counter of an `HLCTimestamp`'s text, which sort as the clock does; the replica after them is left out so text order never decides.
+  private static let clockPrefix = 29
+
+  public var jobs: [ChapterJob] { (chapters.value ?? [:]).sorted { $0.key < $1.key }.flatMap(\.value) }
+
+  public static func load(_ query: NovelChapterJobsQuery, in transaction: ReadTransaction) throws(StoreError) -> NovelChapterJobs {
+    let report = try ReadFaults(novel: query.novel, reading: tables, in: transaction)
+    var changes: Int64?
+    let chapters = try report.section(tables) { () throws(StoreError) in
+      let table = JobEntry.databaseTableName
+      let review = NovelJobKind.review.rawValue
+      let entries = try transaction.query { database in
+        try JobEntry.fetchAll(
+          database,
+          sql: """
+            SELECT * FROM \(table) WHERE novel = ? AND chapter IN (
+              SELECT e.chapter FROM \(table) e WHERE e.novel = ? AND e.ended IS NULL AND e.chapter IS NOT NULL AND NOT EXISTS (
+                SELECT 1 FROM \(table) f WHERE f.novel = e.novel AND f.chapter = e.chapter AND f.kind = e.kind
+                  AND substr(f.requested, 1, \(Self.clockPrefix)) > substr(e.requested, 1, \(Self.clockPrefix)) AND (f.kind != ? OR f.fingerprint = e.fingerprint)))
+            """, arguments: [query.novel, query.novel, review])
+      }
+      var chapters = [Int: [ChapterJob]]()
+      for (chapter, entries) in Dictionary(grouping: entries, by: \.chapter) {
+        guard let chapter else { continue }
+        let latest = try ChapterJobs.latest(of: entries, at: query.now, in: transaction)
+        chapters[chapter] = latest.jobs
+        changes = [changes, latest.changes].compactMap { $0 }.min()
+      }
+      return chapters
+    }
+    return NovelChapterJobs(chapters: chapters, changesAt: changes.map { Date(timeIntervalSince1970: Double($0) / 1000) }, faults: report.relevant)
   }
 }
 

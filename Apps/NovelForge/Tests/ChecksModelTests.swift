@@ -237,15 +237,19 @@ struct ChecksModelTests {
     _ = try await world.engine.request(NovelJobRequest(kind: .review, novel: world.novel, chapter: 1, fingerprint: "checks-editorial", payload: ["kind": "editorial"]))
     let clock = LeaseClock(trusted: nil)
 
-    func lines() async throws -> [ChapterJobLine] {
+    func lines(_ platform: JobPlatform = .mac, consentNeeded: Bool = false) async throws -> [ChapterJobLine] {
       let query = ChapterJobBoardQuery(novel: world.novel, chapter: 1, replica: world.store.replica, now: clock.now())
       let board = try await world.store.load(ChapterJobBoard.self, query)
-      return ChapterWorkspaceStatus(row: nil, board: board, replica: world.store.replica, standing: JobsStanding(here: .running, platform: .mac)).lines
+      let standing = JobsStanding(here: .running, platform: platform, consentNeeded: consentNeeded)
+      return ChapterWorkspaceStatus(row: nil, board: board, replica: world.store.replica, standing: standing).lines
     }
 
     var current = try await lines()
-    #expect(ChecksDisplay.phase(current, of: .judge) == .queued)
-    #expect(ChecksDisplay.phase(current, of: .editorial) == .queued)
+    #expect(ChecksDisplay.phase(current, of: .judge) == .queued(.startsHere))
+    #expect(ChecksDisplay.phase(current, of: .editorial) == .queued(.startsHere))
+    #expect(ChecksDisplay.phase(try await lines(.phone), of: .judge) == .queued(.elsewhere))
+    #expect(ChecksDisplay.phase(try await lines(consentNeeded: true), of: .judge) == .queued(.permission))
+    #expect(ChecksDisplay.status(nil, job: .queued(.elsewhere)).label == "Queued")
     #expect(ChecksDisplay.phase(current, of: .mechanics) == nil)
     let now = clock.now()
     let start = AttemptStart(job: judge, replica: world.store.replica, started: now, byHand: false, pinned: .null)
@@ -253,7 +257,7 @@ struct ChecksModelTests {
     _ = try await world.store.write { transaction in try AttemptRecords.start(id, start, step: nil, in: &transaction) }
     current = try await lines()
     #expect(ChecksDisplay.phase(current, of: .judge) == .running)
-    #expect(ChecksDisplay.phase(current, of: .editorial) == .queued)
+    #expect(ChecksDisplay.phase(current, of: .editorial) == .queued(.startsHere))
     #expect(ChecksDisplay.status(nil, job: .running).label == "Reviewing…")
   }
 

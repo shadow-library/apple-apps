@@ -1,26 +1,41 @@
 import NovelForgeCore
 import ShadowDesignSystem
+import ShadowStore
 import SwiftUI
 
-/// apps/novel-forge-web/src/features/chat/WaitingTray.tsx:26-106; a card opens its own chat rather than being brought into this one.
+/// apps/novel-forge-web/src/features/chat/WaitingTray.tsx:26-106; a card opens its own chat rather than being brought into this one. In regular width it
+/// also lists the chapters' rows of Waiting on you (phase 8 decision 6), which never open the tray on their own; a compact chat leaves them to the iPhone home.
 struct ChatWaitingTray: View {
   let tray: ChatTrayModel
   let chats: ChatNovelModel
   /// Nil on the opening composer, before a chat exists.
   let session: ChatSessionModel?
+  @Environment(NovelNavigator.self) private var navigator
+  @Environment(JobRuntimes.self) private var runtimes
   @State private var isOpen: Bool?
+  @State private var pending = PendingModel()
+  @State private var pendingActions = PendingActions()
 
   var body: some View {
     let items = tray.items
     let away = items.count { !isHere($0) }
-    content(items, away: away)
+    let chapters = chapterRows
+    content(items, chapters: chapters, away: away)
       .onChange(of: away, initial: true) { previous, next in
         if next > previous { isOpen = nil }
       }
+      .pendingObservation(pending, context: chats.context, isActive: navigator.layout == .regular)
+      .pendingPresentations(pendingActions, context: chats.context)
+  }
+
+  private var chapterRows: [PendingItem] {
+    guard navigator.layout == .regular else { return [] }
+    let standing = runtimes.existing(for: chats.context.store)?.standing ?? .starting
+    return pending.list(replica: chats.context.store.replica, standing: standing).chapters
   }
 
   @ViewBuilder
-  private func content(_ items: [ChatTrayItem], away: Int) -> some View {
+  private func content(_ items: [ChatTrayItem], chapters: [PendingItem], away: Int) -> some View {
     VStack(alignment: .leading, spacing: Spacing.space2) {
       if case .failed(let error) = tray.state {
         ShadowCallout(Text("Waiting on you could not be read", tableName: "ChatChanges"), message: error.text, intent: .warning) {
@@ -33,16 +48,17 @@ struct ChatWaitingTray: View {
       } else if tray.isUnavailable {
         Text("Cards waiting on you are not up to date on this device yet.", tableName: "ChatChanges").shadowFont(.footnote).foregroundStyle(ShadowColor.warningText)
       }
-      if !items.isEmpty {
-        if isOpen ?? (away > 0) { expanded(items) } else { collapsed(items) }
+      if !items.isEmpty || !chapters.isEmpty {
+        if isOpen ?? (away > 0) { expanded(items, chapters: chapters) } else { collapsed(items, chapters: chapters) }
       }
     }
   }
 
-  private func collapsed(_ items: [ChatTrayItem]) -> some View {
-    let names = items.map(ChatTrayText.short).joined(separator: " · ")
+  private func collapsed(_ items: [ChatTrayItem], chapters: [PendingItem]) -> some View {
+    var seen = Set<String>()
+    let names = (items.map(ChatTrayText.short) + chapters.map(PendingDisplay.short)).filter { seen.insert($0).inserted }.joined(separator: " · ")
     return HStack(spacing: Spacing.space2) {
-      ShadowBadge(count: items.count)
+      ShadowBadge(count: items.count + chapters.count)
       Text("Waiting on you: \(names)", tableName: "ChatChanges").shadowFont(.footnote).foregroundStyle(ShadowColor.textSecondary).lineLimit(1).help(Text(verbatim: names))
       Spacer(minLength: Spacing.space2)
       Button {
@@ -55,10 +71,10 @@ struct ChatWaitingTray: View {
     .padding(.horizontal, Spacing.space3)
   }
 
-  private func expanded(_ items: [ChatTrayItem]) -> some View {
+  private func expanded(_ items: [ChatTrayItem], chapters: [PendingItem]) -> some View {
     VStack(alignment: .leading, spacing: Spacing.space2) {
       HStack {
-        Text("Waiting on you · \(items.count)", tableName: "ChatChanges").shadowFont(.subheadline).foregroundStyle(ShadowColor.textPrimary)
+        Text("Waiting on you · \(items.count + chapters.count)", tableName: "ChatChanges").shadowFont(.subheadline).foregroundStyle(ShadowColor.textPrimary)
         Spacer(minLength: Spacing.space2)
         Button {
           isOpen = false
@@ -70,6 +86,7 @@ struct ChatWaitingTray: View {
       ScrollView {
         VStack(alignment: .leading, spacing: Spacing.space2) {
           ForEach(items) { item in row(item) }
+          ForEach(chapters) { item in PendingRow(item: item, context: chats.context, actions: pendingActions, chats: chats, here: session?.session) }
         }
       }
       .frame(maxHeight: 220)
@@ -156,20 +173,12 @@ struct ChatWaitingTray: View {
 
   private func isHere(_ item: ChatTrayItem) -> Bool { session.map { item.session.id == $0.session } ?? false }
 
-  /// A chat the list holds; a deleted one, or one this device has not received, has no thread to show the item in.
   private func openable(_ item: ChatTrayItem) -> UUID? {
-    guard case .deleted = item.session else { return item.session.id.flatMap { id in chats.overview(of: id) == nil ? nil : id } }
-    return nil
+    ChatTrayText.chat(of: item) { chats.overview(of: $0) != nil }
   }
 
   private func source(_ item: ChatTrayItem) -> String {
-    switch item.session {
-    case .none: return String(localized: "no chat", table: "ChatChanges")
-    case .deleted: return String(localized: "a deleted chat", table: "ChatChanges")
-    case .live(let id), .unknown(let id):
-      if id == session?.session { return String(localized: "this chat", table: "ChatChanges") }
-      return chats.overview(of: id) == nil ? String(localized: "another chat", table: "ChatChanges") : chats.title(of: id)
-    }
+    ChatTrayText.source(of: item, here: session?.session, chats: chats)
   }
 }
 
@@ -184,6 +193,22 @@ enum ChatTrayText {
     case .actions: ShadowBadge(Text("actions", tableName: "ChatChanges"), intent: .warning)
     case .question: ShadowBadge(Text("question", tableName: "ChatChanges"), intent: .accent)
     case .elsewhere, .interrupted, .failed: ShadowBadge(Text("message", tableName: "ChatChanges"), intent: .info)
+    }
+  }
+
+  /// A chat the list holds; a deleted one, or one this device has not received, has no thread to show the item in.
+  static func chat(of item: ChatTrayItem, listed: (UUID) -> Bool) -> UUID? {
+    guard case .deleted = item.session else { return item.session.id.flatMap { listed($0) ? $0 : nil } }
+    return nil
+  }
+
+  static func source(of item: ChatTrayItem, here: UUID?, chats: ChatNovelModel) -> String {
+    switch item.session {
+    case .none: return String(localized: "no chat", table: "ChatChanges")
+    case .deleted: return String(localized: "a deleted chat", table: "ChatChanges")
+    case .live(let id), .unknown(let id):
+      if id == here { return String(localized: "this chat", table: "ChatChanges") }
+      return chats.overview(of: id) == nil ? String(localized: "another chat", table: "ChatChanges") : chats.title(of: id)
     }
   }
 

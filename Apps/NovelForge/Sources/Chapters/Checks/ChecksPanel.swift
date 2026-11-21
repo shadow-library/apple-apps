@@ -172,7 +172,9 @@ struct ChecksPanel: View {
 
   private func phaseText(_ phase: ReviewJobPhase) -> Text {
     switch phase {
-    case .queued: Text("\(ChecksDisplay.label(kind)) is queued — it starts in a moment.", tableName: "Checks")
+    case .queued(.startsHere): Text("\(ChecksDisplay.label(kind)) is queued — it starts in a moment.", tableName: "Checks")
+    case .queued(.permission): Text("\(ChecksDisplay.label(kind)) is waiting for your permission to send this novel's text.", tableName: "Checks")
+    case .queued(.elsewhere): Text("\(ChecksDisplay.label(kind)) is queued — it starts when the device that runs jobs takes it, or when you run it here.", tableName: "Checks")
     case .running: Text("\(ChecksDisplay.label(kind)) is reading the chapter — this can take a minute.", tableName: "Checks")
     }
   }
