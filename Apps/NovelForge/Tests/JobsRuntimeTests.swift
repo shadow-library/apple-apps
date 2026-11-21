@@ -100,6 +100,11 @@ private final class InterruptLog: Sendable {
   let jobs = Mutex<[EntityRef]>([])
 }
 
+private final class StartLog: Sendable {
+  let runs = Mutex<[EntityRef]>([])
+  let resumes = Mutex<[EntityRef]>([])
+}
+
 /// A host that keeps every run it is handed and counts the scene's moves.
 @MainActor
 private final class RecordingHost: JobRunHost {
@@ -415,6 +420,46 @@ struct JobsRuntimeTests {
     try await world.decideConsent(.granted, at: 2)
     try await JobsWait.until("the job is handed over") { host.runs.contains { $0.job == before } }
     #expect(host.runs.first { $0.job == before }?.origin == .person)
+  }
+
+  @Test func shouldStartNothingMoreAndInterruptTheRunGoingHereWhenStoppingBeforeQuitting() async throws {
+    let (interrupted, starts) = (InterruptLog(), StartLog())
+    let engine = JobEngineCalls(
+      run: { engine, job throws(JobEngineError) in
+        starts.runs.withLock { $0.append(job) }
+        return try await engine.run(job: job)
+      },
+      resumeHere: { engine, job throws(JobEngineError) in
+        starts.resumes.withLock { $0.append(job) }
+        return try await engine.resumeHere(job: job)
+      },
+      interrupt: { engine, job throws(JobEngineError) in
+        interrupted.jobs.withLock { $0.append(job) }
+        return try await engine.interrupt(job: job, releasingLease: true)
+      })
+    let world = try await JobsWorld.make([[.delay(.seconds(60))], [.delay(.seconds(60))]], engine: engine)
+    let (replica, since) = (world.store.replica, world.runtime.clock.now())
+    try await world.store.write { transaction in try WorkerRecords.designate(replica, at: since, in: &transaction) }
+    try await world.approvedChapter()
+    await world.runtime.launch()
+    try await JobsWait.until("the read's model call is under way") { !world.provider.requests.isEmpty }
+    let run = try #require(world.runtime.runsHere.first)
+    #expect(world.runtime.runsHere.count == 1)
+    var progress = world.runtime.observeRun(run.attempt).makeAsyncIterator()
+    #expect(await progress.next()?.attempt == run.attempt)
+    let queued = try await #require(world.runtime.engine).request(world.generation()).ref
+
+    await world.runtime.stopBeforeQuitting()
+
+    #expect(interrupted.jobs.withLock { $0 } == [run.job])
+    try await JobsWait.until("the interrupted run is no longer going here") { world.runtime.runsHere.isEmpty }
+    try await JobsWait.until("the power assertion is released") { world.power.ended == 1 }
+    try await Task.sleep(for: .milliseconds(500))
+    #expect(starts.runs.withLock { $0 } == [run.job] && starts.resumes.withLock { $0 }.isEmpty)
+    #expect(!starts.runs.withLock { $0 }.contains(queued) && world.runtime.runsHere.isEmpty && world.provider.requests.count == 1)
+    var ended = world.runtime.observeRun(run.attempt).makeAsyncIterator()
+    #expect(await ended.next() == nil)
+    #expect(await world.runtime.runHere(queued) == JobsErrors.notRunningHere)
   }
 
   @Test func shouldShowARunGoingInThisProcessAsRunningNotAsStopped() async throws {

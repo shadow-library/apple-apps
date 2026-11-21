@@ -5,23 +5,25 @@ import SwiftUI
 
 @main
 struct NovelForgeApp: App {
+  static let libraryWindow = "library"
+
   #if os(macOS)
     @NSApplicationDelegateAdaptor(NovelForgeAppDelegate.self) private var delegate
   #else
     @UIApplicationDelegateAdaptor(NovelForgeAppDelegate.self) private var delegate
   #endif
   @Environment(\.scenePhase) private var scenePhase
-  @State private var ai = AIServices.live()
   @State private var chats = ChatRuntimes()
-  @State private var jobs = JobRuntimes(host: JobRunHosts.system())
-  @State private var retrieval = RetrievalRuntimes()
   @State private var settingsTabs = SettingsTabs()
 
   private var vault: VaultModel { delegate.vault }
   private var sync: SyncRuntimes { delegate.sync }
+  private var ai: AIServices { delegate.ai }
+  private var jobs: JobRuntimes { delegate.jobs }
+  private var retrieval: RetrievalRuntimes { delegate.retrieval }
 
   var body: some Scene {
-    WindowGroup {
+    WindowGroup(id: Self.libraryWindow) {
       RootView(vault: vault)
         .environment(ai)
         .environment(chats)
@@ -46,7 +48,11 @@ struct NovelForgeApp: App {
     }
     .commands { NovelForgeCommands() }
     #if os(macOS)
-      Settings { NovelForgeSettingsScene(vault: vault, services: ai, sync: sync, tabs: settingsTabs) }
+      .defaultLaunchBehavior(delegate.worker.isOn ? .suppressed : .automatic)
+    #endif
+    #if os(macOS)
+      Settings { NovelForgeSettingsScene(vault: vault, services: ai, sync: sync, jobs: jobs, worker: delegate.worker, tabs: settingsTabs) }
+      WorkerMenuBar(worker: delegate.worker, tabs: settingsTabs)
     #endif
   }
 }

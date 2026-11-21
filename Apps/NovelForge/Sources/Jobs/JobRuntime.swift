@@ -19,6 +19,9 @@ final class JobRuntimes {
     self.host = host
   }
 
+  /// The open vault's runtime, whichever vault that is.
+  var active: JobRuntime? { current?.runtime }
+
   /// The vault's runtime once the app has made it; a view reads this and never makes one.
   func existing(for store: VaultStore) -> JobRuntime? {
     guard let current, current.store == ObjectIdentifier(store) else { return nil }
@@ -123,6 +126,8 @@ final class JobRuntime {
   private(set) var consentNeeded: AIConsentRequest?
   /// This device's stopped runs that Resume continues, by job, as the engine last listed them.
   private(set) var resumable: [EntityRef: InterruptedJobRun] = [:]
+  /// The runs going here, oldest first.
+  private(set) var runsHere: [JobRunHere] = []
   @ObservationIgnored private(set) var engine: JobEngine?
   @ObservationIgnored private let makeEngine: EngineFactory
   @ObservationIgnored private let calls: JobEngineCalls
@@ -134,10 +139,12 @@ final class JobRuntime {
   @ObservationIgnored private var takingOver: Task<Void, Never>?
   @ObservationIgnored private var draining: Task<Void, Never>?
   @ObservationIgnored private var repolling: Task<Void, Never>?
-  @ObservationIgnored private var following: Set<AttemptID> = []
   /// The jobs queued when the engine started: the drain starts them with no one asking, until consent given here starts the queue again.
   @ObservationIgnored private var queuedAtLaunch: Set<EntityRef>? = []
   @ObservationIgnored private var listings = 0
+  @ObservationIgnored private var isStopping = false
+  @ObservationIgnored private var startsUnderWay = 0
+  @ObservationIgnored private var startsSettled: [CheckedContinuation<Void, Never>] = []
 
   init(
     store: VaultStore, clock: LeaseClock, platform: JobPlatform = .current, power: JobPowerAssertion = JobPowerAssertion(), takeOverDelay: Duration = .seconds(30),
@@ -198,7 +205,7 @@ final class JobRuntime {
   func shutDown() {
     for task in [launching, takingOver, draining, repolling] { task?.cancel() }
     (launching, takingOver, draining, repolling, engine) = (nil, nil, nil, nil, nil)
-    following = []
+    runsHere = []
     resumable = [:]
     settler?.shutDown()
     power.release()
@@ -267,7 +274,8 @@ final class JobRuntime {
   /// Holds the Mac awake until the run ends and hands the run to the host; for runs started outside the runtime too, such as a generation asked for from its
   /// screen.
   func follow(_ handle: JobRunHandle, origin: JobRunOrigin) {
-    guard following.insert(handle.attempt).inserted else { return }
+    guard !runsHere.contains(where: { $0.attempt == handle.attempt }) else { return }
+    runsHere.append(JobRunHere(job: handle.job, attempt: handle.attempt))
     resumable[handle.job] = nil
     power.begin()
     let finished = Task { await handle.result }
@@ -315,8 +323,37 @@ final class JobRuntime {
       finished: { await finished.value })
   }
 
+  /// The progress of a run going here until it ends; finishes at once when none of it is going here.
+  func observeRun(_ attempt: AttemptID) -> AsyncStream<JobRunProgress> {
+    guard let engine, runsHere.contains(where: { $0.attempt == attempt }) else { return AsyncStream { $0.finish() } }
+    return calls.observeRun(engine, attempt)
+  }
+
+  /// Before the Mac app quits: nothing starts or resumes any more, a start under way is waited for, and then every run going here ends as a crash would,
+  /// its lease released so another device may take the job over at once instead of waiting for it to lapse; the checkpoint stays, and the next launch
+  /// resumes it unless another device has taken it.
+  func stopBeforeQuitting() async {
+    isStopping = true
+    for task in [takingOver, draining, repolling] { task?.cancel() }
+    await startsToSettle()
+    guard let engine else { return }
+    let (calls, jobs) = (calls, runsHere.map(\.job))
+    await withTaskGroup(of: Void.self) { group in
+      for job in jobs {
+        group.addTask {
+          do throws(JobEngineError) {
+            _ = try await calls.interrupt(engine, job)
+          } catch {
+            Self.logger.error("A run here could not be interrupted before quitting code=\(error.code, privacy: .public)")
+          }
+        }
+      }
+    }
+  }
+
   private func ended(_ attempt: AttemptID) {
-    guard following.remove(attempt) != nil else { return }
+    guard let index = runsHere.firstIndex(where: { $0.attempt == attempt }) else { return }
+    runsHere.remove(at: index)
     power.end()
     settler?.settle()
     guard let engine else { return }
@@ -324,11 +361,11 @@ final class JobRuntime {
   }
 
   private func act(on job: EntityRef, _ start: (JobEngine) async throws(JobEngineError) -> JobRunHandle) async -> PresentedError? {
-    guard let engine else { return JobsErrors.notRunningHere }
+    guard let engine, !isStopping else { return JobsErrors.notRunningHere }
     pending.insert(job)
     defer { pending.remove(job) }
     do throws(JobEngineError) {
-      follow(try await start(engine), origin: .person)
+      try await starting { () throws(JobEngineError) in follow(try await start(engine), origin: .person) }
       await listResumable(engine)
       return nil
     } catch .consentRequired(let request) {
@@ -347,6 +384,7 @@ final class JobRuntime {
   }
 
   private func claim() async {
+    guard !isStopping else { return }
     let engine: JobEngine
     do throws(JobEngineError) {
       engine = try makeEngine()
@@ -379,10 +417,14 @@ final class JobRuntime {
   }
 
   private func resumeInterrupted(_ engine: JobEngine) async {
+    guard !isStopping else { return }
     do throws(JobEngineError) {
-      let resumed = try await calls.resumeInterrupted(engine)
+      let resumed = try await starting { () throws(JobEngineError) -> [JobRunHandle] in
+        let resumed = try await calls.resumeInterrupted(engine)
+        for handle in resumed { follow(handle, origin: .automatic) }
+        return resumed
+      }
       Self.logger.info("Resumed interrupted job attempts count=\(resumed.count, privacy: .public)")
-      for handle in resumed { follow(handle, origin: .automatic) }
     } catch {
       Self.logger.error("Interrupted job attempts could not be resumed code=\(error.code, privacy: .public)")
     }
@@ -420,6 +462,7 @@ final class JobRuntime {
   /// which ends once the job it runs has ended, so jobs still start one at a time. A lease that lapses changes the queue with no write, so the queue is
   /// observed again at its `changesAt`.
   private func drain(_ engine: JobEngine) {
+    guard !isStopping else { return }
     let previous = draining
     previous?.cancel()
     repolling?.cancel()
@@ -468,11 +511,14 @@ final class JobRuntime {
   /// is checked against the queue as it reads now, since the worker may have changed while the job before it ran.
   private func start(_ jobs: [EntityRef], on engine: JobEngine) async -> AIConsentRequest? {
     for job in jobs {
-      guard consentNeeded == nil, !Task.isCancelled else { return nil }
-      guard await isQueued(job) else { continue }
+      guard consentNeeded == nil, !isStopping, !Task.isCancelled else { return nil }
+      guard await isQueued(job), !isStopping else { continue }
       do throws(JobEngineError) {
-        let handle = try await begin(job, on: engine)
-        follow(handle, origin: origin(of: job))
+        let handle = try await starting { () throws(JobEngineError) -> JobRunHandle in
+          let handle = try await begin(job, on: engine)
+          follow(handle, origin: origin(of: job))
+          return handle
+        }
         _ = await handle.result
       } catch .consentRequired(let request) {
         return request
@@ -502,6 +548,24 @@ final class JobRuntime {
     return .person
   }
 
+  /// Every engine call that may start or resume a run, with the follow that lists its run, goes through here, so stopping waits for the ones under way.
+  private func starting<Value>(_ body: () async throws(JobEngineError) -> Value) async throws(JobEngineError) -> Value {
+    startsUnderWay += 1
+    defer {
+      startsUnderWay -= 1
+      if startsUnderWay == 0 {
+        for waiter in startsSettled { waiter.resume() }
+        startsSettled = []
+      }
+    }
+    return try await body()
+  }
+
+  private func startsToSettle() async {
+    guard startsUnderWay > 0 else { return }
+    await withCheckedContinuation { startsSettled.append($0) }
+  }
+
   /// A job whose last attempt is this device's stopped run continues that run rather than starting another attempt.
   private func begin(_ job: EntityRef, on engine: JobEngine) async throws(JobEngineError) -> JobRunHandle {
     guard resumable[job] != nil else { return try await calls.run(engine, job) }
@@ -512,4 +576,9 @@ final class JobRuntime {
       return try await calls.run(engine, job)
     }
   }
+}
+
+nonisolated struct JobRunHere: Sendable, Hashable {
+  let job: EntityRef
+  let attempt: AttemptID
 }

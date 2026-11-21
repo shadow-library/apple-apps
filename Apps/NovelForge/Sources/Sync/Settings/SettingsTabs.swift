@@ -7,6 +7,7 @@ final class SettingsTabs {
   enum Tab: Hashable {
     case ai
     case sync
+    case worker
   }
 
   var selected = Tab.ai

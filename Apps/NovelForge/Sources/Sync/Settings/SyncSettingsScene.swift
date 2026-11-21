@@ -5,6 +5,10 @@ struct NovelForgeSettingsScene: View {
   let vault: VaultModel
   let services: AIServices
   let sync: SyncRuntimes
+  #if os(macOS)
+    let jobs: JobRuntimes
+    let worker: WorkerModel
+  #endif
   @Bindable var tabs: SettingsTabs
 
   var body: some View {
@@ -31,6 +35,19 @@ struct NovelForgeSettingsScene: View {
           Image(systemName: "arrow.triangle.2.circlepath")
         }
       }
+      #if os(macOS)
+        Tab(value: SettingsTabs.Tab.worker) {
+          DevicesAndWorkerView(store: vault.store, jobs: jobs, worker: worker)
+            .shadowTheme()
+            .frame(minWidth: 520, idealWidth: 600, minHeight: 480, idealHeight: 640)
+        } label: {
+          Label {
+            Text("Devices and Worker", tableName: "Worker")
+          } icon: {
+            Image(systemName: "macbook.and.iphone")
+          }
+        }
+      #endif
     }
     .onDisappear { tabs.syncKeys = nil }
   }

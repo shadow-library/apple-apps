@@ -8,9 +8,9 @@ import ShadowSyncRuntime
 import SwiftUI
 
 /// One `SyncRuntime` per open vault, shared by every window, with the status the indicator shows. Launch starts it; the scene phase and, on the Mac, the
-/// app or a window becoming active bring it to the front; the background sends what is left inside a background task; every committed local write is
-/// handed to it; a silent push asks it to look for changes. A vault opened in place of another shuts the other's runtime down first; launches and
-/// shutdowns apply one at a time, in order.
+/// app or a window becoming active bring it to the front, as worker mode keeps it on a Mac with no window; the background sends what is left inside a
+/// background task; every committed local write is handed to it; a silent push asks it to look for changes. A vault opened in place of another shuts the
+/// other's runtime down first; launches and shutdowns apply one at a time, in order.
 @MainActor
 @Observable
 final class SyncRuntimes {
@@ -32,6 +32,8 @@ final class SyncRuntimes {
   @ObservationIgnored private var watchers: [Task<Void, Never>] = []
   @ObservationIgnored private var changing: Task<Void, Never>?
   @ObservationIgnored private var inFront = false
+  @ObservationIgnored private var sceneInFront = false
+  @ObservationIgnored private var keptInFront = false
   @ObservationIgnored private var lastForeground: ContinuousClock.Instant?
 
   /// A nil factory syncs nothing, as while XCTest hosts the app.
@@ -89,15 +91,29 @@ final class SyncRuntimes {
   func phaseChanged(_ phase: ScenePhase) async {
     switch phase {
     case .active:
+      sceneInFront = true
       await foreground(at: .now)
     case .background:
-      inFront = false
-      guard let runtime else { return }
-      await background("sync-final-upload") { await runtime.background() }
+      sceneInFront = false
+      guard !keptInFront else { return }
+      await enterBackground()
     default:
       return
     }
   }
+
+  #if os(macOS)
+    /// While the Mac runs the vault's jobs it syncs as in front with no window open, so a job asked for on another device reaches it within a poll.
+    func keepInFront(_ kept: Bool) async {
+      guard kept != keptInFront else { return }
+      keptInFront = kept
+      if kept {
+        await foreground(at: .now)
+      } else if !sceneInFront {
+        await enterBackground()
+      }
+    }
+  #endif
 
   /// The Mac stays active for days, and a catch-up (with compaction now and then) runs only on launch and foreground, so activating the app or a window
   /// counts as a foreground, at most once per `activationInterval`.
@@ -117,6 +133,12 @@ final class SyncRuntimes {
   func uploadBeforeQuitting(within timeout: Duration) async {
     guard let runtime, status != .off else { return }
     _ = await SyncBackgroundWork.bounded(timeout) { await runtime.background() }
+  }
+
+  private func enterBackground() async {
+    inFront = false
+    guard let runtime else { return }
+    await background("sync-final-upload") { await runtime.background() }
   }
 
   private func foreground(at now: ContinuousClock.Instant) async {

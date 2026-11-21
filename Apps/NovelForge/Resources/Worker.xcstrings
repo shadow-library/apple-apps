@@ -1,0 +1,568 @@
+{
+  "sourceLanguage": "en",
+  "strings": {
+    "%@ now runs jobs, so worker mode turned off on this Mac.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ now runs jobs, so worker mode turned off on this Mac."
+          }
+        }
+      }
+    },
+    "A Mac turns on worker mode in its Novel Forge settings. The chapters this device asks for wait for that Mac, or for Run on This Device.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A Mac turns on worker mode in its Novel Forge settings. The chapters this device asks for wait for that Mac, or for Run on This Device."
+          }
+        }
+      }
+    },
+    "Allow Novel Forge in Login Items": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Allow Novel Forge in Login Items"
+          }
+        }
+      }
+    },
+    "Another Mac now runs jobs, so worker mode turned off on this Mac.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Another Mac now runs jobs, so worker mode turned off on this Mac."
+          }
+        }
+      }
+    },
+    "Another copy of Novel Forge runs this library's jobs": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Another copy of Novel Forge runs this library's jobs"
+          }
+        }
+      }
+    },
+    "Devices": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Devices"
+          }
+        }
+      }
+    },
+    "Devices and Worker": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Devices and Worker"
+          }
+        }
+      }
+    },
+    "Devices and Worker Settings…": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Devices and Worker Settings…"
+          }
+        }
+      }
+    },
+    "Dismiss": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dismiss"
+          }
+        }
+      }
+    },
+    "Doesn't open when you log in.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Doesn't open when you log in."
+          }
+        }
+      }
+    },
+    "Each device names itself when it joins this library's sync. A library that doesn't sync lists only this device.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Each device names itself when it joins this library's sync. A library that doesn't sync lists only this device."
+          }
+        }
+      }
+    },
+    "Getting ready to run jobs": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Getting ready to run jobs"
+          }
+        }
+      }
+    },
+    "Jobs can't run on this Mac right now": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Jobs can't run on this Mac right now"
+          }
+        }
+      }
+    },
+    "Jobs run on %@.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Jobs run on %@."
+          }
+        }
+      }
+    },
+    "Jobs run on another Mac.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Jobs run on another Mac."
+          }
+        }
+      }
+    },
+    "No Mac runs jobs any more, so worker mode turned off on this Mac.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No Mac runs jobs any more, so worker mode turned off on this Mac."
+          }
+        }
+      }
+    },
+    "No Mac runs jobs.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No Mac runs jobs."
+          }
+        }
+      }
+    },
+    "No jobs to run": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No jobs to run"
+          }
+        }
+      }
+    },
+    "Novel Forge": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Novel Forge"
+          }
+        }
+      }
+    },
+    "Novel Forge couldn't be added to Login Items": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Novel Forge couldn't be added to Login Items"
+          }
+        }
+      }
+    },
+    "Novel Forge opens when you log in only once you allow it in System Settings.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Novel Forge opens when you log in only once you allow it in System Settings."
+          }
+        }
+      }
+    },
+    "OK": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "OK"
+          }
+        }
+      }
+    },
+    "Open Login Items Settings": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Open Login Items Settings"
+          }
+        }
+      }
+    },
+    "Open Novel Forge": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Open Novel Forge"
+          }
+        }
+      }
+    },
+    "Open at Login": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Open at Login"
+          }
+        }
+      }
+    },
+    "Open the library in this copy of Novel Forge to turn this on.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Open the library in this copy of Novel Forge to turn this on."
+          }
+        }
+      }
+    },
+    "Opening at login needs a build signed with a development team. Worker mode runs while Novel Forge is open.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Opening at login needs a build signed with a development team. Worker mode runs while Novel Forge is open."
+          }
+        }
+      }
+    },
+    "Opens when you log in.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Opens when you log in."
+          }
+        }
+      }
+    },
+    "Quit Novel Forge": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Quit Novel Forge"
+          }
+        }
+      }
+    },
+    "Run Jobs on This Mac": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Run Jobs on This Mac"
+          }
+        }
+      }
+    },
+    "Running a job": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Running a job"
+          }
+        }
+      }
+    },
+    "Runs Jobs": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Runs Jobs"
+          }
+        }
+      }
+    },
+    "Something went wrong": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Something went wrong"
+          }
+        }
+      }
+    },
+    "The Mac that ran jobs has left this library.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The Mac that ran jobs has left this library."
+          }
+        }
+      }
+    },
+    "The Mac that runs jobs could not be changed.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The Mac that runs jobs could not be changed."
+          }
+        }
+      }
+    },
+    "The library isn't open in this copy of Novel Forge. Turning this off stops this Mac at once, and your other devices learn of it once the library opens here again.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The library isn't open in this copy of Novel Forge. Turning this off stops this Mac at once, and your other devices learn of it once the library opens here again."
+          }
+        }
+      }
+    },
+    "This Device": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This Device"
+          }
+        }
+      }
+    },
+    "This Mac can't read which Mac runs jobs": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This Mac can't read which Mac runs jobs"
+          }
+        }
+      }
+    },
+    "This Mac runs jobs.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This Mac runs jobs."
+          }
+        }
+      }
+    },
+    "This build can't open at login": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This build can't open at login"
+          }
+        }
+      }
+    },
+    "This device can't read which Mac runs jobs.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This device can't read which Mac runs jobs."
+          }
+        }
+      }
+    },
+    "Try Again": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Try Again"
+          }
+        }
+      }
+    },
+    "Unnamed device": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Unnamed device"
+          }
+        }
+      }
+    },
+    "Waiting for the library to open": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Waiting for the library to open"
+          }
+        }
+      }
+    },
+    "Waiting for your permission to send the novel's text": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Waiting for your permission to send the novel's text"
+          }
+        }
+      }
+    },
+    "Which Mac runs jobs shows once the library is open here.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Which Mac runs jobs shows once the library is open here."
+          }
+        }
+      }
+    },
+    "While this is on, Novel Forge opens in the menu bar when you log in, without a library window, keeps running when you close its windows and runs the chapter jobs your other devices ask for. Jobs run only while this Mac is awake.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "While this is on, Novel Forge opens in the menu bar when you log in, without a library window, keeps running when you close its windows and runs the chapter jobs your other devices ask for. Jobs run only while this Mac is awake."
+          }
+        }
+      }
+    },
+    "Worker": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Worker"
+          }
+        }
+      }
+    },
+    "Worker mode was on for another library, so it turned off. Turn it on again to run this library's jobs.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Worker mode was on for another library, so it turned off. Turn it on again to run this library's jobs."
+          }
+        }
+      }
+    },
+    "and %lld more": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "and %lld more"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "and %lld more"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "version": "1.0"
+}

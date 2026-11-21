@@ -48,7 +48,9 @@ struct SyncWorld {
   var settings: SyncProviderSettings { .localFolder(SyncLocalFolderSettings(url: folder)) }
 
   /// Runtimes whose local folder is counted; every other provider comes from the app's own wiring.
-  func runtimes(background: @escaping SyncBackgroundWork.Runner = SyncBackgroundWork.system, activationInterval: Duration = .seconds(60)) -> SyncRuntimes {
+  func runtimes(
+    background: @escaping SyncBackgroundWork.Runner = SyncBackgroundWork.system, activationInterval: Duration = .seconds(60), policy: SyncSchedulePolicy = .init()
+  ) -> SyncRuntimes {
     let (wiring, provider, folder) = (wiring, provider, folder)
     return SyncRuntimes(
       factory: { store, trustedClock in
@@ -58,7 +60,8 @@ struct SyncWorld {
           return try wiring.provider(for: settings)
         }
         return SyncRuntime(
-          environment: environment, store: store, device: wiring.device, trustedClock: trustedClock, wallClock: SyncEngine.wallClock(preferring: trustedClock))
+          environment: environment, store: store, device: wiring.device, trustedClock: trustedClock, policy: policy,
+          wallClock: SyncEngine.wallClock(preferring: trustedClock))
       }, background: background, activationInterval: activationInterval)
   }
 
@@ -271,6 +274,48 @@ struct SyncRuntimesTests {
     #expect(await SyncRuntimes.deviceNames(for: [], in: store).isEmpty)
     await runtimes.shutDown()
   }
+
+  #if os(macOS)
+    @Test func shouldKeepPollingWithNoWindowWhileTheMacRunsTheVaultsJobs() async throws {
+      let world = try SyncWorld()
+      defer { world.remove() }
+      let tasks = BackgroundTasks()
+      let runtimes = world.runtimes(background: tasks.runner, policy: SyncSchedulePolicy(pollInterval: .milliseconds(100)))
+      _ = try await Self.attached(world, runtimes)
+      await runtimes.keepInFront(true)
+
+      await runtimes.phaseChanged(.background)
+
+      #expect(tasks.names.isEmpty)
+      let kept = world.provider.listings
+      try await SyncWorld.until("a poll lists the storage with no window") { world.provider.listings > kept + 1 }
+
+      await runtimes.keepInFront(false)
+
+      #expect(tasks.names == ["sync-final-upload"])
+      try await Task.sleep(for: .milliseconds(100))
+      let stopped = world.provider.listings
+      try await Task.sleep(for: .milliseconds(400))
+      #expect(world.provider.listings == stopped)
+      await runtimes.shutDown()
+    }
+
+    @Test func shouldPollOnceKeptInFrontEvenIfNoWindowEverCameToTheFront() async throws {
+      let world = try SyncWorld()
+      defer { world.remove() }
+      let runtimes = world.runtimes(policy: SyncSchedulePolicy(pollInterval: .milliseconds(100)))
+      let (store, clock) = try SyncWorld.openStore()
+      await runtimes.keepInFront(true)
+      await runtimes.launch(store, trustedClock: clock)
+      let runtime = try #require(runtimes.runtime)
+      #expect(try await runtime.attach(world.settings, choice: .create).canSync)
+      try await SyncWorld.until("the attached vault is up to date") { runtimes.status == .upToDate }
+      let attached = world.provider.listings
+
+      try await SyncWorld.until("a poll lists the storage") { world.provider.listings > attached + 1 }
+      await runtimes.shutDown()
+    }
+  #endif
 
   @Test func shouldSyncNothingWithoutAFactory() async throws {
     let runtimes = SyncRuntimes(factory: nil)

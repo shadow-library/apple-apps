@@ -43,6 +43,7 @@ struct AISettingsButton: View {
     let services: AIServices
     let store: VaultStore
     @Environment(SyncRuntimes.self) private var sync
+    @Environment(JobRuntimes.self) private var jobs
     @Environment(\.dismiss) private var dismiss
 
     var body: some View {
@@ -58,6 +59,17 @@ struct AISettingsButton: View {
                   Text("Sync", tableName: "SyncSettings")
                 } icon: {
                   Image(systemName: "arrow.triangle.2.circlepath")
+                }
+              }
+            }
+            ToolbarItem(placement: .topBarLeading) {
+              NavigationLink {
+                DevicesAndWorkerView(store: store, jobs: jobs).navigationTitle(Text("Devices and Worker", tableName: "Worker"))
+              } label: {
+                Label {
+                  Text("Devices and Worker", tableName: "Worker")
+                } icon: {
+                  Image(systemName: "macbook.and.iphone")
                 }
               }
             }
