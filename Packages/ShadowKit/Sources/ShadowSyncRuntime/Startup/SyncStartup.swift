@@ -10,8 +10,16 @@ import ShadowSync
 public actor SyncStartup {
   private static let logger = Logger(category: "SyncStartup")
 
+  private struct CachedProvider {
+    let id: Int
+    let settings: SyncProviderSettings
+    let provider: any StorageProvider
+  }
+
   private let environment: SyncStartupEnvironment
-  private var cachedProvider: (settings: SyncProviderSettings, provider: any StorageProvider)?
+  private var attachedProvider: CachedProvider?
+  private var discoveryProvider: CachedProvider?
+  private var providerCount = 0
   private var cachedRing: KeyRing?
   private var cachedKeyServices = SyncKeyServices()
   private var missingKeys: [KeyID: Set<ReplicaID>] = [:]
@@ -36,7 +44,9 @@ public actor SyncStartup {
     }
     switch record {
     case .firstUse: return try await attachAutomatically()
-    case .turnedOff: return SyncStartupResult(phase: .detached)
+    case .turnedOff(.disconnected): return SyncStartupResult(phase: .detached)
+    case .turnedOff(.unreadable): return SyncStartupResult(phase: .settingsUnreadable)
+    case .turnedOff(.newerFormat): return SyncStartupResult(phase: .appUpdateRequired)
     case .attached(let location): return try await evaluate(location, known: nil)
     }
   }
@@ -96,6 +106,12 @@ public actor SyncStartup {
     cachedRing = nil
     cachedKeyServices = SyncKeyServices()
     missingKeys = [:]
+    attachedProvider = nil
+  }
+
+  /// The provider of the saved location, made once and kept while the location stays attached, whatever else `discover(_:)` looks at.
+  func attachedStorage() -> (id: Int, provider: any StorageProvider)? {
+    attachedProvider.map { ($0.id, $0.provider) }
   }
 
   /// Takes `SyncDownloadOutcome.missingKeys` from the latest download of `vault`, which read them from unauthenticated headers; ignored unless
@@ -153,7 +169,12 @@ public actor SyncStartup {
         return SyncStartupResult(phase: binding == nil ? .accountUnavailable : .accountChanged, location: location)
       }
     }
-    let setup = try setup(for: location.settings)
+    let cached = try provider(for: location.settings)
+    if attachedProvider?.id != cached.id {
+      attachedProvider = cached
+      if discoveryProvider?.id == cached.id { discoveryProvider = nil }
+    }
+    let setup = setup(with: cached.provider)
     let discovery: VaultDiscovery
     do {
       if let known { discovery = known } else { discovery = try await setup.discover() }
@@ -179,7 +200,7 @@ public actor SyncStartup {
     }
     let observation = VaultObservation(storage: .available, vault: location.vault, heldKeys: Set(ring.keyIDs), namedKeys: missingKeys)
     let attachment = SyncAttachment(
-      location: location, provider: setup.provider, ring: ring, markerStore: environment.stores.marker, keyServices: cachedKeyServices)
+      location: location, provider: setup.provider, providerID: cached.id, ring: ring, markerStore: environment.stores.marker, keyServices: cachedKeyServices)
     return SyncStartupResult(phase: .vault(VaultStartupState(observation)), location: location, attachment: attachment)
   }
 
@@ -212,15 +233,23 @@ public actor SyncStartup {
   }
 
   private func setup(for settings: SyncProviderSettings) throws(SyncStartupError) -> VaultSetup {
-    VaultSetup(provider: try provider(for: settings), ringStore: environment.stores.ring, makeVaultID: environment.makeVaultID, makeKeyID: environment.makeKeyID)
+    setup(with: try provider(for: settings).provider)
   }
 
-  private func provider(for settings: SyncProviderSettings) throws(SyncStartupError) -> any StorageProvider {
-    if let cachedProvider, cachedProvider.settings == settings { return cachedProvider.provider }
+  private func setup(with provider: any StorageProvider) -> VaultSetup {
+    VaultSetup(provider: provider, ringStore: environment.stores.ring, makeVaultID: environment.makeVaultID, makeKeyID: environment.makeKeyID)
+  }
+
+  /// One provider for the attached location and one for the latest discovery elsewhere, so looking at another location never makes a second
+  /// provider for the attached one; two CloudKit providers of one container would share its index state.
+  private func provider(for settings: SyncProviderSettings) throws(SyncStartupError) -> CachedProvider {
+    if let attachedProvider, attachedProvider.settings == settings { return attachedProvider }
+    if let discoveryProvider, discoveryProvider.settings == settings { return discoveryProvider }
     do {
-      let provider = try environment.provider(settings)
-      cachedProvider = (settings, provider)
-      return provider
+      providerCount += 1
+      let made = CachedProvider(id: providerCount, settings: settings, provider: try environment.provider(settings))
+      discoveryProvider = made
+      return made
     } catch {
       throw .storage(error)
     }

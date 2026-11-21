@@ -14,6 +14,8 @@ public enum SyncPhase: Sendable, Equatable {
   case appUpdateRequired
   /// No location is attached and none is attached automatically.
   case detached
+  /// The saved location cannot be read, so sync stays off until the user turns it on again; unlike `detached`, the user did not ask for it.
+  case settingsUnreadable
   /// The location's hint names another vault than the one attached here.
   case vaultMismatch(expected: VaultID, found: VaultID)
   /// The location holds vault files but nothing names their vault.

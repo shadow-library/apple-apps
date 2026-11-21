@@ -74,10 +74,9 @@ struct SyncLocationStoreTests {
   }
 
   @Test(
-    "should read a corrupt, newer or unknown file as turned off, never as first use",
+    "should read a corrupt or unknown file as turned off because it is unreadable, never as first use",
     arguments: [
       "not json",
-      #"{"format":2,"kind":"iCloud","vault":"vault-one","settings":{"containerIdentifier":"iCloud.a","zoneName":"z"}}"#,
       #"{"format":1,"kind":"dropbox","vault":"vault-one","settings":{}}"#,
       #"{"format":1,"kind":"iCloud","vault":"Not A Vault","settings":{"containerIdentifier":"iCloud.a","zoneName":"z"}}"#,
       #"{"format":1,"kind":"iCloud","vault":"vault-one","account":"short","settings":{"containerIdentifier":"iCloud.a","zoneName":"z"}}"#,
@@ -89,7 +88,21 @@ struct SyncLocationStoreTests {
     try FileManager.default.createDirectory(at: store.url.deletingLastPathComponent(), withIntermediateDirectories: true)
     try Data(contents.utf8).write(to: store.url)
 
-    #expect(try store.load() == .turnedOff)
+    #expect(try store.load() == .turnedOff(.unreadable))
+  }
+
+  @Test("should read a file of a newer format as turned off by a newer app, and an oversized one as unreadable")
+  func newerAndOversizedAreTurnedOff() throws {
+    let directory = try TemporaryDirectory()
+    let store = try directory.locationStore()
+    try FileManager.default.createDirectory(at: store.url.deletingLastPathComponent(), withIntermediateDirectories: true)
+    try Data(#"{"format":2,"kind":"iCloud","vault":"vault-one","settings":{"containerIdentifier":"iCloud.a","zoneName":"z"}}"#.utf8).write(to: store.url)
+
+    #expect(try store.load() == .turnedOff(.newerFormat))
+
+    try Data(repeating: 0x20, count: SyncLocationStore.maximumBytes + 1).write(to: store.url)
+
+    #expect(try store.load() == .turnedOff(.unreadable))
   }
 
   @Test("should report a file it may not read as permission denied and leave locked or not to the caller")
@@ -128,7 +141,7 @@ struct SyncLocationStoreTests {
 
     try store.turnOff()
     try store.turnOff()
-    #expect(try store.load() == .turnedOff)
+    #expect(try store.load() == .turnedOff(.disconnected))
     #expect(try FileManager.default.contentsOfDirectory(atPath: store.url.deletingLastPathComponent().path(percentEncoded: false)) == ["location.json.off"])
 
     try store.save(second)

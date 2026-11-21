@@ -5,9 +5,17 @@ import ShadowCore
 public enum SyncLocationRecord: Sendable, Equatable {
   /// Nothing was ever attached here, so an automatic provider may attach on its own.
   case firstUse
-  /// Sync was turned off, or the location file cannot be read as a location; nothing attaches until the user turns sync on.
-  case turnedOff
+  /// Nothing attaches until the user turns sync on.
+  case turnedOff(SyncTurnedOffReason)
   case attached(SyncLocation)
+}
+
+public enum SyncTurnedOffReason: Sendable, Equatable {
+  case disconnected
+  /// The file is corrupt or oversized.
+  case unreadable
+  /// A newer version of the app wrote the file.
+  case newerFormat
 }
 
 /// A corrupt, oversized or newer file reads as turned off, never as first use: a location existed, and attaching on its own could carry one
@@ -34,14 +42,18 @@ public struct SyncLocationStore: Sendable {
   }
 
   public func load() throws(SyncLocationError) -> SyncLocationRecord {
-    guard let data = try read(url) else { return try read(turnedOffURL) == nil ? .firstUse : .turnedOff }
+    guard let data = try read(url) else { return try read(turnedOffURL) == nil ? .firstUse : .turnedOff(.disconnected) }
     guard data.count <= Self.maximumBytes else {
       Self.logger.warning("Treating an oversized sync location file as turned off bytes=\(data.count, privacy: .public)")
-      return .turnedOff
+      return .turnedOff(.unreadable)
+    }
+    if let format = try? JSONDecoder().decode(SyncLocationFormat.self, from: data).format, format > SyncLocation.currentFormat {
+      Self.logger.warning("Treating a sync location file of a newer format as turned off format=\(format, privacy: .public)")
+      return .turnedOff(.newerFormat)
     }
     guard let location = try? JSONDecoder().decode(SyncLocation.self, from: data) else {
       Self.logger.warning("Treating an unreadable sync location file as turned off")
-      return .turnedOff
+      return .turnedOff(.unreadable)
     }
     return .attached(location)
   }
@@ -94,6 +106,10 @@ public struct SyncLocationStore: Sendable {
       }
     }
   }
+}
+
+private struct SyncLocationFormat: Decodable {
+  let format: Int
 }
 
 private enum FileFailure {

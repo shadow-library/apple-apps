@@ -10,12 +10,16 @@ public struct SyncAttachment: Sendable {
   public let location: SyncLocation
   public let provider: any StorageProvider
   public let ring: KeyRing
+  let providerID: Int
   private let markerStore: any SecureStore
   let keyServices: SyncKeyServices
 
-  init(location: SyncLocation, provider: any StorageProvider, ring: KeyRing, markerStore: any SecureStore, keyServices: SyncKeyServices) {
+  init(
+    location: SyncLocation, provider: any StorageProvider, providerID: Int, ring: KeyRing, markerStore: any SecureStore, keyServices: SyncKeyServices
+  ) {
     self.location = location
     self.provider = provider
+    self.providerID = providerID
     self.ring = ring
     self.markerStore = markerStore
     self.keyServices = keyServices

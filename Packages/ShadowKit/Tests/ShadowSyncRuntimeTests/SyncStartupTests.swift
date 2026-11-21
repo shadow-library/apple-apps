@@ -246,10 +246,22 @@ struct SyncStartupTests {
     try Data("{".utf8).write(to: try device.directory.locationStore().url)
     let before = provider.callCounts
 
-    #expect(try await device.startup.evaluate().phase == .detached)
+    #expect(try await device.startup.evaluate().phase == .settingsUnreadable)
     #expect(provider.callCounts == before)
 
     #expect(try await device.startup.attach(RuntimeFixture.iCloud, choice: .join(vault)).phase == .vault(.ready(vault: vault)))
+  }
+
+  @Test("should ask for an update and touch nothing when a newer app wrote the location file")
+  func newerLocationFile() async throws {
+    let provider = InMemoryStorageProvider()
+    let device = try RuntimeDevice(InMemoryKeychain().device("phone"), provider: provider)
+    _ = try await device.startup.evaluate()
+    try Data(#"{"format":2,"kind":"iCloud"}"#.utf8).write(to: try device.directory.locationStore().url)
+    let before = provider.callCounts
+
+    #expect(try await device.startup.evaluate().phase == .appUpdateRequired)
+    #expect(provider.callCounts == before)
   }
 
   @Test("should report the keys downloads of the attached vault found missing until they arrive")

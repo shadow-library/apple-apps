@@ -19,7 +19,7 @@ public struct SyncStartupEnvironment: Sendable {
   public var stores: SyncSecureStores
   /// The location attached without asking (iCloud) when none is saved; nil when every location needs an explicit choice or sync is turned off.
   public var automatic: SyncProviderSettings?
-  /// Called once per settings value; the driver keeps the provider while the settings stay the same.
+  /// The driver keeps the attached location's provider while it stays attached, and the latest other one while its settings stay the same.
   public var provider: @Sendable (SyncProviderSettings) throws(StorageError) -> any StorageProvider
   public var account: @Sendable (SyncProviderSettings) async -> SyncAccountStatus
   /// Whether the device has been unlocked since it started (`FirstUnlockProbe`), not whether it is unlocked now.
