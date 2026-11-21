@@ -11,12 +11,14 @@ public struct SyncAttachment: Sendable {
   public let provider: any StorageProvider
   public let ring: KeyRing
   private let markerStore: any SecureStore
+  let keyServices: SyncKeyServices
 
-  init(location: SyncLocation, provider: any StorageProvider, ring: KeyRing, markerStore: any SecureStore) {
+  init(location: SyncLocation, provider: any StorageProvider, ring: KeyRing, markerStore: any SecureStore, keyServices: SyncKeyServices) {
     self.location = location
     self.provider = provider
     self.ring = ring
     self.markerStore = markerStore
+    self.keyServices = keyServices
   }
 
   public var vault: VaultID { location.vault }

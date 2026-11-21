@@ -63,6 +63,30 @@ struct ReplicaDirectoryTests {
     #expect(empty.minimumSchema == nil && empty.keyFloor == nil)
   }
 
+  @Test("should list every recorded recipient with its state and read the same directory inside a transaction")
+  func shouldListRecoveries() async throws {
+    var generator = SeededGenerator(seed: 0xD3)
+    let store = try ReplicaFixture.open()
+    let (old, superseded, current) = (try recipient(&generator), try recipient(&generator), try recipient(&generator))
+    try await store.write { transaction in
+      try ReplicaDirectory.setRecovery(old, createdMillis: 10, in: &transaction)
+      try ReplicaDirectory.retireRecovery(recipientID: old.id, in: &transaction)
+      try ReplicaDirectory.setRecovery(superseded, createdMillis: 20, in: &transaction)
+      try ReplicaDirectory.setRecovery(current, createdMillis: 30, in: &transaction)
+    }
+
+    let read = try await directory(store)
+
+    #expect(read.recovery == current)
+    let expected = [
+      RecoveryEntry(recipientID: old.id, state: .retired, created: 10), RecoveryEntry(recipientID: superseded.id, state: .active, created: 20),
+      RecoveryEntry(recipientID: current.id, state: .active, created: 30),
+    ]
+    #expect(read.recoveries == expected)
+    #expect(try await store.read { try ReplicaDirectory.read(in: $0) } == read)
+    #expect(try await store.write { transaction in try ReplicaDirectory.read(in: transaction) } == read)
+  }
+
   @Test("should write nothing when the state already says the same")
   func shouldWriteNothingTwice() async throws {
     var generator = SeededGenerator(seed: 0xD2)

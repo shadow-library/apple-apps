@@ -118,6 +118,7 @@ public actor SyncEngine {
   public static var migrations: [StoreMigration] {
     ReplicaLifecycle.migrations + [
       SyncEngineSchema.migration, SyncEngineSchema.heldMigration, SyncEngineSchema.compactionMigration, SyncEngineSchema.adoptionMigration, SyncEngineSchema.strayMigration,
+      RecoveryCopies.migration,
     ]
   }
 

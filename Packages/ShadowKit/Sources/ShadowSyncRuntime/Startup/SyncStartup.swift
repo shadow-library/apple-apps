@@ -13,6 +13,7 @@ public actor SyncStartup {
   private let environment: SyncStartupEnvironment
   private var cachedProvider: (settings: SyncProviderSettings, provider: any StorageProvider)?
   private var cachedRing: KeyRing?
+  private var cachedKeyServices = SyncKeyServices()
   private var missingKeys: [KeyID: Set<ReplicaID>] = [:]
   private var isBusy = false
   private var waiters: [CheckedContinuation<Void, Never>] = []
@@ -93,6 +94,7 @@ public actor SyncStartup {
       throw await locationFailure(error)
     }
     cachedRing = nil
+    cachedKeyServices = SyncKeyServices()
     missingKeys = [:]
   }
 
@@ -176,7 +178,8 @@ public actor SyncStartup {
       return SyncStartupResult(phase: .deviceLocked, location: location)
     }
     let observation = VaultObservation(storage: .available, vault: location.vault, heldKeys: Set(ring.keyIDs), namedKeys: missingKeys)
-    let attachment = SyncAttachment(location: location, provider: setup.provider, ring: ring, markerStore: environment.stores.marker)
+    let attachment = SyncAttachment(
+      location: location, provider: setup.provider, ring: ring, markerStore: environment.stores.marker, keyServices: cachedKeyServices)
     return SyncStartupResult(phase: .vault(VaultStartupState(observation)), location: location, attachment: attachment)
   }
 
@@ -227,6 +230,7 @@ public actor SyncStartup {
     if let cachedRing, cachedRing.vault == vault { return cachedRing }
     let ring = KeyRing(vault: vault, store: environment.stores.ring, makeKeyID: environment.makeKeyID)
     cachedRing = ring
+    cachedKeyServices = SyncKeyServices()
     missingKeys = [:]
     return ring
   }

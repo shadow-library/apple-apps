@@ -48,12 +48,20 @@ public struct SyncAdoptionFact: Sendable, Hashable {
   }
 }
 
+/// A recovery recipient the vault has recorded; `recovery` is the newest active one, and any other active one was superseded by a concurrent setup.
+public struct RecoveryEntry: Sendable, Equatable {
+  public let recipientID: String
+  public let state: ReplicaState
+  public let created: Int64
+}
+
 public struct ReplicaDirectory: Sendable, Equatable {
   public let replicas: [ReplicaEntry]
   /// Floors are read from entity keys, purged entities included, so neither a purge nor a rewritten field can lower them.
   public let minimumSchema: Int?
   public let keyFloor: KeyID?
   public let recovery: RecoveryRecipient?
+  public let recoveries: [RecoveryEntry]
   /// Read from entity keys, purged entities included; every fact stays valid, however many there are about one replica.
   public let adoptions: [SyncAdoptionFact]
 
@@ -66,6 +74,7 @@ public struct ReplicaDirectory: Sendable, Equatable {
     var schemaFloors = [Int]()
     var keyFloors = [KeyID]()
     var recipients = [(recipient: RecoveryRecipient, created: Int64)]()
+    var recoveries = [RecoveryEntry]()
     var adoptions = Set<SyncAdoptionFact>()
     for (ref, state) in entities {
       switch ref.kind {
@@ -77,8 +86,9 @@ public struct ReplicaDirectory: Sendable, Equatable {
         guard case .record(let record) = state, let entry = ReplicaEntry(key: ref.key, record: record) else { continue }
         replicas.append(entry)
       case SyncKernelSchema.recoveryKind:
-        guard case .record(let record) = state, let candidate = Self.activeRecipient(ref, record) else { continue }
-        recipients.append(candidate)
+        guard case .record(let record) = state, let entry = Self.recoveryEntry(ref, record) else { continue }
+        recoveries.append(RecoveryEntry(recipientID: entry.recipient.id, state: entry.state, created: entry.created))
+        if entry.state == .active { recipients.append((entry.recipient, entry.created)) }
       case SyncKernelSchema.adoptionKind:
         if let fact = SyncKernelSchema.adoption(of: ref.key) { adoptions.insert(fact) }
       default:
@@ -89,7 +99,20 @@ public struct ReplicaDirectory: Sendable, Equatable {
     minimumSchema = schemaFloors.max()
     keyFloor = keyFloors.max()
     recovery = recipients.max { ($0.created, $0.recipient.id) < ($1.created, $1.recipient.id) }?.recipient
+    self.recoveries = recoveries.sorted { ($0.created, $0.recipientID) < ($1.created, $1.recipientID) }
     self.adoptions = adoptions.sorted { ($0.adopted, $0.adopter, $0.at, $0.through, $0.baseUpTo) < ($1.adopted, $1.adopter, $1.at, $1.through, $1.baseUpTo) }
+  }
+
+  public static func read(in transaction: ReadTransaction) throws(StoreError) -> ReplicaDirectory {
+    var entities: [(ref: EntityRef, state: EntityState)] = []
+    for kind in SyncKernelSchema.kinds { entities += try transaction.states(ofKind: kind) }
+    return ReplicaDirectory(entities: entities)
+  }
+
+  public static func read(in transaction: borrowing WriteTransaction) throws(StoreError) -> ReplicaDirectory {
+    var entities: [(ref: EntityRef, state: EntityState)] = []
+    for kind in SyncKernelSchema.kinds { entities += try transaction.states(ofKind: kind) }
+    return ReplicaDirectory(entities: entities)
   }
 
   static func adoptions(in transaction: ReadTransaction) throws(StoreError) -> [SyncAdoptionFact] {
@@ -109,13 +132,13 @@ public struct ReplicaDirectory: Sendable, Equatable {
     return record.text(SyncKernelSchema.Field.state) == ReplicaState.retired.rawValue
   }
 
-  private static func activeRecipient(_ ref: EntityRef, _ record: RecordState) -> (recipient: RecoveryRecipient, created: Int64)? {
+  private static func recoveryEntry(_ ref: EntityRef, _ record: RecordState) -> (recipient: RecoveryRecipient, state: ReplicaState, created: Int64)? {
     typealias Field = SyncKernelSchema.Field
-    guard record.text(Field.state) == ReplicaState.active.rawValue, let created = record[field: Field.created]?.value.intValue else { return nil }
+    guard let state = record.text(Field.state).flatMap(ReplicaState.init(rawValue:)), let created = record[field: Field.created]?.value.intValue else { return nil }
     guard let publicKey = record.text(Field.publicKey).flatMap({ Data(base64Encoded: $0) }), let sealingKey = record.text(Field.sealingKey).flatMap({ Data(base64Encoded: $0) })
     else { return nil }
     guard let recipient = RecoveryRecipient(publicKey: publicKey, sealingKey: sealingKey), SyncKernelSchema.recoveryRef(recipient.id) == ref else { return nil }
-    return (recipient, created)
+    return (recipient, state, created)
   }
 }
 

@@ -139,11 +139,7 @@ public struct ReplicaLifecycle: Sendable {
   }
 
   public func directory() async throws(ReplicaLifecycleError) -> ReplicaDirectory {
-    try await read { transaction in
-      var entities: [(ref: EntityRef, state: EntityState)] = []
-      for kind in SyncKernelSchema.kinds { entities += try transaction.states(ofKind: kind) }
-      return ReplicaDirectory(entities: entities)
-    }
+    try await read { transaction in try ReplicaDirectory.read(in: transaction) }
   }
 
   public func manifest(applied: [ReplicaID: StreamPoint]) async throws(ReplicaLifecycleError) -> ReplicaManifest {

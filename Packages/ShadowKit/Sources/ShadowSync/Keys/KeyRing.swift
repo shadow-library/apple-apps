@@ -135,7 +135,7 @@ public final class KeyRing: Sendable {
 }
 
 extension VaultKey {
-  func hasSameBytes(as other: VaultKey) -> Bool {
+  public func hasSameBytes(as other: VaultKey) -> Bool {
     id == other.id && constantTimeEquals(rawBytes, other.rawBytes)
   }
 }
