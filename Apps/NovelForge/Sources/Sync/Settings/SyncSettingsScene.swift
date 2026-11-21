@@ -20,7 +20,7 @@ struct NovelForgeSettingsScene: View {
       }
       Tab(value: SettingsTabs.Tab.sync) {
         NavigationStack {
-          SyncSettingsView(sync: sync)
+          SyncSettingsView(sync: sync, keysRoute: $tabs.syncKeys)
         }
         .shadowTheme()
         .frame(minWidth: 520, idealWidth: 600, minHeight: 480, idealHeight: 640)
@@ -32,5 +32,6 @@ struct NovelForgeSettingsScene: View {
         }
       }
     }
+    .onDisappear { tabs.syncKeys = nil }
   }
 }

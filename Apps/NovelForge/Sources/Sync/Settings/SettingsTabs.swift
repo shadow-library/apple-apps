@@ -10,4 +10,6 @@ final class SettingsTabs {
   }
 
   var selected = Tab.ai
+  /// Set to open Keys and Devices inside the Sync tab, and how.
+  var syncKeys: SyncKeysStart?
 }

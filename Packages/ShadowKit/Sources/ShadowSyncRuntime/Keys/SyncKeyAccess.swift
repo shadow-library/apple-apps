@@ -74,6 +74,27 @@ public struct SyncKeyAccess: Sendable {
     return try attachment.keyExchange.respond(to: payload, floor: floor)
   }
 
+  /// Every key of this device's ring with the replicas that have shown they hold it; see `SyncKeyHolding`. Says nothing about keys not held here.
+  public func keyHolders() async throws(RecoveryError) -> [SyncKeyHolding] {
+    if case .gone(let phase) = await standing() { throw .unavailable(phase) }
+    let directory: ReplicaDirectory
+    do {
+      directory = try await store.read { transaction in try ReplicaDirectory.read(in: transaction) }
+    } catch {
+      throw RecoveryError(error)
+    }
+    do {
+      try attachment.ring.refresh()
+    } catch {
+      throw RecoveryError(error)
+    }
+    do {
+      return try await KeyHolderSurvey.survey(attachment.provider, ring: attachment.ring, directory: directory, own: store.replica)
+    } catch {
+      throw .storage(error)
+    }
+  }
+
   /// The attachment's one `RecoverySetup`, shared with the runtime's reconciliation so their calls run one at a time.
   private var recoverySetup: RecoverySetup {
     attachment.recoverySetup(store: store, wallClock: wallClock)
@@ -104,6 +125,8 @@ public final class SyncKeyRequest: Sendable {
   public var requestID: UUID { requester.requestID }
 
   public var payload: String { requester.payload }
+
+  public var isAwaitingResponse: Bool { requester.isAwaitingResponse }
 
   public func receive(_ responseText: String) throws(KeyExchangeError) -> String {
     try requester.receive(responseText)

@@ -13,6 +13,7 @@ struct SyncSettingsButton: View {
     #if os(macOS)
       Button {
         tabs.selected = .sync
+        tabs.syncKeys = nil
         openSettings()
       } label: {
         label

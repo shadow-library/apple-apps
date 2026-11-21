@@ -5,16 +5,29 @@ import SwiftUI
 
 struct SyncSettingsView: View {
   @State private var model: SyncSettingsModel
-  @State private var isShowingKeys = false
+  @State private var offer: RecoveryPhraseOffer
+  @State private var keysRouteHere: SyncKeysStart?
+  private let keysRoute: Binding<SyncKeysStart?>?
 
-  init(sync: SyncRuntimes) {
+  /// `keysRoute` lets another screen open Keys and Devices, as the Mac's sync indicator does through the Settings tabs.
+  init(sync: SyncRuntimes, keysRoute: Binding<SyncKeysStart?>? = nil) {
     _model = State(initialValue: SyncSettingsModel(sync: sync))
+    _offer = State(initialValue: RecoveryPhraseOffer(sync: sync))
+    self.keysRoute = keysRoute
+  }
+
+  private var route: Binding<SyncKeysStart?> { keysRoute ?? $keysRouteHere }
+
+  private var isShowingKeys: Binding<Bool> {
+    Binding(get: { route.wrappedValue != nil }, set: { if !$0 { route.wrappedValue = nil } })
   }
 
   var body: some View {
     ScrollView {
       VStack(alignment: .leading, spacing: Spacing.space5) {
         if model.isKeychainRefused { TeamlessCallout() }
+        if case .attached(_, .vault(.awaitingKey)?) = model.overview, model.connect == nil { SyncKeysWaitingCallout { route.wrappedValue = .overview } }
+        if offer.vault != nil, model.connect == nil { RecoveryPhraseOfferCallout(offer: offer) { route.wrappedValue = .phraseSetup } }
         SyncLocationSection(model: model)
         if case .attached(_, .vaultMoved(let notice)?) = model.overview, model.connect == nil { MoveNoticeSection(model: model, notice: notice) }
         if let connect = model.connect { SyncConnectView(model: connect) { Task { await model.closeConnect() } } }
@@ -26,15 +39,19 @@ struct SyncSettingsView: View {
     }
     .background(ShadowColor.surfaceApp)
     .task(id: model.sync.runtime.map(ObjectIdentifier.init)) { await model.refresh() }
-    .onChange(of: model.sync.status) { Task { await model.refresh() } }
-    .navigationDestination(isPresented: $isShowingKeys) { SyncKeysSettingsView() }
-    .onDisappear { if !isShowingKeys { model.leave() } }
+    .task(id: model.sync.runtime.map(ObjectIdentifier.init)) { await offer.refresh() }
+    .onChange(of: model.sync.status) {
+      Task { await model.refresh() }
+      Task { await offer.refresh() }
+    }
+    .navigationDestination(isPresented: isShowingKeys) { SyncKeysView(sync: model.sync, start: route.wrappedValue ?? .overview) }
+    .onDisappear { if !isShowingKeys.wrappedValue { model.leave() } }
   }
 
   private var keysSection: some View {
     ShadowGroupedSection {
       Button {
-        isShowingKeys = true
+        route.wrappedValue = .overview
       } label: {
         Label {
           Text("Keys and Devices", tableName: "SyncSettings")

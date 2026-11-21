@@ -35,6 +35,14 @@ public final class KeyExchangeRequester: Sendable {
   /// The text to show as a QR code; it carries a one-time public key and nothing secret.
   public var payload: String { session.request.encoded }
 
+  /// True until a response opened or the exchange ended: a failed `receive` that leaves it true can be followed by another scan.
+  public var isAwaitingResponse: Bool {
+    state.withLock { state in
+      guard case .awaitingResponse = state else { return false }
+      return true
+    }
+  }
+
   /// Opens the scanned response and returns the code to show beside the other device's. A response to another request leaves the exchange waiting;
   /// any other failure spends it.
   public func receive(_ responseText: String) throws(KeyExchangeError) -> String {

@@ -187,6 +187,95 @@ struct SyncRuntimeKeysTests {
     #expect(try await setup.recoveryStatus().standing(ofRecipient: nil) == .active(createdMillis: 1_700_000_060_000))
   }
 
+  @Test("should list the replicas whose newest file opens under each held key and leave out forged, foreign-key and retired ones")
+  func listsKeyHolders() async throws {
+    let keychain = InMemoryKeychain()
+    let shared = InMemoryStorageProvider()
+    let phone = try await Self.holder(keychain, provider: shared)
+    defer { Task { await phone.runtime.shutdown() } }
+    let holding = try await phone.runtime.keyServices()
+    let key = try #require(try await holding.keyHolders().first?.key)
+    let tablet = try await Self.newcomer(keychain, provider: shared)
+    defer { Task { await tablet.runtime.shutdown() } }
+    let request = try await tablet.runtime.keyServices().requestKeys()
+    let responder = try await holding.respond(to: request.payload)
+    _ = try request.receive(responder.payload)
+    _ = try await request.accept(confirmingCode: responder.revealConfirmationCode())
+    #expect(await Self.becomesUpToDate(tablet))
+    try await tablet.write("n2")
+    await tablet.advance(by: .seconds(2))
+    let ring = KeyRing(vault: holding.vault, store: keychain.device("phone").store(service: RuntimeFixture.ringService, scope: .synced))
+    try ring.refresh()
+    let heldKey = try #require(ring.key(key))
+    let genuine = ReplicaID(UUID.v7())
+    let manifest = ReplicaManifest(
+      replica: genuine, deviceName: "Laptop", platform: "macOS", appVersion: "1.0", schema: 1, head: nil, base: nil, applied: [:], updatedMillis: 0)
+    let sealed = try ReplicaManifestCodec.seal(manifest, vault: holding.vault, with: heldKey)
+    _ = try await shared.put(sealed.key, data: sealed.data, condition: .overwrite)
+    _ = try await shared.put(VaultPath.manifest(ReplicaID(UUID.v7())), data: sealed.data, condition: .overwrite)
+    let phoneSegment = try #require(try await shared.listAll(prefix: VaultPath.segmentPrefix(phone.store.replica)).first)
+    let tag = try #require(ContentTag(String(repeating: "a", count: 32)))
+    _ = try await shared.put(
+      VaultPath.segment(ReplicaID(UUID.v7()), first: 1, last: 1, tag: tag), data: try await shared.get(phoneSegment.key), condition: .overwrite)
+    _ = try await shared.put(VaultPath.manifest(ReplicaID(UUID.v7())), data: Data("forged".utf8), condition: .overwrite)
+
+    let holders = try await holding.keyHolders()
+
+    #expect(holders.map(\.key) == [key])
+    let listed = try #require(holders.first).holders
+    #expect(Set(listed.map(\.replica)) == [phone.store.replica, tablet.store.replica, genuine])
+    #expect(listed.first { $0.replica == genuine }?.name == "Laptop")
+    let here = try #require(listed.first { $0.isThisDevice })
+    #expect(here.replica == phone.store.replica && here.name == RuntimeFixture.phone.name && here.platform == RuntimeFixture.phone.platform)
+    #expect(try await tablet.runtime.keyServices().keyHolders().first?.holders.first { $0.isThisDevice }?.replica == tablet.store.replica)
+
+    try await phone.store.write { transaction in try ReplicaDirectory.retire(tablet.store.replica, successor: nil, in: &transaction) }
+    #expect(Set(try await holding.keyHolders().first?.holders.map(\.replica) ?? []) == [phone.store.replica, genuine])
+  }
+
+  @Test("should leave out a replica whose readable manifest names a key this device lacks, and read older files only without one")
+  func manifestNamesTheWritingKey() async throws {
+    let keychain = InMemoryKeychain()
+    let shared = InMemoryStorageProvider()
+    let phone = try await Self.holder(keychain, provider: shared)
+    defer { Task { await phone.runtime.shutdown() } }
+    let holding = try await phone.runtime.keyServices()
+    let ring = KeyRing(vault: holding.vault, store: keychain.device("phone").store(service: RuntimeFixture.ringService, scope: .synced))
+    try ring.refresh()
+    let heldKey = try #require(ring.writingKey())
+    let other = ReplicaID(UUID.v7())
+    let segment = VaultPath.segment(other, first: 1, last: 1, tag: try #require(ContentTag(String(repeating: "b", count: 32))))
+    _ = try await shared.put(segment, data: try VaultFile.seal(Data("{}".utf8), path: segment.rawValue, vault: holding.vault, key: heldKey), condition: .overwrite)
+    #expect(try await holding.keyHolders().first?.holders.contains { $0.replica == other } == true)
+
+    let manifest = ReplicaManifest(
+      replica: other, deviceName: "Rotated", platform: "iOS", appVersion: "1.0", schema: 1, head: nil, base: nil, applied: [:], updatedMillis: 0)
+    let sealed = try ReplicaManifestCodec.seal(manifest, vault: holding.vault, with: KeyFixture.key(99))
+    _ = try await shared.put(sealed.key, data: sealed.data, condition: .overwrite)
+
+    #expect(try await holding.keyHolders().first?.holders.contains { $0.replica == other } == false)
+  }
+
+  @Test("should say a request still awaits its response after an unreadable code or another request's answer, and not once one opened")
+  func awaitsResponse() async throws {
+    let keychain = InMemoryKeychain()
+    let shared = InMemoryStorageProvider()
+    let phone = try await Self.holder(keychain, provider: shared)
+    defer { Task { await phone.runtime.shutdown() } }
+    let tablet = try await Self.newcomer(keychain, provider: shared)
+    defer { Task { await tablet.runtime.shutdown() } }
+    let waiting = try await tablet.runtime.keyServices()
+    let request = waiting.requestKeys()
+    let other = try await phone.runtime.keyServices().respond(to: waiting.requestKeys().payload)
+
+    #expect(throws: KeyExchangeError.self) { try request.receive("not a code") }
+    #expect(request.isAwaitingResponse)
+    #expect(throws: KeyExchangeError.envelope(.requestMismatch)) { try request.receive(other.payload) }
+    #expect(request.isAwaitingResponse)
+    _ = try request.receive(try await phone.runtime.keyServices().respond(to: request.payload).payload)
+    #expect(!request.isAwaitingResponse)
+  }
+
   @Test("should have no key services before the runtime evaluates or while no vault is attached")
   func unavailableKeyServices() async throws {
     let harness = try RuntimeHarness(InMemoryKeychain().device("phone"), provider: InMemoryStorageProvider())
@@ -218,6 +307,7 @@ struct SyncRuntimeKeysTests {
       let request = access.requestKeys()
       await #expect(throws: RecoveryError.unavailable(.detached)) { try await access.recover(with: phrase) }
       await #expect(throws: RecoveryError.unavailable(.detached)) { try await access.recoveryStatus() }
+      await #expect(throws: RecoveryError.unavailable(.detached)) { try await access.keyHolders() }
       await #expect(throws: RecoveryError.unavailable(.detached)) { try await access.commitRecoveryPhrase(access.beginRecoveryPhrase(), confirming: [:]) }
       await #expect(throws: KeyExchangeError.unavailable(.detached)) { try await access.respond(to: request.payload) }
       await #expect(throws: KeyExchangeError.unavailable(.detached)) { try await request.accept(confirmingCode: "000000") }
