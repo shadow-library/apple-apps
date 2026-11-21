@@ -64,7 +64,7 @@ public struct JobActivityRow: Hashable, Sendable, FetchableRecord, PersistableRe
 }
 
 public struct JobActivityDerivation: Derivation {
-  public static let version = 1
+  public static let version = 2
   public static let definition = """
     CREATE TABLE nf_derived_job_activity (
       novel BLOB NOT NULL, job TEXT NOT NULL, chapter INTEGER, kind TEXT NOT NULL, target TEXT NOT NULL, run INTEGER NOT NULL, requested TEXT NOT NULL,

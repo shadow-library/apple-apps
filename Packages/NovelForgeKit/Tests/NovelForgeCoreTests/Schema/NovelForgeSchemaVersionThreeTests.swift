@@ -50,9 +50,11 @@ struct NovelForgeSchemaVersionThreeTests {
     let described = try JSONDecoder().decode(JSONValue.self, from: registry.canonicalDescription())
     let kinds = try #require(described["kinds"]?.arrayValue).compactMap { $0["kind"]?.stringValue }
     #expect(
-      Set(kinds) == Set(NovelForgeKind.allCases.map(\.rawValue) + ["ai_model_call", "ai_consent", "jobs_job", "jobs_attempt"] + SyncKernelSchema.entities.map(\.kind.rawValue)))
-    #expect(kinds.count == NovelForgeKind.allCases.count + 4 + SyncKernelSchema.entities.count)
-    for schema in JobSchema.entities {
+      Set(kinds)
+        == Set(
+          NovelForgeKind.allCases.map(\.rawValue) + ["ai_model_call", "ai_consent", "jobs_job", "jobs_attempt", "jobs_worker"] + SyncKernelSchema.entities.map(\.kind.rawValue)))
+    #expect(kinds.count == NovelForgeKind.allCases.count + 5 + SyncKernelSchema.entities.count)
+    for schema in JobSchema.entities + JobSchema.workerEntities {
       #expect(registry[schema.kind] == schema)
       #expect(NovelForgeKind(schema.kind) == nil)
     }

@@ -212,6 +212,8 @@ struct JobDerivationTests {
       ("JobActivity", { _ = try JobActivity.load(JobActivityQuery(novel: World.novel, now: World.instant(5)), in: $0) }),
       ("JobDetail", { _ = try JobDetail.load(JobDetailQuery(job: job, now: World.instant(5)), in: $0) }),
       ("JobCosts", { _ = try JobCosts.load(.chapter(novel: World.novel, chapter: 1), in: $0) }),
+      ("WorkerBacklog", { _ = try WorkerBacklog.load(WorkerBacklogQuery(replica: World.replicas[0], now: World.instant(5)), in: $0) }),
+      ("JobPlacements", { _ = try JobPlacements.load(JobPlacementQuery(jobs: [job], replica: World.replicas[0], now: World.instant(5)), in: $0) }),
     ]
     for (name, load) in loads {
       let few = try await plans(in: small, load)

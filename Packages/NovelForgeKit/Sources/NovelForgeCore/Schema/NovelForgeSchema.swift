@@ -4,7 +4,7 @@ import ShadowStore
 import ShadowSync
 
 public enum NovelForgeSchema {
-  public static let version = 5
+  public static let version = 6
 
   // apps/novel-forge-server/src/common/draft-history.ts:10
   static let revisionLimit = 50
@@ -54,7 +54,9 @@ public enum NovelForgeSchema {
     appended(.refreshReport),
   ]
 
-  public static let registry = SyncKernelSchema.registry(version: version, adding: entities + LedgerSchema.entities + JobSchema.entities)
+  static let kitEntities = LedgerSchema.entities + JobSchema.entities + JobSchema.workerEntities
+
+  public static let registry = SyncKernelSchema.registry(version: version, adding: entities + kitEntities)
 
   private static func registers<Field: RawRepresentable & CaseIterable>(_: Field.Type) -> [String: FieldRule] where Field.RawValue == String {
     Dictionary(uniqueKeysWithValues: Field.allCases.map { ($0.rawValue, FieldRule.register) })

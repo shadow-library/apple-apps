@@ -10,7 +10,7 @@ import Testing
 
 @Suite("NovelForgeSchema")
 struct NovelForgeSchemaTests {
-  private static let frozenVersions = [1, 2, 3, 4, 5]
+  private static let frozenVersions = [1, 2, 3, 4, 5, 6]
 
   private static func frozenPath(_ version: Int) -> String { "schema/registry-v\(version).json" }
 
@@ -44,7 +44,7 @@ struct NovelForgeSchemaTests {
       fields["canon"] = .register
       return EntitySchema(kind: schema.kind, shape: .revisioned(fields: fields, marks: marks, retention: retention), syncClass: schema.syncClass)
     }
-    let problems = SyncKernelSchema.registry(version: NovelForgeSchema.version + 1, adding: changed + LedgerSchema.entities + JobSchema.entities).incompatibilities(with: registry)
+    let problems = SyncKernelSchema.registry(version: NovelForgeSchema.version + 1, adding: changed + NovelForgeSchema.kitEntities).incompatibilities(with: registry)
     #expect(problems == ["field nf_final_chapter.canon changed rule from first writer wins to register"])
   }
 

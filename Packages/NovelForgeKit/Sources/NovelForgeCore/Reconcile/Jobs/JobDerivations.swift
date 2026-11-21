@@ -22,6 +22,14 @@ public enum NovelJobKind: String, CaseIterable, Sendable {
   case review
   case finalizeReview = "finalize_review"
   case canonRefresh = "canon_refresh"
+
+  /// A plan runs on the device that asked for it; every other kind waits for the vault's worker (phase 8 orchestrator decision 1).
+  public var queuesForWorker: Bool {
+    switch self {
+    case .plan: false
+    case .generate, .review, .finalizeReview, .canonRefresh: true
+    }
+  }
 }
 
 /// A novel's job is scoped by its lower-cased id and a chapter job targets `chapter:<n>`: one chapter per job (orchestrator decision 8), where the reference

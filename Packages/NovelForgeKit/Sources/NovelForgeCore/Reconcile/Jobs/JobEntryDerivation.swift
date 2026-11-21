@@ -21,8 +21,11 @@ public struct JobLeaseHolder: Hashable, Sendable {
   public let expires: Int64
   public let replica: ReplicaID
   public let step: AttemptStep?
+  public let renewed: Int64
 
   public var expiry: Date { Date(timeIntervalSince1970: Double(expires) / 1000) }
+
+  public var renewal: Date { Date(timeIntervalSince1970: Double(renewed) / 1000) }
 
   public func isLive(at now: LeaseInstant) -> Bool { AttemptLease.isLive(expires: expires, at: now) }
 }
@@ -58,8 +61,8 @@ struct JobStanding: Hashable, Sendable {
     self.failed = failed?.attempt
     failure = failed?.error
     holders = ranked.compactMap { row in
-      guard row.outcome == .running, let expires = row.leaseExpires else { return nil }
-      return JobLeaseHolder(attempt: row.attempt, expires: expires, replica: row.replica, step: row.step)
+      guard row.outcome == .running, let expires = row.leaseExpires, let renewed = row.leaseRenewed else { return nil }
+      return JobLeaseHolder(attempt: row.attempt, expires: expires, replica: row.replica, step: row.step, renewed: renewed)
     }
   }
 
@@ -96,8 +99,9 @@ struct JobStanding: Hashable, Sendable {
   static func encode(_ holders: [JobLeaseHolder]) -> String {
     let items: [JSONValue] = holders.map { holder in
       .object([
-        "attempt": .string(holder.attempt.uuid.lowercasedString), "expires": .int(holder.expires), "replica": .string(holder.replica.description),
-        "step": holder.step.map { .string($0.name) } ?? .null, "index": holder.step.map { .int(Int64($0.index)) } ?? .null,
+        "attempt": .string(holder.attempt.uuid.lowercasedString), "expires": .int(holder.expires), "renewed": .int(holder.renewed),
+        "replica": .string(holder.replica.description), "step": holder.step.map { .string($0.name) } ?? .null,
+        "index": holder.step.map { .int(Int64($0.index)) } ?? .null,
       ])
     }
     return String(decoding: CanonicalJSON.encode(.array(items)), as: UTF8.self)
@@ -107,10 +111,10 @@ struct JobStanding: Hashable, Sendable {
     guard let items = (try? CanonicalJSON.decode(Data(text.utf8)))?.arrayValue else { throw .corruptStore("a job row holds unreadable lease holders") }
     return try items.map { item throws(StoreError) in
       guard let members = item.objectValue, let attempt = members["attempt"]?.stringValue, let expires = members["expires"]?.intValue,
-        let replica = members["replica"]?.stringValue
+        let renewed = members["renewed"]?.intValue, let replica = members["replica"]?.stringValue
       else { throw .corruptStore("a job row holds an incomplete lease holder") }
       let step = members["step"]?.stringValue.flatMap { name in members["index"]?.intValue.flatMap(Int.init(exactly:)).map { AttemptStep(name: name, index: $0) } }
-      return JobLeaseHolder(attempt: try JobColumns.attempt(attempt), expires: expires, replica: try JobColumns.replica(replica), step: step)
+      return JobLeaseHolder(attempt: try JobColumns.attempt(attempt), expires: expires, replica: try JobColumns.replica(replica), step: step, renewed: renewed)
     }
   }
 }
@@ -163,7 +167,7 @@ public struct JobEntry: Hashable, Sendable, FetchableRecord, PersistableRecord {
       let stepIndex = try row.decode(Int?.self, forColumn: "latest_step_index")
       latest = JobLatestAttempt(
         attempt: try JobColumns.attempt(attempt), replica: try JobColumns.replica(try row.decode(String.self, forColumn: "latest_replica")),
-        leaseExpires: try row.decode(Int64?.self, forColumn: "latest_expires"),
+        leaseExpires: try row.decode(Int64?.self, forColumn: "latest_expires"), leaseRenewed: try row.decode(Int64?.self, forColumn: "latest_renewed"),
         step: stepName.flatMap { name in stepIndex.map { AttemptStep(name: name, index: $0) } },
         outcome: try JobColumns.value(try row.decode(String.self, forColumn: "latest_outcome"), AttemptOutcome.self))
     }
@@ -214,6 +218,7 @@ public struct JobEntry: Hashable, Sendable, FetchableRecord, PersistableRecord {
     container["latest_attempt"] = latest?.attempt.uuid.lowercasedString
     container["latest_replica"] = latest?.replica.description
     container["latest_expires"] = latest?.leaseExpires
+    container["latest_renewed"] = latest?.leaseRenewed
     container["latest_step"] = latest?.step?.name
     container["latest_step_index"] = latest?.step?.index
     container["latest_outcome"] = latest?.outcome.rawValue
@@ -240,21 +245,26 @@ public struct JobLatestAttempt: Hashable, Sendable {
   public let attempt: AttemptID
   public let replica: ReplicaID
   public let leaseExpires: Int64?
+  /// When its replica last wrote the lease; whether that lease is still live is read against a moment, never stored.
+  public let leaseRenewed: Int64?
   public let step: AttemptStep?
   public let outcome: AttemptOutcome
+
+  public var renewal: Date? { leaseRenewed.map { Date(timeIntervalSince1970: Double($0) / 1000) } }
 }
 
 public struct JobEntryDerivation: Derivation {
-  public static let version = 1
+  public static let version = 2
   public static let definition = """
     CREATE TABLE nf_derived_job (
       job TEXT PRIMARY KEY, novel BLOB, chapter INTEGER, kind TEXT NOT NULL, target TEXT NOT NULL, fingerprint TEXT NOT NULL, run INTEGER NOT NULL,
       requested TEXT NOT NULL, requester TEXT NOT NULL, cancel TEXT NOT NULL, attempts INTEGER NOT NULL, latest_attempt TEXT, latest_replica TEXT,
-      latest_expires INTEGER, latest_step TEXT, latest_step_index INTEGER, latest_outcome TEXT, ended TEXT, succeeded_attempt TEXT, fallback TEXT NOT NULL,
-      failed_attempt TEXT, failed_code TEXT, failed_message TEXT, holders TEXT NOT NULL
+      latest_expires INTEGER, latest_renewed INTEGER, latest_step TEXT, latest_step_index INTEGER, latest_outcome TEXT, ended TEXT, succeeded_attempt TEXT,
+      fallback TEXT NOT NULL, failed_attempt TEXT, failed_code TEXT, failed_message TEXT, holders TEXT NOT NULL
     ) STRICT, WITHOUT ROWID;
     CREATE INDEX nf_derived_job_novel ON nf_derived_job (novel, chapter);
     CREATE INDEX nf_derived_job_open ON nf_derived_job (novel, ended);
+    CREATE INDEX nf_derived_job_pending ON nf_derived_job (fallback, ended);
     """
 
   public init() {}
@@ -283,7 +293,8 @@ public struct JobEntryDerivation: Derivation {
     let attempts = try context.fetchAll(JobAttemptRow.filter(Column("job") == ref.key.rawValue)).sorted { $0.outranks($1) }
     let key = job.request.key
     let latest = attempts.last.map { row in
-      JobLatestAttempt(attempt: row.attempt, replica: row.replica, leaseExpires: row.leaseExpires, step: row.step, outcome: row.outcome)
+      JobLatestAttempt(
+        attempt: row.attempt, replica: row.replica, leaseExpires: row.leaseExpires, leaseRenewed: row.leaseRenewed, step: row.step, outcome: row.outcome)
     }
     return [
       JobEntry(
