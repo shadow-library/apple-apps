@@ -1,0 +1,388 @@
+{
+"quest.create": [
+{"id":"base","payload":{"questId":"0190f3a0-0000-7000-8000-0000000000a1","strictness":"routine","startTimeMinutes":480,"durationMinutes":30,"statAffinity":"body","recurrence":{"frequency":"daily","interval":1,"startDate":"2026-01-01","end":{"kind":"never"}}},"occurrence":null,"reference":{"accepted":true},"native":null,"reason":null},
+{"id":"anchor-with-start","payload":{"questId":"0190f3a0-0000-7000-8000-0000000000a1","strictness":"anchor","startTimeMinutes":480,"durationMinutes":30,"statAffinity":"body","recurrence":{"frequency":"daily","interval":1,"startDate":"2026-01-01","end":{"kind":"never"}}},"occurrence":null,"reference":{"accepted":true},"native":null,"reason":null},
+{"id":"anchor-without-start","payload":{"questId":"0190f3a0-0000-7000-8000-0000000000a1","strictness":"anchor","durationMinutes":30,"statAffinity":"body","recurrence":{"frequency":"daily","interval":1,"startDate":"2026-01-01","end":{"kind":"never"}}},"occurrence":null,"reference":{"refused":{"code":"QST_003"}},"native":null,"reason":null},
+{"id":"anchor-null-start","payload":{"questId":"0190f3a0-0000-7000-8000-0000000000a1","strictness":"anchor","startTimeMinutes":null,"durationMinutes":30,"statAffinity":"body","recurrence":{"frequency":"daily","interval":1,"startDate":"2026-01-01","end":{"kind":"never"}}},"occurrence":null,"reference":{"refused":{"code":"QST_003"}},"native":null,"reason":null},
+{"id":"every-strictness-optional","payload":{"questId":"0190f3a0-0000-7000-8000-0000000000a1","strictness":"optional","startTimeMinutes":480,"durationMinutes":30,"statAffinity":"body","recurrence":{"frequency":"daily","interval":1,"startDate":"2026-01-01","end":{"kind":"never"}},"optionalStreakOptIn":true},"occurrence":null,"reference":{"accepted":true},"native":null,"reason":null},
+{"id":"strictness-missing","payload":{"questId":"0190f3a0-0000-7000-8000-0000000000a1","startTimeMinutes":480,"durationMinutes":30,"statAffinity":"body","recurrence":{"frequency":"daily","interval":1,"startDate":"2026-01-01","end":{"kind":"never"}}},"occurrence":null,"reference":{"refused":{"field":"strictness"}},"native":null,"reason":null},
+{"id":"strictness-unknown","payload":{"questId":"0190f3a0-0000-7000-8000-0000000000a1","strictness":"strict","startTimeMinutes":480,"durationMinutes":30,"statAffinity":"body","recurrence":{"frequency":"daily","interval":1,"startDate":"2026-01-01","end":{"kind":"never"}}},"occurrence":null,"reference":{"refused":{"field":"strictness"}},"native":null,"reason":null},
+{"id":"start-null","payload":{"questId":"0190f3a0-0000-7000-8000-0000000000a1","strictness":"routine","startTimeMinutes":null,"durationMinutes":30,"statAffinity":"body","recurrence":{"frequency":"daily","interval":1,"startDate":"2026-01-01","end":{"kind":"never"}}},"occurrence":null,"reference":{"accepted":true},"native":null,"reason":null},
+{"id":"start-zero","payload":{"questId":"0190f3a0-0000-7000-8000-0000000000a1","strictness":"routine","startTimeMinutes":0,"durationMinutes":30,"statAffinity":"body","recurrence":{"frequency":"daily","interval":1,"startDate":"2026-01-01","end":{"kind":"never"}}},"occurrence":null,"reference":{"accepted":true},"native":null,"reason":null},
+{"id":"start-last-minute","payload":{"questId":"0190f3a0-0000-7000-8000-0000000000a1","strictness":"routine","startTimeMinutes":1439,"durationMinutes":30,"statAffinity":"body","recurrence":{"frequency":"daily","interval":1,"startDate":"2026-01-01","end":{"kind":"never"}}},"occurrence":null,"reference":{"accepted":true},"native":null,"reason":null},
+{"id":"start-negative","payload":{"questId":"0190f3a0-0000-7000-8000-0000000000a1","strictness":"routine","startTimeMinutes":-1,"durationMinutes":30,"statAffinity":"body","recurrence":{"frequency":"daily","interval":1,"startDate":"2026-01-01","end":{"kind":"never"}}},"occurrence":null,"reference":{"refused":{"field":"startTimeMinutes"}},"native":null,"reason":null},
+{"id":"start-1440","payload":{"questId":"0190f3a0-0000-7000-8000-0000000000a1","strictness":"routine","startTimeMinutes":1440,"durationMinutes":30,"statAffinity":"body","recurrence":{"frequency":"daily","interval":1,"startDate":"2026-01-01","end":{"kind":"never"}}},"occurrence":null,"reference":{"refused":{"field":"startTimeMinutes"}},"native":null,"reason":null},
+{"id":"start-string","payload":{"questId":"0190f3a0-0000-7000-8000-0000000000a1","strictness":"routine","startTimeMinutes":"noon","durationMinutes":30,"statAffinity":"body","recurrence":{"frequency":"daily","interval":1,"startDate":"2026-01-01","end":{"kind":"never"}}},"occurrence":null,"reference":{"refused":{"field":"startTimeMinutes"}},"native":null,"reason":null},
+{"id":"duration-missing","payload":{"questId":"0190f3a0-0000-7000-8000-0000000000a1","strictness":"routine","startTimeMinutes":480,"statAffinity":"body","recurrence":{"frequency":"daily","interval":1,"startDate":"2026-01-01","end":{"kind":"never"}}},"occurrence":null,"reference":{"accepted":true},"native":null,"reason":null},
+{"id":"duration-null","payload":{"questId":"0190f3a0-0000-7000-8000-0000000000a1","strictness":"routine","startTimeMinutes":480,"durationMinutes":null,"statAffinity":"body","recurrence":{"frequency":"daily","interval":1,"startDate":"2026-01-01","end":{"kind":"never"}}},"occurrence":null,"reference":{"accepted":true},"native":null,"reason":null},
+{"id":"duration-negative","payload":{"questId":"0190f3a0-0000-7000-8000-0000000000a1","strictness":"routine","startTimeMinutes":480,"durationMinutes":-5,"statAffinity":"body","recurrence":{"frequency":"daily","interval":1,"startDate":"2026-01-01","end":{"kind":"never"}}},"occurrence":null,"reference":{"accepted":true},"native":null,"reason":null},
+{"id":"duration-string","payload":{"questId":"0190f3a0-0000-7000-8000-0000000000a1","strictness":"routine","startTimeMinutes":480,"durationMinutes":"half","statAffinity":"body","recurrence":{"frequency":"daily","interval":1,"startDate":"2026-01-01","end":{"kind":"never"}}},"occurrence":null,"reference":{"refused":{"field":"durationMinutes"}},"native":null,"reason":null},
+{"id":"stat-missing","payload":{"questId":"0190f3a0-0000-7000-8000-0000000000a1","strictness":"routine","startTimeMinutes":480,"durationMinutes":30,"recurrence":{"frequency":"daily","interval":1,"startDate":"2026-01-01","end":{"kind":"never"}}},"occurrence":null,"reference":{"refused":{"field":"statAffinity"}},"native":null,"reason":null},
+{"id":"stat-unknown","payload":{"questId":"0190f3a0-0000-7000-8000-0000000000a1","strictness":"routine","startTimeMinutes":480,"durationMinutes":30,"statAffinity":"strength","recurrence":{"frequency":"daily","interval":1,"startDate":"2026-01-01","end":{"kind":"never"}}},"occurrence":null,"reference":{"refused":{"field":"statAffinity"}},"native":null,"reason":null},
+{"id":"streak-opt-in-string","payload":{"questId":"0190f3a0-0000-7000-8000-0000000000a1","strictness":"routine","startTimeMinutes":480,"durationMinutes":30,"statAffinity":"body","recurrence":{"frequency":"daily","interval":1,"startDate":"2026-01-01","end":{"kind":"never"}},"optionalStreakOptIn":"yes"},"occurrence":null,"reference":{"refused":{"field":"optionalStreakOptIn"}},"native":null,"reason":null},
+{"id":"streak-opt-in-null","payload":{"questId":"0190f3a0-0000-7000-8000-0000000000a1","strictness":"routine","startTimeMinutes":480,"durationMinutes":30,"statAffinity":"body","recurrence":{"frequency":"daily","interval":1,"startDate":"2026-01-01","end":{"kind":"never"}},"optionalStreakOptIn":null},"occurrence":null,"reference":{"refused":{"field":"optionalStreakOptIn"}},"native":null,"reason":null},
+{"id":"recurrence-missing","payload":{"questId":"0190f3a0-0000-7000-8000-0000000000a1","strictness":"routine","startTimeMinutes":480,"durationMinutes":30,"statAffinity":"body"},"occurrence":null,"reference":{"refused":{"field":"recurrence"}},"native":null,"reason":null},
+{"id":"recurrence-string","payload":{"questId":"0190f3a0-0000-7000-8000-0000000000a1","strictness":"routine","startTimeMinutes":480,"durationMinutes":30,"statAffinity":"body","recurrence":"daily"},"occurrence":null,"reference":{"refused":{"field":"recurrence"}},"native":null,"reason":null},
+{"id":"frequency-unknown","payload":{"questId":"0190f3a0-0000-7000-8000-0000000000a1","strictness":"routine","startTimeMinutes":480,"durationMinutes":30,"statAffinity":"body","recurrence":{"frequency":"hourly","interval":1,"startDate":"2026-01-01","end":{"kind":"never"}}},"occurrence":null,"reference":{"refused":{"field":"recurrence.frequency"}},"native":null,"reason":null},
+{"id":"interval-missing","payload":{"questId":"0190f3a0-0000-7000-8000-0000000000a1","strictness":"routine","startTimeMinutes":480,"durationMinutes":30,"statAffinity":"body","recurrence":{"frequency":"daily","startDate":"2026-01-01","end":{"kind":"never"}}},"occurrence":null,"reference":{"accepted":true},"native":null,"reason":null},
+{"id":"interval-zero","payload":{"questId":"0190f3a0-0000-7000-8000-0000000000a1","strictness":"routine","startTimeMinutes":480,"durationMinutes":30,"statAffinity":"body","recurrence":{"frequency":"daily","interval":0,"startDate":"2026-01-01","end":{"kind":"never"}}},"occurrence":null,"reference":{"accepted":true},"native":null,"reason":null},
+{"id":"interval-negative","payload":{"questId":"0190f3a0-0000-7000-8000-0000000000a1","strictness":"routine","startTimeMinutes":480,"durationMinutes":30,"statAffinity":"body","recurrence":{"frequency":"daily","interval":-3,"startDate":"2026-01-01","end":{"kind":"never"}}},"occurrence":null,"reference":{"accepted":true},"native":null,"reason":null},
+{"id":"interval-string","payload":{"questId":"0190f3a0-0000-7000-8000-0000000000a1","strictness":"routine","startTimeMinutes":480,"durationMinutes":30,"statAffinity":"body","recurrence":{"frequency":"daily","interval":"two","startDate":"2026-01-01","end":{"kind":"never"}}},"occurrence":null,"reference":{"refused":{"field":"recurrence.interval"}},"native":null,"reason":null},
+{"id":"start-date-missing","payload":{"questId":"0190f3a0-0000-7000-8000-0000000000a1","strictness":"routine","startTimeMinutes":480,"durationMinutes":30,"statAffinity":"body","recurrence":{"frequency":"daily","interval":1,"end":{"kind":"never"}}},"occurrence":null,"reference":{"refused":{"field":"recurrence.startDate"}},"native":null,"reason":null},
+{"id":"start-date-invalid","payload":{"questId":"0190f3a0-0000-7000-8000-0000000000a1","strictness":"routine","startTimeMinutes":480,"durationMinutes":30,"statAffinity":"body","recurrence":{"frequency":"daily","interval":1,"startDate":"2026-02-30","end":{"kind":"never"}}},"occurrence":null,"reference":{"refused":{"field":"recurrence.startDate"}},"native":null,"reason":null},
+{"id":"start-date-slashes","payload":{"questId":"0190f3a0-0000-7000-8000-0000000000a1","strictness":"routine","startTimeMinutes":480,"durationMinutes":30,"statAffinity":"body","recurrence":{"frequency":"daily","interval":1,"startDate":"2026/01/01","end":{"kind":"never"}}},"occurrence":null,"reference":{"refused":{"field":"recurrence.startDate"}},"native":null,"reason":null},
+{"id":"start-date-year-zero","payload":{"questId":"0190f3a0-0000-7000-8000-0000000000a1","strictness":"routine","startTimeMinutes":480,"durationMinutes":30,"statAffinity":"body","recurrence":{"frequency":"daily","interval":1,"startDate":"0000-01-01","end":{"kind":"never"}}},"occurrence":null,"reference":{"accepted":true},"native":null,"reason":null},
+{"id":"end-missing","payload":{"questId":"0190f3a0-0000-7000-8000-0000000000a1","strictness":"routine","startTimeMinutes":480,"durationMinutes":30,"statAffinity":"body","recurrence":{"frequency":"daily","interval":1,"startDate":"2026-01-01"}},"occurrence":null,"reference":{"refused":{"field":"recurrence.end"}},"native":null,"reason":null},
+{"id":"end-kind-unknown","payload":{"questId":"0190f3a0-0000-7000-8000-0000000000a1","strictness":"routine","startTimeMinutes":480,"durationMinutes":30,"statAffinity":"body","recurrence":{"frequency":"daily","interval":1,"startDate":"2026-01-01","end":{"kind":"sometimes"}}},"occurrence":null,"reference":{"refused":{"field":"recurrence.end.kind"}},"native":null,"reason":null},
+{"id":"end-count","payload":{"questId":"0190f3a0-0000-7000-8000-0000000000a1","strictness":"routine","startTimeMinutes":480,"durationMinutes":30,"statAffinity":"body","recurrence":{"frequency":"daily","interval":1,"startDate":"2026-01-01","end":{"kind":"count","count":3}}},"occurrence":null,"reference":{"accepted":true},"native":null,"reason":null},
+{"id":"end-count-zero","payload":{"questId":"0190f3a0-0000-7000-8000-0000000000a1","strictness":"routine","startTimeMinutes":480,"durationMinutes":30,"statAffinity":"body","recurrence":{"frequency":"daily","interval":1,"startDate":"2026-01-01","end":{"kind":"count","count":0}}},"occurrence":null,"reference":{"accepted":true},"native":null,"reason":null},
+{"id":"end-count-missing","payload":{"questId":"0190f3a0-0000-7000-8000-0000000000a1","strictness":"routine","startTimeMinutes":480,"durationMinutes":30,"statAffinity":"body","recurrence":{"frequency":"daily","interval":1,"startDate":"2026-01-01","end":{"kind":"count"}}},"occurrence":null,"reference":{"refused":{"field":"recurrence.end.count"}},"native":null,"reason":null},
+{"id":"end-count-string","payload":{"questId":"0190f3a0-0000-7000-8000-0000000000a1","strictness":"routine","startTimeMinutes":480,"durationMinutes":30,"statAffinity":"body","recurrence":{"frequency":"daily","interval":1,"startDate":"2026-01-01","end":{"kind":"count","count":"three"}}},"occurrence":null,"reference":{"refused":{"field":"recurrence.end.count"}},"native":null,"reason":null},
+{"id":"end-until","payload":{"questId":"0190f3a0-0000-7000-8000-0000000000a1","strictness":"routine","startTimeMinutes":480,"durationMinutes":30,"statAffinity":"body","recurrence":{"frequency":"daily","interval":1,"startDate":"2026-01-01","end":{"kind":"until","date":"2026-12-31"}}},"occurrence":null,"reference":{"accepted":true},"native":null,"reason":null},
+{"id":"end-until-invalid","payload":{"questId":"0190f3a0-0000-7000-8000-0000000000a1","strictness":"routine","startTimeMinutes":480,"durationMinutes":30,"statAffinity":"body","recurrence":{"frequency":"daily","interval":1,"startDate":"2026-01-01","end":{"kind":"until","date":"2026-12-32"}}},"occurrence":null,"reference":{"refused":{"field":"recurrence.end.date"}},"native":null,"reason":null},
+{"id":"end-until-missing","payload":{"questId":"0190f3a0-0000-7000-8000-0000000000a1","strictness":"routine","startTimeMinutes":480,"durationMinutes":30,"statAffinity":"body","recurrence":{"frequency":"daily","interval":1,"startDate":"2026-01-01","end":{"kind":"until"}}},"occurrence":null,"reference":{"refused":{"field":"recurrence.end.date"}},"native":null,"reason":null},
+{"id":"exceptions","payload":{"questId":"0190f3a0-0000-7000-8000-0000000000a1","strictness":"routine","startTimeMinutes":480,"durationMinutes":30,"statAffinity":"body","recurrence":{"frequency":"daily","interval":1,"startDate":"2026-01-01","end":{"kind":"never"},"exceptions":["2026-01-05","2026-01-03"]}},"occurrence":null,"reference":{"accepted":true},"native":null,"reason":null},
+{"id":"exceptions-empty","payload":{"questId":"0190f3a0-0000-7000-8000-0000000000a1","strictness":"routine","startTimeMinutes":480,"durationMinutes":30,"statAffinity":"body","recurrence":{"frequency":"daily","interval":1,"startDate":"2026-01-01","end":{"kind":"never"},"exceptions":[]}},"occurrence":null,"reference":{"accepted":true},"native":null,"reason":null},
+{"id":"exceptions-duplicate","payload":{"questId":"0190f3a0-0000-7000-8000-0000000000a1","strictness":"routine","startTimeMinutes":480,"durationMinutes":30,"statAffinity":"body","recurrence":{"frequency":"daily","interval":1,"startDate":"2026-01-01","end":{"kind":"never"},"exceptions":["2026-01-05","2026-01-05"]}},"occurrence":null,"reference":{"accepted":true},"native":null,"reason":null},
+{"id":"exceptions-not-array","payload":{"questId":"0190f3a0-0000-7000-8000-0000000000a1","strictness":"routine","startTimeMinutes":480,"durationMinutes":30,"statAffinity":"body","recurrence":{"frequency":"daily","interval":1,"startDate":"2026-01-01","end":{"kind":"never"},"exceptions":"2026-01-05"}},"occurrence":null,"reference":{"refused":{"field":"recurrence.exceptions"}},"native":null,"reason":null},
+{"id":"exceptions-null","payload":{"questId":"0190f3a0-0000-7000-8000-0000000000a1","strictness":"routine","startTimeMinutes":480,"durationMinutes":30,"statAffinity":"body","recurrence":{"frequency":"daily","interval":1,"startDate":"2026-01-01","end":{"kind":"never"},"exceptions":null}},"occurrence":null,"reference":{"refused":{"field":"recurrence.exceptions"}},"native":null,"reason":null},
+{"id":"exceptions-empty-string","payload":{"questId":"0190f3a0-0000-7000-8000-0000000000a1","strictness":"routine","startTimeMinutes":480,"durationMinutes":30,"statAffinity":"body","recurrence":{"frequency":"daily","interval":1,"startDate":"2026-01-01","end":{"kind":"never"},"exceptions":[""]}},"occurrence":null,"reference":{"refused":{"field":"recurrence.exceptions.0"}},"native":null,"reason":null},
+{"id":"exceptions-second-invalid","payload":{"questId":"0190f3a0-0000-7000-8000-0000000000a1","strictness":"routine","startTimeMinutes":480,"durationMinutes":30,"statAffinity":"body","recurrence":{"frequency":"daily","interval":1,"startDate":"2026-01-01","end":{"kind":"never"},"exceptions":["2026-01-05","2026-13-01"]}},"occurrence":null,"reference":{"refused":{"field":"recurrence.exceptions.1"}},"native":null,"reason":null},
+{"id":"weekly","payload":{"questId":"0190f3a0-0000-7000-8000-0000000000a1","strictness":"routine","startTimeMinutes":480,"durationMinutes":30,"statAffinity":"body","recurrence":{"frequency":"weekly","interval":1,"startDate":"2026-01-01","end":{"kind":"never"},"daysOfWeek":[1,3,5]}},"occurrence":null,"reference":{"accepted":true},"native":null,"reason":null},
+{"id":"weekly-duplicate-days","payload":{"questId":"0190f3a0-0000-7000-8000-0000000000a1","strictness":"routine","startTimeMinutes":480,"durationMinutes":30,"statAffinity":"body","recurrence":{"frequency":"weekly","interval":1,"startDate":"2026-01-01","end":{"kind":"never"},"daysOfWeek":[1,1,7]}},"occurrence":null,"reference":{"accepted":true},"native":null,"reason":null},
+{"id":"weekly-empty","payload":{"questId":"0190f3a0-0000-7000-8000-0000000000a1","strictness":"routine","startTimeMinutes":480,"durationMinutes":30,"statAffinity":"body","recurrence":{"frequency":"weekly","interval":1,"startDate":"2026-01-01","end":{"kind":"never"},"daysOfWeek":[]}},"occurrence":null,"reference":{"refused":{"field":"recurrence.daysOfWeek"}},"native":null,"reason":null},
+{"id":"weekly-missing","payload":{"questId":"0190f3a0-0000-7000-8000-0000000000a1","strictness":"routine","startTimeMinutes":480,"durationMinutes":30,"statAffinity":"body","recurrence":{"frequency":"weekly","interval":1,"startDate":"2026-01-01","end":{"kind":"never"}}},"occurrence":null,"reference":{"refused":{"field":"recurrence.daysOfWeek"}},"native":null,"reason":null},
+{"id":"weekly-zero","payload":{"questId":"0190f3a0-0000-7000-8000-0000000000a1","strictness":"routine","startTimeMinutes":480,"durationMinutes":30,"statAffinity":"body","recurrence":{"frequency":"weekly","interval":1,"startDate":"2026-01-01","end":{"kind":"never"},"daysOfWeek":[0]}},"occurrence":null,"reference":{"refused":{"field":"recurrence.daysOfWeek.0"}},"native":null,"reason":null},
+{"id":"weekly-eight","payload":{"questId":"0190f3a0-0000-7000-8000-0000000000a1","strictness":"routine","startTimeMinutes":480,"durationMinutes":30,"statAffinity":"body","recurrence":{"frequency":"weekly","interval":1,"startDate":"2026-01-01","end":{"kind":"never"},"daysOfWeek":[1,8]}},"occurrence":null,"reference":{"refused":{"field":"recurrence.daysOfWeek.1"}},"native":null,"reason":null},
+{"id":"weekly-string-day","payload":{"questId":"0190f3a0-0000-7000-8000-0000000000a1","strictness":"routine","startTimeMinutes":480,"durationMinutes":30,"statAffinity":"body","recurrence":{"frequency":"weekly","interval":1,"startDate":"2026-01-01","end":{"kind":"never"},"daysOfWeek":["monday"]}},"occurrence":null,"reference":{"refused":{"field":"recurrence.daysOfWeek.0"}},"native":null,"reason":null},
+{"id":"monthly-day","payload":{"questId":"0190f3a0-0000-7000-8000-0000000000a1","strictness":"routine","startTimeMinutes":480,"durationMinutes":30,"statAffinity":"body","recurrence":{"frequency":"monthly","interval":1,"startDate":"2026-01-01","end":{"kind":"never"},"pattern":{"kind":"day_of_month","dayOfMonth":15}}},"occurrence":null,"reference":{"accepted":true},"native":null,"reason":null},
+{"id":"monthly-day-31","payload":{"questId":"0190f3a0-0000-7000-8000-0000000000a1","strictness":"routine","startTimeMinutes":480,"durationMinutes":30,"statAffinity":"body","recurrence":{"frequency":"monthly","interval":1,"startDate":"2026-01-01","end":{"kind":"never"},"pattern":{"kind":"day_of_month","dayOfMonth":31}}},"occurrence":null,"reference":{"accepted":true},"native":null,"reason":null},
+{"id":"monthly-day-99","payload":{"questId":"0190f3a0-0000-7000-8000-0000000000a1","strictness":"routine","startTimeMinutes":480,"durationMinutes":30,"statAffinity":"body","recurrence":{"frequency":"monthly","interval":1,"startDate":"2026-01-01","end":{"kind":"never"},"pattern":{"kind":"day_of_month","dayOfMonth":99}}},"occurrence":null,"reference":{"accepted":true},"native":null,"reason":null},
+{"id":"monthly-day-zero","payload":{"questId":"0190f3a0-0000-7000-8000-0000000000a1","strictness":"routine","startTimeMinutes":480,"durationMinutes":30,"statAffinity":"body","recurrence":{"frequency":"monthly","interval":1,"startDate":"2026-01-01","end":{"kind":"never"},"pattern":{"kind":"day_of_month","dayOfMonth":0}}},"occurrence":null,"reference":{"accepted":true},"native":{"refused":{"field":"recurrence.pattern.dayOfMonth"}},"reason":"the reference turns a day below 1 into dates that do not exist; RecurrenceRule refuses it"},
+{"id":"monthly-day-negative","payload":{"questId":"0190f3a0-0000-7000-8000-0000000000a1","strictness":"routine","startTimeMinutes":480,"durationMinutes":30,"statAffinity":"body","recurrence":{"frequency":"monthly","interval":1,"startDate":"2026-01-01","end":{"kind":"never"},"pattern":{"kind":"day_of_month","dayOfMonth":-1}}},"occurrence":null,"reference":{"accepted":true},"native":{"refused":{"field":"recurrence.pattern.dayOfMonth"}},"reason":"the reference turns a day below 1 into dates that do not exist; RecurrenceRule refuses it"},
+{"id":"monthly-day-string","payload":{"questId":"0190f3a0-0000-7000-8000-0000000000a1","strictness":"routine","startTimeMinutes":480,"durationMinutes":30,"statAffinity":"body","recurrence":{"frequency":"monthly","interval":1,"startDate":"2026-01-01","end":{"kind":"never"},"pattern":{"kind":"day_of_month","dayOfMonth":"mid"}}},"occurrence":null,"reference":{"refused":{"field":"recurrence.pattern.dayOfMonth"}},"native":null,"reason":null},
+{"id":"monthly-pattern-missing","payload":{"questId":"0190f3a0-0000-7000-8000-0000000000a1","strictness":"routine","startTimeMinutes":480,"durationMinutes":30,"statAffinity":"body","recurrence":{"frequency":"monthly","interval":1,"startDate":"2026-01-01","end":{"kind":"never"}}},"occurrence":null,"reference":{"refused":{"field":"recurrence.pattern"}},"native":null,"reason":null},
+{"id":"monthly-pattern-kind-unknown","payload":{"questId":"0190f3a0-0000-7000-8000-0000000000a1","strictness":"routine","startTimeMinutes":480,"durationMinutes":30,"statAffinity":"body","recurrence":{"frequency":"monthly","interval":1,"startDate":"2026-01-01","end":{"kind":"never"},"pattern":{"kind":"weekly"}}},"occurrence":null,"reference":{"refused":{"field":"recurrence.pattern.kind"}},"native":null,"reason":null},
+{"id":"monthly-nth","payload":{"questId":"0190f3a0-0000-7000-8000-0000000000a1","strictness":"routine","startTimeMinutes":480,"durationMinutes":30,"statAffinity":"body","recurrence":{"frequency":"monthly","interval":1,"startDate":"2026-01-01","end":{"kind":"never"},"pattern":{"kind":"nth_weekday","weekday":1,"ordinal":"last"}}},"occurrence":null,"reference":{"accepted":true},"native":null,"reason":null},
+{"id":"monthly-nth-first","payload":{"questId":"0190f3a0-0000-7000-8000-0000000000a1","strictness":"routine","startTimeMinutes":480,"durationMinutes":30,"statAffinity":"body","recurrence":{"frequency":"monthly","interval":1,"startDate":"2026-01-01","end":{"kind":"never"},"pattern":{"kind":"nth_weekday","weekday":7,"ordinal":1}}},"occurrence":null,"reference":{"accepted":true},"native":null,"reason":null},
+{"id":"monthly-nth-ordinal-five","payload":{"questId":"0190f3a0-0000-7000-8000-0000000000a1","strictness":"routine","startTimeMinutes":480,"durationMinutes":30,"statAffinity":"body","recurrence":{"frequency":"monthly","interval":1,"startDate":"2026-01-01","end":{"kind":"never"},"pattern":{"kind":"nth_weekday","weekday":1,"ordinal":5}}},"occurrence":null,"reference":{"refused":{"field":"recurrence.pattern.ordinal"}},"native":null,"reason":null},
+{"id":"monthly-nth-ordinal-word","payload":{"questId":"0190f3a0-0000-7000-8000-0000000000a1","strictness":"routine","startTimeMinutes":480,"durationMinutes":30,"statAffinity":"body","recurrence":{"frequency":"monthly","interval":1,"startDate":"2026-01-01","end":{"kind":"never"},"pattern":{"kind":"nth_weekday","weekday":1,"ordinal":"first"}}},"occurrence":null,"reference":{"refused":{"field":"recurrence.pattern.ordinal"}},"native":null,"reason":null},
+{"id":"monthly-nth-weekday-zero","payload":{"questId":"0190f3a0-0000-7000-8000-0000000000a1","strictness":"routine","startTimeMinutes":480,"durationMinutes":30,"statAffinity":"body","recurrence":{"frequency":"monthly","interval":1,"startDate":"2026-01-01","end":{"kind":"never"},"pattern":{"kind":"nth_weekday","weekday":0,"ordinal":1}}},"occurrence":null,"reference":{"refused":{"field":"recurrence.pattern.weekday"}},"native":null,"reason":null},
+{"id":"yearly","payload":{"questId":"0190f3a0-0000-7000-8000-0000000000a1","strictness":"routine","startTimeMinutes":480,"durationMinutes":30,"statAffinity":"body","recurrence":{"frequency":"yearly","interval":1,"startDate":"2026-01-01","end":{"kind":"never"}}},"occurrence":null,"reference":{"accepted":true},"native":null,"reason":null},
+{"id":"module-link","payload":{"questId":"0190f3a0-0000-7000-8000-0000000000a1","strictness":"routine","startTimeMinutes":480,"durationMinutes":30,"statAffinity":"body","recurrence":{"frequency":"daily","interval":1,"startDate":"2026-01-01","end":{"kind":"never"}},"moduleLink":"journal"},"occurrence":null,"reference":{"accepted":true},"native":null,"reason":null},
+{"id":"module-link-null","payload":{"questId":"0190f3a0-0000-7000-8000-0000000000a1","strictness":"routine","startTimeMinutes":480,"durationMinutes":30,"statAffinity":"body","recurrence":{"frequency":"daily","interval":1,"startDate":"2026-01-01","end":{"kind":"never"}},"moduleLink":null},"occurrence":null,"reference":{"accepted":true},"native":null,"reason":null},
+{"id":"module-link-unknown","payload":{"questId":"0190f3a0-0000-7000-8000-0000000000a1","strictness":"routine","startTimeMinutes":480,"durationMinutes":30,"statAffinity":"body","recurrence":{"frequency":"daily","interval":1,"startDate":"2026-01-01","end":{"kind":"never"}},"moduleLink":"diary"},"occurrence":null,"reference":{"refused":{"field":"moduleLink"}},"native":null,"reason":null},
+{"id":"inactive","payload":{"questId":"0190f3a0-0000-7000-8000-0000000000a1","strictness":"routine","startTimeMinutes":480,"durationMinutes":30,"statAffinity":"body","recurrence":{"frequency":"daily","interval":1,"startDate":"2026-01-01","end":{"kind":"never"}},"active":false},"occurrence":null,"reference":{"accepted":true},"native":null,"reason":null},
+{"id":"active-string","payload":{"questId":"0190f3a0-0000-7000-8000-0000000000a1","strictness":"routine","startTimeMinutes":480,"durationMinutes":30,"statAffinity":"body","recurrence":{"frequency":"daily","interval":1,"startDate":"2026-01-01","end":{"kind":"never"}},"active":"no"},"occurrence":null,"reference":{"refused":{"field":"active"}},"native":null,"reason":null},
+{"id":"health-threshold","payload":{"questId":"0190f3a0-0000-7000-8000-0000000000a1","strictness":"routine","startTimeMinutes":480,"durationMinutes":30,"statAffinity":"body","recurrence":{"frequency":"daily","interval":1,"startDate":"2026-01-01","end":{"kind":"never"}},"healthThreshold":{"metric":"0190f3a0-0000-7000-8000-0000000000b1"}},"occurrence":null,"reference":{"accepted":true},"native":{"refused":{"field":"healthThreshold"}},"reason":"quest health thresholds need a record kind of their own; until then they are refused"},
+{"id":"health-threshold-null","payload":{"questId":"0190f3a0-0000-7000-8000-0000000000a1","strictness":"routine","startTimeMinutes":480,"durationMinutes":30,"statAffinity":"body","recurrence":{"frequency":"daily","interval":1,"startDate":"2026-01-01","end":{"kind":"never"}},"healthThreshold":null},"occurrence":null,"reference":{"accepted":true},"native":{"refused":{"field":"healthThreshold"}},"reason":"quest health thresholds need a record kind of their own; until then they are refused"},
+{"id":"quest-id-missing","payload":{"strictness":"routine","startTimeMinutes":480,"durationMinutes":30,"statAffinity":"body","recurrence":{"frequency":"daily","interval":1,"startDate":"2026-01-01","end":{"kind":"never"}}},"occurrence":null,"reference":{"accepted":true},"native":{"refused":{"field":"questId"}},"reason":"the native command names the record it creates by id, where the reference returns a server id"},
+{"id":"quest-id-not-uuid","payload":{"questId":"quest-1","strictness":"routine","startTimeMinutes":480,"durationMinutes":30,"statAffinity":"body","recurrence":{"frequency":"daily","interval":1,"startDate":"2026-01-01","end":{"kind":"never"}}},"occurrence":null,"reference":{"accepted":true},"native":{"refused":{"field":"questId"}},"reason":"the native command names the record it creates by id, where the reference returns a server id"},
+{"id":"name-in-payload","payload":{"questId":"0190f3a0-0000-7000-8000-0000000000a1","strictness":"routine","startTimeMinutes":480,"durationMinutes":30,"statAffinity":"body","recurrence":{"frequency":"daily","interval":1,"startDate":"2026-01-01","end":{"kind":"never"}},"name":"Morning run"},"occurrence":null,"reference":{"accepted":true},"native":{"refused":{"field":"name"}},"reason":"content stays in the record the command names, so the payload refuses it"},
+{"id":"notification-in-payload","payload":{"questId":"0190f3a0-0000-7000-8000-0000000000a1","strictness":"routine","startTimeMinutes":480,"durationMinutes":30,"statAffinity":"body","recurrence":{"frequency":"daily","interval":1,"startDate":"2026-01-01","end":{"kind":"never"}},"notification":{"enabled":true}},"occurrence":null,"reference":{"accepted":true},"native":{"refused":{"field":"notification"}},"reason":"content stays in the record the command names, so the payload refuses it"},
+{"id":"daily-with-weekdays","payload":{"questId":"0190f3a0-0000-7000-8000-0000000000a1","strictness":"routine","startTimeMinutes":480,"durationMinutes":30,"statAffinity":"body","recurrence":{"frequency":"daily","interval":1,"startDate":"2026-01-01","end":{"kind":"never"},"daysOfWeek":[1]}},"occurrence":null,"reference":{"accepted":true},"native":{"refused":{"field":"recurrence.daysOfWeek"}},"reason":"a field the frequency does not use is refused where the reference ignores it"}
+],
+"quest.update": [
+{"id":"base","payload":{"questId":"0190f3a0-0000-7000-8000-0000000000a1","patch":{"durationMinutes":45}},"occurrence":null,"reference":{"accepted":true},"native":null,"reason":null},
+{"id":"empty-patch","payload":{"questId":"0190f3a0-0000-7000-8000-0000000000a1","patch":{}},"occurrence":null,"reference":{"accepted":true},"native":null,"reason":null},
+{"id":"no-patch","payload":{"questId":"0190f3a0-0000-7000-8000-0000000000a1"},"occurrence":null,"reference":{"accepted":true},"native":null,"reason":null},
+{"id":"null-patch","payload":{"questId":"0190f3a0-0000-7000-8000-0000000000a1","patch":null},"occurrence":null,"reference":{"accepted":true},"native":null,"reason":null},
+{"id":"quest-id-missing","payload":{"patch":{}},"occurrence":null,"reference":{"refused":{"field":"questId"}},"native":null,"reason":null},
+{"id":"quest-id-not-uuid","payload":{"questId":"abc","patch":{}},"occurrence":null,"reference":{"refused":{"field":"questId"}},"native":null,"reason":null},
+{"id":"clear-start","payload":{"questId":"0190f3a0-0000-7000-8000-0000000000a1","patch":{"startTimeMinutes":null}},"occurrence":null,"reference":{"accepted":true},"native":null,"reason":null},
+{"id":"anchor-clearing-start","payload":{"questId":"0190f3a0-0000-7000-8000-0000000000a1","patch":{"strictness":"anchor","startTimeMinutes":null}},"occurrence":null,"reference":{"refused":{"code":"QST_003"}},"native":null,"reason":null},
+{"id":"anchor-keeping-start","payload":{"questId":"0190f3a0-0000-7000-8000-0000000000a1","patch":{"strictness":"anchor"}},"occurrence":null,"reference":{"accepted":true},"native":null,"reason":null},
+{"id":"start-out-of-range","payload":{"questId":"0190f3a0-0000-7000-8000-0000000000a1","patch":{"startTimeMinutes":2000}},"occurrence":null,"reference":{"refused":{"field":"startTimeMinutes"}},"native":null,"reason":null},
+{"id":"duration-null","payload":{"questId":"0190f3a0-0000-7000-8000-0000000000a1","patch":{"durationMinutes":null}},"occurrence":null,"reference":{"refused":{"field":"durationMinutes"}},"native":null,"reason":null},
+{"id":"stat","payload":{"questId":"0190f3a0-0000-7000-8000-0000000000a1","patch":{"statAffinity":"mind"}},"occurrence":null,"reference":{"accepted":true},"native":null,"reason":null},
+{"id":"stat-unknown","payload":{"questId":"0190f3a0-0000-7000-8000-0000000000a1","patch":{"statAffinity":"luck"}},"occurrence":null,"reference":{"refused":{"field":"statAffinity"}},"native":null,"reason":null},
+{"id":"strictness-unknown","payload":{"questId":"0190f3a0-0000-7000-8000-0000000000a1","patch":{"strictness":"loose"}},"occurrence":null,"reference":{"refused":{"field":"strictness"}},"native":null,"reason":null},
+{"id":"streak-opt-in-null","payload":{"questId":"0190f3a0-0000-7000-8000-0000000000a1","patch":{"optionalStreakOptIn":null}},"occurrence":null,"reference":{"refused":{"field":"optionalStreakOptIn"}},"native":null,"reason":null},
+{"id":"recurrence","payload":{"questId":"0190f3a0-0000-7000-8000-0000000000a1","patch":{"recurrence":{"frequency":"weekly","interval":1,"startDate":"2026-01-01","end":{"kind":"never"},"daysOfWeek":[1,3,5]}}},"occurrence":null,"reference":{"accepted":true},"native":null,"reason":null},
+{"id":"recurrence-empty-week","payload":{"questId":"0190f3a0-0000-7000-8000-0000000000a1","patch":{"recurrence":{"frequency":"weekly","interval":1,"startDate":"2026-01-01","end":{"kind":"never"},"daysOfWeek":[]}}},"occurrence":null,"reference":{"refused":{"field":"recurrence.daysOfWeek"}},"native":null,"reason":null},
+{"id":"module-link-clear","payload":{"questId":"0190f3a0-0000-7000-8000-0000000000a1","patch":{"moduleLink":null}},"occurrence":null,"reference":{"accepted":true},"native":null,"reason":null},
+{"id":"module-link-unknown","payload":{"questId":"0190f3a0-0000-7000-8000-0000000000a1","patch":{"moduleLink":"x"}},"occurrence":null,"reference":{"refused":{"field":"moduleLink"}},"native":null,"reason":null},
+{"id":"deactivate","payload":{"questId":"0190f3a0-0000-7000-8000-0000000000a1","patch":{"active":false}},"occurrence":null,"reference":{"accepted":true},"native":null,"reason":null},
+{"id":"patch-string","payload":{"questId":"0190f3a0-0000-7000-8000-0000000000a1","patch":"x"},"occurrence":null,"reference":{"accepted":true},"native":{"refused":{"field":"patch"}},"reason":"the reference reads a non-object patch as an empty one; it is refused here"},
+{"id":"health-threshold-null","payload":{"questId":"0190f3a0-0000-7000-8000-0000000000a1","patch":{"healthThreshold":null}},"occurrence":null,"reference":{"accepted":true},"native":{"refused":{"field":"healthThreshold"}},"reason":"quest health thresholds are refused for now"},
+{"id":"name-in-patch","payload":{"questId":"0190f3a0-0000-7000-8000-0000000000a1","patch":{"name":"Evening run"}},"occurrence":null,"reference":{"accepted":true},"native":{"refused":{"field":"name"}},"reason":"content stays in the record the command names, so the payload refuses it"}
+],
+"quest.delete": [
+{"id":"base","payload":{"questId":"0190f3a0-0000-7000-8000-0000000000a1"},"occurrence":null,"reference":{"accepted":true},"native":null,"reason":null},
+{"id":"missing","payload":{},"occurrence":null,"reference":{"refused":{"field":"questId"}},"native":null,"reason":null},
+{"id":"number","payload":{"questId":5},"occurrence":null,"reference":{"refused":{"field":"questId"}},"native":null,"reason":null},
+{"id":"not-uuid","payload":{"questId":"abc"},"occurrence":null,"reference":{"refused":{"field":"questId"}},"native":null,"reason":null}
+],
+"quest.complete": [
+{"id":"base","payload":{},"occurrence":{"quest":"0190f3a0-0000-7000-8000-0000000000a1","date":"2026-11-19"},"reference":{"accepted":true},"native":null,"reason":null},
+{"id":"no-occurrence","payload":{},"occurrence":null,"reference":{"refused":{"field":"occurrenceId"}},"native":{"refused":{"code":"memoir_command.occurrence_required"}},"reason":"the occurrence is the command record’s own field"},
+{"id":"stray-field","payload":{"performedAt":"now"},"occurrence":{"quest":"0190f3a0-0000-7000-8000-0000000000a1","date":"2026-11-19"},"reference":{"accepted":true},"native":{"refused":{"field":"performedAt"}},"reason":"the instant is the command’s own; the payload has no performedAt"}
+],
+"quest.partial": [
+{"id":"base","payload":{},"occurrence":{"quest":"0190f3a0-0000-7000-8000-0000000000a1","date":"2026-11-19"},"reference":{"accepted":true},"native":null,"reason":null},
+{"id":"no-occurrence","payload":{},"occurrence":null,"reference":{"refused":{"field":"occurrenceId"}},"native":{"refused":{"code":"memoir_command.occurrence_required"}},"reason":"the occurrence is the command record’s own field"},
+{"id":"stray-field","payload":{"performedAt":"now"},"occurrence":{"quest":"0190f3a0-0000-7000-8000-0000000000a1","date":"2026-11-19"},"reference":{"accepted":true},"native":{"refused":{"field":"performedAt"}},"reason":"the instant is the command’s own; the payload has no performedAt"}
+],
+"quest.skip": [
+{"id":"base","payload":{},"occurrence":{"quest":"0190f3a0-0000-7000-8000-0000000000a1","date":"2026-11-19"},"reference":{"accepted":true},"native":null,"reason":null},
+{"id":"no-occurrence","payload":{},"occurrence":null,"reference":{"refused":{"field":"occurrenceId"}},"native":{"refused":{"code":"memoir_command.occurrence_required"}},"reason":"the occurrence is the command record’s own field"},
+{"id":"stray-field","payload":{"performedAt":"now"},"occurrence":{"quest":"0190f3a0-0000-7000-8000-0000000000a1","date":"2026-11-19"},"reference":{"accepted":true},"native":{"refused":{"field":"performedAt"}},"reason":"the instant is the command’s own; the payload has no performedAt"},
+{"id":"reason","payload":{"reasonTag":"forgot"},"occurrence":{"quest":"0190f3a0-0000-7000-8000-0000000000a1","date":"2026-11-19"},"reference":{"accepted":true},"native":null,"reason":null},
+{"id":"reason-null","payload":{"reasonTag":null},"occurrence":{"quest":"0190f3a0-0000-7000-8000-0000000000a1","date":"2026-11-19"},"reference":{"accepted":true},"native":null,"reason":null},
+{"id":"reason-unknown","payload":{"reasonTag":"lazy"},"occurrence":{"quest":"0190f3a0-0000-7000-8000-0000000000a1","date":"2026-11-19"},"reference":{"refused":{"field":"reasonTag"}},"native":null,"reason":null},
+{"id":"note","payload":{"reasonTag":"too_tired","note":true},"occurrence":{"quest":"0190f3a0-0000-7000-8000-0000000000a1","date":"2026-11-19"},"reference":{"accepted":true},"native":null,"reason":null},
+{"id":"note-null","payload":{"note":null},"occurrence":{"quest":"0190f3a0-0000-7000-8000-0000000000a1","date":"2026-11-19"},"reference":{"accepted":true},"native":null,"reason":null},
+{"id":"note-text","payload":{"note":"tired"},"occurrence":{"quest":"0190f3a0-0000-7000-8000-0000000000a1","date":"2026-11-19"},"reference":{"accepted":true},"native":{"refused":{"field":"note"}},"reason":"the note’s text is the command’s note record; the payload says only that one is attached"}
+],
+"quest.postpone": [
+{"id":"base","payload":{},"occurrence":{"quest":"0190f3a0-0000-7000-8000-0000000000a1","date":"2026-11-19"},"reference":{"accepted":true},"native":null,"reason":null},
+{"id":"no-occurrence","payload":{},"occurrence":null,"reference":{"refused":{"field":"occurrenceId"}},"native":{"refused":{"code":"memoir_command.occurrence_required"}},"reason":"the occurrence is the command record’s own field"},
+{"id":"stray-field","payload":{"performedAt":"now"},"occurrence":{"quest":"0190f3a0-0000-7000-8000-0000000000a1","date":"2026-11-19"},"reference":{"accepted":true},"native":{"refused":{"field":"performedAt"}},"reason":"the instant is the command’s own; the payload has no performedAt"},
+{"id":"reason","payload":{"reasonTag":"travel","note":true},"occurrence":{"quest":"0190f3a0-0000-7000-8000-0000000000a1","date":"2026-11-19"},"reference":{"accepted":true},"native":null,"reason":null},
+{"id":"reason-unknown","payload":{"reasonTag":"x"},"occurrence":{"quest":"0190f3a0-0000-7000-8000-0000000000a1","date":"2026-11-19"},"reference":{"refused":{"field":"reasonTag"}},"native":null,"reason":null}
+],
+"quest.reschedule": [
+{"id":"base","payload":{"toMin":600},"occurrence":{"quest":"0190f3a0-0000-7000-8000-0000000000a1","date":"2026-11-19"},"reference":{"accepted":true},"native":null,"reason":null},
+{"id":"missing","payload":{},"occurrence":{"quest":"0190f3a0-0000-7000-8000-0000000000a1","date":"2026-11-19"},"reference":{"refused":{"field":"toMin"}},"native":null,"reason":null},
+{"id":"zero","payload":{"toMin":0},"occurrence":{"quest":"0190f3a0-0000-7000-8000-0000000000a1","date":"2026-11-19"},"reference":{"accepted":true},"native":null,"reason":null},
+{"id":"too-late","payload":{"toMin":1440},"occurrence":{"quest":"0190f3a0-0000-7000-8000-0000000000a1","date":"2026-11-19"},"reference":{"refused":{"field":"toMin"}},"native":null,"reason":null},
+{"id":"negative","payload":{"toMin":-1},"occurrence":{"quest":"0190f3a0-0000-7000-8000-0000000000a1","date":"2026-11-19"},"reference":{"refused":{"field":"toMin"}},"native":null,"reason":null},
+{"id":"string","payload":{"toMin":"ten"},"occurrence":{"quest":"0190f3a0-0000-7000-8000-0000000000a1","date":"2026-11-19"},"reference":{"refused":{"field":"toMin"}},"native":null,"reason":null},
+{"id":"beyond-cap","payload":{"toMin":600,"acceptBeyondCap":true},"occurrence":{"quest":"0190f3a0-0000-7000-8000-0000000000a1","date":"2026-11-19"},"reference":{"accepted":true},"native":null,"reason":null},
+{"id":"beyond-cap-string","payload":{"toMin":600,"acceptBeyondCap":"yes"},"occurrence":{"quest":"0190f3a0-0000-7000-8000-0000000000a1","date":"2026-11-19"},"reference":{"accepted":true},"native":{"refused":{"field":"acceptBeyondCap"}},"reason":"a flag the reference reads as false unless it is true must be a boolean here"},
+{"id":"reason","payload":{"toMin":600,"reasonTag":"schedule_conflict","note":true},"occurrence":{"quest":"0190f3a0-0000-7000-8000-0000000000a1","date":"2026-11-19"},"reference":{"accepted":true},"native":null,"reason":null},
+{"id":"reason-unknown","payload":{"toMin":600,"reasonTag":"busy"},"occurrence":{"quest":"0190f3a0-0000-7000-8000-0000000000a1","date":"2026-11-19"},"reference":{"refused":{"field":"reasonTag"}},"native":null,"reason":null},
+{"id":"no-occurrence","payload":{"toMin":600},"occurrence":null,"reference":{"refused":{"field":"occurrenceId"}},"native":{"refused":{"code":"memoir_command.occurrence_required"}},"reason":"the occurrence is the command record’s own field"}
+],
+"quest.attachReason": [
+{"id":"neither","payload":{},"occurrence":{"quest":"0190f3a0-0000-7000-8000-0000000000a1","date":"2026-11-19"},"reference":{"refused":{"field":"reasonTag"}},"native":null,"reason":null},
+{"id":"tag","payload":{"reasonTag":"health"},"occurrence":{"quest":"0190f3a0-0000-7000-8000-0000000000a1","date":"2026-11-19"},"reference":{"accepted":true},"native":null,"reason":null},
+{"id":"note","payload":{"note":true},"occurrence":{"quest":"0190f3a0-0000-7000-8000-0000000000a1","date":"2026-11-19"},"reference":{"accepted":true},"native":null,"reason":null},
+{"id":"both","payload":{"reasonTag":"other","note":true},"occurrence":{"quest":"0190f3a0-0000-7000-8000-0000000000a1","date":"2026-11-19"},"reference":{"accepted":true},"native":null,"reason":null},
+{"id":"tag-unknown","payload":{"reasonTag":"x"},"occurrence":{"quest":"0190f3a0-0000-7000-8000-0000000000a1","date":"2026-11-19"},"reference":{"refused":{"field":"reasonTag"}},"native":null,"reason":null},
+{"id":"tag-null","payload":{"reasonTag":null},"occurrence":{"quest":"0190f3a0-0000-7000-8000-0000000000a1","date":"2026-11-19"},"reference":{"refused":{"field":"reasonTag"}},"native":null,"reason":null}
+],
+"quest.editLog": [
+{"id":"empty","payload":{},"occurrence":{"quest":"0190f3a0-0000-7000-8000-0000000000a1","date":"2026-11-19"},"reference":{"accepted":true},"native":null,"reason":null},
+{"id":"tag","payload":{"reasonTag":"other"},"occurrence":{"quest":"0190f3a0-0000-7000-8000-0000000000a1","date":"2026-11-19"},"reference":{"accepted":true},"native":null,"reason":null},
+{"id":"tag-clear","payload":{"reasonTag":null},"occurrence":{"quest":"0190f3a0-0000-7000-8000-0000000000a1","date":"2026-11-19"},"reference":{"accepted":true},"native":null,"reason":null},
+{"id":"tag-unknown","payload":{"reasonTag":"x"},"occurrence":{"quest":"0190f3a0-0000-7000-8000-0000000000a1","date":"2026-11-19"},"reference":{"refused":{"field":"reasonTag"}},"native":null,"reason":null},
+{"id":"note","payload":{"note":true},"occurrence":{"quest":"0190f3a0-0000-7000-8000-0000000000a1","date":"2026-11-19"},"reference":{"accepted":true},"native":null,"reason":null},
+{"id":"note-clear","payload":{"note":null},"occurrence":{"quest":"0190f3a0-0000-7000-8000-0000000000a1","date":"2026-11-19"},"reference":{"accepted":true},"native":null,"reason":null},
+{"id":"reflection","payload":{"reflectionText":true},"occurrence":{"quest":"0190f3a0-0000-7000-8000-0000000000a1","date":"2026-11-19"},"reference":{"accepted":true},"native":null,"reason":null},
+{"id":"reflection-clear","payload":{"reflectionText":null},"occurrence":{"quest":"0190f3a0-0000-7000-8000-0000000000a1","date":"2026-11-19"},"reference":{"accepted":true},"native":null,"reason":null},
+{"id":"note-and-reflection","payload":{"note":true,"reflectionText":true},"occurrence":{"quest":"0190f3a0-0000-7000-8000-0000000000a1","date":"2026-11-19"},"reference":{"accepted":true},"native":{"refused":{"code":"memoir_command.one_text_per_command"}},"reason":"a command keeps one text in its note record"}
+],
+"quest.deleteLog": [
+{"id":"base","payload":{},"occurrence":{"quest":"0190f3a0-0000-7000-8000-0000000000a1","date":"2026-11-19"},"reference":{"accepted":true},"native":null,"reason":null},
+{"id":"no-occurrence","payload":{},"occurrence":null,"reference":{"refused":{"field":"occurrenceId"}},"native":{"refused":{"code":"memoir_command.occurrence_required"}},"reason":"the occurrence is the command record’s own field"},
+{"id":"stray-field","payload":{"performedAt":"now"},"occurrence":{"quest":"0190f3a0-0000-7000-8000-0000000000a1","date":"2026-11-19"},"reference":{"accepted":true},"native":{"refused":{"field":"performedAt"}},"reason":"the instant is the command’s own; the payload has no performedAt"}
+],
+"recovery.complete": [
+{"id":"base","payload":{},"occurrence":null,"reference":{"accepted":true},"native":null,"reason":null},
+{"id":"reflection","payload":{"reflectionText":true},"occurrence":null,"reference":{"accepted":true},"native":null,"reason":null},
+{"id":"reflection-null","payload":{"reflectionText":null},"occurrence":null,"reference":{"accepted":true},"native":null,"reason":null},
+{"id":"reflection-number","payload":{"reflectionText":5},"occurrence":null,"reference":{"refused":{"field":"reflectionText"}},"native":null,"reason":null},
+{"id":"occurrence","payload":{},"occurrence":{"quest":"0190f3a0-0000-7000-8000-0000000000a1","date":"2026-11-19"},"reference":{"accepted":true},"native":{"refused":{"code":"memoir_command.occurrence_unexpected"}},"reason":"recovery acts on the day, not an occurrence"}
+],
+"plan.setLock": [
+{"id":"unlock","payload":{"locked":false},"occurrence":null,"reference":{"accepted":true},"native":null,"reason":null},
+{"id":"unlock-by-default","payload":{},"occurrence":null,"reference":{"accepted":true},"native":null,"reason":null},
+{"id":"lock","payload":{"locked":true,"questIds":["0190f3a0-0000-7000-8000-0000000000a1","0190f3a0-0000-7000-8000-0000000000a2"]},"occurrence":null,"reference":{"accepted":true},"native":null,"reason":null},
+{"id":"lock-without-ids","payload":{"locked":true},"occurrence":null,"reference":{"refused":{"field":"questIds"}},"native":null,"reason":null},
+{"id":"lock-empty-ids","payload":{"locked":true,"questIds":[]},"occurrence":null,"reference":{"refused":{"field":"questIds"}},"native":null,"reason":null},
+{"id":"lock-ids-not-array","payload":{"locked":true,"questIds":"0190f3a0-0000-7000-8000-0000000000a1"},"occurrence":null,"reference":{"refused":{"field":"questIds"}},"native":null,"reason":null},
+{"id":"lock-bad-id","payload":{"locked":true,"questIds":["abc"]},"occurrence":null,"reference":{"refused":{"field":"questIds"}},"native":null,"reason":null},
+{"id":"lock-duplicate-id","payload":{"locked":true,"questIds":["0190f3a0-0000-7000-8000-0000000000a1","0190f3a0-0000-7000-8000-0000000000a1"]},"occurrence":null,"reference":{"refused":{"code":"LCK_001"}},"native":null,"reason":null},
+{"id":"locked-string","payload":{"locked":"true"},"occurrence":null,"reference":{"accepted":true},"native":{"refused":{"field":"locked"}},"reason":"a flag the reference reads as false unless it is true must be a boolean here"},
+{"id":"unlock-with-ids","payload":{"locked":false,"questIds":["0190f3a0-0000-7000-8000-0000000000a1"]},"occurrence":null,"reference":{"accepted":true},"native":{"refused":{"field":"questIds"}},"reason":"an unlock names no quests; the reference ignores them"}
+],
+"metric.create": [
+{"id":"base","payload":{"id":"0190f3a0-0000-7000-8000-0000000000b1","metricClass":"general"},"occurrence":null,"reference":{"accepted":true},"native":null,"reason":null},
+{"id":"health","payload":{"id":"0190f3a0-0000-7000-8000-0000000000b1","metricClass":"health"},"occurrence":null,"reference":{"accepted":true},"native":null,"reason":null},
+{"id":"class-unknown","payload":{"id":"0190f3a0-0000-7000-8000-0000000000b1","metricClass":"secret"},"occurrence":null,"reference":{"accepted":true},"native":{"refused":{"field":"metricClass"}},"reason":"a metric’s class is part of its kind; the command names it"},
+{"id":"id-missing","payload":{"metricClass":"general"},"occurrence":null,"reference":{"accepted":true},"native":{"refused":{"field":"id"}},"reason":"the native command names the record it creates by id, where the reference returns a server id"},
+{"id":"value-in-payload","payload":{"id":"0190f3a0-0000-7000-8000-0000000000b1","metricClass":"general","defaultValue":5},"occurrence":null,"reference":{"accepted":true},"native":{"refused":{"field":"defaultValue"}},"reason":"content stays in the record the command names, so the payload refuses it"}
+],
+"metric.update": [
+{"id":"base","payload":{"id":"0190f3a0-0000-7000-8000-0000000000b1","metricClass":"activity"},"occurrence":null,"reference":{"accepted":true},"native":null,"reason":null},
+{"id":"id-missing","payload":{"metricClass":"activity"},"occurrence":null,"reference":{"refused":{"field":"id"}},"native":null,"reason":null},
+{"id":"id-not-number","payload":{"id":"abc","metricClass":"activity"},"occurrence":null,"reference":{"crashed":"SyntaxError"},"native":null,"reason":null},
+{"id":"name-in-payload","payload":{"id":"0190f3a0-0000-7000-8000-0000000000b1","metricClass":"activity","name":"Steps"},"occurrence":null,"reference":{"accepted":true},"native":{"refused":{"field":"name"}},"reason":"content stays in the record the command names, so the payload refuses it"}
+],
+"metric.delete": [
+{"id":"base","payload":{"id":"0190f3a0-0000-7000-8000-0000000000b1","metricClass":"general"},"occurrence":null,"reference":{"accepted":true},"native":null,"reason":null},
+{"id":"detach","payload":{"id":"0190f3a0-0000-7000-8000-0000000000b1","metricClass":"general","detach":true},"occurrence":null,"reference":{"accepted":true},"native":null,"reason":null},
+{"id":"detach-string","payload":{"id":"0190f3a0-0000-7000-8000-0000000000b1","metricClass":"general","detach":"yes"},"occurrence":null,"reference":{"accepted":true},"native":{"refused":{"field":"detach"}},"reason":"a flag the reference reads as false unless it is true must be a boolean here"},
+{"id":"id-missing","payload":{"metricClass":"general"},"occurrence":null,"reference":{"refused":{"field":"id"}},"native":null,"reason":null}
+],
+"metric.register": [
+{"id":"base","payload":{"metricId":"0190f3a0-0000-7000-8000-0000000000b1","metricClass":"health","date":"2026-11-19"},"occurrence":null,"reference":{"accepted":true},"native":null,"reason":null},
+{"id":"food","payload":{"metricId":"0190f3a0-0000-7000-8000-0000000000b1","metricClass":"general","date":"2026-11-19","source":"food"},"occurrence":null,"reference":{"accepted":true},"native":null,"reason":null},
+{"id":"quest-log","payload":{"metricId":"0190f3a0-0000-7000-8000-0000000000b1","metricClass":"activity","date":"2026-11-19","source":"quest_log"},"occurrence":{"quest":"0190f3a0-0000-7000-8000-0000000000a1","date":"2026-11-19"},"reference":{"accepted":true},"native":null,"reason":null},
+{"id":"source-unknown","payload":{"metricId":"0190f3a0-0000-7000-8000-0000000000b1","metricClass":"health","date":"2026-11-19","source":"health"},"occurrence":null,"reference":{"refused":{"field":"source"}},"native":null,"reason":null},
+{"id":"source-null","payload":{"metricId":"0190f3a0-0000-7000-8000-0000000000b1","metricClass":"health","date":"2026-11-19","source":null},"occurrence":null,"reference":{"refused":{"field":"source"}},"native":null,"reason":null},
+{"id":"date-missing","payload":{"metricId":"0190f3a0-0000-7000-8000-0000000000b1","metricClass":"health"},"occurrence":null,"reference":{"refused":{"field":"date"}},"native":null,"reason":null},
+{"id":"date-word","payload":{"metricId":"0190f3a0-0000-7000-8000-0000000000b1","metricClass":"health","date":"yesterday"},"occurrence":null,"reference":{"accepted":true},"native":{"refused":{"field":"date"}},"reason":"the reference only requires a non-empty string; a native date must be a real date"},
+{"id":"metric-missing","payload":{"metricClass":"health","date":"2026-11-19"},"occurrence":null,"reference":{"refused":{"field":"metricId"}},"native":null,"reason":null},
+{"id":"value-in-payload","payload":{"metricId":"0190f3a0-0000-7000-8000-0000000000b1","metricClass":"health","date":"2026-11-19","value":72},"occurrence":null,"reference":{"accepted":true},"native":{"refused":{"field":"value"}},"reason":"content stays in the record the command names, so the payload refuses it"}
+],
+"expense.create": [
+{"id":"base","payload":{"id":"0190f3a0-0000-7000-8000-0000000000c1"},"occurrence":null,"reference":{"accepted":true},"native":null,"reason":null},
+{"id":"ocr","payload":{"id":"0190f3a0-0000-7000-8000-0000000000c1","source":"ocr"},"occurrence":null,"reference":{"accepted":true},"native":null,"reason":null},
+{"id":"source-unknown","payload":{"id":"0190f3a0-0000-7000-8000-0000000000c1","source":"scan"},"occurrence":null,"reference":{"refused":{"field":"source"}},"native":null,"reason":null},
+{"id":"id-missing","payload":{},"occurrence":null,"reference":{"refused":{"field":"id"}},"native":null,"reason":null},
+{"id":"id-not-uuid","payload":{"id":"expense-1"},"occurrence":null,"reference":{"accepted":true},"native":{"refused":{"field":"id"}},"reason":"native ids are UUIDs"},
+{"id":"amount-in-payload","payload":{"id":"0190f3a0-0000-7000-8000-0000000000c1","amountMinor":1250},"occurrence":null,"reference":{"accepted":true},"native":{"refused":{"field":"amountMinor"}},"reason":"content stays in the record the command names, so the payload refuses it"}
+],
+"expense.update": [
+{"id":"base","payload":{"id":"0190f3a0-0000-7000-8000-0000000000c1"},"occurrence":null,"reference":{"accepted":true},"native":null,"reason":null},
+{"id":"id-missing","payload":{},"occurrence":null,"reference":{"refused":{"field":"id"}},"native":null,"reason":null}
+],
+"expense.delete": [
+{"id":"base","payload":{"id":"0190f3a0-0000-7000-8000-0000000000c1"},"occurrence":null,"reference":{"accepted":true},"native":null,"reason":null},
+{"id":"id-missing","payload":{},"occurrence":null,"reference":{"refused":{"field":"id"}},"native":null,"reason":null}
+],
+"subscription.create": [
+{"id":"base","payload":{"id":"0190f3a0-0000-7000-8000-0000000000d1"},"occurrence":null,"reference":{"accepted":true},"native":null,"reason":null},
+{"id":"id-missing","payload":{},"occurrence":null,"reference":{"accepted":true},"native":{"refused":{"field":"id"}},"reason":"the native command names the record it creates by id, where the reference returns a server id"}
+],
+"subscription.update": [
+{"id":"base","payload":{"id":"0190f3a0-0000-7000-8000-0000000000d1"},"occurrence":null,"reference":{"accepted":true},"native":null,"reason":null},
+{"id":"id-missing","payload":{},"occurrence":null,"reference":{"refused":{"field":"id"}},"native":null,"reason":null},
+{"id":"id-not-number","payload":{"id":"abc"},"occurrence":null,"reference":{"crashed":"SyntaxError"},"native":null,"reason":null}
+],
+"subscription.delete": [
+{"id":"base","payload":{"id":"0190f3a0-0000-7000-8000-0000000000d1"},"occurrence":null,"reference":{"accepted":true},"native":null,"reason":null},
+{"id":"id-missing","payload":{},"occurrence":null,"reference":{"refused":{"field":"id"}},"native":null,"reason":null}
+],
+"subscription.confirmCycle": [
+{"id":"base","payload":{"id":"0190f3a0-0000-7000-8000-0000000000d1","billingDate":"2026-11-05"},"occurrence":null,"reference":{"accepted":true},"native":null,"reason":null},
+{"id":"billing-date-missing","payload":{"id":"0190f3a0-0000-7000-8000-0000000000d1"},"occurrence":null,"reference":{"refused":{"field":"billingDate"}},"native":null,"reason":null},
+{"id":"billing-date-word","payload":{"id":"0190f3a0-0000-7000-8000-0000000000d1","billingDate":"soon"},"occurrence":null,"reference":{"accepted":true},"native":{"refused":{"field":"billingDate"}},"reason":"the reference only requires a non-empty string; a native date must be a real date"},
+{"id":"id-missing","payload":{"billingDate":"2026-11-05"},"occurrence":null,"reference":{"refused":{"field":"id"}},"native":null,"reason":null},
+{"id":"expense-id","payload":{"id":"0190f3a0-0000-7000-8000-0000000000d1","billingDate":"2026-11-05","expenseId":"0190f3a0-0000-7000-8000-0000000000c1"},"occurrence":null,"reference":{"accepted":true},"native":{"refused":{"field":"expenseId"}},"reason":"the cycle’s expense id is derived from the subscription and the billing date"}
+],
+"category.setArchived": [
+{"id":"archive","payload":{"categoryId":"food","archived":true},"occurrence":null,"reference":{"accepted":true},"native":null,"reason":null},
+{"id":"unarchive","payload":{"categoryId":"food","archived":false},"occurrence":null,"reference":{"accepted":true},"native":null,"reason":null},
+{"id":"archive-uncategorised","payload":{"categoryId":"uncat","archived":true},"occurrence":null,"reference":{"refused":{"code":"FIN_007"}},"native":null,"reason":null},
+{"id":"archive-subscriptions","payload":{"categoryId":"subs","archived":true},"occurrence":null,"reference":{"refused":{"code":"FIN_007"}},"native":null,"reason":null},
+{"id":"unarchive-subscriptions","payload":{"categoryId":"subs","archived":false},"occurrence":null,"reference":{"accepted":true},"native":null,"reason":null},
+{"id":"archived-missing","payload":{"categoryId":"food"},"occurrence":null,"reference":{"refused":{"field":"archived"}},"native":null,"reason":null},
+{"id":"archived-string","payload":{"categoryId":"food","archived":"yes"},"occurrence":null,"reference":{"refused":{"field":"archived"}},"native":null,"reason":null},
+{"id":"category-missing","payload":{"archived":true},"occurrence":null,"reference":{"refused":{"field":"categoryId"}},"native":null,"reason":null},
+{"id":"category-not-key","payload":{"categoryId":"Food-Drink","archived":true},"occurrence":null,"reference":{"refused":{"code":"FIN_005"}},"native":null,"reason":null},
+{"id":"category-unknown","payload":{"categoryId":"rent","archived":false},"occurrence":null,"reference":{"refused":{"code":"FIN_005"}},"native":null,"reason":null},
+{"id":"every-built-in","payload":{"categoryId":"groceries","archived":true},"occurrence":null,"reference":{"accepted":true},"native":null,"reason":null}
+],
+"title.display": [
+{"id":"title","payload":{"titleId":"steady_builder"},"occurrence":null,"reference":{"accepted":true},"native":null,"reason":null},
+{"id":"none","payload":{"titleId":null},"occurrence":null,"reference":{"accepted":true},"native":null,"reason":null},
+{"id":"missing","payload":{},"occurrence":null,"reference":{"refused":{"field":"titleId"}},"native":null,"reason":null},
+{"id":"unknown","payload":{"titleId":"champion"},"occurrence":null,"reference":{"refused":{"code":"TTL_001"}},"native":null,"reason":null},
+{"id":"number","payload":{"titleId":5},"occurrence":null,"reference":{"refused":{"field":"titleId"}},"native":null,"reason":null}
+],
+"cosmetic.purchase": [
+{"id":"for-sale","payload":{"cosmeticId":"badge_bronze"},"occurrence":null,"reference":{"accepted":true},"native":null,"reason":null},
+{"id":"theme","payload":{"cosmeticId":"theme_midnight"},"occurrence":null,"reference":{"accepted":true},"native":null,"reason":null},
+{"id":"achievement-only","payload":{"cosmeticId":"badge_gold_streak"},"occurrence":null,"reference":{"refused":{"code":"CSM_004"}},"native":null,"reason":null},
+{"id":"unknown","payload":{"cosmeticId":"crown"},"occurrence":null,"reference":{"refused":{"code":"CSM_002"}},"native":null,"reason":null},
+{"id":"missing","payload":{},"occurrence":null,"reference":{"refused":{"field":"cosmeticId"}},"native":null,"reason":null}
+],
+"cosmetic.equip": [
+{"id":"achievement-only","payload":{"cosmeticId":"accent_aurora_platinum"},"occurrence":null,"reference":{"accepted":true},"native":null,"reason":null},
+{"id":"unknown","payload":{"cosmeticId":"crown"},"occurrence":null,"reference":{"refused":{"code":"CSM_002"}},"native":null,"reason":null},
+{"id":"missing","payload":{},"occurrence":null,"reference":{"refused":{"field":"cosmeticId"}},"native":null,"reason":null}
+],
+"journal.save": [
+{"id":"base","payload":{"id":"0190f3a0-0000-7000-8000-0000000000f1","draft":{"date":"2026-11-20"}},"occurrence":null,"reference":{"accepted":true},"native":null,"reason":null},
+{"id":"backdated","payload":{"id":"0190f3a0-0000-7000-8000-0000000000f1","draft":{"date":"2026-11-01"}},"occurrence":null,"reference":{"accepted":true},"native":null,"reason":null},
+{"id":"draft-missing","payload":{"id":"0190f3a0-0000-7000-8000-0000000000f1"},"occurrence":null,"reference":{"refused":{"field":"draft"}},"native":null,"reason":null},
+{"id":"id-missing","payload":{"draft":{"date":"2026-11-20"}},"occurrence":null,"reference":{"refused":{"field":"id"}},"native":null,"reason":null},
+{"id":"date-missing","payload":{"id":"0190f3a0-0000-7000-8000-0000000000f1","draft":{}},"occurrence":null,"reference":{"refused":{"field":"date"}},"native":null,"reason":null},
+{"id":"date-word","payload":{"id":"0190f3a0-0000-7000-8000-0000000000f1","draft":{"date":"today"}},"occurrence":null,"reference":{"accepted":true},"native":{"refused":{"field":"date"}},"reason":"the reference only requires a non-empty string; a native date must be a real date"},
+{"id":"text-in-payload","payload":{"id":"0190f3a0-0000-7000-8000-0000000000f1","draft":{"date":"2026-11-20","text":"A good day"}},"occurrence":null,"reference":{"accepted":true},"native":{"refused":{"field":"text"}},"reason":"content stays in the record the command names, so the payload refuses it"}
+],
+"meal.log": [
+{"id":"base","payload":{"id":"0190f3a0-0000-7000-8000-0000000000f1","draft":{"date":"2026-11-20"}},"occurrence":null,"reference":{"accepted":true},"native":null,"reason":null},
+{"id":"draft-missing","payload":{"id":"0190f3a0-0000-7000-8000-0000000000f1"},"occurrence":null,"reference":{"refused":{"field":"draft"}},"native":null,"reason":null},
+{"id":"date-missing","payload":{"id":"0190f3a0-0000-7000-8000-0000000000f1","draft":{}},"occurrence":null,"reference":{"refused":{"field":"date"}},"native":null,"reason":null},
+{"id":"calories-in-payload","payload":{"id":"0190f3a0-0000-7000-8000-0000000000f1","draft":{"date":"2026-11-20","calories":300}},"occurrence":null,"reference":{"accepted":true},"native":{"refused":{"field":"calories"}},"reason":"content stays in the record the command names, so the payload refuses it"}
+],
+"meal.logPreset": [
+{"id":"base","payload":{"id":"0190f3a0-0000-7000-8000-0000000000f1","presetId":"0190f3a0-0000-7000-8000-0000000000e1","date":"2026-11-20"},"occurrence":null,"reference":{"accepted":true},"native":null,"reason":null},
+{"id":"preset-missing","payload":{"id":"0190f3a0-0000-7000-8000-0000000000f1","date":"2026-11-20"},"occurrence":null,"reference":{"refused":{"field":"presetId"}},"native":null,"reason":null},
+{"id":"date-missing","payload":{"id":"0190f3a0-0000-7000-8000-0000000000f1","presetId":"0190f3a0-0000-7000-8000-0000000000e1"},"occurrence":null,"reference":{"refused":{"field":"date"}},"native":null,"reason":null},
+{"id":"id-missing","payload":{"presetId":"0190f3a0-0000-7000-8000-0000000000e1","date":"2026-11-20"},"occurrence":null,"reference":{"refused":{"field":"id"}},"native":null,"reason":null}
+],
+"meal.savePreset": [
+{"id":"base","payload":{"id":"0190f3a0-0000-7000-8000-0000000000e1"},"occurrence":null,"reference":{"accepted":true},"native":null,"reason":null},
+{"id":"id-missing","payload":{},"occurrence":null,"reference":{"accepted":true},"native":{"refused":{"field":"id"}},"reason":"the native command names the record it creates by id, where the reference returns a server id"}
+],
+"meal.preset.update": [
+{"id":"base","payload":{"id":"0190f3a0-0000-7000-8000-0000000000e1"},"occurrence":null,"reference":{"accepted":true},"native":null,"reason":null},
+{"id":"id-missing","payload":{},"occurrence":null,"reference":{"refused":{"field":"id"}},"native":null,"reason":null}
+],
+"meal.preset.delete": [
+{"id":"base","payload":{"id":"0190f3a0-0000-7000-8000-0000000000e1"},"occurrence":null,"reference":{"accepted":true},"native":null,"reason":null},
+{"id":"id-missing","payload":{},"occurrence":null,"reference":{"refused":{"field":"id"}},"native":null,"reason":null}
+],
+"weight.save": [
+{"id":"base","payload":{"date":"2026-11-20"},"occurrence":null,"reference":{"accepted":true},"native":null,"reason":null},
+{"id":"replacement","payload":{"date":"2026-11-20","confirmedReplacement":true},"occurrence":null,"reference":{"accepted":true},"native":null,"reason":null},
+{"id":"replacement-string","payload":{"date":"2026-11-20","confirmedReplacement":"yes"},"occurrence":null,"reference":{"accepted":true},"native":{"refused":{"field":"confirmedReplacement"}},"reason":"a flag the reference reads as false unless it is true must be a boolean here"},
+{"id":"date-missing","payload":{},"occurrence":null,"reference":{"refused":{"field":"date"}},"native":null,"reason":null},
+{"id":"kg-in-payload","payload":{"date":"2026-11-20","kg":72},"occurrence":null,"reference":{"accepted":true},"native":{"refused":{"field":"kg"}},"reason":"content stays in the record the command names, so the payload refuses it"}
+],
+"sidequest.log": [
+{"id":"base","payload":{"id":"0190f3a0-0000-7000-8000-0000000000f1","draft":{"date":"2026-11-20"}},"occurrence":null,"reference":{"accepted":true},"native":null,"reason":null},
+{"id":"stat","payload":{"id":"0190f3a0-0000-7000-8000-0000000000f1","draft":{"date":"2026-11-20","statAffinity":"mind"}},"occurrence":null,"reference":{"accepted":true},"native":null,"reason":null},
+{"id":"stat-unknown","payload":{"id":"0190f3a0-0000-7000-8000-0000000000f1","draft":{"date":"2026-11-20","statAffinity":"luck"}},"occurrence":null,"reference":{"refused":{"field":"statAffinity"}},"native":null,"reason":null},
+{"id":"stat-null","payload":{"id":"0190f3a0-0000-7000-8000-0000000000f1","draft":{"date":"2026-11-20","statAffinity":null}},"occurrence":null,"reference":{"refused":{"field":"statAffinity"}},"native":null,"reason":null},
+{"id":"draft-missing","payload":{"id":"0190f3a0-0000-7000-8000-0000000000f1"},"occurrence":null,"reference":{"refused":{"field":"draft"}},"native":null,"reason":null},
+{"id":"date-missing","payload":{"id":"0190f3a0-0000-7000-8000-0000000000f1","draft":{}},"occurrence":null,"reference":{"refused":{"field":"date"}},"native":null,"reason":null}
+],
+"account.setTimeZone": [
+{"id":"berlin","payload":{"timezone":"Europe/Berlin"},"occurrence":null,"reference":{"accepted":true},"native":null,"reason":null},
+{"id":"buenos-aires","payload":{"timezone":"America/Argentina/Buenos_Aires"},"occurrence":null,"reference":{"accepted":true},"native":null,"reason":null},
+{"id":"utc","payload":{"timezone":"UTC"},"occurrence":null,"reference":{"accepted":true},"native":null,"reason":null},
+{"id":"offset-zone","payload":{"timezone":"Etc/GMT+5"},"occurrence":null,"reference":{"accepted":true},"native":null,"reason":null},
+{"id":"unknown-zone","payload":{"timezone":"Mars/Olympus"},"occurrence":null,"reference":{"refused":{"field":"timezone"}},"native":{"accepted":true},"reason":"decoding checks only the identifier’s shape so that older zone data replays it alike; TimeZoneChange(identifier:) refuses it when issuing"},
+{"id":"number","payload":{"timezone":5},"occurrence":null,"reference":{"refused":{"field":"timezone"}},"native":null,"reason":null},
+{"id":"gmt","payload":{"timezone":"GMT"},"occurrence":null,"reference":{"accepted":true},"native":null,"reason":null},
+{"id":"etc-utc","payload":{"timezone":"Etc/UTC"},"occurrence":null,"reference":{"accepted":true},"native":null,"reason":null},
+{"id":"gmt-offset","payload":{"timezone":"GMT+5"},"occurrence":null,"reference":{"refused":{"field":"timezone"}},"native":null,"reason":null},
+{"id":"gmt-offset-minutes","payload":{"timezone":"GMT+0530"},"occurrence":null,"reference":{"refused":{"field":"timezone"}},"native":null,"reason":null},
+{"id":"utc-offset","payload":{"timezone":"UTC+3"},"occurrence":null,"reference":{"refused":{"field":"timezone"}},"native":null,"reason":null},
+{"id":"lower-case","payload":{"timezone":"europe/berlin"},"occurrence":null,"reference":{"accepted":true},"native":{"refused":{"field":"timezone"}},"reason":"a zone is UTC, GMT or a canonical Area/Location name, so token-shaped text cannot pass as one; ICU also accepts other spellings, offsets and one-word legacy zones"},
+{"id":"iso-offset","payload":{"timezone":"+05:00"},"occurrence":null,"reference":{"accepted":true},"native":{"refused":{"field":"timezone"}},"reason":"a zone is UTC, GMT or a canonical Area/Location name, so token-shaped text cannot pass as one; ICU also accepts other spellings, offsets and one-word legacy zones"},
+{"id":"legacy-one-word","payload":{"timezone":"CET"},"occurrence":null,"reference":{"accepted":true},"native":{"refused":{"field":"timezone"}},"reason":"a zone is UTC, GMT or a canonical Area/Location name, so token-shaped text cannot pass as one; ICU also accepts other spellings, offsets and one-word legacy zones"},
+{"id":"token-text","payload":{"timezone":"Morning_run"},"occurrence":null,"reference":{"refused":{"field":"timezone"}},"native":null,"reason":null},
+{"id":"empty","payload":{"timezone":""},"occurrence":null,"reference":{"refused":{"field":"timezone"}},"native":null,"reason":null}
+],
+"account.setIntensityMode": [
+{"id":"standard","payload":{"intensityMode":"standard"},"occurrence":null,"reference":{"accepted":true},"native":null,"reason":null},
+{"id":"low","payload":{"intensityMode":"low_intensity"},"occurrence":null,"reference":{"accepted":true},"native":null,"reason":null},
+{"id":"high","payload":{"intensityMode":"high_intensity"},"occurrence":null,"reference":{"accepted":true},"native":null,"reason":null},
+{"id":"unknown","payload":{"intensityMode":"extreme"},"occurrence":null,"reference":{"refused":{"field":"intensityMode"}},"native":null,"reason":null},
+{"id":"missing","payload":{},"occurrence":null,"reference":{"refused":{"field":"intensityMode"}},"native":null,"reason":null}
+],
+"account.setReturnerThreshold": [
+{"id":"lowest","payload":{"returnerThresholdDays":1},"occurrence":null,"reference":{"accepted":true},"native":null,"reason":null},
+{"id":"highest","payload":{"returnerThresholdDays":90},"occurrence":null,"reference":{"accepted":true},"native":null,"reason":null},
+{"id":"below","payload":{"returnerThresholdDays":0},"occurrence":null,"reference":{"refused":{"field":"returnerThresholdDays"}},"native":null,"reason":null},
+{"id":"above","payload":{"returnerThresholdDays":91},"occurrence":null,"reference":{"refused":{"field":"returnerThresholdDays"}},"native":null,"reason":null},
+{"id":"string","payload":{"returnerThresholdDays":"week"},"occurrence":null,"reference":{"refused":{"field":"returnerThresholdDays"}},"native":null,"reason":null},
+{"id":"missing","payload":{},"occurrence":null,"reference":{"refused":{"field":"returnerThresholdDays"}},"native":null,"reason":null}
+],
+"receipt.scan": [
+{"id":"bare","payload":{},"occurrence":null,"reference":null,"native":{"accepted":true},"reason":"the reference counts a scan in its OCR endpoint, not a command"},
+{"id":"receipt","payload":{"receiptId":"0190f3a0-0000-7000-8000-0000000000f2"},"occurrence":null,"reference":null,"native":{"accepted":true},"reason":"the reference counts a scan in its OCR endpoint, not a command"},
+{"id":"receipt-not-uuid","payload":{"receiptId":"r/1/x.jpg"},"occurrence":null,"reference":null,"native":{"refused":{"field":"receiptId"}},"reason":"native ids are UUIDs"},
+{"id":"text-in-payload","payload":{"extractedText":"TOTAL"},"occurrence":null,"reference":null,"native":{"refused":{"field":"extractedText"}},"reason":"content stays in the record the command names, so the payload refuses it"}
+],
+"quest.fly": [
+{"id":"unknown-type","payload":{},"occurrence":null,"reference":{"refused":{"code":"CMD_001"}},"native":null,"reason":null}
+]
+}

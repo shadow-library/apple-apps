@@ -10,19 +10,25 @@ import Testing
 struct MemoirCommandTests {
   private static let instant: Int64 = 1_795_217_400_000
 
-  private func command(_ number: Int = 1, type: String = "quest.complete", payload: [String: JSONValue]? = nil) throws -> MemoirCommand {
-    let occurrence = Occurrence(quest: MemoirStoreFixture.quest, date: try MemoirStoreFixture.date("2026-11-20"))
-    return try MemoirCommand(
-      id: MemoirStoreFixture.commandID(number), type: try CommandType(type),
-      payload: try CommandPayload(payload ?? ["occurrence": .string("\(MemoirStoreFixture.quest.lowercasedString):2026-11-20"), "kind": "full"]), instantMillis: Self.instant,
-      utcOffsetMinutes: 60, issuedOn: try MemoirStoreFixture.date("2026-11-21"), occurrence: occurrence, rulesetVersion: 1)
+  private static func occurrence() throws -> Occurrence {
+    Occurrence(quest: MemoirStoreFixture.quest, date: try MemoirStoreFixture.date("2026-11-20"))
+  }
+
+  private func command(_ number: Int = 1, _ body: MemoirCommandBody? = nil) throws -> MemoirCommand {
+    try MemoirCommand(
+      id: MemoirStoreFixture.commandID(number), body: try body ?? .questComplete(Self.occurrence()), instantMillis: Self.instant, utcOffsetMinutes: 60,
+      issuedOn: try MemoirStoreFixture.date("2026-11-21"), rulesetVersion: 1)
+  }
+
+  private func skip(_ number: Int = 1, reasonTag: ReasonTag? = nil, hasNote: Bool = false) throws -> MemoirCommand {
+    try command(number, .questSkip(QuestBreak(occurrence: try Self.occurrence(), reasonTag: reasonTag, hasNote: hasNote)))
   }
 
   @Test func shouldRoundTripACommandAndListCommandsInClockOrder() async throws {
     let clock = MemoirTestClock()
     let store = try MemoirStore.openInMemory(.main, wallClock: clock.function)
     let later = try command(2)
-    let earlier = try command(1, type: "quest.skip")
+    let earlier = try skip(1)
     for item in [later, earlier] {
       _ = try await store.write { transaction in try item.append(in: &transaction) }
       clock.advance()
@@ -49,7 +55,7 @@ struct MemoirCommandTests {
   @Test func shouldRefuseADifferentCommandUnderAnIDAlreadyUsed() async throws {
     let store = try MemoirStore.openInMemory(.main)
     _ = try await store.write { transaction in try command().append(in: &transaction) }
-    let other = try command(type: "quest.skip")
+    let other = try skip()
     let outcome = try await store.write { transaction -> MemoirRecordError? in
       do throws(MemoirRecordError) {
         try other.append(in: &transaction)
@@ -65,7 +71,7 @@ struct MemoirCommandTests {
   @Test func shouldKeepTheOwnersWordsOutOfTheStoredCommand() async throws {
     let store = try MemoirStore.openInMemory(.main)
     let quest = QuestRecord(id: MemoirStoreFixture.quest, name: "Morning run by the river", notes: "Knee still sore")
-    let skip = try command(3, type: "quest.skip", payload: ["occurrence": .string("\(quest.id.lowercasedString):2026-11-20"), "reasonTag": "health"])
+    let skip = try self.skip(3, reasonTag: .health, hasNote: true)
     let note = try CommandNoteRecord(command: skip.id, text: "Physio said rest this week")
     _ = try await store.write { transaction in
       try quest.create(in: &transaction)
@@ -88,36 +94,42 @@ struct MemoirCommandTests {
     #expect(try await store.read { transaction in try CommandNoteRecord.read(id: skip.id, in: transaction) }.entry?.record == note)
   }
 
+  private static let create = MemoirCommandKind.questCreate.commandType
+
+  private func payload(_ members: [String: JSONValue], _ type: CommandType = create) throws(MemoirCommandError) -> CommandPayload {
+    try CommandPayload(members, type: type)
+  }
+
   @Test func shouldRefuseFreeTextAndOddShapesInAPayload() throws {
     for text in ["Morning run", "café", "72.5", "", "line\nbreak", String(repeating: "a", count: 65)] {
-      #expect(throws: MemoirCommandError.payloadText(path: "payload.word")) { try CommandPayload(["word": .string(text)]) }
+      #expect(throws: MemoirCommandError.payloadText(path: "payload.word")) { try payload(["word": .string(text)]) }
     }
-    #expect(throws: MemoirCommandError.payloadText(path: "payload.list[1]")) { try CommandPayload(["list": ["ok", "not ok"]]) }
+    #expect(throws: MemoirCommandError.payloadText(path: "payload.list[1]")) { try payload(["list": ["ok", "not ok"]]) }
     for key in ["my key", "1st", "", "naïve", "dotted.key"] {
-      #expect(throws: MemoirCommandError.payloadKey(path: "payload")) { try CommandPayload([key: 1]) }
+      #expect(throws: MemoirCommandError.payloadKey(path: "payload")) { try payload([key: true]) }
     }
-    var nested: JSONValue = 1
+    var nested: JSONValue = true
     for _ in 0..<CommandPayload.maximumDepth { nested = ["inner": nested] }
-    #expect(throws: MemoirCommandError.payloadTooDeep) { try CommandPayload(["outer": nested]) }
+    #expect(throws: MemoirCommandError.payloadTooDeep) { try payload(["outer": nested]) }
     let tokens: [String: JSONValue] = [
       "zone": "America/Argentina/Buenos_Aires", "offsetZone": "Etc/GMT+5", "currency": "EUR", "date": "2026-11-20", "mode": "low_intensity",
-      "quest": .string(MemoirStoreFixture.quest.lowercasedString), "daysOfWeek": [1, 3, 5], "recurrence": ["interval": 2, "end": ["count": 3]], "durationMinutes": 30,
+      "quest": .string(MemoirStoreFixture.quest.lowercasedString), "recurrence": ["interval": 2, "end": ["count": 3], "daysOfWeek": [1, 3, 5]], "durationMinutes": 30,
       "enabled": true, "note": .null,
     ]
-    #expect(try CommandPayload(tokens).members.count == tokens.count)
+    #expect(try payload(tokens).members.count == tokens.count)
   }
 
   @Test func shouldRefuseMeasurementsAndNumbersOutsideTheOutcomeKeys() throws {
-    #expect(throws: MemoirCommandError.payloadNumber(path: "payload.calories")) { try CommandPayload(["calories": 640]) }
-    #expect(throws: MemoirCommandError.payloadNumber(path: "payload.steps")) { try CommandPayload(["steps": "8042"]) }
-    #expect(throws: MemoirCommandError.payloadNumber(path: "payload.offset")) { try CommandPayload(["offset": "-5"]) }
-    #expect(throws: MemoirCommandError.payloadNumber(path: "payload.recurrence.end.when")) { try CommandPayload(["recurrence": ["end": ["when": 3]]]) }
-    #expect(throws: MemoirCommandError.payloadNumber(path: "payload.daysOfWeek[0].bpm")) { try CommandPayload(["daysOfWeek": [["bpm": 60]]]) }
+    #expect(throws: MemoirCommandError.payloadNumber(path: "payload.calories")) { try payload(["calories": 640]) }
+    #expect(throws: MemoirCommandError.payloadNumber(path: "payload.steps")) { try payload(["steps": "8042"]) }
+    #expect(throws: MemoirCommandError.payloadNumber(path: "payload.offset")) { try payload(["offset": "-5"]) }
+    #expect(throws: MemoirCommandError.payloadNumber(path: "payload.recurrence.end.when")) { try payload(["recurrence": ["end": ["when": 3]]]) }
+    #expect(throws: MemoirCommandError.payloadNumber(path: "payload.daysOfWeek[0]")) { try payload(["daysOfWeek": [1]]) }
+    #expect(throws: MemoirCommandError.payloadNumber(path: "payload.recurrence.daysOfWeek[0].bpm")) { try payload(["recurrence": ["daysOfWeek": [["bpm": 60]]]]) }
     for key in CommandPayload.measurementKeys.sorted() {
-      #expect(throws: MemoirCommandError.payloadMeasurement(path: "payload.\(key)")) { try CommandPayload([key: ["metric": .string(MemoirStoreFixture.metric.lowercasedString)]]) }
+      #expect(throws: MemoirCommandError.payloadMeasurement(path: "payload.\(key)")) { try payload([key: ["metric": .string(MemoirStoreFixture.metric.lowercasedString)]]) }
     }
-    #expect(throws: MemoirCommandError.payloadMeasurement(path: "payload.draft.kg")) { try CommandPayload(["draft": ["kg": 72]]) }
-    for key in CommandPayload.integerKeys.sorted() { #expect(try CommandPayload([key: 1]).members.count == 1) }
+    #expect(throws: MemoirCommandError.payloadMeasurement(path: "payload.draft.kg")) { try payload(["draft": ["kg": 72]]) }
   }
 
   @Test func shouldRefuseAMalformedCommandType() throws {
@@ -128,22 +140,21 @@ struct MemoirCommandTests {
   }
 
   @Test func shouldRefuseACommandWhoseIdentityOrDatesDoNotHold() throws {
-    let type = try CommandType("quest.complete")
-    let payload = try CommandPayload()
+    let payload = try CommandPayload(type: try CommandType("quest.complete"))
     let id = MemoirStoreFixture.commandID(1)
     let today = try MemoirStoreFixture.date("2026-11-21")
     #expect(throws: MemoirCommandError.idNotVersion7) {
-      try MemoirCommand(id: UUID(), type: type, payload: payload, instantMillis: Self.instant, utcOffsetMinutes: 60, issuedOn: today, rulesetVersion: 1)
+      try MemoirCommand(id: UUID(), payload: payload, instantMillis: Self.instant, utcOffsetMinutes: 60, issuedOn: today, rulesetVersion: 1)
     }
     #expect(throws: MemoirCommandError.rulesetVersionOutOfRange(0)) {
-      try MemoirCommand(id: id, type: type, payload: payload, instantMillis: Self.instant, utcOffsetMinutes: 60, issuedOn: today, rulesetVersion: 0)
+      try MemoirCommand(id: id, payload: payload, instantMillis: Self.instant, utcOffsetMinutes: 60, issuedOn: today, rulesetVersion: 0)
     }
     #expect(throws: MemoirCommandError.issuedOnMismatch(expected: today, actual: try MemoirStoreFixture.date("2026-11-20"))) {
       try MemoirCommand(
-        id: id, type: type, payload: payload, instantMillis: Self.instant, utcOffsetMinutes: 60, issuedOn: try MemoirStoreFixture.date("2026-11-20"), rulesetVersion: 1)
+        id: id, payload: payload, instantMillis: Self.instant, utcOffsetMinutes: 60, issuedOn: try MemoirStoreFixture.date("2026-11-20"), rulesetVersion: 1)
     }
     #expect(throws: MemoirCommandError.utcOffsetOutOfRange(1_081)) {
-      try MemoirCommand(id: id, type: type, payload: payload, instantMillis: Self.instant, utcOffsetMinutes: 1_081, issuedOn: today, rulesetVersion: 1)
+      try MemoirCommand(id: id, payload: payload, instantMillis: Self.instant, utcOffsetMinutes: 1_081, issuedOn: today, rulesetVersion: 1)
     }
     #expect(throws: MemoirCommandError.instantOutOfRange(Int64.max)) { try MemoirCommand.localDate(instantMillis: Int64.max, utcOffsetMinutes: 60) }
     #expect(throws: MemoirCommandError.instantOutOfRange(-62_167_219_200_001)) { try MemoirCommand.localDate(instantMillis: -62_167_219_200_001, utcOffsetMinutes: 0) }
@@ -166,18 +177,39 @@ struct MemoirCommandTests {
     let stray = MemoirCommand.ref(MemoirStoreFixture.commandID(7))
     let wordy = MemoirCommand.ref(MemoirStoreFixture.commandID(8))
     let random = MemoirCommand.ref(UUID())
+    let diary = MemoirCommand.ref(MemoirStoreFixture.commandID(9))
+    let newer = MemoirCommand.ref(MemoirStoreFixture.commandID(10))
     _ = try await store.write { transaction in
       _ = try transaction.append(stray, item: valid.merging(["reason": "felt off"]) { $1 })
       _ = try transaction.append(wordy, item: valid.merging(["payload": ["note": "felt off today"]]) { $1 })
       _ = try transaction.append(random, item: valid)
+      _ = try transaction.append(diary, item: valid.merging(["payload": ["diary": "saw_the_doctor_about_it"]]) { $1 })
+      _ = try transaction.append(newer, item: valid.merging(["type": "quest.fly", "payload": ["mode": "high"], "occurrence": .null]) { $1 })
     }
     let readings = try await store.read { transaction in
-      [try MemoirCommand.read(stray, in: transaction), try MemoirCommand.read(wordy, in: transaction), try MemoirCommand.read(random, in: transaction)]
+      try [stray, wordy, random, diary, newer].map { ref throws(StoreError) in try MemoirCommand.read(ref, in: transaction) }
     }
     #expect(readings[0] == .unreadable(.unexpected(field: "reason")))
-    #expect(readings[1] == .unreadable(.invalid(field: "payload")))
+    #expect(readings[1] == .unreadable(.command(.payloadText(path: "payload.note"))))
     #expect(readings[2] == .unreadable(.command(.idNotVersion7)))
-    #expect(try await store.read { transaction in try MemoirCommand.listing(in: transaction) }.unreadable == 3)
+    #expect(readings[3] == .unreadable(.command(.body(.unexpectedField("diary")))))
+    #expect(readings[4].entry?.record.type.name == "quest.fly")
+    #expect(try await store.read { transaction in try MemoirCommand.listing(in: transaction) }.unreadable == 4)
+  }
+
+  @Test func shouldRefuseAKnownTypesPayloadThatIsNotItsBody() throws {
+    let type = MemoirCommandKind.questComplete.commandType
+    let payload = try CommandPayload(["diary": "saw_the_doctor_about_it"], type: type)
+    #expect(throws: MemoirCommandError.body(.unexpectedField("diary"))) {
+      try MemoirCommand(
+        id: MemoirStoreFixture.commandID(1), payload: payload, instantMillis: Self.instant, utcOffsetMinutes: 60, issuedOn: try MemoirStoreFixture.date("2026-11-21"),
+        occurrence: try Self.occurrence(), rulesetVersion: 1)
+    }
+    let newer = try CommandPayload(["mode": "high"], type: try CommandType("quest.fly"))
+    let command = try MemoirCommand(
+      id: MemoirStoreFixture.commandID(2), payload: newer, instantMillis: Self.instant, utcOffsetMinutes: 60, issuedOn: try MemoirStoreFixture.date("2026-11-21"),
+      rulesetVersion: 1)
+    #expect(command.type.name == "quest.fly")
   }
 }
 

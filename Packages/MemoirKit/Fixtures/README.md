@@ -59,3 +59,15 @@ PLATFORM_REPO=<path to the platform checkout> bun --tsconfig-override "$PLATFORM
   - an anchor date moved to or before the latest confirmed billing date is ignored and the next due date stays the cycle after it, where the reference's `subscription.update` sets `nextDueDate` outright;
   - an expense converts through the `mm_fx_rate` of its pair and day, the first writer's, even when its own locked rate came from a record that lost the merge.
 - Not represented: rounding a provider's rate to eight places (Postgres `numeric(18, 8)` does it in the reference, outside reachable code), and currencies with three or four decimals, which the reference does not accept; unit tests cover both.
+
+## commands
+
+```sh
+PLATFORM_REPO=<path to the platform checkout> bun Packages/MemoirKit/Fixtures/commands/generate.ts
+```
+
+- Imports the reference's command handlers (`quests/quest-commands.service.ts` with `quest-command.types.ts`, `compassion-commands`, `metrics-commands`, `finance-commands`, `progression-commands`, `quick-logs-commands`), `commands/command-bus.service.ts` and `account/account.service.ts`, with their packages, repositories and sibling modules mocked; `rules/index.ts` and `progression/cosmetic.catalogue.ts` are real. `Date.now` is pinned to 2026-11-20 12:00 UTC.
+- Each case is a native payload (and occurrence); the generator turns it into the reference's wire payload (digit-string ids, `occurrenceId`, the texts and content put back with valid defaults) and calls the handler. Store calls the handler makes before it has validated everything are answered by fixed stubs; any other store call ends the run as accepted, a `ValidationError` gives the refused field, an `AppErrorCode` the code, anything else `crashed`.
+- The intensity mode and returner threshold are checked by the reference's route schema, which a generator cannot run, so their verdicts come from the values the schema declares (`account.dto.ts`, the ruleset's intensity modes). `receipt.scan` has no reference command.
+- `commands.json` maps each type to its cases, one per line: `{"id", "payload", "occurrence", "reference", "native", "reason"}`. `native` is set, with a `reason`, only where the native code deliberately differs; the tests compare with it, and with `reference` otherwise.
+- `content.json` holds the reference's refusals of content (names, the reason note, mood, calories, weight, billing day), which live in records here and are checked through `CommandContent` and `CommandIssuer.validate(text:for:)`.

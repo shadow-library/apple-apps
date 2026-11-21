@@ -15,6 +15,7 @@ public enum MemoirCommandError: ShadowError, Equatable {
   case issuedOnMismatch(expected: LocalDate, actual: LocalDate)
   case rulesetVersionOutOfRange(Int)
   case emptyNote
+  indirect case body(CommandRefusal)
 
   public var code: String {
     switch self {
@@ -30,6 +31,7 @@ public enum MemoirCommandError: ShadowError, Equatable {
     case .issuedOnMismatch: "memoir_command.issued_on_mismatch"
     case .rulesetVersionOutOfRange: "memoir_command.ruleset_version_out_of_range"
     case .emptyNote: "memoir_command.empty_note"
+    case .body: "memoir_command.body"
     }
   }
 
@@ -47,6 +49,7 @@ public enum MemoirCommandError: ShadowError, Equatable {
     case .issuedOnMismatch(let expected, let actual): "The command says it was issued on \(actual), but its instant and offset fall on \(expected)."
     case .rulesetVersionOutOfRange(let version): "Ruleset version \(version) is not a version; versions start at 1."
     case .emptyNote: "A command note holds text."
+    case .body(let refusal): "The payload is not a valid body of its type: \(refusal.errorDescription ?? refusal.code)"
     }
   }
 }
@@ -78,62 +81,61 @@ public struct CommandType: Hashable, Sendable, StoredValue, CustomStringConverti
 }
 
 /// A payload never carries the owner's words, a measured value, or a threshold of an activity- or health-class metric; those live in records of the
-/// metric's class, named by id or date. Strings are tokens, digit-only strings are refused, and integers appear only under ``integerKeys``.
-public struct CommandPayload: Hashable, Sendable, StoredValue {
+/// metric's class, named by id or date. Strings are tokens, digit-only strings are refused, and integers appear only at the paths its type pins.
+public struct CommandPayload: Hashable, Sendable {
   public static let maximumDepth = 8
   public static let maximumTokenLength = 64
-  /// Schedule minutes, counts and calendar positions: outcome-class integers a command may carry.
-  public static let integerKeys: Set<String> = [
-    "billingDay", "count", "customIntervalDays", "dayOfMonth", "daysOfWeek", "durationMinutes", "interval", "leadMinutes", "ordinal", "returnerThresholdDays",
-    "startTimeMinutes", "toMin", "weekStart", "weekday",
-  ]
   /// Keys that name a measurement or a metric threshold, refused whatever they hold.
   public static let measurementKeys: Set<String> = ["defaultValue", "healthThreshold", "kg", "kilograms", "threshold", "value"]
 
+  public let type: CommandType
   public let members: [String: JSONValue]
 
-  public init(_ members: [String: JSONValue] = [:]) throws(MemoirCommandError) {
-    try Self.validate(.object(members), path: "payload", depth: 1, integersAllowed: false)
+  init(_ members: [String: JSONValue] = [:], type: CommandType) throws(MemoirCommandError) {
+    try Self.validate(.object(members), path: "payload", pattern: "", depth: 1, integerPaths: Self.integerPaths(for: type))
+    self.type = type
     self.members = members
   }
 
-  public init?(stored: JSONValue) {
-    guard let members = stored.objectValue, let payload = try? CommandPayload(members) else { return nil }
-    self = payload
+  /// The schedule minutes, counts and calendar positions a type may carry, each at its own dotted path, `[]` standing for any array element.
+  /// An unknown type, a newer device's, carries none, so its commands read as unreadable rather than unchecked.
+  public static func integerPaths(for type: CommandType) -> Set<String> {
+    MemoirCommandKind(type)?.integerPaths ?? []
   }
 
-  public var stored: JSONValue { .object(members) }
-
   public static func == (lhs: CommandPayload, rhs: CommandPayload) -> Bool {
-    sameJSON(lhs.stored, rhs.stored)
+    lhs.type == rhs.type && sameJSON(.object(lhs.members), .object(rhs.members))
   }
 
   public func hash(into hasher: inout Hasher) {
-    hasher.combine(CanonicalJSON.encode(stored))
+    hasher.combine(type)
+    hasher.combine(CanonicalJSON.encode(.object(members)))
   }
 
   static func isAlphanumeric(_ byte: UInt8) -> Bool {
     (UInt8(ascii: "a")...UInt8(ascii: "z")).contains(byte) || (UInt8(ascii: "A")...UInt8(ascii: "Z")).contains(byte) || (UInt8(ascii: "0")...UInt8(ascii: "9")).contains(byte)
   }
 
-  private static func validate(_ value: JSONValue, path: String, depth: Int, integersAllowed: Bool) throws(MemoirCommandError) {
+  private static func validate(_ value: JSONValue, path: String, pattern: String, depth: Int, integerPaths: Set<String>) throws(MemoirCommandError) {
     switch value {
     case .null, .bool:
       return
     case .int:
-      guard integersAllowed else { throw .payloadNumber(path: path) }
+      guard integerPaths.contains(pattern) else { throw .payloadNumber(path: path) }
     case .string(let text):
       guard isToken(text) else { throw .payloadText(path: path) }
       guard !isNumeral(text) else { throw .payloadNumber(path: path) }
     case .array(let elements):
       guard depth < maximumDepth else { throw .payloadTooDeep }
-      for (index, element) in elements.enumerated() { try validate(element, path: "\(path)[\(index)]", depth: depth + 1, integersAllowed: integersAllowed) }
+      for (index, element) in elements.enumerated() {
+        try validate(element, path: "\(path)[\(index)]", pattern: "\(pattern)[]", depth: depth + 1, integerPaths: integerPaths)
+      }
     case .object(let members):
       guard depth <= maximumDepth else { throw .payloadTooDeep }
       for (key, member) in members.sorted(by: { $0.key.utf8.lexicographicallyPrecedes($1.key.utf8) }) {
         guard isIdentifier(key) else { throw .payloadKey(path: path) }
         guard !measurementKeys.contains(key) else { throw .payloadMeasurement(path: "\(path).\(key)") }
-        try validate(member, path: "\(path).\(key)", depth: depth + 1, integersAllowed: integerKeys.contains(key))
+        try validate(member, path: "\(path).\(key)", pattern: pattern.isEmpty ? key : "\(pattern).\(key)", depth: depth + 1, integerPaths: integerPaths)
       }
     }
   }
@@ -192,7 +194,6 @@ public struct MemoirCommand: AppendedMemoirRecord {
   private static let millisPerDay: Int64 = 86_400_000
 
   public let id: UUID
-  public let type: CommandType
   public let payload: CommandPayload
   public let instantMillis: Int64
   public let utcOffsetMinutes: Int
@@ -200,16 +201,35 @@ public struct MemoirCommand: AppendedMemoirRecord {
   public let occurrence: Occurrence?
   public let rulesetVersion: Int
 
-  public init(
-    id: UUID, type: CommandType, payload: CommandPayload, instantMillis: Int64, utcOffsetMinutes: Int, issuedOn: LocalDate, occurrence: Occurrence? = nil,
-    rulesetVersion: Int
+  /// The only public way to build a command: its payload and occurrence come from a typed body.
+  public init(id: UUID, body: MemoirCommandBody, instantMillis: Int64, utcOffsetMinutes: Int, issuedOn: LocalDate, rulesetVersion: Int) throws(MemoirCommandError) {
+    let payload: CommandPayload
+    do throws(CommandRefusal) {
+      payload = try body.payload()
+    } catch {
+      throw .body(error)
+    }
+    try self.init(
+      id: id, payload: payload, instantMillis: instantMillis, utcOffsetMinutes: utcOffsetMinutes, issuedOn: issuedOn, occurrence: body.occurrence,
+      rulesetVersion: rulesetVersion)
+  }
+
+  /// A known type's payload must decode as its body; an unknown one, a newer device's, is held to the payload's own rules only.
+  init(
+    id: UUID, payload: CommandPayload, instantMillis: Int64, utcOffsetMinutes: Int, issuedOn: LocalDate, occurrence: Occurrence? = nil, rulesetVersion: Int
   ) throws(MemoirCommandError) {
     guard id.v7Timestamp != nil else { throw .idNotVersion7 }
     guard rulesetVersion >= 1 else { throw .rulesetVersionOutOfRange(rulesetVersion) }
     let expected = try Self.localDate(instantMillis: instantMillis, utcOffsetMinutes: utcOffsetMinutes)
     guard expected == issuedOn else { throw .issuedOnMismatch(expected: expected, actual: issuedOn) }
+    if MemoirCommandKind(payload.type) != nil {
+      do throws(CommandRefusal) {
+        _ = try MemoirCommandBody(type: payload.type, payload: payload.members, occurrence: occurrence)
+      } catch {
+        throw .body(error)
+      }
+    }
     self.id = id
-    self.type = type
     self.payload = payload
     self.instantMillis = instantMillis
     self.utcOffsetMinutes = utcOffsetMinutes
@@ -220,7 +240,7 @@ public struct MemoirCommand: AppendedMemoirRecord {
 
   public init(id: UUID, reading reader: MemberReader<CommandMember>) throws(MemoirUnreadable) {
     let type: CommandType = try reader.required(.type)
-    let payload: CommandPayload = try reader.required(.payload)
+    let payload: PayloadMembers = try reader.required(.payload)
     let instantMillis: Int64 = try reader.required(.instantMillis)
     let utcOffsetMinutes: Int = try reader.required(.utcOffsetMinutes)
     let issuedOn: LocalDate = try reader.required(.issuedOn)
@@ -228,8 +248,8 @@ public struct MemoirCommand: AppendedMemoirRecord {
     let rulesetVersion: Int = try reader.required(.rulesetVersion)
     do throws(MemoirCommandError) {
       try self.init(
-        id: id, type: type, payload: payload, instantMillis: instantMillis, utcOffsetMinutes: utcOffsetMinutes, issuedOn: issuedOn, occurrence: occurrence,
-        rulesetVersion: rulesetVersion)
+        id: id, payload: try CommandPayload(payload.values, type: type), instantMillis: instantMillis, utcOffsetMinutes: utcOffsetMinutes, issuedOn: issuedOn,
+        occurrence: occurrence, rulesetVersion: rulesetVersion)
     } catch {
       throw .command(error)
     }
@@ -244,16 +264,37 @@ public struct MemoirCommand: AppendedMemoirRecord {
     return date
   }
 
+  public var type: CommandType { payload.type }
+
   public var members: RecordMembers<CommandMember> {
     var members = RecordMembers<CommandMember>()
     members.put(.type, type)
-    members.put(.payload, payload)
+    members.put(.payload, PayloadMembers(values: payload.members))
     members.put(.instantMillis, instantMillis)
     members.put(.utcOffsetMinutes, utcOffsetMinutes)
     members.put(.issuedOn, issuedOn)
     members.put(.occurrence, occurrence)
     members.put(.rulesetVersion, rulesetVersion)
     return members
+  }
+}
+
+private struct PayloadMembers: StoredValue {
+  let values: [String: JSONValue]
+
+  init(values: [String: JSONValue]) {
+    self.values = values
+  }
+
+  init?(stored: JSONValue) {
+    guard let values = stored.objectValue else { return nil }
+    self.values = values
+  }
+
+  var stored: JSONValue { .object(values) }
+
+  static func == (lhs: PayloadMembers, rhs: PayloadMembers) -> Bool {
+    sameJSON(lhs.stored, rhs.stored)
   }
 }
 
