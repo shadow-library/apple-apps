@@ -7,6 +7,7 @@ struct NovelForgeShell: View {
   @State private var library: LibraryModel
   @State private var navigators = NovelNavigators()
   @State private var readers = NovelReaders()
+  @Environment(\.horizontalSizeClass) private var sizeClass
 
   init(store: VaultStore) {
     _library = State(initialValue: LibraryModel(store: store))
@@ -14,36 +15,47 @@ struct NovelForgeShell: View {
 
   var body: some View {
     @Bindable var library = library
-    NavigationSplitView {
-      LibrarySidebar(library: library)
-    } content: {
-      sections
-    } detail: {
-      detail
-    }
-    .environment(library)
-    .focusedSceneValue(\.newNovel, library.presenting == nil ? { library.present(.create) } : nil)
-    .task(id: library.generation) { await library.observe() }
-    .onChange(of: library.state) {
-      library.reconcileSelection()
-      if library.state.value != nil {
-        let keeping = library.knownNovels.union(library.selection.map { [$0] } ?? [])
-        navigators.prune(keeping: keeping)
-        readers.prune(keeping: keeping)
+    layout
+      .environment(library)
+      .focusedSceneValue(\.newNovel, library.presenting == nil ? { library.present(.create) } : nil)
+      .onChange(of: NovelLayout(sizeClass: sizeClass), initial: true) { _, layout in navigators.layout = layout }
+      .task(id: library.generation) { await library.observe() }
+      .onChange(of: library.state) {
+        library.reconcileSelection()
+        if library.state.value != nil {
+          let keeping = library.knownNovels.union(library.selection.map { [$0] } ?? [])
+          navigators.prune(keeping: keeping)
+          readers.prune(keeping: keeping)
+        }
       }
-    }
-    .sheet(item: $library.presenting) { sheet in sheetContent(sheet) }
-    .alert(
-      Text("Something went wrong", tableName: "Navigation"), isPresented: Binding(get: { library.failure != nil }, set: { if !$0 { library.failure = nil } }),
-      presenting: library.failure
-    ) { _ in
-      Button {
-        library.failure = nil
-      } label: {
-        Text("OK", tableName: "Navigation")
+      .sheet(item: $library.presenting) { sheet in sheetContent(sheet) }
+      .alert(
+        Text("Something went wrong", tableName: "Navigation"), isPresented: Binding(get: { library.failure != nil }, set: { if !$0 { library.failure = nil } }),
+        presenting: library.failure
+      ) { _ in
+        Button {
+          library.failure = nil
+        } label: {
+          Text("OK", tableName: "Navigation")
+        }
+      } message: { failure in
+        failure.error.text
       }
-    } message: { failure in
-      failure.error.text
+  }
+
+  @ViewBuilder
+  private var layout: some View {
+    switch NovelLayout(sizeClass: sizeClass) {
+    case .regular:
+      NavigationSplitView {
+        LibrarySidebar(library: library)
+      } content: {
+        sections
+      } detail: {
+        detail
+      }
+    case .compact:
+      CompactShell(library: library, navigators: navigators, readers: readers)
     }
   }
 

@@ -14,8 +14,17 @@ struct NovelDetailView: View {
     .id(section)
   }
 
-  @ViewBuilder
   private var root: some View {
+    NovelSectionContent(section: section, readers: readers, context: context)
+  }
+}
+
+struct NovelSectionContent: View {
+  let section: NovelSection
+  let readers: NovelReaders
+  let context: NovelContext
+
+  var body: some View {
     switch section {
     case .overview: OverviewView(context: context)
     case .reader: ReaderView(context: context, model: readers.model(for: context))

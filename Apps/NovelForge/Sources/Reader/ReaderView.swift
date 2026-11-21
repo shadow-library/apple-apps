@@ -43,7 +43,7 @@ struct ReaderView: View {
   }
 
   private var isAtRoot: Bool {
-    navigator.paths[.reader]?.isEmpty ?? true
+    navigator.isAtRoot(.reader)
   }
 
   @ViewBuilder

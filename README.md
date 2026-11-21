@@ -323,6 +323,12 @@ Pending OpenRouter costs settle at launch, when a job attempt ends and when a ch
 
 The cost lookup sends only the generation id with the user's own key; novel-text consent covers content sent to a model, not metered-cost lookups.
 
+### Novel Forge compact navigation
+
+`NovelForgeShell` reads the horizontal size class (`NovelLayout`): regular width (Mac, regular iPad windows) keeps the three columns; compact width (iPhone, compact iPad windows) runs `Navigation/Compact`, a two-column `NavigationSplitView` that collapses to a stack, library first, whose detail is one `NavigationStack` per novel (`CompactNovelView`) rooted on Chat. A selected novel opens on Chat. A bottom bar offers Chapters (pushes the Reader section onto the chat stack, chapters push on it in turn, so Back from a chapter goes to the list and then to Chat), Waiting on you (the badge counts `ChatWaitingOnYou.pendingCount`; the destination is `Pending/PendingView`) and a More menu with Story, Story Bible, Notebook and Overview.
+
+`NovelNavigator` serves both layouts through the same calls (`show`, `open`, `push`, `pop`, `isAtRoot`), so deep links work in both: in compact it keeps a single `compactPath` of `CompactStop`s and routes instead of one path per section. A size-class change (iPad multitasking, Stage Manager) keeps the selected novel and section; the routes pushed above the section are dropped, because a `NavigationPath` cannot be moved between the two layouts. Screens in a compact stack must not rely on `navigator.paths`; ask `navigator.isAtRoot(_:)`.
+
 ### Novel Forge sync wiring
 
 `Sync/Runtime/SyncRuntimes` holds one `SyncRuntime` per open vault in the app's environment, owned with the `VaultModel` by the app delegate so a silent push can open the vault and sync it with no window. The vault opens with `SyncEngine.wallClock(preferring:)` of the model's one `TrustedClock`, which the runtime is handed too. Launch starts the runtime; the scene phase calls `foreground()` and, on iOS inside a background task (`Sync/Runtime/SyncBackgroundWork`), `background()`; on the Mac the app or a window becoming main counts as a foreground at most once a minute, and quitting sends what is unsent for up to 3 s. Every commit that logs a change (`VaultStore.loggedChanges()`; uploads and remote applies do not) calls `localWrite()`, a push calls `changeNotice()` for up to 25 s, and a vault opened in place of another, or closed, shuts its runtime down. While XCTest hosts the app nothing syncs.
