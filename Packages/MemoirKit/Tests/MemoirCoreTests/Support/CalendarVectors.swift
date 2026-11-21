@@ -45,6 +45,7 @@ enum CalendarVectors {
     let excluded = Set(try load(ZoneExclusionList.self, "zone-exclusions.json").cases.filter { $0.function == function }.map(\.id))
     let vectors = try cases(file, function)
     var mismatches: [String] = []
+    var mismatchedIDs: [String] = []
     for vector in vectors where !excluded.contains(vector.id) {
       let native: FixtureValue
       do {
@@ -52,10 +53,20 @@ enum CalendarVectors {
       } catch let error as CalendarError {
         native = .string("error: \(error.code)")
       }
-      if native != vector.output { mismatches.append("\(vector.id): native \(native) reference \(vector.output) for \(vector.input)") }
+      guard native != vector.output else { continue }
+      mismatches.append("\(vector.id): native \(native) reference \(vector.output) for \(vector.input)")
+      mismatchedIDs.append(vector.id)
     }
     #expect(excluded.isSubset(of: Set(vectors.map(\.id))), "zone exclusions name vectors that do not exist", sourceLocation: sourceLocation)
-    #expect(mismatches.isEmpty, "\(mismatches.count) of \(vectors.count) mismatch, first: \(mismatches.prefix(10).joined(separator: "\n"))", sourceLocation: sourceLocation)
+    #expect(mismatches.isEmpty, Comment(rawValue: failureMessage(file, function, vectors.count, mismatches, mismatchedIDs)), sourceLocation: sourceLocation)
+  }
+
+  private static func failureMessage(_ file: String, _ function: String, _ total: Int, _ mismatches: [String], _ ids: [String]) -> String {
+    var message = "\(mismatches.count) of \(total) mismatch, first: \(mismatches.prefix(10).joined(separator: "\n"))"
+    guard file == "zones.json" else { return message }
+    message += "\nIf these zones changed in the system tzdata (the fixture comes from ICU 78.1), add each id to zone-exclusions.json with function \"\(function)\" and a reason:"
+    message += "\n\(ids.joined(separator: "\n"))"
+    return message
   }
 }
 
