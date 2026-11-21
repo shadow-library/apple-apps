@@ -18,6 +18,14 @@ struct NovelPipeline: Sendable {
   let version: Int
   let first: String
   let steps: [String: any JobStep]
+  let course: PipelineCourse?
+
+  init(version: Int, first: String, steps: [String: any JobStep], course: PipelineCourse? = nil) {
+    self.version = version
+    self.first = first
+    self.steps = steps
+    self.course = course
+  }
 }
 
 enum NovelPipelineDefinition: Sendable {
@@ -54,6 +62,7 @@ struct JobServices: Sendable {
   let hardLines: NovelHardLines
   let packs: WriterPackBuilder
   let retrieval: NovelRetrieval
+  let progress: RunProgressBoard
   let now: @Sendable () -> Date
 }
 
@@ -184,10 +193,11 @@ enum JobStepCallError: ShadowError {
 }
 
 /// Runs a `JobStep` for the runner with the begin hook set, so every stream the step opens, repair retries included, writes its call id on the attempt in
-/// the transaction that begins the call.
+/// the transaction that begins the call, and the output hook, so the run's progress counts every stream's tokens.
 struct EngineStep: PipelineStep {
   let step: any JobStep
   let version: Int
+  let course: PipelineCourse?
   let services: JobServices
 
   func run(_ input: JSONValue, in context: AttemptStepContext) async throws -> AttemptStepOutput {
@@ -197,7 +207,11 @@ struct EngineStep: PipelineStep {
     }
     let stepContext = JobStepContext(attempt: context, target: target, pins: pins, services: services)
     let hook: ModelCallBeginHook = { call, transaction in try context.recordCall(call, in: &transaction) }
-    return try await ModelCallHooks.$begin.withValue(hook) { try await step.run(input, in: stepContext) }
+    let progress = services.progress
+    progress.enter(context.attempt, step: context.step, outlook: await services.outlook(of: context.step.name, in: course))
+    return try await ModelCallHooks.$begin.withValue(hook) {
+      try await ModelCallHooks.$output.withValue(progress.observer(for: context.attempt)) { try await step.run(input, in: stepContext) }
+    }
   }
 }
 

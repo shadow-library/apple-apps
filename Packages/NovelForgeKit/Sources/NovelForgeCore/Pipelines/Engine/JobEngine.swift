@@ -38,6 +38,7 @@ public struct JobRunHandle: Sendable {
   public let job: EntityRef
   public let attempt: AttemptID
   let handle: AttemptHandle
+  let token: UUID
   let ended: @Sendable () async -> Void
 
   /// Once the run ends, after what this device kept for it alone is cleared.
@@ -113,7 +114,7 @@ public final class JobEngine: Sendable {
     let packs = packs ?? vaultWriterPack(store)
     services = JobServices(
       store: store, router: router, consent: consent, unrestrictedAvailable: unrestrictedAvailable, hardLines: NovelHardLines(), packs: packs,
-      retrieval: NovelRetrieval(store: store, embedders: embedders), now: { clock.now().date })
+      retrieval: NovelRetrieval(store: store, embedders: embedders), progress: RunProgressBoard(), now: { clock.now().date })
   }
 
   deinit {
@@ -193,13 +194,92 @@ public final class JobEngine: Sendable {
     observeLeased { transaction, now in try JobActivity.load(JobActivityQuery(novel: novel, now: now), in: transaction) }
   }
 
+  /// Ends this device's run of the job as a crash would, as when the system takes the app's background time away: once it returns the run writes nothing
+  /// more and its checkpoint stays for `resumeHere(job:)`. A start or resume of the job under way is waited for and then interrupted, and a step that ignores
+  /// cancellation holds the await until the step returns. An iOS expiration handler awaits it with a deadline inside its grace period, then calls
+  /// `setTaskCompleted`. A released lease lets another device's automatic attempt start at once, but reaches other devices only when this one next syncs.
+  @concurrent
+  public func interrupt(job: EntityRef, releasingLease: Bool) async throws(JobEngineError) -> JobInterruption {
+    var answer = JobInterruption.ended
+    var interrupted: Set<AttemptID> = []
+    func interrupt(_ attempt: AttemptID) async throws(JobEngineError) {
+      guard interrupted.insert(attempt).inserted else { return }
+      do {
+        answer = answer.outranked(by: JobInterruption(try await runner.interrupt(attempt, releasingLease: releasingLease), attempt: attempt))
+      } catch {
+        throw .run(error)
+      }
+    }
+    if let running = running({ $0.job == job }) { try await interrupt(running.attempt) }
+    if let pending = starting.withLock({ $0[job] }) {
+      _ = await pending.value
+      if let running = running({ $0.job == job }) { try await interrupt(running.attempt) }
+    }
+    let replica = store.replica
+    guard let snapshot = try await engineRead({ transaction in try JobSnapshot.load(job, in: transaction) }) else { throw .jobNotFound(job) }
+    for attempt in snapshot.attempts where attempt.start.replica == replica && attempt.outcome == .running { try await interrupt(attempt.id) }
+    return answer
+  }
+
+  /// Resume: continues this device's interrupted attempt of the job from its checkpoint. The resumed attempt keeps its start, so beside another device's
+  /// live attempt it is refused (`runningElsewhere`) unless that attempt would stand down for it: one started automatically later. A run of the job going
+  /// here is answered as it is.
+  @concurrent
+  public func resumeHere(job: EntityRef) async throws(JobEngineError) -> JobRunHandle {
+    try await deduplicated(job) { [self] () async throws(JobEngineError) -> JobRunHandle in try await resume(job) }
+  }
+
+  /// The runs this device stopped that `resumeHere(job:)` continues, oldest first; a run with a stop mark is not listed, since it settles instead.
+  @concurrent
+  public func interruptedRuns() async throws(JobEngineError) -> [InterruptedJobRun] {
+    let runs: [InterruptedRun]
+    do {
+      runs = try await runner.interruptedRuns()
+    } catch {
+      throw .run(error)
+    }
+    return try await engineRead { transaction in
+      try runs.compactMap { run in
+        guard let key = try JobRecords.read(run.job, in: transaction).record?.request.key, let target = NovelJobTarget(key) else { return nil }
+        return InterruptedJobRun(attempt: run.attempt, job: run.job, target: target, step: run.step)
+      }
+    }
+  }
+
+  /// What a launch that resumes nothing runs (on iOS): settles the attempts this device had stopped and forgets runs whose attempt ended elsewhere, keeping
+  /// the checkpoints of the others for `resumeHere(job:)`.
+  @concurrent
+  @discardableResult
+  public func settleStoppedAttempts() async throws(JobEngineError) -> [AttemptID] {
+    let settled: [AttemptID]
+    do {
+      settled = try await runner.settleStopped()
+    } catch {
+      throw .run(error)
+    }
+    await forgetSettledPacks()
+    return settled
+  }
+
+  /// The progress of the attempt's run here, from its current value until the run ends; finishes at once when no run of it is going here.
+  public func observeRun(attempt: AttemptID) -> AsyncStream<JobRunProgress> {
+    services.progress.observe(attempt)
+  }
+
   private func start(_ job: EntityRef, byHand: Bool) async throws(JobEngineError) -> JobRunHandle {
+    try await deduplicated(job) { [self] () async throws(JobEngineError) -> JobRunHandle in try await launch(job, byHand: byHand) }
+  }
+
+  /// One start or resume of a job at a time: a second ask while one is under way is answered with its result.
+  private func deduplicated(
+    _ job: EntityRef, _ body: @escaping @Sendable () async throws(JobEngineError) -> JobRunHandle
+  ) async throws(JobEngineError) -> JobRunHandle {
     let task = starting.withLock { tasks in
       if let running = tasks[job] { return running }
       let task = Task { [self] in
         let result: Result<JobRunHandle, JobEngineError>
         do throws(JobEngineError) {
-          result = .success(try await launch(job, byHand: byHand))
+          result = .success(try await body())
         } catch {
           result = .failure(error)
         }
@@ -236,6 +316,41 @@ public final class JobEngine: Sendable {
       throw .run(error)
     }
     return track(started)
+  }
+
+  private func resume(_ job: EntityRef) async throws(JobEngineError) -> JobRunHandle {
+    if let running = running({ $0.job == job }) { return running }
+    guard let snapshot = try await engineRead({ transaction in try JobSnapshot.load(job, in: transaction) }) else { throw .jobNotFound(job) }
+    guard let target = NovelJobTarget(snapshot.job.request.key) else { throw .notANovelJob(job) }
+    _ = try ready(target.kind)
+    let held: InterruptedRun?
+    do {
+      held = try await runner.interruptedRuns().first { $0.job == job }
+    } catch {
+      throw .run(error)
+    }
+    guard let held else { throw .nothingToResume(job) }
+    if let resumed = snapshot.attempts.first(where: { $0.id == held.attempt }) {
+      let (replica, now) = (store.replica, clock.now())
+      let blocking = snapshot.attempts.first { other in
+        other.id != resumed.id && other.start.replica != replica && other.isLive(at: now) && (other.start.byHand || !resumed.outranks(other))
+      }
+      if let blocking { throw .runningElsewhere(blocking.id, blocking.start.replica) }
+    }
+    let (payload, unrestrictedAvailable) = (snapshot.job.request.payload, services.unrestrictedAvailable)
+    let mode = try await engineWrite { transaction in Self.contentMode(target, payload: payload, unrestrictedAvailable: unrestrictedAvailable, in: transaction) }
+    if let missing = try await missingConsent(mode) { throw .consentRequired(missing) }
+    let resumed: AttemptHandle?
+    do {
+      resumed = try await runner.resume(held.attempt) { [self] job in attemptPipeline(for: job) }
+    } catch {
+      throw .run(error)
+    }
+    guard let resumed else {
+      await forgetSettledPacks()
+      throw .nothingToResume(job)
+    }
+    return track(resumed)
   }
 
   /// `start` refused because this device holds a run of the job (G12): that run is resumed, or, once it settled, the job is started afresh once.
@@ -310,7 +425,8 @@ public final class JobEngine: Sendable {
   }
 
   private func adapt(_ pipeline: NovelPipeline) -> AttemptPipeline {
-    AttemptPipeline(first: pipeline.first, steps: pipeline.steps.mapValues { EngineStep(step: $0, version: pipeline.version, services: services) })
+    AttemptPipeline(
+      first: pipeline.first, steps: pipeline.steps.mapValues { EngineStep(step: $0, version: pipeline.version, course: pipeline.course, services: services) })
   }
 
   /// A handle whose run ended stays tracked until its result is read, so only one the runner still runs is answered.
@@ -320,8 +436,13 @@ public final class JobEngine: Sendable {
   }
 
   private func track(_ started: AttemptHandle) -> JobRunHandle {
-    let handle = JobRunHandle(job: started.job, attempt: started.attempt, handle: started) { [self] in
-      _ = handles.withLock { $0.removeValue(forKey: started.attempt) }
+    let progress = services.progress
+    let token = progress.begin(started.attempt)
+    let handle = JobRunHandle(job: started.job, attempt: started.attempt, handle: started, token: token) { [self] in
+      progress.end(started.attempt, token: token)
+      handles.withLock { handles in
+        if handles[started.attempt]?.token == token { handles[started.attempt] = nil }
+      }
       await forgetSettledPacks()
     }
     handles.withLock { $0[started.attempt] = handle }
@@ -385,7 +506,7 @@ public final class JobEngine: Sendable {
     return stream
   }
 
-  private func engineRead<T: Sendable>(_ body: @Sendable (ReadTransaction) throws -> T) async throws(JobEngineError) -> T {
+  func engineRead<T: Sendable>(_ body: @Sendable (ReadTransaction) throws -> T) async throws(JobEngineError) -> T {
     do {
       return try await store.read(body)
     } catch {
@@ -393,7 +514,7 @@ public final class JobEngine: Sendable {
     }
   }
 
-  private func engineWrite<T: Sendable>(_ body: @Sendable (inout WriteTransaction) throws -> T) async throws(JobEngineError) -> T {
+  func engineWrite<T: Sendable>(_ body: @Sendable (inout WriteTransaction) throws -> T) async throws(JobEngineError) -> T {
     do {
       return try await store.write(body)
     } catch {

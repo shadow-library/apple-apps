@@ -12,7 +12,10 @@ import ShadowText
 enum ReviewPipeline {
   static let version = 1
   static let definition = NovelPipelineDefinition.ready(
-    NovelPipeline(version: version, first: ReviewStep.prepare.rawValue, steps: [ReviewStep.prepare.rawValue: ReviewPrepareStep(), ReviewStep.review.rawValue: ReviewCallStep()]))
+    NovelPipeline(
+      version: version, first: ReviewStep.prepare.rawValue,
+      steps: [ReviewStep.prepare.rawValue: ReviewPrepareStep(), ReviewStep.review.rawValue: ReviewCallStep()],
+      course: PipelineCourse([ReviewStep.prepare.rawValue, ReviewStep.review.rawValue], tasks: [ReviewStep.review.rawValue: .review])))
 }
 
 enum ReviewStep: String {

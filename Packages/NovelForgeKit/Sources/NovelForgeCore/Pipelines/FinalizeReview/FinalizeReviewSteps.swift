@@ -51,7 +51,8 @@ enum FinalizeReviewPipeline {
   static func pipeline(finalizing finalize: @escaping Finalize = commit) -> NovelPipeline {
     NovelPipeline(
       version: version, first: Step.extract.rawValue,
-      steps: [Step.extract.rawValue: ExtractStep(), Step.store.rawValue: StoreStep(), Step.settle.rawValue: SettleStep(finalize: finalize)])
+      steps: [Step.extract.rawValue: ExtractStep(), Step.store.rawValue: StoreStep(), Step.settle.rawValue: SettleStep(finalize: finalize)],
+      course: PipelineCourse([Step.extract, .store, .settle].map(\.rawValue), tasks: [Step.extract.rawValue: .review]))
   }
 
   /// The review this job already appended, from any of its attempts: the first ready one is the one the job keeps (G11).

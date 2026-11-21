@@ -16,6 +16,8 @@ public enum JobEngineError: ShadowError {
   case pipelineNotYetAvailable(NovelJobKind)
   /// Another device's attempt holds a live lease, so "Run here" is not offered (plan, Jobs and devices).
   case runningElsewhere(AttemptID, ReplicaID)
+  /// This device holds no interrupted run of the job to resume: it was never run here, it settled, or its run carries a stop mark.
+  case nothingToResume(EntityRef)
   /// The novel's text cannot be sent to the host the router assigns until the author allows it; checked before an attempt exists, so the job waits queued.
   case consentRequired(AIConsentRequest)
   /// The attempt was started by another version of its pipeline, whose checkpoint this one cannot read.
@@ -36,6 +38,7 @@ public enum JobEngineError: ShadowError {
     case .notANovelJob: "job_engine.not_a_novel_job"
     case .pipelineNotYetAvailable: "job_engine.pipeline_not_yet_available"
     case .runningElsewhere: "job_engine.running_elsewhere"
+    case .nothingToResume: "job_engine.nothing_to_resume"
     case .consentRequired: "routing.consent_required"
     case .pipelineChanged: "job_engine.pipeline_changed"
     case .pins(let error): error.code
@@ -56,6 +59,7 @@ public enum JobEngineError: ShadowError {
     case .notANovelJob(let ref): "Job \(ref.key) is not a job of a novel."
     case .pipelineNotYetAvailable(let kind): "Jobs of kind \(kind.rawValue) cannot run in this version yet."
     case .runningElsewhere(let attempt, let replica): "Device \(replica) is running the job as attempt \(attempt.uuid.lowercasedString)."
+    case .nothingToResume(let ref): "This device holds no interrupted run of job \(ref.key) to resume."
     case .consentRequired(let request): "Sending \(request.dataClass) to \(request.host) needs your consent."
     case .pipelineChanged(let running, let pinned): "The attempt was started by pipeline version \(pinned.map(String.init) ?? "unknown"), not \(running)."
     case .pins(let error): error.errorDescription

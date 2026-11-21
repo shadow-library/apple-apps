@@ -78,7 +78,9 @@ enum RefreshPipeline {
   }
 
   static let definition = NovelPipelineDefinition.ready(
-    NovelPipeline(version: version, first: Step.refresh.rawValue, steps: [Step.refresh.rawValue: RefreshStep(), Step.stage.rawValue: RefreshStageStep()]))
+    NovelPipeline(
+      version: version, first: Step.refresh.rawValue, steps: [Step.refresh.rawValue: RefreshStep(), Step.stage.rawValue: RefreshStageStep()],
+      course: PipelineCourse([Step.refresh.rawValue, Step.stage.rawValue], tasks: [Step.refresh.rawValue: .review])))
 }
 
 /// Ids derived from the job (orchestrator decision 11): at most one card and one report per job, which two replicas may each have written.

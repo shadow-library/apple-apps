@@ -1,4 +1,5 @@
 import Foundation
+import ShadowAI
 import ShadowCore
 import ShadowJobs
 import ShadowStore
@@ -14,7 +15,9 @@ enum PlanPipeline {
   }
 
   static let definition = NovelPipelineDefinition.ready(
-    NovelPipeline(version: version, first: Step.plan.rawValue, steps: [Step.plan.rawValue: PlanStep(), Step.stage.rawValue: PlanStageStep()]))
+    NovelPipeline(
+      version: version, first: Step.plan.rawValue, steps: [Step.plan.rawValue: PlanStep(), Step.stage.rawValue: PlanStageStep()],
+      course: PipelineCourse([Step.plan.rawValue, Step.stage.rawValue], tasks: [Step.plan.rawValue: .planning])))
 }
 
 /// The card a plan job stages has an id derived from the job (orchestrator decision 11), so every attempt and every replica stages the same card at most once;

@@ -183,7 +183,10 @@ struct ChainVault: Sendable {
     return vault
   }
 
-  func open(_ faults: ChainFaults = ChainFaults()) throws -> ChainProcess {
+  func open(
+    _ faults: ChainFaults = ChainFaults(), catalog: @escaping @Sendable (NovelJobKind) -> NovelPipelineDefinition = PipelineCatalog.definition(for:),
+    resumesHere: Bool = false, routed: (@Sendable (ModelRoute) -> Void)? = nil
+  ) throws -> ChainProcess {
     clock.advance(5)
     let reconciler = try Projection.reconciler()
     let store = try Projection.store(reconciler, at: .file(url), clock: wall)
@@ -192,10 +195,18 @@ struct ChainVault: Sendable {
     let (heartbeat, rereads) = (SleepGate(), SleepGate())
     let timing = AttemptRunner.Timing(heartbeat: LeaseTerms.heartbeat) { _ in try await heartbeat.sleep() }
     let engine = try JobEngine(
-      store: store, router: { backend.router(store: store, requestGuard: $0) }, consent: EvalBackend.consent, clock: lease,
-      runner: AttemptRunner(store: store, clock: lease, timing: timing, faults: faults.runner), timing: JobEngine.Timing { _ in try await rereads.sleep() },
-      faults: faults.engine, unrestrictedAvailable: false)
-    return ChainProcess(vault: self, store: store, reconciler: reconciler, engine: engine, faults: faults)
+      store: store,
+      router: { requestGuard in
+        backend.router(
+          store: store,
+          requestGuard: { route in
+            routed?(route)
+            return requestGuard(route)
+          })
+      }, consent: EvalBackend.consent, clock: lease,
+      runner: AttemptRunner(store: store, clock: lease, timing: timing, faults: faults.runner), catalog: catalog,
+      timing: JobEngine.Timing { _ in try await rereads.sleep() }, faults: faults.engine, unrestrictedAvailable: false)
+    return ChainProcess(vault: self, store: store, reconciler: reconciler, engine: engine, faults: faults, resumesHere: resumesHere)
   }
 
   func remove() {
@@ -210,6 +221,8 @@ struct ChainProcess: Sendable {
   let reconciler: NovelForgeReconciler
   let engine: JobEngine
   let faults: ChainFaults
+  /// A run that ends interrupted is resumed here by hand, as Resume does, instead of ending the process.
+  let resumesHere: Bool
 
   var novel: UUID { vault.novel }
 
@@ -328,6 +341,7 @@ struct ChainProcess: Sendable {
   private func finished(_ handle: JobRunHandle) async throws -> Bool {
     let result = await handle.result
     if result == .settled(.succeeded) { return true }
+    if result == .interrupted, resumesHere { return try await finished(try await engine.resumeHere(job: handle.job)) }
     guard result == .interrupted, faults.fired else { throw ChainError.unsettled(handle.job, result) }
     return false
   }

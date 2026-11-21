@@ -11,7 +11,17 @@ enum GenerationPipeline {
   static let version = 1
   static let definition = NovelPipelineDefinition.ready(
     NovelPipeline(
-      version: version, first: GenerationStep.pin.rawValue, steps: Dictionary(uniqueKeysWithValues: GenerationStep.allCases.map { ($0.rawValue, $0.step) })))
+      version: version, first: GenerationStep.pin.rawValue, steps: Dictionary(uniqueKeysWithValues: GenerationStep.allCases.map { ($0.rawValue, $0.step) }),
+      course: course))
+
+  /// The drafter usually titles the chapter and needs no expansion; a repair or rewrite saves again and is judged again.
+  static let course = PipelineCourse(
+    [GenerationStep.pin, .draft, .save, .checks, .judge, .finish].map(\.rawValue),
+    tasks: [
+      GenerationStep.draft.rawValue: .writing, GenerationStep.expand.rawValue: .writing, GenerationStep.title.rawValue: .helper,
+      GenerationStep.judge.rawValue: .review, GenerationStep.repair.rawValue: .writing, GenerationStep.rewrite.rawValue: .writing,
+    ],
+    rejoins: [GenerationStep.expand, .title, .repair, .rewrite].reduce(into: [:]) { $0[$1.rawValue] = GenerationStep.save.rawValue })
 }
 
 enum GenerationStep: String, CaseIterable, Sendable {
