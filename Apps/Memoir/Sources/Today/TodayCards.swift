@@ -175,7 +175,7 @@ struct TodayNothingDue: View {
   }
 }
 
-/// The first day's empty state (`features/today/index.tsx:111-138`). The quest builder has no route yet, so its call to action opens Quests.
+/// The first day's empty state (`features/today/index.tsx:111-138`).
 struct TodayFirstDay: View {
   var body: some View {
     VStack(alignment: .leading, spacing: Spacing.space4) {
