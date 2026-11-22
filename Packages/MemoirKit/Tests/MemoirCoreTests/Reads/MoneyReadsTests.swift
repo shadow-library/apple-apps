@@ -321,6 +321,84 @@ struct MoneyReadsTests {
     #expect(remaining == 0, "a newer device's change record of the expense is purged by its stored expense id")
   }
 
+  /// The reference cascades the receipt with the expense (`finance-commands.service.ts:244-250`); a purge, unlike a removal, leaves no field naming the blob.
+  @Test func shouldPurgeTheReceiptOfADeletedExpenseAndKeepAnotherExpensesReceipt() async throws {
+    let stores = try MemoirStores.openInMemory()
+    let blob = try #require(BlobName(String(repeating: "ab", count: 32)))
+    let kept = try #require(BlobName(String(repeating: "cd", count: 32)))
+    let receipt = ReceiptRecord(id: MemoirStoreFixture.commandID(31), blob: blob, contentType: "image/jpeg", byteCount: 1200)
+    let other = ReceiptRecord(id: MemoirStoreFixture.commandID(32), blob: kept, contentType: "image/jpeg", byteCount: 900)
+    let expense = Self.expense(1, receipt: receipt.id)
+    let second = Self.expense(2, receipt: other.id)
+    try await MoneyReadsFixture.write(stores.main) { transaction in
+      try receipt.create(in: &transaction)
+      try other.create(in: &transaction)
+      try ExpenseEdits.create(expense, issuer: Self.issuer(hour: 9), in: &transaction)
+      try ExpenseEdits.create(second, issuer: Self.issuer(hour: 9), in: &transaction)
+    }
+
+    try await MoneyReadsFixture.write(stores.main) { transaction in try ExpenseEdits.delete(expense.id, issuer: Self.issuer(hour: 10), in: &transaction) }
+
+    let states = try await stores.main.read { transaction in
+      (
+        deleted: try transaction.state(of: ReceiptRecord.ref(receipt.id), scope: .vault), kept: try ReceiptRecord.read(id: other.id, in: transaction).entry?.record,
+        named: try Int.fetchOne(
+          transaction.database, sql: "SELECT COUNT(*) FROM field_state WHERE CAST(value AS TEXT) LIKE ?", arguments: ["%\(blob.description)%"]) ?? 0
+      )
+    }
+    guard case .purged? = states.deleted else {
+      Issue.record("the deleted expense's receipt is purged, not \(String(describing: states.deleted))")
+      return
+    }
+    #expect(states.named == 0, "no field of the vault names the deleted receipt's blob")
+    #expect(states.kept == other, "another expense's receipt stays")
+  }
+
+  private static func expense(_ number: Int, receipt: UUID) -> ExpenseRecord {
+    var expense = MoneyReadsFixture.expense(number, 1250, "EUR", on: "2026-11-20")
+    expense.receipt = receipt
+    return expense
+  }
+
+  @Test func shouldPurgeTheReceiptOfADeletedExpenseBeforeItsRecordArrives() async throws {
+    let stores = try MemoirStores.openInMemory()
+    let expense = Self.expense(1, receipt: MemoirStoreFixture.commandID(33))
+    try await MoneyReadsFixture.write(stores.main) { transaction in try ExpenseEdits.create(expense, issuer: Self.issuer(hour: 9), in: &transaction) }
+
+    try await MoneyReadsFixture.write(stores.main) { transaction in try ExpenseEdits.delete(expense.id, issuer: Self.issuer(hour: 10), in: &transaction) }
+
+    let state = try await stores.main.read { transaction in try transaction.state(of: ReceiptRecord.ref(MemoirStoreFixture.commandID(33)), scope: .vault) }
+    guard case .purged? = state else {
+      Issue.record("a receipt not yet synced here is purged ahead of its arrival, not \(String(describing: state))")
+      return
+    }
+  }
+
+  @Test func shouldBringBackADeletedExpenseWithoutTheReceiptItsDeletionPurged() async throws {
+    let stores = try MemoirStores.openInMemory()
+    let blob = try #require(BlobName(String(repeating: "ef", count: 32)))
+    let receipt = ReceiptRecord(id: MemoirStoreFixture.commandID(34), blob: blob, contentType: "image/jpeg", byteCount: 10)
+    let expense = Self.expense(1, receipt: receipt.id)
+    try await MoneyReadsFixture.write(stores.main) { transaction in
+      try receipt.create(in: &transaction)
+      try ExpenseEdits.create(expense, issuer: Self.issuer(hour: 9), in: &transaction)
+    }
+    try await MoneyReadsFixture.write(stores.main) { transaction in try ExpenseEdits.delete(expense.id, issuer: Self.issuer(hour: 10), in: &transaction) }
+
+    try await MoneyReadsFixture.write(stores.main) { transaction in try ExpenseEdits.create(expense, issuer: Self.issuer(hour: 11), in: &transaction) }
+
+    let restored = try await stores.main.read { transaction in try ExpenseRecord.read(id: expense.id, in: transaction).entry }
+    #expect(restored?.isRemoved == false)
+    #expect(restored?.record.receipt == nil, "no expense names a receipt whose record is purged")
+    let other = Self.expense(2, receipt: MemoirStoreFixture.commandID(35))
+    try await MoneyReadsFixture.write(stores.main) { transaction in try ExpenseEdits.create(other, issuer: Self.issuer(hour: 12), in: &transaction) }
+    try await MoneyReadsFixture.write(stores.main) { transaction in try ExpenseEdits.delete(other.id, issuer: Self.issuer(hour: 13), in: &transaction) }
+    let attached = Self.expense(2, receipt: MemoirStoreFixture.commandID(36))
+    try await MoneyReadsFixture.write(stores.main) { transaction in try ExpenseEdits.create(attached, issuer: Self.issuer(hour: 14), in: &transaction) }
+    let again = try await stores.main.read { transaction in try ExpenseRecord.read(id: attached.id, in: transaction).entry?.record.receipt }
+    #expect(again == MemoirStoreFixture.commandID(36), "a new receipt given when it is created again is kept")
+  }
+
   @Test func shouldReEmitTheOverviewWhenAnExpenseIsWritten() async throws {
     let stores = try await Self.seeded()
     var iterator = MoneyReads.observeOverview(in: stores, today: Self.today).makeAsyncIterator()

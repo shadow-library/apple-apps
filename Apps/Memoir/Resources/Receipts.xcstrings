@@ -1,0 +1,655 @@
+{
+  "sourceLanguage": "en",
+  "strings": {
+    "A receipt photo can only be added while an expense is first saved.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A receipt photo can only be added while an expense is first saved."
+          }
+        }
+      }
+    },
+    "Amount": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Amount"
+          }
+        }
+      }
+    },
+    "Cancel": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cancel"
+          }
+        }
+      }
+    },
+    "Category": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Category"
+          }
+        }
+      }
+    },
+    "Choose File": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Choose File"
+          }
+        }
+      }
+    },
+    "Choose Photo": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Choose Photo"
+          }
+        }
+      }
+    },
+    "Couldn’t load the receipt photo": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Couldn’t load the receipt photo"
+          }
+        }
+      }
+    },
+    "Date": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Date"
+          }
+        }
+      }
+    },
+    "Dismiss": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dismiss"
+          }
+        }
+      }
+    },
+    "Done": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Done"
+          }
+        }
+      }
+    },
+    "Downloading the receipt photo…": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Downloading the receipt photo…"
+          }
+        }
+      }
+    },
+    "Filling in the details…": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Filling in the details…"
+          }
+        }
+      }
+    },
+    "It was sealed with a vault key this device doesn’t have yet. Add the key in Sync settings, then try again.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "It was sealed with a vault key this device doesn’t have yet. Add the key in Sync settings, then try again."
+          }
+        }
+      }
+    },
+    "It was written by a newer version of Memoir. Update the app to see it.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "It was written by a newer version of Memoir. Update the app to see it."
+          }
+        }
+      }
+    },
+    "Its receipt photo is deleted too.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Its receipt photo is deleted too."
+          }
+        }
+      }
+    },
+    "Its stored copy is damaged, so it can’t be shown.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Its stored copy is damaged, so it can’t be shown."
+          }
+        }
+      }
+    },
+    "Loading the receipt photo": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Loading the receipt photo"
+          }
+        }
+      }
+    },
+    "Merchant": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Merchant"
+          }
+        }
+      }
+    },
+    "No receipt": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No receipt"
+          }
+        }
+      }
+    },
+    "No text was found on this photo, so nothing was sent.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No text was found on this photo, so nothing was sent."
+          }
+        }
+      }
+    },
+    "Nothing read from this receipt fits this expense.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nothing read from this receipt fits this expense."
+          }
+        }
+      }
+    },
+    "Preparing the photo…": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Preparing the photo…"
+          }
+        }
+      }
+    },
+    "Read Receipt": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Read Receipt"
+          }
+        }
+      }
+    },
+    "Read from the photo, nothing saved yet. Correct anything and save.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Read from the photo, nothing saved yet. Correct anything and save."
+          }
+        }
+      }
+    },
+    "Read from the photo, nothing saved yet. The reading is unsure — check every value before you save.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Read from the photo, nothing saved yet. The reading is unsure — check every value before you save."
+          }
+        }
+      }
+    },
+    "Reading the text on this device…": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reading the text on this device…"
+          }
+        }
+      }
+    },
+    "Receipt attached": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Receipt attached"
+          }
+        }
+      }
+    },
+    "Receipt for %@": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Receipt for %@"
+          }
+        }
+      }
+    },
+    "Receipt photo": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Receipt photo"
+          }
+        }
+      }
+    },
+    "Receipt photo not found": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Receipt photo not found"
+          }
+        }
+      }
+    },
+    "Receipt review": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Receipt review"
+          }
+        }
+      }
+    },
+    "Receipt scanning isn’t available right now.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Receipt scanning isn’t available right now."
+          }
+        }
+      }
+    },
+    "Receipt.jpg": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Receipt.jpg"
+          }
+        }
+      }
+    },
+    "Remove Photo": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Remove Photo"
+          }
+        }
+      }
+    },
+    "Scan Receipt": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Scan Receipt"
+          }
+        }
+      }
+    },
+    "Sync can’t run right now": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sync can’t run right now"
+          }
+        }
+      }
+    },
+    "Sync is off here. Turn it on in Sync settings to download the photo, or open it on the device that took it.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sync is off here. Turn it on in Sync settings to download the photo, or open it on the device that took it."
+          }
+        }
+      }
+    },
+    "That file isn’t a photo Memoir can keep. Use a JPEG, PNG, HEIC or other image.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "That file isn’t a photo Memoir can keep. Use a JPEG, PNG, HEIC or other image."
+          }
+        }
+      }
+    },
+    "That photo is too large to keep. Pick a smaller one.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "That photo is too large to keep. Pick a smaller one."
+          }
+        }
+      }
+    },
+    "The photo is kept with this expense once you save it. Reading it fills the form for you to check — nothing is saved until you do.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The photo is kept with this expense once you save it. Reading it fills the form for you to check — nothing is saved until you do."
+          }
+        }
+      }
+    },
+    "The photo isn’t on this device": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The photo isn’t on this device"
+          }
+        }
+      }
+    },
+    "The photo isn’t on this device, and sync can’t reach your storage at the moment. Check Sync settings, then try again.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The photo isn’t on this device, and sync can’t reach your storage at the moment. Check Sync settings, then try again."
+          }
+        }
+      }
+    },
+    "The receipt is in %@, which this expense can’t use, so its total is left out.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The receipt is in %@, which this expense can’t use, so its total is left out."
+          }
+        }
+      }
+    },
+    "The receipt photo can’t be opened": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The receipt photo can’t be opened"
+          }
+        }
+      }
+    },
+    "The receipt photo couldn’t be kept. Try again, or remove it to save without one.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The receipt photo couldn’t be kept. Try again, or remove it to save without one."
+          }
+        }
+      }
+    },
+    "The receipt photo didn’t load. Try again in a moment.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The receipt photo didn’t load. Try again in a moment."
+          }
+        }
+      }
+    },
+    "The receipt’s total doesn’t fit this expense’s currency, so it is left out.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The receipt’s total doesn’t fit this expense’s currency, so it is left out."
+          }
+        }
+      }
+    },
+    "The text of your receipts": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The text of your receipts"
+          }
+        }
+      }
+    },
+    "This device can’t unlock the photo": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This device can’t unlock the photo"
+          }
+        }
+      }
+    },
+    "This device couldn’t read the photo’s text, so nothing was sent.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This device couldn’t read the photo’s text, so nothing was sent."
+          }
+        }
+      }
+    },
+    "This receipt can’t be read": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This receipt can’t be read"
+          }
+        }
+      }
+    },
+    "This receipt photo isn’t available any more. It may have been deleted on another device, or its upload never finished.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This receipt photo isn’t available any more. It may have been deleted on another device, or its upload never finished."
+          }
+        }
+      }
+    },
+    "To fill in an expense from a receipt, Memoir reads the photo’s text on this device and sends that text to %@. The photo itself never leaves your vault. %@ processes the text under its own terms.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "To fill in an expense from a receipt, Memoir reads the photo’s text on this device and sends that text to %@. The photo itself never leaves your vault. %@ processes the text under its own terms."
+          }
+        }
+      }
+    },
+    "Try Again": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Try Again"
+          }
+        }
+      }
+    },
+    "Use These Values": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Use These Values"
+          }
+        }
+      }
+    },
+    "View receipt": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "View receipt"
+          }
+        }
+      }
+    },
+    "Zoom In": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zoom In"
+          }
+        }
+      }
+    },
+    "Zoom Out": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zoom Out"
+          }
+        }
+      }
+    },
+    "check": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "check"
+          }
+        }
+      }
+    }
+  },
+  "version": "1.0"
+}

@@ -1,5 +1,6 @@
 import Foundation
 import ShadowCore
+import ShadowStore
 
 public struct MoneyAmount: Hashable, Sendable, StoredValue {
   public let amountMinor: Int64
@@ -248,6 +249,16 @@ public struct ReceiptRecord: IdentifiedRecord, RemovableMemoirRecord {
     members.put(.contentType, contentType)
     members.put(.byteCount, byteCount)
     return members
+  }
+
+  /// Purged rather than removed: a removed record keeps its fields, and with them the name that keeps the blob, while a purge releases it. A receipt id
+  /// is never written again, so the purge blocks nothing; one not yet synced here is purged ahead of its arrival.
+  static func purge(_ id: UUID, in transaction: inout WriteTransaction) throws(MemoirRecordError) {
+    do throws(StoreError) {
+      _ = try transaction.purge(ref(id))
+    } catch {
+      throw .store(error)
+    }
   }
 }
 

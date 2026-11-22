@@ -26,10 +26,12 @@ final class ExpenseForm {
   var merchant: String
   private(set) var isSaving = false
   private(set) var failure: PresentedError?
+  /// The receipt being added with a new expense; nil when editing, since a saved expense's receipt is fixed.
+  let receipt: ReceiptDraft?
   @ObservationIgnored private let writer: MemoirWriter
   @ObservationIgnored private let original: ExpenseRecord?
 
-  init(mode: Mode, options: MoneyOptions, context: MemoirScreenContext, locale: Locale) {
+  init(mode: Mode, options: MoneyOptions, context: MemoirScreenContext, locale: Locale, receipt: ReceiptDraft? = nil) {
     self.mode = mode
     self.options = options
     writer = context.writer
@@ -37,6 +39,7 @@ final class ExpenseForm {
     switch mode {
     case .create:
       original = nil
+      self.receipt = receipt
       amountText = ""
       currency = options.home ?? options.currencies(including: nil).first ?? MoneyOptions.referenceCurrencies[0]
       category = MoneyBook.uncategorised ?? MoneyBook.builtInCategories[0]
@@ -45,6 +48,7 @@ final class ExpenseForm {
       merchant = ""
     case .edit(let expense):
       original = expense
+      self.receipt = nil
       amountText = MoneyText.editable(expense.amountMinor, expense.currency, format: format)
       currency = expense.currency
       category = expense.category
@@ -86,12 +90,12 @@ final class ExpenseForm {
   }
 
   var hasChanges: Bool {
-    guard let original else { return !amountText.isEmpty || !note.isEmpty || !merchant.isEmpty }
+    guard let original else { return !amountText.isEmpty || !note.isEmpty || !merchant.isEmpty || receipt?.hasPhoto == true }
     return edited(original).map { $0 != original } ?? true
   }
 
   var canSave: Bool {
-    guard !isSaving, case .success = amount, occurredOn <= latestDate else { return false }
+    guard !isSaving, case .success = amount, occurredOn <= latestDate, receipt?.blocksSave != true else { return false }
     return original == nil || hasChanges
   }
 
@@ -135,7 +139,15 @@ final class ExpenseForm {
       let expense = ExpenseRecord(
         id: UUID.v7(at: now), amountMinor: minor, currency: currency, occurredOn: occurredOn, category: category, merchant: Self.text(merchant), note: Self.text(note),
         loggedAtMillis: MemoirClock.millis(now))
-      return try await writer.write { issuer, transaction in try ExpenseEdits.create(expense, issuer: issuer, in: &transaction).expense.id }
+      guard let receipt else {
+        return try await writer.write { issuer, transaction in try ExpenseEdits.create(expense, issuer: issuer, in: &transaction).expense.id }
+      }
+      do throws(ReceiptWriteError) {
+        return try await ReceiptWrites.create(expense, attaching: receipt.attachment, blobs: receipt.blobs, writer: writer).id
+      } catch {
+        failure = ReceiptCopy.presented(error)
+        return nil
+      }
     } catch {
       failure = WritingErrors.presented(error)
       return nil

@@ -11,6 +11,8 @@ struct ExpenseFormScreen: View {
   @State private var form: ExpenseForm?
   @State private var loadFailure: PresentedError?
   @Environment(\.locale) private var locale
+  @Environment(SyncRuntimes.self) private var sync: SyncRuntimes?
+  @Environment(AIServices.self) private var services: AIServices?
 
   var body: some View {
     Group {
@@ -28,7 +30,8 @@ struct ExpenseFormScreen: View {
       guard form == nil else { return }
       do {
         let options = try await MoneyOptions.load(context)
-        form = ExpenseForm(mode: editing.map { .edit($0) } ?? .create, options: options, context: context, locale: locale)
+        let receipt = editing == nil ? ReceiptDraft(context: context, sync: sync, services: services) : nil
+        form = ExpenseForm(mode: editing.map { .edit($0) } ?? .create, options: options, context: context, locale: locale, receipt: receipt)
       } catch {
         loadFailure = MoneyErrors.read(error)
       }
@@ -76,6 +79,7 @@ private struct ExpenseFormFields: View {
         TextField(text: $form.note, prompt: Text("What was it for?", tableName: "Money")) { Text("Note", tableName: "Money") }
         TextField(text: $form.merchant, prompt: Text("Optional", tableName: "Money")) { Text("Merchant", tableName: "Money") }
       }
+      ReceiptFormSection(form: form)
     }
     .formStyle(.grouped)
     .disabled(form.isSaving)

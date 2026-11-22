@@ -111,6 +111,9 @@ struct ExpenseDetailView: View {
         if expense.receipt != nil { ShadowBadge(Text("Receipt attached", tableName: "Money"), systemImage: "doc.text.image") }
         if model.source == .ocr { ShadowBadge(Text("Receipt scanned", tableName: "Money"), intent: .info) }
       }
+      if let receipt = expense.receipt {
+        ReceiptViewerButton(receipt: receipt, subject: "\(title(expense)) · \(MoneyDates.text(expense.occurredOn, locale: locale))", context: model.context)
+      }
     }
   }
 
@@ -209,8 +212,12 @@ struct ExpenseDetailView: View {
   /// memoir-web `deleteDescription`.
   private func deleteDescription(_ expense: ExpenseRecord) -> String {
     let amount = MoneyText.formatted(expense.amountMinor, expense.currency, locale: locale)
-    let title = expense.note ?? expense.merchant ?? model.categoryName(expense.category)
     let day = MoneyDates.text(expense.occurredOn, locale: locale)
-    return String(localized: "\(amount) · \(title) on \(day) leaves Money, History and Insights, and its edit history goes with it.", table: "Money")
+    let removed = String(localized: "\(amount) · \(title(expense)) on \(day) leaves Money, History and Insights, and its edit history goes with it.", table: "Money")
+    return expense.receipt == nil ? removed : "\(removed) \(ReceiptViewerButton.deletionNote)"
+  }
+
+  private func title(_ expense: ExpenseRecord) -> String {
+    expense.note ?? expense.merchant ?? model.categoryName(expense.category)
   }
 }

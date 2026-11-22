@@ -31,7 +31,7 @@ extension ConsentDisclosure {
         table: "AI")
     })
 
-  nonisolated static let memoir = [memoirInsights, memoirJournal, memoirHealth]
+  nonisolated static let memoir = [memoirInsights, memoirJournal, memoirHealth, memoirReceipts]
 
   nonisolated private static func disclosure(
     _ requirement: AIConsentRequirement, title: @escaping @Sendable () -> String, explanation: @escaping @Sendable (String) -> String

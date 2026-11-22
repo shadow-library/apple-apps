@@ -8,7 +8,8 @@ import ShadowStore
 /// (`ExpenseAuditRepository.removeForExpense`).
 public enum ExpenseEdits {
   /// Creates the expense with its rate captured. An id already held as a deleted expense is created again: its fields take the new values, but the
-  /// currency must be the one it was first written with (`FIN_006`), and it keeps its first rate and logging time, which never change.
+  /// currency must be the one it was first written with (`FIN_006`), and it keeps its first rate and logging time, which never change. It comes back
+  /// without the receipt it had: the deletion purged that receipt's record.
   @discardableResult
   public static func create(_ expense: ExpenseRecord, source: ExpenseSource = .manual, issuer: CommandIssuer, in transaction: inout WriteTransaction)
     throws(CommandIssueError) -> (command: MemoirCommand, expense: ExpenseRecord)
@@ -30,6 +31,7 @@ public enum ExpenseEdits {
       var recreated = expense
       recreated.rate = entry.record.rate
       recreated.loggedAtMillis = entry.record.loggedAtMillis
+      if recreated.receipt == entry.record.receipt { recreated.receipt = nil }
       let restored = recreated
       try record { () throws(MemoirRecordError) in
         try ExpenseRecord.restore(ref, in: &transaction)
@@ -64,10 +66,11 @@ public enum ExpenseEdits {
 
   /// Clears the note and merchant, marks the expense removed, issues `expense.delete` and purges its change records, so no replica keeps the owner's words
   /// of an expense the reference would have deleted outright (`expense.repository.ts:53-59`). The entity itself is never purged: a purge wins every merge
-  /// and would block creating the id again, and with it a confirmed cycle's expense under its derived id.
+  /// and would block creating the id again, and with it a confirmed cycle's expense under its derived id. Its receipt record is purged, as the reference
+  /// cascades the receipt (`finance-commands.service.ts:244-250`), so nothing names the image's blob any more and the sync kernel releases it.
   @discardableResult
   public static func delete(_ id: UUID, issuer: CommandIssuer, in transaction: inout WriteTransaction) throws(CommandIssueError) -> MemoirCommand {
-    _ = try present(id, in: transaction)
+    let receipt = try present(id, in: transaction).receipt
     try record { () throws(MemoirRecordError) in
       try ExpenseRecord.edit(id: id, in: &transaction) { expense in
         expense.note = nil
@@ -75,6 +78,7 @@ public enum ExpenseEdits {
       }
       try ExpenseRecord.remove(ExpenseRecord.ref(id), in: &transaction)
       try ExpenseChangeRecord.purge(expense: id, in: &transaction)
+      if let receipt { try ReceiptRecord.purge(receipt, in: &transaction) }
     }
     return try issuer.issue(.expenseDelete(RecordReference(id: id)), in: &transaction)
   }
