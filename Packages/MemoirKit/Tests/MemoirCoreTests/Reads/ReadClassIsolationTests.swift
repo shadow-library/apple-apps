@@ -31,7 +31,7 @@ struct ReadClassIsolationTests {
     reader.add(.restingHeartRate, [HealthSample(id: UUID(), startMillis: morning, endMillis: morning, utcOffsetMinutes: 0, quantity: HealthFixture.decimal("53.0917"))])
     _ = try await HealthFixture.claim(HealthFixture.phone, in: stores)
     _ = try await HealthImport(reader: reader, stores: stores, device: HealthFixture.phone, clock: HealthFixture.utc, wallClock: HealthFixture.wallClock()).run()
-    let catalog = MetricCatalog(stores: stores, issuer: CommandIssuer(clock: HealthFixture.utc, wallClock: HealthFixture.wallClock()))
+    let catalog = MetricCatalog(stores: stores, issuer: CommandIssuerSource { _ in CommandIssuer(clock: HealthFixture.utc, wallClock: HealthFixture.wallClock()) })
     let glucose = try await catalog.create(MetricDefinition(name: "Glucosamine Xq", unit: "mmol/L", valueType: .number, direction: .range))
     try await catalog.register(HealthFixture.decimal("6.4321"), for: glucose, on: today)
     try await catalog.register(HealthFixture.decimal("4321.77"), for: BuiltinMetric.steps.reference, on: HealthFixture.shifted(today, by: -1))

@@ -61,6 +61,30 @@ struct MemoirVaultOpenerTests {
     #expect(hero != nil)
   }
 
+  @Test("should walk the derived day to the account's day in its zone, and in the staged zone once that day has passed, only when the day is refreshed")
+  func walksTheHorizonInTheAccountZone() async throws {
+    let clock = TestClock(day: 0, minute: 720)
+    let opened = try await MemoirVaultOpener.open(.inMemory, appVersion: "1", clock: clock.memoir(deviceZone: TestClock.berlin))
+    let writer = MemoirScreenContext(opened).writer
+    try await writer.issue(try TestQuests.zone("UTC"))
+    let quest = QuestRecord(id: UUID(), name: "Walk")
+    try await writer.issue(try TestQuests.creation(quest.id), creating: quest)
+    try await writer.issue(try TestQuests.zone("Asia/Tokyo"))
+    #expect(try await opened.stores.openDay() == TestClock.day(0))
+
+    clock.set(day: 0, minute: 23 * 60 + 30)
+    try await opened.refreshDay()
+    #expect(try await opened.stores.openDay() == TestClock.day(0), "the device's Berlin is on the next day; the account's UTC is not")
+
+    clock.set(day: 1, minute: 15 * 60 + 30)
+    #expect(try await opened.stores.openDay() == TestClock.day(0), "nothing walks the view before the refresh")
+    try await opened.refreshDay()
+
+    #expect(try await opened.stores.openDay() == TestClock.day(2), "half past midnight in Tokyo, which took over on day 1")
+    let zone = try await AccountZone.load(from: opened.stores.main)
+    #expect(zone.inForce == "Asia/Tokyo" && zone.staged == nil)
+  }
+
   @Test("should fail with a typed open failure when a file blocks the vault's directory")
   func failsWhenPathBlocked() async throws {
     let directory = try temporaryDirectory()

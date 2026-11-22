@@ -7,9 +7,9 @@ import ShadowStore
 /// Imports from Health go through `HealthImport` and append no command.
 public struct MetricCatalog: Sendable {
   public let stores: MemoirStores
-  public let issuer: CommandIssuer
+  public let issuer: CommandIssuerSource
 
-  public init(stores: MemoirStores, issuer: CommandIssuer) {
+  public init(stores: MemoirStores, issuer: CommandIssuerSource) {
     self.stores = stores
     self.issuer = issuer
   }
@@ -126,13 +126,19 @@ public struct MetricCatalog: Sendable {
   }
 
   private func issue(_ body: MemoirCommandBody) async throws(MetricsError) {
-    let issuer = issuer
-    try await metricsCall { () async throws(StoreError) in try await stores.main.write { transaction in try issuer.issue(body, in: &transaction) } }
+    let source = issuer
+    let main = stores.main
+    try await metricsCall { () async throws(StoreError) in
+      try await main.write { transaction in try source.issuer(in: transaction, of: main).issue(body, in: &transaction) }
+    }
   }
 
   private func issue<Content: CommandContent & Sendable>(_ body: MemoirCommandBody, content: Content) async throws(MetricsError) {
-    let issuer = issuer
-    try await metricsCall { () async throws(StoreError) in try await stores.main.write { transaction in try issuer.issue(body, content: content, in: &transaction) } }
+    let source = issuer
+    let main = stores.main
+    try await metricsCall { () async throws(StoreError) in
+      try await main.write { transaction in try source.issuer(in: transaction, of: main).issue(body, content: content, in: &transaction) }
+    }
   }
 
   private static func present<Class: MetricClass, Source: RecordSource & ~Copyable>(_ metric: MetricReference, _: Class.Type, in source: borrowing Source) throws

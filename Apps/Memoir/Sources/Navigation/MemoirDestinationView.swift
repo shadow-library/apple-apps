@@ -1,28 +1,27 @@
-import MemoirCore
 import SwiftUI
 
-/// Every destination's screen takes the vault's stores and nothing else, so replacing a screen never touches this switch.
+/// Every destination's screen takes the `MemoirScreenContext` and nothing else, so replacing a screen never touches this switch.
 struct MemoirDestinationView: View {
   let destination: MemoirDestination
-  let stores: MemoirStores
+  let context: MemoirScreenContext
 
   var body: some View {
     switch destination {
-    case .today: TodayView(stores: stores)
-    case .planningBoard: PlanningBoardView(stores: stores)
-    case .quests: QuestsView(stores: stores)
-    case .journal: JournalView(stores: stores)
-    case .meals: MealsView(stores: stores)
-    case .weight: WeightView(stores: stores)
-    case .bodyAndHealth: BodyAndHealthView(stores: stores)
-    case .sideQuests: SideQuestsView(stores: stores)
-    case .money: MoneyView(stores: stores)
-    case .history: HistoryView(stores: stores)
-    case .insights: InsightsView(stores: stores)
-    case .weeklyReview: WeeklyReviewView(stores: stores)
-    case .ask: AskView(stores: stores)
-    case .hero: HeroView(stores: stores)
-    case .settings: SettingsView(stores: stores)
+    case .today: TodayView(context: context)
+    case .planningBoard: PlanningBoardView(context: context)
+    case .quests: QuestsView(context: context)
+    case .journal: JournalView(context: context)
+    case .meals: MealsView(context: context)
+    case .weight: WeightView(context: context)
+    case .bodyAndHealth: BodyAndHealthView(context: context)
+    case .sideQuests: SideQuestsView(context: context)
+    case .money: MoneyView(context: context)
+    case .history: HistoryView(context: context)
+    case .insights: InsightsView(context: context)
+    case .weeklyReview: WeeklyReviewView(context: context)
+    case .ask: AskView(context: context)
+    case .hero: HeroView(context: context)
+    case .settings: SettingsView(context: context)
     }
   }
 }

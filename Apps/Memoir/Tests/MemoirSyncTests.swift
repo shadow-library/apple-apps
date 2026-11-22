@@ -61,8 +61,8 @@ struct MemoirSyncWorld {
     let today = try #require(Self.today)
     let day = try #require(today.adding(days: -daysBefore))
     let issuer = CommandIssuer(clock: IssueClock(timeZone: .gmt), wallClock: { Date(timeIntervalSince1970: TimeInterval(today.daysSinceEpoch) * 86_400 + 43_200) })
-    try await MetricCatalog(stores: stores, issuer: issuer).register(try #require(DecimalText("98765")), for: BuiltinMetric.steps.reference, on: day)
-    _ = try await QuickLogWriter(stores: stores, issuer: issuer).saveWeight(try #require(DecimalText("81.2345")), on: day)
+    try await MetricCatalog(stores: stores, issuer: CommandIssuerSource { _ in issuer }).register(try #require(DecimalText("98765")), for: BuiltinMetric.steps.reference, on: day)
+    _ = try await QuickLogWriter(stores: stores, issuer: CommandIssuerSource { _ in issuer }).saveWeight(try #require(DecimalText("81.2345")), on: day)
   }
 
   func steps() async throws -> [LocalDate: DecimalText] {

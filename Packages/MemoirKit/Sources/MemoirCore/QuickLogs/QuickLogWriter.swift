@@ -39,12 +39,13 @@ public enum WeightSave: Sendable, Equatable {
 }
 
 /// Quick logs routed by class: a weight is health class, so its record goes to the restricted store and only `weight.save`, naming the date, to the main
-/// store, written after the record; the other quick logs are general and are written with their command in one main-store write.
+/// store, written after the record; the other quick logs are general and are written with their command in one main-store write. Each action takes its
+/// issuer from the main store as it then stands: the weight's when it starts, since the record carries the command's instant, the others' in their write.
 public struct QuickLogWriter: Sendable {
   public let stores: MemoirStores
-  public let issuer: CommandIssuer
+  public let issuer: CommandIssuerSource
 
-  public init(stores: MemoirStores, issuer: CommandIssuer) {
+  public init(stores: MemoirStores, issuer: CommandIssuerSource) {
     self.stores = stores
     self.issuer = issuer
   }
@@ -52,6 +53,8 @@ public struct QuickLogWriter: Sendable {
   /// Replacing a day's weight needs `confirmedReplacement`, as `weight.save` asks the reference for it.
   public func saveWeight(_ kilograms: DecimalText, on date: LocalDate, confirmedReplacement: Bool = false) async throws(QuickLogError) -> WeightSave {
     let body = MemoirCommandBody.weightSave(WeightEntry(date: date, confirmedReplacement: confirmedReplacement))
+    let source = issuer
+    let issuer = try await call { () async throws(StoreError) in try await stores.main.read { transaction in try source.issuer(in: transaction) } }
     let command: MemoirCommand
     do throws(CommandIssueError) {
       command = try issuer.command(body)
@@ -88,10 +91,11 @@ public struct QuickLogWriter: Sendable {
   /// A general-class quick log (journal entry, meal, side quest, meal preset) and its command, in one main-store write.
   @discardableResult
   public func log<Record: MemoirRecord & CommandContent>(_ record: Record, as body: MemoirCommandBody) async throws(QuickLogError) -> MemoirCommand {
-    let issuer = issuer
+    let source = issuer
+    let main = stores.main
     return try await call { () async throws(StoreError) in
-      try await stores.main.write { transaction in
-        let command = try issuer.issue(body, content: record, in: &transaction)
+      try await main.write { transaction in
+        let command = try source.issuer(in: transaction, of: main).issue(body, content: record, in: &transaction)
         try record.create(in: &transaction)
         return command
       }

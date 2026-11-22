@@ -1,11 +1,10 @@
-import MemoirCore
 import SwiftUI
 
 enum ReflectRoute: Hashable {}
 
 struct ReflectRouteView: View {
   let route: ReflectRoute
-  let stores: MemoirStores
+  let context: MemoirScreenContext
 
   var body: some View {
     EmptyView()

@@ -1,14 +1,13 @@
-import MemoirCore
 import ShadowDesignSystem
 import SwiftUI
 
 struct SettingsView: View {
-  let stores: MemoirStores
+  let context: MemoirScreenContext
 
   var body: some View {
     List {
       Section {
-        MemoirSettingsLinks(stores: stores)
+        MemoirSettingsLinks(stores: context.stores)
       }
     }
     .navigationTitle(Text(MemoirDestination.settings.title))

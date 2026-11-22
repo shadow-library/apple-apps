@@ -1,11 +1,10 @@
-import MemoirCore
 import SwiftUI
 
 enum LogRoute: Hashable {}
 
 struct LogRouteView: View {
   let route: LogRoute
-  let stores: MemoirStores
+  let context: MemoirScreenContext
 
   var body: some View {
     EmptyView()

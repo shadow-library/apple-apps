@@ -81,7 +81,7 @@ struct ThresholdOfferTests {
     #expect(ThresholdOffers.offers(thresholds: [threshold], days: [day], activeQuests: Self.quests, logged: []).isEmpty)
 
     let stores = try MemoirStores.openInMemory()
-    let catalog = MetricCatalog(stores: stores, issuer: CommandIssuer(clock: HealthFixture.utc, wallClock: HealthFixture.wallClock()))
+    let catalog = MetricCatalog(stores: stores, issuer: CommandIssuerSource { _ in CommandIssuer(clock: HealthFixture.utc, wallClock: HealthFixture.wallClock()) })
     let stored = try await catalog.create(MetricDefinition(name: "Pages read", valueType: .count, direction: .higher), as: .general)
     try await catalog.register(HealthFixture.decimal("30"), for: stored, on: HealthFixture.today)
     _ = try await stores.main.write { transaction in try QuestRecord(id: Self.read, name: "Read").create(in: &transaction) }

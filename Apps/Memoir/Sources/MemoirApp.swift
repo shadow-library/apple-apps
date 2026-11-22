@@ -25,7 +25,7 @@ struct MemoirApp: App {
         .environment(settingsTabs)
         .syncSettingsSection { MemoirSyncSettingsSection(vault: vault) }
         .task { await ai.loadOpenRouterModelsIfKeyed() }
-        .task(id: vault.opened.map { ObjectIdentifier($0.stores.main) }) { await delegate.launchSync() }
+        .task(id: vault.opened.map { ObjectIdentifier($0.stores.main) }) { await delegate.vaultChanged() }
         .shadowTheme()
         #if os(macOS)
           .frame(minWidth: 800, minHeight: 560)
@@ -34,7 +34,7 @@ struct MemoirApp: App {
     .onChange(of: scenePhase, initial: true) { _, phase in
       Task { await sync.phaseChanged(phase) }
       guard phase == .active else { return }
-      Task { await vault.refreshDay() }
+      delegate.dayTurns.restart()
     }
     #if os(macOS)
       Settings { MemoirSettingsScene(vault: vault, services: ai, sync: sync, tabs: settingsTabs) }

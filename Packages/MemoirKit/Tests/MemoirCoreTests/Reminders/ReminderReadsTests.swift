@@ -226,7 +226,7 @@ struct ReminderReadsTests {
   @Test func shouldKeepEveryHealthValueOutOfThePlan() async throws {
     let (device, stores) = try await Self.seeded()
     let issuer = CommandIssuer(clock: IssueClock(timeZone: .gmt), wallClock: { Self.date(Device.day(0), minute: 400) })
-    _ = try await QuickLogWriter(stores: stores, issuer: issuer).saveWeight(HealthFixture.decimal("81.2345"), on: Device.day(0))
+    _ = try await QuickLogWriter(stores: stores, issuer: CommandIssuerSource { _ in issuer }).saveWeight(HealthFixture.decimal("81.2345"), on: Device.day(0))
     try await device.walk(to: Device.day(0), minute: 401)
     let sources = try await ReminderReads.sources(in: stores)
     let plan = ReminderPlan.make(sources, query: try Self.query(), now: Self.date(Device.day(0), minute: 300))

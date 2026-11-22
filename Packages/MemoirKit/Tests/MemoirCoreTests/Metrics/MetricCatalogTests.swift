@@ -2,6 +2,7 @@ import Foundation
 import ShadowCore
 import ShadowStore
 import ShadowSync
+import Synchronization
 import Testing
 
 @testable import MemoirCore
@@ -26,7 +27,7 @@ struct MetricCatalogTests {
 
   @Test func shouldCreateAnOwnersMetricInTheHealthStoreUnlessTheOwnerSaysOtherwise() async throws {
     let stores = try MemoirStores.openInMemory()
-    let catalog = MetricCatalog(stores: stores, issuer: Self.issuer)
+    let catalog = MetricCatalog(stores: stores, issuer: CommandIssuerSource { _ in Self.issuer })
 
     let glucose = try await catalog.create(Self.glucose)
     let pages = try await catalog.create(MetricDefinition(name: "Pages read", valueType: .count, direction: .higher), as: .general)
@@ -40,7 +41,7 @@ struct MetricCatalogTests {
 
   @Test func shouldRefuseToChangeOrDeleteABuiltinAndToWriteAnAbsentMetric() async throws {
     let stores = try MemoirStores.openInMemory()
-    let catalog = MetricCatalog(stores: stores, issuer: Self.issuer)
+    let catalog = MetricCatalog(stores: stores, issuer: CommandIssuerSource { _ in Self.issuer })
     for attempt in [
       { () async throws(MetricsError) in try await catalog.update(BuiltinMetric.weight.reference, to: Self.glucose) },
       { () async throws(MetricsError) in try await catalog.delete(BuiltinMetric.steps.reference) },
@@ -72,7 +73,7 @@ struct MetricCatalogTests {
 
   @Test func shouldChangeAClassByCreatingAMetricInTheNewStoreAndRemovingTheOld() async throws {
     let stores = try MemoirStores.openInMemory()
-    let catalog = MetricCatalog(stores: stores, issuer: Self.issuer)
+    let catalog = MetricCatalog(stores: stores, issuer: CommandIssuerSource { _ in Self.issuer })
     let glucose = try await catalog.create(Self.glucose)
     try await catalog.register(HealthFixture.decimal("5.4"), for: glucose, on: HealthFixture.today)
 
@@ -97,7 +98,7 @@ struct MetricCatalogTests {
 
   @Test func shouldAppendMetricRegisterOnlyForAGeneralMetric() async throws {
     let stores = try MemoirStores.openInMemory()
-    let catalog = MetricCatalog(stores: stores, issuer: Self.issuer)
+    let catalog = MetricCatalog(stores: stores, issuer: CommandIssuerSource { _ in Self.issuer })
     let glucose = try await catalog.create(Self.glucose)
     let pages = try await catalog.create(MetricDefinition(name: "Pages read", valueType: .count, direction: .higher), as: .general)
     let before = try await stores.main.pendingChanges(limit: .max).count
@@ -145,7 +146,7 @@ struct MetricCatalogTests {
 struct QuickLogWriterTests {
   @Test func shouldWriteAWeightToTheRestrictedStoreAndOnlyItsCommandToTheMainStore() async throws {
     let stores = try MemoirStores.openInMemory()
-    let writer = QuickLogWriter(stores: stores, issuer: CommandIssuer(clock: HealthFixture.utc, wallClock: HealthFixture.wallClock()))
+    let writer = QuickLogWriter(stores: stores, issuer: CommandIssuerSource { _ in CommandIssuer(clock: HealthFixture.utc, wallClock: HealthFixture.wallClock()) })
     let day = HealthFixture.today
 
     guard case .saved = try await writer.saveWeight(HealthFixture.decimal("72.4"), on: day) else { throw MemoirFixtureError(description: "the weight was not saved") }
@@ -165,7 +166,7 @@ struct QuickLogWriterTests {
 
   @Test func shouldWriteAGeneralQuickLogAndItsCommandInOneMainStoreWrite() async throws {
     let stores = try MemoirStores.openInMemory()
-    let writer = QuickLogWriter(stores: stores, issuer: CommandIssuer(clock: HealthFixture.utc, wallClock: HealthFixture.wallClock()))
+    let writer = QuickLogWriter(stores: stores, issuer: CommandIssuerSource { _ in CommandIssuer(clock: HealthFixture.utc, wallClock: HealthFixture.wallClock()) })
     let id = UUID()
     let side = SideQuestRecord(id: id, date: HealthFixture.today, name: "Fixed the bike", loggedAtMillis: 1)
 
@@ -177,5 +178,53 @@ struct QuickLogWriterTests {
 
     #expect(try await HealthFixture.entityCount(.sideQuest, in: stores.main) == 1)
     #expect(try await HealthFixture.entityCount(.command, in: stores.main) == 1)
+  }
+
+  /// A writer kept on a screen must stamp each command with the clock the main store gives when the command is written, not when the writer was built.
+  @Test func shouldTakeEachCommandsIssuerFromTheMainStoreWhenItIsWritten() async throws {
+    let stores = try MemoirStores.openInMemory()
+    let offset = Mutex(60)
+    let seen = Mutex([Int]())
+    let source = CommandIssuerSource { transaction in
+      let count = try MemoirCommand.listing(in: transaction).entries.count
+      seen.withLock { $0.append(count) }
+      return CommandIssuer(clock: IssueClock(fixedOffsetMinutes: offset.withLock { $0 })!, wallClock: HealthFixture.wallClock())
+    }
+    let writer = QuickLogWriter(stores: stores, issuer: source)
+    let catalog = MetricCatalog(stores: stores, issuer: source)
+    let id = UUID()
+
+    let first = try await writer.log(
+      SideQuestRecord(id: id, date: HealthFixture.today, name: "Fixed the bike", loggedAtMillis: 1), as: .sideQuestLog(SideQuestEntry(id: id, date: HealthFixture.today)))
+    offset.withLock { $0 = 540 }
+    guard case .saved(let weight) = try await writer.saveWeight(HealthFixture.decimal("72.4"), on: HealthFixture.today) else {
+      throw MemoirFixtureError(description: "the weight was not saved")
+    }
+    offset.withLock { $0 = -300 }
+    try await catalog.register(
+      HealthFixture.decimal("12"), for: try await catalog.create(MetricDefinition(name: "Pages read", valueType: .count, direction: .higher), as: .general), on: HealthFixture.today
+    )
+
+    let offsets = try await stores.main.read { transaction in try MemoirCommand.listing(in: transaction) }.entries.map(\.record.utcOffsetMinutes)
+    #expect(first.utcOffsetMinutes == 60 && weight.utcOffsetMinutes == 540)
+    #expect(offsets.sorted() == [-300, -300, 60, 540])
+    #expect(seen.withLock { $0 } == [0, 1, 2, 3], "each command's issuer is read from the main store as it stands")
+  }
+
+  @Test func shouldWriteNothingWhenTheIssuerCannotBeResolved() async throws {
+    struct Unresolved: Error {}
+    let stores = try MemoirStores.openInMemory()
+    let writer = QuickLogWriter(stores: stores, issuer: CommandIssuerSource { _ in throw Unresolved() })
+    let id = UUID()
+
+    await #expect(throws: QuickLogError.self) {
+      try await writer.log(
+        SideQuestRecord(id: id, date: HealthFixture.today, name: "Fixed the bike", loggedAtMillis: 1), as: .sideQuestLog(SideQuestEntry(id: id, date: HealthFixture.today)))
+    }
+    await #expect(throws: QuickLogError.self) { try await writer.saveWeight(HealthFixture.decimal("72.4"), on: HealthFixture.today) }
+
+    #expect(try await HealthFixture.entityCount(.sideQuest, in: stores.main) == 0)
+    #expect(try await HealthFixture.entityCount(.command, in: stores.main) == 0)
+    #expect(try await stores.restricted.read { transaction in try WeightRecord.read(key: .weight(HealthFixture.today), in: transaction) } == .absent)
   }
 }

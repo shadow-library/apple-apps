@@ -7,13 +7,18 @@ nonisolated enum MemoirVaultLocation: Sendable, Equatable {
   case inMemory
 }
 
-/// A vault's stores with the projection that keeps the main store's derived rows walked to today.
+/// A vault's stores with the projection that keeps the main store's derived rows walked to the account's day, and the clock both follow.
 nonisolated struct MemoirOpenedVault: Sendable {
   let stores: MemoirStores
   let projection: MemoirReconciler
+  let clock: MemoirClock
 
   func refreshDay() async throws(StoreError) {
     try await projection.refresh(stores.main)
+  }
+
+  var dayTurns: ProjectionDayTurns {
+    ProjectionDayTurns(store: stores.main, reconciler: projection, deviceZone: clock.deviceZone, now: clock.now, waitUntil: clock.waitUntil)
   }
 }
 
@@ -48,26 +53,19 @@ nonisolated enum MemoirVaultOpener {
   }
 
   @concurrent
-  static func open(_ location: MemoirVaultLocation, appVersion: String, wallClock: @escaping @Sendable () -> Date = { Date() }) async throws(MemoirVaultOpenError)
-    -> MemoirOpenedVault
-  {
+  static func open(_ location: MemoirVaultLocation, appVersion: String, clock: MemoirClock = .device) async throws(MemoirVaultOpenError) -> MemoirOpenedVault {
     do {
-      let projection = try MemoirReconciler(appVersion: appVersion, horizon: { today(at: wallClock()) })
+      let projection = try MemoirReconciler(appVersion: appVersion, now: clock.now, deviceZone: clock.deviceZone)
       let stores =
         switch location {
-        case .vault(let vault): try MemoirStores.open(in: vault, wallClock: wallClock, projection: projection)
-        case .inMemory: try MemoirStores.openInMemory(wallClock: wallClock, projection: projection)
+        case .vault(let vault): try MemoirStores.open(in: vault, wallClock: clock.now, projection: projection)
+        case .inMemory: try MemoirStores.openInMemory(wallClock: clock.now, projection: projection)
         }
-      let opened = MemoirOpenedVault(stores: stores, projection: projection)
+      let opened = MemoirOpenedVault(stores: stores, projection: projection, clock: clock)
       try await opened.refreshDay()
       return opened
     } catch {
       throw .openFailed(error.localizedDescription)
     }
-  }
-
-  private static func today(at date: Date) -> IssueStamp? {
-    guard let instant = Int64(exactly: (date.timeIntervalSince1970 * 1000).rounded(.down)) else { return nil }
-    return try? IssueClock.current.stamp(at: instant)
   }
 }

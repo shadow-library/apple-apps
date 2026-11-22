@@ -11,7 +11,7 @@ struct MemoirRootView: View {
       case .opening:
         ProgressView().frame(maxWidth: .infinity, maxHeight: .infinity).background(ShadowColor.surfaceApp)
       case .ready(let opened):
-        MemoirShell(stores: opened.stores)
+        MemoirShell(context: MemoirScreenContext(opened))
       case .locked:
         MemoirVaultLockedView { Task { await vault.open() } }
       case .failed(let error):

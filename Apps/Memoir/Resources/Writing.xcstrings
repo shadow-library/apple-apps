@@ -1,0 +1,171 @@
+{
+  "sourceLanguage": "en",
+  "strings": {
+    "That’s no longer available.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "That’s no longer available."
+          }
+        }
+      }
+    },
+    "It was changed somewhere else first.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "It was changed somewhere else first."
+          }
+        }
+      }
+    },
+    "The date on this device is outside the years Memoir can record. Check the device’s date and time.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The date on this device is outside the years Memoir can record. Check the device’s date and time."
+          }
+        }
+      }
+    },
+    "Some of the details weren’t valid.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Some of the details weren’t valid."
+          }
+        }
+      }
+    },
+    "Anchor quests need a start time.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Anchor quests need a start time."
+          }
+        }
+      }
+    },
+    "That quest isn’t in your plan any more.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "That quest isn’t in your plan any more."
+          }
+        }
+      }
+    },
+    "That item isn’t available.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "That item isn’t available."
+          }
+        }
+      }
+    },
+    "That item comes with an achievement, not with coins.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "That item comes with an achievement, not with coins."
+          }
+        }
+      }
+    },
+    "That title hasn’t been earned yet.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "That title hasn’t been earned yet."
+          }
+        }
+      }
+    },
+    "That subscription no longer exists.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "That subscription no longer exists."
+          }
+        }
+      }
+    },
+    "That category no longer exists.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "That category no longer exists."
+          }
+        }
+      }
+    },
+    "A saved expense’s currency can’t be changed. Delete it and add it again.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A saved expense’s currency can’t be changed. Delete it and add it again."
+          }
+        }
+      }
+    },
+    "Uncategorised and Subscriptions are always kept, so they can’t be archived.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Uncategorised and Subscriptions are always kept, so they can’t be archived."
+          }
+        }
+      }
+    },
+    "That metric no longer exists.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "That metric no longer exists."
+          }
+        }
+      }
+    },
+    "Built-in metrics can’t be changed.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Built-in metrics can’t be changed."
+          }
+        }
+      }
+    }
+  },
+  "version": "1.0"
+}

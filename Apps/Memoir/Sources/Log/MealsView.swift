@@ -1,8 +1,7 @@
-import MemoirCore
 import SwiftUI
 
 struct MealsView: View {
-  init(stores _: MemoirStores) {}
+  init(context _: MemoirScreenContext) {}
 
   var body: some View {
     MemoirPlaceholder(.meals)

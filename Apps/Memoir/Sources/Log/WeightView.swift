@@ -1,8 +1,7 @@
-import MemoirCore
 import SwiftUI
 
 struct WeightView: View {
-  init(stores _: MemoirStores) {}
+  init(context _: MemoirScreenContext) {}
 
   var body: some View {
     MemoirPlaceholder(.weight)

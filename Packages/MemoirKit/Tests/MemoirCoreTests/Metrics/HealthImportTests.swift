@@ -87,7 +87,7 @@ struct HealthImportTests {
     HealthFixture.week(into: reader)
     _ = try await HealthFixture.claim(HealthFixture.phone, in: phone)
     let day = HealthFixture.today
-    let catalog = MetricCatalog(stores: mac, issuer: CommandIssuer(clock: HealthFixture.utc, wallClock: HealthFixture.wallClock()))
+    let catalog = MetricCatalog(stores: mac, issuer: CommandIssuerSource { _ in CommandIssuer(clock: HealthFixture.utc, wallClock: HealthFixture.wallClock()) })
     try await catalog.register(HealthFixture.decimal("79.5"), for: BuiltinMetric.weight.reference, on: day)
     _ = try await importer(reader, phone).run([.weight])
 

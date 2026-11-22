@@ -1,5 +1,4 @@
 import Foundation
-import MemoirCore
 import SwiftUI
 
 enum QuestRoute: Hashable {
@@ -8,7 +7,7 @@ enum QuestRoute: Hashable {
 
 struct QuestRouteView: View {
   let route: QuestRoute
-  let stores: MemoirStores
+  let context: MemoirScreenContext
 
   var body: some View {
     switch route {

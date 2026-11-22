@@ -1,4 +1,3 @@
-import MemoirCore
 import ShadowAppShell
 import ShadowDesignSystem
 import SwiftUI
@@ -10,7 +9,7 @@ struct MemoirSidebarShell: View {
     private static let syncPlacement = ToolbarItemPlacement.topBarLeading
   #endif
 
-  let stores: MemoirStores
+  let context: MemoirScreenContext
   let navigator: MemoirNavigator
 
   var body: some View {
@@ -34,8 +33,8 @@ struct MemoirSidebarShell: View {
       }
     } detail: {
       NavigationStack(path: Bindable(navigator).detailPath) {
-        MemoirDestinationView(destination: navigator.selection, stores: stores)
-          .navigationDestination(for: MemoirRoute.self) { MemoirRouteView(route: $0, stores: stores) }
+        MemoirDestinationView(destination: navigator.selection, context: context)
+          .navigationDestination(for: MemoirRoute.self) { MemoirRouteView(route: $0, context: context) }
       }
       .id(navigator.selection)
     }

@@ -9,7 +9,7 @@ import SwiftUI
   import UIKit
 #endif
 
-/// Owns the vault, its sync and the AI services for the life of the process rather than of a window: a silent push may wake the app with no window to
+/// Owns the vault, its day turns, its sync and the AI services for the life of the process rather than of a window: a silent push may wake the app with no window to
 /// open them, and on the Mac quitting must reach them after every window has closed.
 final class MemoirAppDelegate: NSObject {
   static let pushDeadline = Duration.seconds(25)
@@ -18,15 +18,17 @@ final class MemoirAppDelegate: NSObject {
   let vault = MemoirVaultModel.live()
   let sync = SyncRuntimes.live(identity: .memoir)
   let ai = AIServices.memoir()
+  let dayTurns = MemoirDayTurns()
   private var observers: [any NSObjectProtocol] = []
 
-  /// Opens the vault if no window has yet, then starts its sync; both wait for a call already in flight.
+  /// Opens the vault if no window has yet, then follows its day and starts its sync; both wait for a call already in flight.
   func openAndSync() async {
     await vault.open()
-    await launchSync()
+    await vaultChanged()
   }
 
-  func launchSync() async {
+  func vaultChanged() async {
+    dayTurns.follow(vault.opened)
     guard let opened = vault.opened else { return }
     await sync.launch(MemoirSyncRoutes.vault(opened.stores), trustedClock: vault.trustedClock)
   }
@@ -43,18 +45,11 @@ final class MemoirAppDelegate: NSObject {
   private func observe(_ name: Notification.Name, in center: NotificationCenter = .default, _ handle: @escaping @MainActor () async -> Void) {
     observers.append(center.addObserver(forName: name, object: nil, queue: .main) { _ in Task { @MainActor in await handle() } })
   }
-
-  fileprivate func followTheDay() {
-    for name in [Notification.Name.NSCalendarDayChanged, .NSSystemTimeZoneDidChange] {
-      observe(name) { [vault] in await vault.refreshDay() }
-    }
-  }
 }
 
 #if os(macOS)
   extension MemoirAppDelegate: NSApplicationDelegate {
     func applicationDidFinishLaunching(_ notification: Notification) {
-      followTheDay()
       observe(NSApplication.didBecomeActiveNotification) { [sync] in await sync.activated() }
       observe(NSWindow.didBecomeMainNotification) { [sync] in await sync.activated() }
       if SyncCapabilities.current.receivesPushes { NSApplication.shared.registerForRemoteNotifications() }
@@ -76,11 +71,10 @@ final class MemoirAppDelegate: NSObject {
 #else
   extension MemoirAppDelegate: UIApplicationDelegate {
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil) -> Bool {
-      followTheDay()
       observe(UIApplication.protectedDataDidBecomeAvailableNotification) { [weak self] in
         guard let self else { return }
         await vault.protectedDataBecameAvailable()
-        await launchSync()
+        await vaultChanged()
       }
       if SyncCapabilities.current.receivesPushes { application.registerForRemoteNotifications() }
       return true
