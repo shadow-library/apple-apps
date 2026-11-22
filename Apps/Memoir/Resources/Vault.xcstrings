@@ -33,6 +33,26 @@
           }
         }
       }
+    },
+    "Unlock this device to open your data": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Unlock this device to open your data"
+          }
+        }
+      }
+    },
+    "Memoir opens your data as soon as this device has been unlocked once since it restarted.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Memoir opens your data as soon as this device has been unlocked once since it restarted."
+          }
+        }
+      }
     }
   },
   "version": "1.0"

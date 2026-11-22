@@ -1,4 +1,5 @@
 import MemoirCore
+import ShadowAppShell
 import ShadowDesignSystem
 import SwiftUI
 
@@ -21,6 +22,6 @@ struct MemoirShell: View {
 
 #Preview {
   if let stores = try? MemoirStores.openInMemory() {
-    MemoirShell(stores: stores).shadowTheme()
+    MemoirShell(stores: stores).environment(SyncRuntimes(identity: .memoir, factory: nil)).shadowTheme()
   }
 }

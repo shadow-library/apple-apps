@@ -3,15 +3,15 @@ import ShadowDesignSystem
 import ShadowStore
 import SwiftUI
 
-struct AISettingsView: View {
+public struct AISettingsView: View {
   @State private var model: AISettingsModel
   @State private var removing: ModelProviderKind?
 
-  init(services: AIServices, store: VaultStore?) {
+  public init(services: AIServices, store: VaultStore?) {
     _model = State(initialValue: AISettingsModel(services: services, store: store))
   }
 
-  var body: some View {
+  public var body: some View {
     ScrollView {
       VStack(alignment: .leading, spacing: Spacing.space5) {
         providerSection

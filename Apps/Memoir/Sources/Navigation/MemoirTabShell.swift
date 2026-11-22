@@ -1,8 +1,15 @@
 import MemoirCore
+import ShadowAppShell
 import ShadowDesignSystem
 import SwiftUI
 
 struct MemoirTabShell: View {
+  #if os(macOS)
+    private static let syncPlacement = ToolbarItemPlacement.automatic
+  #else
+    private static let syncPlacement = ToolbarItemPlacement.topBarLeading
+  #endif
+
   let stores: MemoirStores
   @Bindable var navigator: MemoirNavigator
 
@@ -25,17 +32,21 @@ struct MemoirTabShell: View {
     Binding(get: { navigator.paths[tab] ?? [] }, set: { navigator.paths[tab] = $0 })
   }
 
-  @ViewBuilder
   private func root(of tab: MemoirTab) -> some View {
-    if let destination = tab.root {
-      MemoirDestinationView(destination: destination, stores: stores)
-        .toolbar {
-          ForEach(tab.toolbar) { entry in
-            ToolbarItem { toolbarItem(entry, in: tab).shadowBarItem() }
+    Group {
+      if let destination = tab.root {
+        MemoirDestinationView(destination: destination, stores: stores)
+          .toolbar {
+            ForEach(tab.toolbar) { entry in
+              ToolbarItem { toolbarItem(entry, in: tab).shadowBarItem() }
+            }
           }
-        }
-    } else {
-      LogHub(destinations: tab.pushed)
+      } else {
+        LogHub(destinations: tab.pushed)
+      }
+    }
+    .toolbar {
+      ToolbarItem(placement: Self.syncPlacement) { SyncStatusIndicator().shadowBarItem() }
     }
   }
 

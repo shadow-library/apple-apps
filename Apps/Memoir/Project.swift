@@ -4,8 +4,12 @@ import ProjectDescriptionHelpers
 let project = Project.app(
   name: "Memoir",
   platform: .phoneAndMac,
-  dependencies: [.product(.memoirCore), .shared(.core), .shared(.store), .shared(.designSystem)],
-  testDependencies: [.product(.memoirCore), .shared(.store)],
+  dependencies: [
+    .product(.memoirCore), .shared(.core), .shared(.store), .shared(.ai), .shared(.sync), .shared(.syncRuntime), .shared(.designSystem), .shared(.appShell),
+  ],
+  testDependencies: [
+    .product(.memoirCore), .shared(.core), .shared(.store), .shared(.sync), .shared(.syncRuntime), .shared(.keychain), .shared(.testSupport), .shared(.appShell),
+  ],
   capabilities: [
     .iCloud(),
     .pushNotifications,

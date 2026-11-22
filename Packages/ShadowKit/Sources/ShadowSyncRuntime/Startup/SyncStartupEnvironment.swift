@@ -26,6 +26,12 @@ public struct SyncStartupEnvironment: Sendable {
   public var hasUnlockedSinceBoot: @Sendable () async -> Bool
   public var makeVaultID: @Sendable () -> VaultID
   public var makeKeyID: @Sendable () -> KeyID
+  /// Set for a store that syncs beside the primary at the location the primary attached (`SyncStoreRoute`): it never attaches on first use, and its
+  /// `attach`, `detach` and moves throw `notAttached`, since the location is the primary's to change.
+  public var route: SyncStoreRoute?
+  /// Set for a primary whose vault syncs these routes beside it, even one stopped for now: such a vault neither moves nor follows a move
+  /// (`SyncMoveError.routedStoresUnsupported`), since a move carries only the primary's store.
+  public var routedStores: Set<SyncStoreRoute>
 
   public init(
     locationStore: SyncLocationStore,
@@ -35,7 +41,9 @@ public struct SyncStartupEnvironment: Sendable {
     account: @escaping @Sendable (SyncProviderSettings) async -> SyncAccountStatus = { _ in .available(nil) },
     hasUnlockedSinceBoot: @escaping @Sendable () async -> Bool,
     makeVaultID: @escaping @Sendable () -> VaultID = VaultSetup.newVaultID,
-    makeKeyID: @escaping @Sendable () -> KeyID = { KeyID(UUID.v7()) }
+    makeKeyID: @escaping @Sendable () -> KeyID = { KeyID(UUID.v7()) },
+    route: SyncStoreRoute? = nil,
+    routedStores: Set<SyncStoreRoute> = []
   ) {
     self.locationStore = locationStore
     self.stores = stores
@@ -45,6 +53,8 @@ public struct SyncStartupEnvironment: Sendable {
     self.hasUnlockedSinceBoot = hasUnlockedSinceBoot
     self.makeVaultID = makeVaultID
     self.makeKeyID = makeKeyID
+    self.route = route
+    self.routedStores = routedStores
   }
 }
 

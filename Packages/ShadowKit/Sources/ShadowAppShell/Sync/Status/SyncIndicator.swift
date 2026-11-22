@@ -18,9 +18,12 @@ nonisolated struct SyncIndicator: Equatable, Sendable {
   let consequence: String?
   /// The error code of an unexpected failure, shown for support.
   let code: String?
+  /// Which data the problem concerns when it is not the whole vault's; nil unless attention is needed.
+  let scope: String?
 
-  /// `deviceNames` names the replicas a reason lists, from the vault's replica directory; a replica it lacks is called another device.
-  init?(_ status: SyncStatus, deviceNames: [ReplicaID: String] = [:], app: AppIdentity) {
+  /// `deviceNames` names the replicas a reason lists, from the vault's replica directory; a replica it lacks is called another device. `scope` names the
+  /// routed store's data a problem concerns (`SyncRuntimes.attentionScope`).
+  init?(_ status: SyncStatus, deviceNames: [ReplicaID: String] = [:], scope: String? = nil, app: AppIdentity) {
     switch status {
     case .off:
       return nil
@@ -32,16 +35,19 @@ nonisolated struct SyncIndicator: Equatable, Sendable {
       self.init(.syncing, String(localized: "Syncing", table: "Sync", bundle: .module), String(localized: "Changes are being sent and received.", table: "Sync", bundle: .module))
     case .attentionNeeded(let reason):
       let (headline, detail) = Self.problem(reason, deviceNames: deviceNames, app: app)
-      self.init(.attention, headline, detail, consequence: Self.consequence(reason.stops), code: Self.code(reason))
+      self.init(
+        .attention, headline, detail, consequence: Self.consequence(reason.stops), code: Self.code(reason),
+        scope: scope.map { String(localized: "This concerns only your \($0).", table: "Sync", bundle: .module) })
     }
   }
 
-  private init(_ tone: Tone, _ headline: String, _ detail: String, consequence: String? = nil, code: String? = nil) {
+  private init(_ tone: Tone, _ headline: String, _ detail: String, consequence: String? = nil, code: String? = nil, scope: String? = nil) {
     self.tone = tone
     self.headline = headline
     self.detail = detail
     self.consequence = consequence
     self.code = code
+    self.scope = scope
   }
 
   var accessibilityLabel: String {

@@ -1,8 +1,15 @@
 import MemoirCore
+import ShadowAppShell
 import ShadowDesignSystem
 import SwiftUI
 
 struct MemoirSidebarShell: View {
+  #if os(macOS)
+    private static let syncPlacement = ToolbarItemPlacement.automatic
+  #else
+    private static let syncPlacement = ToolbarItemPlacement.topBarLeading
+  #endif
+
   let stores: MemoirStores
   let navigator: MemoirNavigator
 
@@ -22,6 +29,9 @@ struct MemoirSidebarShell: View {
       .listStyle(.sidebar)
       .navigationTitle(Text("Memoir", tableName: "Navigation"))
       .shadowColumnWidth(.sidebar)
+      .toolbar {
+        ToolbarItem(placement: Self.syncPlacement) { SyncStatusIndicator().shadowBarItem() }
+      }
     } detail: {
       NavigationStack(path: Bindable(navigator).detailPath) {
         MemoirDestinationView(destination: navigator.selection, stores: stores)

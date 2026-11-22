@@ -1,3 +1,5 @@
+import Foundation
+import ShadowAppShell
 import ShadowCore
 
 nonisolated enum MemoirVaultOpenError: ShadowError, Equatable {
@@ -17,6 +19,15 @@ nonisolated enum MemoirVaultOpenError: ShadowError, Equatable {
     switch self {
     case .locationUnavailable(let reason), .openFailed(let reason): reason
     case .buildVersionUnavailable: "the app bundle has no CFBundleVersion"
+    }
+  }
+}
+
+extension MemoirVaultOpenError {
+  var vaultOpenError: VaultOpenError {
+    switch self {
+    case .locationUnavailable(let reason): .locationUnavailable(reason)
+    case .buildVersionUnavailable, .openFailed: .openFailed(localizedDescription)
     }
   }
 }

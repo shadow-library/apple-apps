@@ -52,7 +52,7 @@ public actor SyncStartup {
       throw failure
     }
     switch record {
-    case .firstUse: return try await attachAutomatically()
+    case .firstUse: return environment.route == nil ? try await attachAutomatically() : SyncStartupResult(phase: .detached)
     case .turnedOff(.disconnected): return SyncStartupResult(phase: .detached)
     case .turnedOff(.unreadable): return SyncStartupResult(phase: .settingsUnreadable)
     case .turnedOff(.newerFormat): return SyncStartupResult(phase: .appUpdateRequired)
@@ -65,6 +65,7 @@ public actor SyncStartup {
   /// The attached vault's attachment, whatever a move in progress says, and the location `settings` names for it with this device's account binding;
   /// nil names the attached location itself.
   func moveContext(to requested: SyncProviderSettings?) async throws(SyncStartupError) -> SyncMoveContext {
+    guard environment.route == nil else { throw .notAttached }
     await acquire()
     defer { release() }
     guard await environment.hasUnlockedSinceBoot() else { throw .deviceLocked }
@@ -118,6 +119,7 @@ public actor SyncStartup {
 
   /// The explicit "Create a vault here" or "Join the vault found here"; it also turns sync back on after `detach()`.
   public func attach(_ settings: SyncProviderSettings, choice: VaultChoice) async throws(SyncStartupError) -> SyncStartupResult {
+    guard environment.route == nil else { throw .notAttached }
     await acquire()
     defer { release() }
     guard await environment.hasUnlockedSinceBoot() else { throw .deviceLocked }
@@ -164,6 +166,7 @@ public actor SyncStartup {
 
   /// Turns sync off: forgets the location and keeps the automatic provider from attaching again. The vault's files and keys stay where they are.
   public func detach() async throws(SyncStartupError) {
+    guard environment.route == nil else { throw .notAttached }
     await acquire()
     defer { release() }
     do {
@@ -260,7 +263,8 @@ public actor SyncStartup {
       return SyncStartupResult(phase: .vaultMismatch(expected: location.vault, found: found), location: location)
     case .found: break
     }
-    if let blocked = try checkMarker(of: location.vault) { return SyncStartupResult(phase: blocked, location: location) }
+    let routed = environment.route.map { $0.location(of: location) } ?? location
+    if let blocked = try checkMarker(of: routed.vault) { return SyncStartupResult(phase: blocked, location: location) }
     let ring = ring(for: location.vault)
     do {
       try ring.refresh()
@@ -272,8 +276,9 @@ public actor SyncStartup {
       }
     }
     let observation = VaultObservation(storage: .available, vault: location.vault, heldKeys: Set(ring.keyIDs), namedKeys: missingKeys)
+    let provider = environment.route.map { RoutedStorageProvider(base: setup.provider, route: $0) as any StorageProvider } ?? setup.provider
     let attachment = SyncAttachment(
-      location: location, provider: setup.provider, providerID: cached.id, ring: ring, markerStore: environment.stores.marker, keyServices: cachedKeyServices)
+      location: routed, provider: provider, providerID: cached.id, ring: ring, markerStore: environment.stores.marker, keyServices: cachedKeyServices)
     return SyncStartupResult(phase: .vault(VaultStartupState(observation)), location: location, attachment: attachment)
   }
 

@@ -2,6 +2,7 @@ import Foundation
 import GRDB
 import ShadowCore
 import ShadowStore
+import Synchronization
 
 enum SyncUploadStep: Sendable, Equatable, CaseIterable {
   case outboxSaved
@@ -58,8 +59,17 @@ public actor SyncEngine {
   private var unsupportedFiles: [SyncFileID: Int] = [:]
   private var isBusy = false
   private var waiters: [CheckedContinuation<Void, Never>] = []
+  private let halted = Mutex(false)
 
   public nonisolated var replica: ReplicaID { store.replica }
+
+  /// Stops uploading for good, even in the middle of a call: no further segment, base or saved upload is put, and the put already issued finishes. What is
+  /// not put stays pending in the store for a later engine on it.
+  public nonisolated func halt() {
+    halted.withLock { $0 = true }
+  }
+
+  public nonisolated var isHalted: Bool { halted.withLock { $0 } }
 
   public private(set) var deviceClock = SyncDeviceClock.unchecked
   public private(set) var backupExclusionFailure: StoreError?
@@ -376,7 +386,7 @@ public actor SyncEngine {
 
   /// The replica is read once and passed to every step; only this call's own re-mints move it.
   private func settleUploads() async throws(SyncError) -> SyncSettleResult {
-    guard try await resume() else { return .postponed }
+    guard !isHalted, try await resume() else { return .postponed }
     var replica = store.replica
     try await requireClaimed(replica)
     try await refuseMoved()
@@ -562,6 +572,7 @@ public actor SyncEngine {
       try await write(as: replica) { try SyncOutbox.clear($0.database) }
       return nil
     }
+    guard !isHalted else { return nil }
     try await refuseUnstorable(inFlight: entry)
     return try await finish(entry)
   }
@@ -701,17 +712,19 @@ public actor SyncEngine {
 
   private func sendPending(sealedWith key: VaultKey, as replica: ReplicaID) async throws(SyncError) -> [StreamPoint] {
     var points: [StreamPoint] = []
-    while true {
+    while !isHalted {
       let pending = try await nextPass()
       guard !pending.isEmpty else { return points }
       try refuseUnstorable(pending)
       for entry in try await sealPass(pending, as: replica, with: key) {
+        guard !isHalted else { return points }
         let millis = millis
         try await write(as: replica) { try SyncOutbox.save(entry, at: millis, in: $0.database) }
         try await checkpoint(.outboxSaved)
         points.append(try await finish(entry))
       }
     }
+    return points
   }
 
   private func refuseUnstorable(_ pending: [SyncPendingChange]) throws(SyncError) {

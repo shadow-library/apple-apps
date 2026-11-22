@@ -1,0 +1,76 @@
+{
+  "sourceLanguage": "en",
+  "strings": {
+    "Your quests, progress and logs": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your quests, progress and logs"
+          }
+        }
+      }
+    },
+    "To answer a question, Memoir sends it with your quests and their history, your hero's progress, your money, meals, side quests and general metrics to %@. %@ processes them under its own terms.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "To answer a question, Memoir sends it with your quests and their history, your hero's progress, your money, meals, side quests and general metrics to %@. %@ processes them under its own terms."
+          }
+        }
+      }
+    },
+    "Your journal and reflections": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your journal and reflections"
+          }
+        }
+      }
+    },
+    "With this, Memoir also sends your journal entries, your reflections and the reasons you noted for quests to %@. Without it, none of them is read for a question.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "With this, Memoir also sends your journal entries, your reflections and the reasons you noted for quests to %@. Without it, none of them is read for a question."
+          }
+        }
+      }
+    },
+    "Your health and activity data": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your health and activity data"
+          }
+        }
+      }
+    },
+    "With this, Memoir also sends your health and activity data, such as weight, sleep, heart rate, steps and workouts, to %@. Without it, none of them is read for a question.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "With this, Memoir also sends your health and activity data, such as weight, sleep, heart rate, steps and workouts, to %@. Without it, none of them is read for a question."
+          }
+        }
+      }
+    },
+    "AI Settings": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "AI Settings"
+          }
+        }
+      }
+    }
+  },
+  "version": "1.0"
+}

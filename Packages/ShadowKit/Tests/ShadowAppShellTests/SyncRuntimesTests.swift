@@ -55,14 +55,16 @@ struct SyncWorld {
     let (wiring, provider, folder) = (wiring, provider, folder)
     return SyncRuntimes(
       identity: .fixture,
-      factory: { store, trustedClock in
+      factory: { synced, trustedClock in
         guard var environment = try? wiring.environment() else { return nil }
+        environment.route = synced.route
+        environment.routedStores = synced.routedBeside
         environment.provider = { settings throws(StorageError) in
           if case .localFolder(let local) = settings, local.path == SyncLocalFolderSettings(url: folder).path { return provider }
           return try wiring.provider(for: settings)
         }
         return SyncRuntime(
-          environment: environment, store: store, device: wiring.device, trustedClock: trustedClock, policy: policy,
+          environment: environment, store: synced.store, device: wiring.device, trustedClock: trustedClock, configuration: synced.configuration, policy: policy,
           wallClock: SyncEngine.wallClock(preferring: trustedClock))
       }, background: background, activationInterval: activationInterval)
   }

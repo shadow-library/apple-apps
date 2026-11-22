@@ -530,6 +530,16 @@
           }
         }
       }
+    },
+    "This concerns only your %@.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This concerns only your %@."
+          }
+        }
+      }
     }
   },
   "version": "1.0"

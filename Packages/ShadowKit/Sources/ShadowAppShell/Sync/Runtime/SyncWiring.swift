@@ -62,12 +62,16 @@ nonisolated struct SyncWiring: Sendable {
       hasUnlockedSinceBoot: { firstUnlock.hasUnlockedSinceBoot() })
   }
 
-  /// `store` must have been opened with `SyncEngine.wallClock(preferring: trustedClock)`.
-  func runtime(store: VaultStore, trustedClock: TrustedClock) throws(SyncLocationError) -> SyncRuntime {
+  /// The store must have been opened with `SyncEngine.wallClock(preferring: trustedClock)`.
+  func runtime(for synced: SyncedStore, trustedClock: TrustedClock) throws(SyncLocationError) -> SyncRuntime {
     let cloudKit = cloudKit
+    var environment = try environment()
+    environment.route = synced.route
+    environment.routedStores = synced.routedBeside
+    let isPrimary = synced.route == nil
     return SyncRuntime(
-      environment: try environment(), store: store, device: device, trustedClock: trustedClock, wallClock: SyncEngine.wallClock(preferring: trustedClock),
-      refresh: { await cloudKit?.refresh() })
+      environment: environment, store: synced.store, device: device, trustedClock: trustedClock, configuration: synced.configuration,
+      wallClock: SyncEngine.wallClock(preferring: trustedClock), refresh: { if isPrimary { await cloudKit?.refresh() } })
   }
 
   func provider(for settings: SyncProviderSettings) throws(StorageError) -> any StorageProvider {

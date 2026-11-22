@@ -1,10 +1,17 @@
 import MemoirCore
+import ShadowDesignSystem
 import SwiftUI
 
 struct SettingsView: View {
-  init(stores _: MemoirStores) {}
+  let stores: MemoirStores
 
   var body: some View {
-    MemoirPlaceholder(.settings)
+    List {
+      Section {
+        MemoirSettingsLinks(stores: stores)
+      }
+    }
+    .navigationTitle(Text(MemoirDestination.settings.title))
+    .shadowScreen(.root)
   }
 }

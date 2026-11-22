@@ -10,7 +10,7 @@ public struct SyncStatusIndicator: View {
   public init() {}
 
   public var body: some View {
-    if let indicator = SyncIndicator(sync.status, deviceNames: sync.deviceNames, app: sync.identity) {
+    if let indicator = SyncIndicator(sync.status, deviceNames: sync.deviceNames, scope: sync.attentionScope, app: sync.identity) {
       Button {
         isPresented = true
       } label: {
@@ -45,6 +45,7 @@ private struct SyncStatusDetail: View {
     VStack(alignment: .leading, spacing: Spacing.space2) {
       Text(verbatim: indicator.headline).shadowFont(.headline).foregroundStyle(ShadowColor.textPrimary)
       Text(verbatim: indicator.detail).shadowFont(.body).foregroundStyle(ShadowColor.textSecondary)
+      if let scope = indicator.scope { Text(verbatim: scope).shadowFont(.body).foregroundStyle(ShadowColor.textSecondary) }
       if let consequence = indicator.consequence {
         Text(verbatim: consequence).shadowFont(.body).foregroundStyle(ShadowColor.textSecondary)
       }

@@ -1,5 +1,6 @@
 import Foundation
 import MemoirCore
+import ShadowAppShell
 import ShadowStore
 import Synchronization
 import Testing
@@ -9,9 +10,22 @@ import Testing
 @MainActor
 @Suite("MemoirVaultModel", TestTimeLimit.standard)
 struct MemoirVaultModelTests {
+  private static func model(
+    unlocked: Unlock? = nil, _ open: @escaping @Sendable () async throws(MemoirVaultOpenError) -> MemoirOpenedVault
+  ) -> MemoirVaultModel {
+    MemoirVaultModel(
+      open: { _ throws(VaultOpenError) in
+        do throws(MemoirVaultOpenError) {
+          return try await open()
+        } catch {
+          throw error.vaultOpenError
+        }
+      }, hasUnlockedSinceBoot: { unlocked?.isUnlocked ?? true })
+  }
+
   @Test("should start opening and become ready with the opened stores")
   func becomesReady() async throws {
-    let model = MemoirVaultModel { () throws(MemoirVaultOpenError) -> MemoirOpenedVault in try await MemoirVaultOpener.open(.inMemory, appVersion: "1") }
+    let model = Self.model { () throws(MemoirVaultOpenError) -> MemoirOpenedVault in try await MemoirVaultOpener.open(.inMemory, appVersion: "1") }
     guard case .opening = model.state else {
       Issue.record("expected the model to start opening")
       return
@@ -19,26 +33,26 @@ struct MemoirVaultModelTests {
 
     await model.open()
 
-    #expect(model.vault != nil)
+    #expect(model.opened != nil)
     #expect(model.failure == nil)
   }
 
   @Test("should surface a failed open as its typed error and recover on retry")
   func surfacesFailureThenRecovers() async throws {
     let attempts = Attempts()
-    let model = MemoirVaultModel { () throws(MemoirVaultOpenError) -> MemoirOpenedVault in
+    let model = Self.model { () throws(MemoirVaultOpenError) -> MemoirOpenedVault in
       guard attempts.next() > 1 else { throw .locationUnavailable("no application support directory") }
       return try await MemoirVaultOpener.open(.inMemory, appVersion: "1")
     }
 
     await model.open()
 
-    #expect(model.vault == nil)
+    #expect(model.opened == nil)
     #expect(model.failure == .locationUnavailable("no application support directory"))
 
     await model.open()
 
-    #expect(model.vault != nil)
+    #expect(model.opened != nil)
     #expect(model.failure == nil)
     #expect(attempts.count == 2)
   }
@@ -49,7 +63,7 @@ struct MemoirVaultModelTests {
     try Data().write(to: directory)
     defer { try? FileManager.default.removeItem(at: directory) }
     let vault = try MemoirVault(directory: directory)
-    let model = MemoirVaultModel { () throws(MemoirVaultOpenError) -> MemoirOpenedVault in try await MemoirVaultOpener.open(.vault(vault), appVersion: "1") }
+    let model = Self.model { () throws(MemoirVaultOpenError) -> MemoirOpenedVault in try await MemoirVaultOpener.open(.vault(vault), appVersion: "1") }
 
     await model.open()
 
@@ -62,7 +76,7 @@ struct MemoirVaultModelTests {
   @Test("should open once when asked twice at the same time, and keep an open vault")
   func opensOnce() async throws {
     let attempts = Attempts()
-    let model = MemoirVaultModel { () throws(MemoirVaultOpenError) -> MemoirOpenedVault in
+    let model = Self.model { () throws(MemoirVaultOpenError) -> MemoirOpenedVault in
       _ = attempts.next()
       return try await MemoirVaultOpener.open(.inMemory, appVersion: "1")
     }
@@ -70,16 +84,16 @@ struct MemoirVaultModelTests {
     async let first: Void = model.open()
     async let second: Void = model.open()
     _ = await (first, second)
-    let replica = try #require(model.vault).stores.main.replica
+    let replica = try #require(model.opened).stores.main.replica
     await model.open()
 
     #expect(attempts.count == 1)
-    #expect(model.vault?.stores.main.replica == replica)
+    #expect(model.opened?.stores.main.replica == replica)
   }
 
   @Test("should refresh the day only once the vault is open")
   func refreshesOnlyWhenOpen() async {
-    let model = MemoirVaultModel { () throws(MemoirVaultOpenError) -> MemoirOpenedVault in try await MemoirVaultOpener.open(.inMemory, appVersion: "1") }
+    let model = Self.model { () throws(MemoirVaultOpenError) -> MemoirOpenedVault in try await MemoirVaultOpener.open(.inMemory, appVersion: "1") }
 
     await model.refreshDay()
 
@@ -89,15 +103,43 @@ struct MemoirVaultModelTests {
     }
   }
 
+  @Test("should wait as locked before the first unlock and open once protected data is available")
+  func waitsForTheFirstUnlock() async throws {
+    let unlocked = Unlock()
+    let attempts = Attempts()
+    let model = Self.model(unlocked: unlocked) { () throws(MemoirVaultOpenError) -> MemoirOpenedVault in
+      guard attempts.next() > 1 else { throw .openFailed("the database file is protected") }
+      return try await MemoirVaultOpener.open(.inMemory, appVersion: "1")
+    }
+
+    await model.open()
+
+    #expect(model.isLocked)
+    #expect(model.failure == nil)
+
+    unlocked.unlock()
+    await model.protectedDataBecameAvailable()
+
+    #expect(model.opened != nil)
+    #expect(attempts.count == 2)
+  }
+
+  @Test("should present each opener failure as the shell's open error")
+  func mapsOpenerFailures() {
+    #expect(MemoirVaultOpenError.locationUnavailable("gone").vaultOpenError == .locationUnavailable("gone"))
+    #expect(MemoirVaultOpenError.openFailed("broken").vaultOpenError == .openFailed("broken"))
+    #expect(MemoirVaultOpenError.buildVersionUnavailable.vaultOpenError == .openFailed("the app bundle has no CFBundleVersion"))
+  }
+
   @Test("should walk the derived day to the wall clock's day only when the day is refreshed")
   func walksTheHorizonOnRefresh() async throws {
     let clock = AdvanceableClock(Date(timeIntervalSince1970: 1_772_366_400))
     let issueClock = IssueClock.current
-    let model = MemoirVaultModel { () throws(MemoirVaultOpenError) -> MemoirOpenedVault in
+    let model = Self.model { () throws(MemoirVaultOpenError) -> MemoirOpenedVault in
       try await MemoirVaultOpener.open(.inMemory, appVersion: "1", wallClock: clock.now)
     }
     await model.open()
-    let stores = try #require(model.vault).stores
+    let stores = try #require(model.opened).stores
     let today = try issueClock.localDate(at: clock.millis)
     let quest = UUID()
     let schedule = try QuestSchedule(
@@ -157,5 +199,15 @@ nonisolated private final class Attempts: Sendable {
       $0 += 1
       return $0
     }
+  }
+}
+
+nonisolated final class Unlock: Sendable {
+  private let value = Mutex(false)
+
+  var isUnlocked: Bool { value.withLock { $0 } }
+
+  func unlock() {
+    value.withLock { $0 = true }
   }
 }

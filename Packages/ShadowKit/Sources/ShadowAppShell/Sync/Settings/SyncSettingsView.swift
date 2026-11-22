@@ -8,6 +8,7 @@ public struct SyncSettingsView: View {
   @State private var offer: RecoveryPhraseOffer
   @State private var keysRouteHere: SyncKeysStart?
   private let keysRoute: Binding<SyncKeysStart?>?
+  @Environment(\.syncSettingsSection) private var appSection
 
   /// `keysRoute` lets another screen open Keys and Devices, as the Mac's sync indicator does through the Settings tabs.
   public init(sync: SyncRuntimes, keysRoute: Binding<SyncKeysStart?>? = nil) {
@@ -29,6 +30,7 @@ public struct SyncSettingsView: View {
         if case .attached(_, .vault(.awaitingKey)?) = model.overview, model.connect == nil { SyncKeysWaitingCallout { route.wrappedValue = .overview } }
         if offer.vault != nil, model.connect == nil { RecoveryPhraseOfferCallout(offer: offer) { route.wrappedValue = .phraseSetup } }
         SyncLocationSection(model: model)
+        if let appSection, model.connect == nil { appSection.content() }
         if case .attached(_, .vaultMoved(let notice)?) = model.overview, model.connect == nil { MoveNoticeSection(model: model, notice: notice) }
         if let connect = model.connect { SyncConnectView(model: connect) { Task { await model.closeConnect() } } }
         keysSection
@@ -170,10 +172,13 @@ private struct AttachedSummary: View {
       if let advice = SyncLocationText(app: app).advice(phase) {
         Text(verbatim: advice).shadowFont(.footnote).foregroundStyle(ShadowColor.textSecondary)
       }
+      if !model.sync.canMoveVault {
+        Text(verbatim: SyncSettingsErrors(app: app).routedMoveText).shadowFont(.footnote).foregroundStyle(ShadowColor.textSecondary)
+      }
       if model.connect == nil, model.confirmation == nil {
         HStack(spacing: Spacing.space2) {
           Spacer(minLength: Spacing.space3)
-          if phase?.canMove == true {
+          if phase?.canMove == true, model.sync.canMoveVault {
             Button {
               model.startMove()
             } label: {
@@ -196,10 +201,13 @@ private struct AttachedSummary: View {
 
   @ViewBuilder
   private var status: some View {
-    if let indicator = SyncIndicator(model.sync.status, deviceNames: model.sync.deviceNames, app: model.sync.identity) {
+    if let indicator = SyncIndicator(model.sync.status, deviceNames: model.sync.deviceNames, scope: model.sync.attentionScope, app: model.sync.identity) {
       VStack(alignment: .trailing, spacing: Spacing.space05) {
         Text(verbatim: indicator.headline)
         Text(verbatim: indicator.detail).shadowFont(.footnote).foregroundStyle(ShadowColor.textSecondary).multilineTextAlignment(.trailing)
+        if let scope = indicator.scope {
+          Text(verbatim: scope).shadowFont(.footnote).foregroundStyle(ShadowColor.textSecondary).multilineTextAlignment(.trailing)
+        }
       }
     } else {
       Text("Starting", tableName: "SyncSettings", bundle: .module).foregroundStyle(ShadowColor.textSecondary)
@@ -273,7 +281,7 @@ private struct MoveNoticeSection: View {
         } label: {
           Text("Follow Move", tableName: "SyncSettings", bundle: .module)
         }
-        .disabled(!model.canChangeLocation)
+        .disabled(!model.canChangeLocation || !model.sync.canMoveVault)
         Button {
           model.confirm(.stayAfterMove)
         } label: {

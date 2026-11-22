@@ -1,3 +1,4 @@
+import ShadowAppShell
 import ShadowDesignSystem
 import SwiftUI
 
@@ -11,6 +12,8 @@ struct MemoirRootView: View {
         ProgressView().frame(maxWidth: .infinity, maxHeight: .infinity).background(ShadowColor.surfaceApp)
       case .ready(let opened):
         MemoirShell(stores: opened.stores)
+      case .locked:
+        MemoirVaultLockedView { Task { await vault.open() } }
       case .failed(let error):
         MemoirVaultFailureView(error: error) { Task { await vault.open() } }
       }
@@ -20,7 +23,7 @@ struct MemoirRootView: View {
 }
 
 struct MemoirVaultFailureView: View {
-  let error: MemoirVaultOpenError
+  let error: VaultOpenError
   let retry: () -> Void
 
   var body: some View {
@@ -40,6 +43,25 @@ struct MemoirVaultFailureView: View {
     .frame(maxWidth: .infinity, maxHeight: .infinity)
     .background(ShadowColor.surfaceApp)
   }
+}
+
+struct MemoirVaultLockedView: View {
+  let retry: () -> Void
+
+  var body: some View {
+    ShadowContentUnavailable(
+      Text("Unlock this device to open your data", tableName: "Vault"), systemImage: "lock",
+      message: Text("Memoir opens your data as soon as this device has been unlocked once since it restarted.", tableName: "Vault")
+    ) {
+      Button(action: retry) { Text("Try Again", tableName: "Vault") }
+    }
+    .frame(maxWidth: .infinity, maxHeight: .infinity)
+    .background(ShadowColor.surfaceApp)
+  }
+}
+
+#Preview("Locked") {
+  MemoirVaultLockedView {}.shadowTheme()
 }
 
 #Preview("Failed") {

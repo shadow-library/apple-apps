@@ -27,6 +27,8 @@ public enum SyncMoveError: ShadowError {
   case location(SyncLocationError)
   case startup(SyncStartupError)
   case journal(String)
+  /// The vault syncs stores beside its primary (`SyncStoreRoute`), and a move carries only the primary's, so it neither moves nor follows a move.
+  case routedStoresUnsupported
 
   public var code: String {
     switch self {
@@ -47,6 +49,7 @@ public enum SyncMoveError: ShadowError {
     case .location(let error): error.code
     case .startup(let error): error.code
     case .journal: "sync-move.journal"
+    case .routedStoresUnsupported: "sync-move.routed-stores-unsupported"
     }
   }
 
@@ -69,6 +72,7 @@ public enum SyncMoveError: ShadowError {
     case .location(let error): error.errorDescription
     case .startup(let error): error.errorDescription
     case .journal(let reason): "The record of the move in progress could not be read or saved (\(reason))."
+    case .routedStoresUnsupported: "The vault syncs stores beside its primary, which a move does not carry yet."
     }
   }
 }

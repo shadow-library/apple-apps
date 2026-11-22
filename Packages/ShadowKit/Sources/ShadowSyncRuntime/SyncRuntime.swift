@@ -23,6 +23,7 @@ public actor SyncRuntime {
   private static let logger = Logger(category: "SyncRuntime")
 
   private let startup: SyncStartup
+  private let refusesMoves: Bool
   private let store: VaultStore
   private let device: ReplicaDevice
   private let trustedClock: TrustedClock
@@ -35,6 +36,7 @@ public actor SyncRuntime {
 
   private var isStarted = false
   private var isShutDown = false
+  private var isHalted = false
   private var isBusy = false
   private var lockWaiters: [CheckedContinuation<Void, Never>] = []
   private var idleWaiters: [CheckedContinuation<Void, Never>] = []
@@ -69,6 +71,7 @@ public actor SyncRuntime {
     refresh: @escaping @Sendable () async -> Void = {}
   ) where C.Duration == Duration {
     startup = SyncStartup(environment)
+    refusesMoves = !environment.routedStores.isEmpty
     self.store = store
     self.device = device
     self.trustedClock = trustedClock
@@ -93,6 +96,11 @@ public actor SyncRuntime {
   }
 
   public var currentPhase: SyncPhase? { phase }
+
+  /// Where the runtime syncs in a vault phase, awaiting a key included; nil in every other phase.
+  public var attachedLocation: SyncAttachedLocation? {
+    keyAttachment.map { SyncAttachedLocation(location: $0.location, classPolicy: $0.provider.capabilities.classPolicy) }
+  }
 
   /// The launch run; nothing runs before it. Returns once the runtime is idle.
   public func start() async {
@@ -193,6 +201,7 @@ public actor SyncRuntime {
   /// Moves the attached vault to `settings` with `SyncMover`, or carries on the move in progress; no run starts until it returns. After `.moved` sync goes
   /// on at the new location; after `.superseded` the phase is `vaultMoved` with the other device's notice.
   public func moveVault(to settings: SyncProviderSettings) async throws(SyncMoveError) -> SyncMoveOutcome {
+    guard !refusesMoves else { throw .routedStoresUnsupported }
     await acquire()
     defer { release() }
     return try await moving { () async throws(SyncMoveError) in
@@ -207,6 +216,7 @@ public actor SyncRuntime {
 
   /// Follows the move recorded for the attached vault to `settings`, this device's reach of the notice's location, with `SyncMoveFollower`.
   public func followMove(to settings: SyncProviderSettings) async throws(SyncMoveError) -> SyncMoveOutcome {
+    guard !refusesMoves else { throw .routedStoresUnsupported }
     await acquire()
     defer { release() }
     return try await moving { () async throws(SyncMoveError) in
@@ -257,6 +267,15 @@ public actor SyncRuntime {
     }
   }
 
+  /// Ends the runtime as `shutdown()` does, but stops sending at once: the engine halts, so only the put already issued finishes and nothing more goes up,
+  /// and the run in flight skips its remaining steps. Returns once that run is over, so another runtime may take the store over.
+  public func stop() async {
+    isHalted = true
+    engine?.engine.halt()
+    shutdown()
+    await untilIdle()
+  }
+
   /// Cancels the timers and listeners and ends the status stream; a run in flight finishes, and calls waiting for it return after it.
   public func shutdown() {
     isShutDown = true
@@ -285,7 +304,9 @@ public actor SyncRuntime {
     return .current
   }
 
-  func keysImported() {
+  /// Keys reached the ring another way, as through a recovery or an exchange on the primary's key services: evaluates again at once rather than at the
+  /// next key check.
+  public func keysImported() {
     guard !isShutDown else { return }
     engine?.needsRecoveryReconcile = true
     scheduler.request(.launch)
@@ -423,7 +444,9 @@ public actor SyncRuntime {
     guard let attached = engine else { return .completed }
     if let notice = try? await attached.engine.recordedMove() { return apply(.vaultMoved(notice)) ?? .completed }
     if work.contains(.download), let result = await download(with: attached) { return result }
+    guard !isHalted else { return .completed }
     if work.contains(.upload), let result = await upload(with: attached) { return result }
+    guard !isHalted else { return .completed }
     if work.contains(.evaluate), let result = await maintain(with: attached) { return result }
     return .completed
   }
@@ -455,6 +478,7 @@ public actor SyncRuntime {
       guard let attachment else { return .failed(retry: .launch) }
       if engine?.location != attachment.location || engine?.providerID != attachment.providerID {
         let made = attachment.engine(store: store, device: device, trustedClock: trustedClock, configuration: configuration, wallClock: wallClock)
+        if isHalted { made.halt() }
         engine = AttachedEngine(
           location: attachment.location, providerID: attachment.providerID, provider: attachment.provider, engine: made, ring: attachment.ring,
           recovery: attachment.recoverySetup(store: store, wallClock: wallClock))
@@ -539,7 +563,7 @@ public actor SyncRuntime {
       return await failure(of: error, retry: .sync)
     }
     guard !outcome.postponed else { return .failed(retry: .launch) }
-    await startup.noteMissingKeys(outcome.missingKeys, vault: attached.location.vault)
+    await startup.noteMissingKeys(outcome.missingKeys, vault: attached.ring.vault)
     if let notice = outcome.moved { return apply(.vaultMoved(notice)) ?? .completed }
     let replicas = Set(outcome.missingKeys.values.joined())
     attention.download = replicas.isEmpty ? nil : .keysMissing(replicas: replicas)
@@ -687,7 +711,7 @@ public actor SyncRuntime {
   private func conditionFailure() async -> SyncRunResult? {
     let attached: (any StorageProvider)?
     if let engine { attached = engine.provider } else { attached = await startup.attachedStorage()?.provider }
-    guard let provider = attached as? CloudKitStorageProvider, let condition = try? await provider.condition() else { return nil }
+    guard let provider = attached.map(Self.storage) as? CloudKitStorageProvider, let condition = try? await provider.condition() else { return nil }
     return applyCondition(condition)
   }
 
@@ -715,7 +739,7 @@ public actor SyncRuntime {
           await self.noteChange()
         }
       })
-    guard let cloudKit = provider as? CloudKitStorageProvider else { return }
+    guard let cloudKit = Self.storage(provider) as? CloudKitStorageProvider else { return }
     let conditions = cloudKit.conditionChanges()
     listeners.append(
       Task { [weak self] in
@@ -724,6 +748,11 @@ public actor SyncRuntime {
           await self.noteCondition(condition)
         }
       })
+  }
+
+  /// A route's storage is the primary's seen through its prefix; the storage's own conditions are the primary's too.
+  private static func storage(_ provider: any StorageProvider) -> any StorageProvider {
+    (provider as? RoutedStorageProvider)?.base ?? provider
   }
 
   private func computeStatus() -> SyncStatus {
@@ -793,4 +822,9 @@ public actor SyncRuntime {
     timer = nil
     pump()
   }
+}
+
+public struct SyncAttachedLocation: Sendable, Equatable {
+  public let location: SyncLocation
+  public let classPolicy: StorageClassPolicy
 }

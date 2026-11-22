@@ -25,13 +25,16 @@ struct SettingsDevice {
     let wiring = world.wiring
     let sync = SyncRuntimes(
       identity: .fixture,
-      factory: { store, trustedClock in
+      factory: { synced, trustedClock in
         guard var environment = try? wiring.environment() else { return nil }
+        environment.route = synced.route
+        environment.routedStores = synced.routedBeside
         environment.provider = { settings throws(StorageError) in
           if let provider = override?(settings) { return provider }
           return try wiring.provider(for: settings)
         }
-        return SyncRuntime(environment: environment, store: store, device: wiring.device, trustedClock: trustedClock, wallClock: SyncEngine.wallClock(preferring: trustedClock))
+        return SyncRuntime(
+          environment: environment, store: synced.store, device: wiring.device, trustedClock: trustedClock, wallClock: SyncEngine.wallClock(preferring: trustedClock))
       }, wiring: wiring)
     let (store, clock) = try SyncWorld.openStore()
     await sync.launch(store, trustedClock: clock)

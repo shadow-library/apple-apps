@@ -85,6 +85,12 @@ struct SyncSettingsErrors {
     }
   }
 
+  var routedMoveText: String {
+    String(
+      localized: "Moving your \(app.vaultNoun) to other storage is not available yet, because part of it syncs separately from the rest.", table: "SyncSettings",
+      bundle: .module)
+  }
+
   private func headline(for error: SyncMoveError, kind: SyncProviderKind?) -> String {
     switch error {
     case .sameLocation: String(localized: "Your \(app.vaultNoun) already syncs here. Choose another location.", table: "SyncSettings", bundle: .module)
@@ -114,6 +120,7 @@ struct SyncSettingsErrors {
     case .location: locationHeadline
     case .startup(let startup): headline(for: startup, kind: kind)
     case .journal: String(localized: "The record of the move on this device could not be read or saved.", table: "SyncSettings", bundle: .module)
+    case .routedStoresUnsupported: routedMoveText
     }
   }
 

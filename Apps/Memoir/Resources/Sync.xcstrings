@@ -1,0 +1,86 @@
+{
+  "sourceLanguage": "en",
+  "strings": {
+    "activity data": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "activity data"
+          }
+        }
+      }
+    },
+    "health data": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "health data"
+          }
+        }
+      }
+    },
+    "Sync Activity Through iCloud": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sync Activity Through iCloud"
+          }
+        }
+      }
+    },
+    "Activity": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Activity"
+          }
+        }
+      }
+    },
+    "Steps, workouts and other activity stay on this device when your vault syncs with iCloud. Turn this on to send them through iCloud as well, so your other devices show them. With any other storage, activity always syncs.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Steps, workouts and other activity stay on this device when your vault syncs with iCloud. Turn this on to send them through iCloud as well, so your other devices show them. With any other storage, activity always syncs."
+          }
+        }
+      }
+    },
+    "Apple may count activity as health information, which apps may not keep in iCloud, so this setting may go away in a later version. Health data such as weight, heart rate and sleep never goes to iCloud.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Apple may count activity as health information, which apps may not keep in iCloud, so this setting may go away in a later version. Health data such as weight, heart rate and sleep never goes to iCloud."
+          }
+        }
+      }
+    },
+    "Turning it off stops sending activity through iCloud. Your activity stays on this device, kept out of its backups, and what was already sent stays in iCloud.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Turning it off stops sending activity through iCloud. Your activity stays on this device, kept out of its backups, and what was already sent stays in iCloud."
+          }
+        }
+      }
+    },
+    "Sync": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sync"
+          }
+        }
+      }
+    }
+  },
+  "version": "1.0"
+}
