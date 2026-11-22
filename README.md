@@ -26,6 +26,7 @@ To sign for devices, export your team before generating: `export TUIST_DEVELOPME
 Apps/                         one folder per app, each with its own Project.swift
   Catalog/                    design-system gallery; also the pipeline's smoke test
   NovelForge/                 Novel Forge for iPhone, iPad and Mac (`.phoneAndMac`); vault opening and the library shell
+  Memoir/                     Memoir for iPhone, iPad and Mac (`.phoneAndMac`); vault opening and the navigation shell
 Packages/
   ShadowKit/                  the shared Swift package (one library product per module)
   NovelForgeKit/              Novel Forge's core (`NovelForgeCore`): domain rules, pipelines, retrieval; no UI
@@ -71,7 +72,7 @@ let project = Project.app(
 )
 ```
 
-Capabilities are declared only through `Project.app(capabilities:)` (`AppCapability`): `iCloud`, `pushNotifications` and `keychainSharing` need a signing team and are left out of a team-less build; `remoteNotificationBackgroundMode`, `camera(usage:)`, `macSandbox` and `continuedProcessing(context:)` do not. `continuedProcessing(context:)` writes `BGTaskSchedulerPermittedIdentifiers` with `<bundle id>.<context>.*` for iOS (the key also lands in the Mac slice of a multiplatform target, which ignores it) and no background mode, since Apple documents none for continued processing (only `processing` for `BGProcessingTask` and `fetch` for `BGAppRefreshTask`). Background modes from every capability are merged into one `UIBackgroundModes` array; Xcode empties that array in a Mac build.
+Capabilities are declared only through `Project.app(capabilities:)` (`AppCapability`): `iCloud`, `pushNotifications`, `keychainSharing` and `healthKit(usage:backgroundDelivery:)` need a signing team and are left out of a team-less build; `remoteNotificationBackgroundMode`, `camera(usage:)`, `macSandbox` and `continuedProcessing(context:)` do not. `continuedProcessing(context:)` writes `BGTaskSchedulerPermittedIdentifiers` with `<bundle id>.<context>.*` for iOS (the key also lands in the Mac slice of a multiplatform target, which ignores it) and no background mode, since Apple documents none for continued processing (only `processing` for `BGProcessingTask` and `fetch` for `BGAppRefreshTask`). Background modes from every capability are merged into one `UIBackgroundModes` array; Xcode empties that array in a Mac build. `healthKit` is iOS only and read-only: it writes `NSHealthShareUsageDescription` (no update string, since the app never writes to Health) and `HealthKit` under `ShadowCapabilities`, the string `YES` in an iPhone or iPad build signed with HealthKit and `NO` in the Mac slice (the other entries are booleans; read this one as true only when it is `YES`), and its entitlements (`com.apple.developer.healthkit`, plus `.background-delivery` when asked) go through `CODE_SIGN_ENTITLEMENTS_CONTENTS[sdk=iphone*]`, which Xcode merges over the shared entitlements file for iPhone and iPad builds only, so the Mac slice never carries them.
 
 `VaultStore.open` on a file sets file protection `completeUntilFirstUserAuthentication` on the vault directory and on the database, `-wal` and `-shm` files, and fails with `StoreError.fileProtection` if it cannot (macOS has no such protection and skips it; in-memory stores are untouched). `SyncEngine.start()` (or `StorageAttachment.attach(_:)`) flags the vault directory as excluded from device backups, `StorageAttachment.detach(_:)` clears it, and a failure there is reported (`SyncEngine.backupExclusionFailure`, a log entry) without failing the attach (attach is idempotent and re-asserted on every start; clearing the flag is eventually consistent on macOS; a vault directory must hold only the vault's own files, the database with its `-wal`, `-shm` and `-journal` files and its process locks such as `<db>-jobs.lock`, or the flag is refused), since the flag is only guidance and the replica self-check carries correctness.
 
@@ -425,6 +426,7 @@ mise run test:packages                      # shared packages with SwiftPM; no g
 mise run test:apps                          # tuist test --skip-ui-tests
 tuist test Catalog --platform macOS --no-selective-testing
 tuist test NovelForge --platform macOS --no-selective-testing
+tuist test Memoir --platform macOS --no-selective-testing
 ```
 
 - `mise run test:packages` covers `ShadowKit`, `NovelForgeKit` and `MemoirKit`. Property tests print their seed on failure; rerun it with `replay(seed:)` from `ShadowTestSupport`.
