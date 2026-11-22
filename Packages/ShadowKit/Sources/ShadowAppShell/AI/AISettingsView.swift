@@ -14,11 +14,15 @@ public struct AISettingsView: View {
   public var body: some View {
     ScrollView {
       VStack(alignment: .leading, spacing: Spacing.space5) {
-        providerSection
-        KeySection(model: model, provider: .anthropic, removing: $removing)
-        KeySection(model: model, provider: .openRouter, removing: $removing)
-        if model.provider == .openRouter || model.storedKeys.contains(.openRouter) { ModelsSection(model: model) }
-        CapsSection(model: model)
+        if model.provider == .demo {
+          demoSection
+        } else {
+          providerSection
+          KeySection(model: model, provider: .anthropic, removing: $removing)
+          KeySection(model: model, provider: .openRouter, removing: $removing)
+          if model.provider == .openRouter || model.storedKeys.contains(.openRouter) { ModelsSection(model: model) }
+          CapsSection(model: model)
+        }
         ConsentSection(model: model)
       }
       .padding(Spacing.space4)
@@ -54,11 +58,23 @@ public struct AISettingsView: View {
     }
   }
 
+  private var demoSection: some View {
+    ShadowGroupedSection {
+      ShadowCallout(
+        Text("This is the demo. Its answers come from a script on this device; no key is used and nothing is sent.", tableName: "AISettings", bundle: .module),
+        intent: .info, systemImage: "play.circle"
+      ) { EmptyView() }
+      .padding(Spacing.space3)
+    } header: {
+      Text("AI provider", tableName: "AISettings", bundle: .module).shadowFont(.headline)
+    }
+  }
+
   private var providerSection: some View {
     ShadowGroupedSection {
       VStack(alignment: .leading, spacing: Spacing.space2) {
         Picker(selection: Binding(get: { model.provider }, set: { model.select($0) })) {
-          ForEach(ModelProviderKind.allCases, id: \.self) { Text(verbatim: $0.displayName).tag($0) }
+          ForEach(ModelProviderKind.keyed, id: \.self) { Text(verbatim: $0.displayName).tag($0) }
         } label: {
           Text("Provider", tableName: "AISettings", bundle: .module)
         }
@@ -305,7 +321,14 @@ private struct ConsentSection: View {
           HStack(alignment: .firstTextBaseline) {
             VStack(alignment: .leading, spacing: Spacing.space05) {
               Text(verbatim: consent.disclosure.title)
-              Text(verbatim: "\(consent.provider.displayName) · \(consent.host)").shadowFont(.footnote).foregroundStyle(ShadowColor.textSecondary)
+              Group {
+                if consent.provider == .demo {
+                  Text("Demo · on this device", tableName: "AISettings", bundle: .module)
+                } else {
+                  Text(verbatim: "\(consent.provider.displayName) · \(consent.host)")
+                }
+              }
+              .shadowFont(.footnote).foregroundStyle(ShadowColor.textSecondary)
             }
             Spacer(minLength: Spacing.space3)
             Button(role: .destructive) {

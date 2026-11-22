@@ -6,6 +6,13 @@ public enum ModelContentMode: String, Sendable, Codable, CaseIterable {
 public enum ModelProviderKind: String, Sendable, Codable, CaseIterable {
   case anthropic
   case openRouter = "openrouter"
+  /// `DemoModelProvider`: scripted answers made on the device, reached only through a router built with one.
+  case demo
+
+  /// The providers an owner connects with a key of their own.
+  public static let keyed: [ModelProviderKind] = allCases.filter(\.needsKey)
+
+  public var needsKey: Bool { self != .demo }
 }
 
 public struct AIConsentRequirement: Sendable, Equatable {

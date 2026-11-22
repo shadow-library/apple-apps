@@ -42,6 +42,7 @@ extension ModelProviderKind {
     switch self {
     case .anthropic: "Anthropic"
     case .openRouter: "OpenRouter"
+    case .demo: String(localized: "Demo", table: "AISettings", bundle: .module)
     }
   }
 }

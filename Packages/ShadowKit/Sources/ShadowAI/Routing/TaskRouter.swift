@@ -4,7 +4,7 @@ import ShadowCore
 import ShadowStore
 
 public struct TaskRouterConfiguration: Sendable, Equatable {
-  /// The provider standard routes use; unrestricted routes always use OpenRouter.
+  /// The provider standard routes use; unrestricted routes always use OpenRouter, also in the demo, which therefore refuses them.
   public var provider: ModelProviderKind
   public var catalog: ModelCatalog
   public var assignments: OpenRouterAssignments
@@ -35,6 +35,7 @@ public struct TaskRouter: Sendable {
   public let configuration: TaskRouterConfiguration
   private let anthropic: ProviderBinding?
   private let openRouter: ProviderBinding?
+  private let demo: DemoModelProvider?
   private let credentials: any ModelCredentialSource
   private let store: VaultStore
   private let requestGuard: @Sendable (ModelRoute) -> ModelRequestGuard?
@@ -46,6 +47,7 @@ public struct TaskRouter: Sendable {
     configuration: TaskRouterConfiguration,
     anthropic: ProviderBinding? = nil,
     openRouter: ProviderBinding? = nil,
+    demo: DemoModelProvider? = nil,
     credentials: any ModelCredentialSource,
     store: VaultStore,
     requestGuard: @escaping @Sendable (ModelRoute) -> ModelRequestGuard?,
@@ -56,6 +58,7 @@ public struct TaskRouter: Sendable {
     self.configuration = configuration
     self.anthropic = anthropic
     self.openRouter = openRouter
+    self.demo = demo
     self.credentials = credentials
     self.store = store
     self.requestGuard = requestGuard
@@ -69,16 +72,19 @@ public struct TaskRouter: Sendable {
     case (.unrestricted, _): try unrestrictedRoute(task: task, pace: pace, thinksDeeper: thinksDeeper)
     case (.standard, .anthropic): try anthropicRoute(task: task, pace: pace, thinksDeeper: thinksDeeper)
     case (.standard, .openRouter): try openRouterRoute(task: task, pace: pace, thinksDeeper: thinksDeeper)
+    case (.standard, .demo): try demoRoute(task: task, pace: pace, thinksDeeper: thinksDeeper)
     }
   }
 
   /// Checks the route, key, consent and spend cap once for one product call, so a call kept for later does not see a later revoke or spend; every stream
-  /// of the returned call passes the route's request guard, then is ledgered.
+  /// of the returned call passes the route's request guard, then is ledgered. A demo route needs no key and meets no spend cap.
   public func prepare(_ call: TaskCall) async throws(TaskRouterError) -> RoutedCall {
     do throws(TaskRouterError) {
       let route = try route(task: call.task, pace: call.pace, thinksDeeper: call.thinksDeeper, contentMode: call.contentMode)
-      guard let binding = binding(for: route.provider) else { throw .providerMissing(route.provider) }
-      guard let credential = await credentials.credential(for: route.provider), credential.authorizes(binding.origin) else { throw .credentialMissing(route.provider) }
+      guard let binding = binding(for: route) else { throw .providerMissing(route.provider) }
+      if route.provider.needsKey {
+        guard let credential = await credentials.credential(for: route.provider), credential.authorizes(binding.origin) else { throw .credentialMissing(route.provider) }
+      }
       try await admit(call.consent, provider: route.provider, binding: binding)
       Self.logger.info(
         "Routed a call task=\(route.task.rawValue, privacy: .public) pace=\(route.pace.rawValue, privacy: .public) deepened=\(route.deepened, privacy: .public) mode=\(route.contentMode.rawValue, privacy: .public) provider=\(route.provider.rawValue, privacy: .public) model=\(route.model, privacy: .public) effort=\(route.effort?.rawValue ?? "none", privacy: .public)"
@@ -112,6 +118,7 @@ public struct TaskRouter: Sendable {
 
   /// The spend cap a call would meet now, read as `prepare` reads it, so work that has to call can wait before it starts.
   public func spendDecision() async throws(TaskRouterError) -> SpendDecision {
+    guard configuration.provider != .demo else { return .allowed }
     let (now, calendar, limits) = (now(), calendar, configuration.spendLimits)
     let summary: SpendSummary?
     do {
@@ -127,7 +134,13 @@ public struct TaskRouter: Sendable {
     switch provider {
     case .anthropic: anthropic
     case .openRouter: openRouter
+    case .demo: demo.flatMap { ProviderBinding(origin: DemoModelProvider.origin, provider: $0) }
     }
+  }
+
+  private func binding(for route: ModelRoute) -> ProviderBinding? {
+    guard route.provider == .demo else { return binding(for: route.provider) }
+    return demo.flatMap { ProviderBinding(origin: DemoModelProvider.origin, provider: $0.answering(route.task)) }
   }
 
   private func admit(_ consent: AIConsentRequirement, provider: ModelProviderKind, binding: ProviderBinding) async throws(TaskRouterError) {
@@ -136,6 +149,7 @@ public struct TaskRouter: Sendable {
     do {
       gate = try await store.read { transaction in
         guard try AIConsent.isGranted(provider: host, dataClass: consent.dataClass, currentSummary: consent.disclosure, in: transaction) else { return Gate.consentMissing }
+        guard provider != .demo else { return Gate.spend(.allowed) }
         guard let summary = try Spend.summary(in: transaction, now: now, calendar: calendar) else { return Gate.spendUnavailable }
         return Gate.spend(Spend.decision(for: summary, limits: limits))
       }
@@ -163,6 +177,15 @@ public struct TaskRouter: Sendable {
     return ModelRoute(
       task: task, pace: pace, thinksDeeper: thinksDeeper, deepened: route.effort != base.effort, contentMode: .standard, provider: .anthropic, model: model.id,
       effort: route.effort, maxOutputTokens: cap, supportsNativeSchema: model.supportsJSONSchema)
+  }
+
+  /// The demo takes the catalog's output cap, so progress reads as it would with a real model, and the prompt form of structured output, so it sees every
+  /// schema whole.
+  private func demoRoute(task: ModelTask, pace: Pace, thinksDeeper: Bool) throws(TaskRouterError) -> ModelRoute {
+    guard let cap = configuration.catalog.routes[task]?[pace]?.maxOutputTokens, cap >= 1 else { throw .noRoute(task: task, pace: pace) }
+    return ModelRoute(
+      task: task, pace: pace, thinksDeeper: thinksDeeper, deepened: false, contentMode: .standard, provider: .demo, model: DemoModelProvider.model, effort: nil,
+      maxOutputTokens: cap, supportsNativeSchema: false)
   }
 
   /// OpenRouter routes carry no effort, so Think deeper takes the Meticulous model and cap, as the reference sends the performant tier for that turn

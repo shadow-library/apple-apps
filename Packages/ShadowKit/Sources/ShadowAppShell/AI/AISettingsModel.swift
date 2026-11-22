@@ -209,7 +209,7 @@ final class AISettingsModel {
 
   private func refreshStoredKeys() {
     do {
-      storedKeys = Set(try ModelProviderKind.allCases.filter { try services.keys.contains($0) })
+      storedKeys = Set(try ModelProviderKind.keyed.filter { try services.keys.contains($0) })
     } catch {
       failure = AIErrors.presented(error, app: services.identity)
     }

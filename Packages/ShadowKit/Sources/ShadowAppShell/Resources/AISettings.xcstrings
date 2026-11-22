@@ -700,6 +700,66 @@
           }
         }
       }
+    },
+    "Demo": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Demo"
+          }
+        }
+      }
+    },
+    "Let the demo use this?": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Let the demo use this?"
+          }
+        }
+      }
+    },
+    "Answered on this device. Nothing is sent.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Answered on this device. Nothing is sent."
+          }
+        }
+      }
+    },
+    "This is the demo. Its answers come from a script on this device; no key is used and nothing is sent.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This is the demo. Its answers come from a script on this device; no key is used and nothing is sent."
+          }
+        }
+      }
+    },
+    "Demo · on this device": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Demo · on this device"
+          }
+        }
+      }
+    },
+    "Allow the demo to use this first.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Allow the demo to use this first."
+          }
+        }
+      }
     }
   },
   "version": "1.0"

@@ -18,6 +18,7 @@ public enum AIErrors {
     case .unrestrictedModelMissing: String(localized: "Unrestricted writing has no model chosen. Choose one in AI settings.", table: "AISettings", bundle: .module)
     case .providerMissing(let provider): String(localized: "\(provider.displayName) is not available in this version of the app.", table: "AISettings", bundle: .module)
     case .credentialMissing(let provider): String(localized: "Add your \(provider.displayName) key in AI settings first.", table: "AISettings", bundle: .module)
+    case .consentRequired(let request) where request.provider == .demo: String(localized: "Allow the demo to use this first.", table: "AISettings", bundle: .module)
     case .consentRequired(let request): String(localized: "Allow \(app.displayName) to send this to \(request.provider.displayName) first.", table: "AISettings", bundle: .module)
     case .dailySpendLimitReached(_, let limit):
       String(localized: "Today's AI spend limit of \(money(limit)) has been reached. Raise it in AI settings or try again tomorrow.", table: "AISettings", bundle: .module)

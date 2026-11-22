@@ -71,6 +71,9 @@ public struct ModelCallEntry: Sendable, Equatable {
     self.cost = cost
     self.costSource = costSource
   }
+
+  /// A call `DemoModelProvider` answered on the device, which cost nothing.
+  public var isDemo: Bool { provider == DemoModelProvider.host }
 }
 
 public struct ModelCallStart: Sendable, Equatable {

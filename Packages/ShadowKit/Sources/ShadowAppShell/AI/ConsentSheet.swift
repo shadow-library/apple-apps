@@ -63,7 +63,9 @@ struct ConsentSheet: View {
     }
     .scrollBounceBehavior(.basedOnSize)
     .shadowSheetHeader(
-      Text("Send this to \(model.request.provider.displayName)?", tableName: "AISettings", bundle: .module),
+      model.request.provider == .demo
+        ? Text("Let the demo use this?", tableName: "AISettings", bundle: .module)
+        : Text("Send this to \(model.request.provider.displayName)?", tableName: "AISettings", bundle: .module),
       cancel: ShadowSheetCancel(Text("Don't Allow", tableName: "AISettings", bundle: .module), isDisabled: model.isBusy, action: onDeclined),
       confirm: ShadowSheetConfirm(Text("Allow", tableName: "AISettings", bundle: .module), isDisabled: !model.canAllow, submitShortcut: true) {
         Task {
@@ -78,7 +80,11 @@ struct ConsentSheet: View {
   private var destination: some View {
     VStack(alignment: .leading, spacing: Spacing.space1) {
       Text(verbatim: model.request.provider.displayName).shadowFont(.headline)
-      Text(verbatim: model.request.host).shadowFont(.footnote).foregroundStyle(ShadowColor.textSecondary).textSelection(.enabled)
+      if model.request.provider == .demo {
+        Text("Answered on this device. Nothing is sent.", tableName: "AISettings", bundle: .module).shadowFont(.footnote).foregroundStyle(ShadowColor.textSecondary)
+      } else {
+        Text(verbatim: model.request.host).shadowFont(.footnote).foregroundStyle(ShadowColor.textSecondary).textSelection(.enabled)
+      }
     }
   }
 

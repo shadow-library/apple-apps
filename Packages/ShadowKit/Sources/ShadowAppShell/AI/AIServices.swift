@@ -95,19 +95,36 @@ public final class AIServices {
   public private(set) var openRouterModels: [RemoteModel] = []
 
   public let keys: ProviderKeys
-  private let settingsStore: AISettingsStore
+  /// Nil in the demo, whose settings stay in memory.
+  private let settingsStore: AISettingsStore?
   private let anthropic: ProviderBinding?
   private let openRouter: ProviderBinding?
+  private let demo: DemoModelProvider?
   private let validation: CredentialValidation
   private let listing: ModelListing
   private let now: @Sendable () -> Date
   private let costLookup: OpenRouterGenerationLookup
   private var settlers: [ObjectIdentifier: CostSettler] = [:]
 
-  public init(
+  public convenience init(
     identity: AppIdentity, keys: ProviderKeys, settingsStore: AISettingsStore, transport: any HTTPTransport & HTTPStreamingTransport,
     disclosures: [ConsentDisclosure], requestGuard: @escaping RequestGuard, validation: CredentialValidation? = nil,
     listing: ModelListing? = nil, now: @escaping @Sendable () -> Date = { Date() }
+  ) {
+    let openRouterConfiguration = OpenRouterConfiguration(applicationTitle: identity.displayName)
+    self.init(
+      identity: identity, keys: keys, settingsStore: settingsStore, settings: settingsStore.load(), transport: transport, disclosures: disclosures,
+      requestGuard: requestGuard, now: now, demo: nil,
+      validation: validation ?? Self.liveValidation(configuration: openRouterConfiguration, transport: transport),
+      listing: listing ?? { () async throws(ModelError) -> [RemoteModel] in
+        try await OpenRouterProvider(configuration: openRouterConfiguration, credential: keys.credentialLoader(for: .openRouter), transport: transport).models()
+      })
+  }
+
+  private init(
+    identity: AppIdentity, keys: ProviderKeys, settingsStore: AISettingsStore?, settings: AISettings, transport: any HTTPTransport & HTTPStreamingTransport,
+    disclosures: [ConsentDisclosure], requestGuard: @escaping RequestGuard, now: @escaping @Sendable () -> Date, demo: DemoModelProvider?,
+    validation: @escaping CredentialValidation, listing: @escaping ModelListing
   ) {
     let openRouterConfiguration = OpenRouterConfiguration(applicationTitle: identity.displayName)
     self.identity = identity
@@ -116,19 +133,49 @@ public final class AIServices {
     self.disclosures = disclosures
     self.keys = keys
     self.settingsStore = settingsStore
-    self.settings = settingsStore.load()
+    self.settings = settings
     self.now = now
+    self.demo = demo
+    self.validation = validation
+    self.listing = listing
     costLookup = OpenRouterGenerationLookup(
       configuration: openRouterConfiguration, credential: keys.credentialLoader(for: .openRouter), transport: transport)
+    guard demo == nil else {
+      anthropic = nil
+      openRouter = nil
+      return
+    }
     anthropic = ProviderBinding(anthropic: AnthropicProvider(credential: keys.credentialLoader(for: .anthropic), transport: transport))
     openRouter = ProviderBinding(
       openRouter: OpenRouterProvider(configuration: openRouterConfiguration, credential: keys.credentialLoader(for: .openRouter), transport: transport))
-    self.validation = validation ?? Self.liveValidation(configuration: openRouterConfiguration, transport: transport)
-    self.listing =
-      listing ?? { () async throws(ModelError) -> [RemoteModel] in
-        try await OpenRouterProvider(configuration: openRouterConfiguration, credential: keys.credentialLoader(for: .openRouter), transport: transport).models()
-      }
   }
+
+  /// Services whose every call `DemoModelProvider` answers from `script` on this device: no key, no network, nothing ledgered at a cost, no spend cap, and
+  /// the owner's keys and AI settings left untouched. Consent is still asked per disclosure, so the app supplies demo disclosures saying that nothing
+  /// leaves the device. Unrestricted calls are refused.
+  public static func demo(
+    identity: AppIdentity, script: DemoScript, disclosures: [ConsentDisclosure], requestGuard: @escaping RequestGuard, pace: Duration = DemoModelProvider.readingPace
+  ) -> AIServices {
+    demo(identity: identity, provider: DemoModelProvider(script: script, pace: pace), disclosures: disclosures, requestGuard: requestGuard, transport: OfflineTransport())
+  }
+
+  static func demo(
+    identity: AppIdentity, provider: DemoModelProvider, disclosures: [ConsentDisclosure], requestGuard: @escaping RequestGuard,
+    transport: any HTTPTransport & HTTPStreamingTransport, now: @escaping @Sendable () -> Date = { Date() }
+  ) -> AIServices {
+    var settings = AISettings()
+    settings.provider = .demo
+    return AIServices(
+      identity: identity, keys: ProviderKeys(store: DemoKeyStore(), origins: [:]), settingsStore: nil, settings: settings, transport: transport,
+      disclosures: disclosures, requestGuard: requestGuard, now: now, demo: provider,
+      validation: { (_, credential) async throws(ModelError) -> CredentialStatus in try await provider.validate(credential) },
+      listing: { [] })
+  }
+
+  public var isDemo: Bool { demo != nil }
+
+  /// Whether a standard call has a provider to go to: always in the demo, otherwise once the chosen provider's key is stored.
+  public var hasUsableProvider: Bool { isDemo || (try? keys.contains(settings.provider)) == true }
 
   public nonisolated static func keychain(identity: AppIdentity) -> KeychainStore { KeychainStore(service: identity.aiKeychainService, scope: .synced()) }
 
@@ -147,7 +194,8 @@ public final class AIServices {
   public func router(store: VaultStore, requestGuard: @escaping RequestGuard) -> TaskRouter {
     let configuration = TaskRouterConfiguration(
       provider: settings.provider, assignments: settings.assignments, openRouterModels: openRouterModels, spendLimits: settings.limits)
-    return TaskRouter(configuration: configuration, anthropic: anthropic, openRouter: openRouter, credentials: keys, store: store, requestGuard: requestGuard)
+    return TaskRouter(
+      configuration: configuration, anthropic: anthropic, openRouter: openRouter, demo: demo, credentials: keys, store: store, requestGuard: requestGuard)
   }
 
   public func settler(for store: VaultStore) -> CostSettler {
@@ -162,9 +210,10 @@ public final class AIServices {
   public func update(_ change: (inout AISettings) -> Void) {
     var updated = settings
     change(&updated)
+    if isDemo { updated.provider = .demo }
     guard updated != settings else { return }
     settings = updated
-    settingsStore.save(updated)
+    settingsStore?.save(updated)
   }
 
   public func validate(_ credential: ProviderCredential, for provider: ModelProviderKind) async throws(ModelError) -> CredentialStatus {
@@ -193,7 +242,7 @@ public final class AIServices {
   }
 
   public func grantedConsents(in store: VaultStore) async throws(StoreError) -> [GrantedConsent] {
-    let hosts = bindings.map { (provider: $0.provider, host: $0.binding.host) }
+    let hosts = self.hosts
     let disclosures = disclosures
     return try await store.read { transaction in
       var granted: [GrantedConsent] = []
@@ -206,8 +255,9 @@ public final class AIServices {
     }
   }
 
-  private var bindings: [(provider: ModelProviderKind, binding: ProviderBinding)] {
-    [(ModelProviderKind.anthropic, anthropic), (.openRouter, openRouter)].compactMap { provider, binding in binding.map { (provider, $0) } }
+  private var hosts: [(provider: ModelProviderKind, host: String)] {
+    let bound = [(ModelProviderKind.anthropic, anthropic?.host), (.openRouter, openRouter?.host), (.demo, demo.map { _ in DemoModelProvider.host })]
+    return bound.compactMap { provider, host in host.map { (provider, $0) } }
   }
 
   private func decide(_ state: AIConsentState, provider: String, dataClass: String, disclosure: String, in store: VaultStore) async throws(StoreError) {
@@ -223,6 +273,7 @@ public final class AIServices {
       switch provider {
       case .anthropic: return try await AnthropicProvider(credential: loader, transport: transport).validate(credential)
       case .openRouter: return try await OpenRouterProvider(configuration: configuration, credential: loader, transport: transport).validate(credential)
+      case .demo: throw .invalidRequest("The demo model takes no key.")
       }
     }
   }
