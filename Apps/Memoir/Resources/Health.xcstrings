@@ -1,0 +1,193 @@
+{
+  "sourceLanguage": "en",
+  "strings": {
+    "%@ reads Apple Health for this vault.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ reads Apple Health for this vault."
+          }
+        }
+      }
+    },
+    "%@ reads Apple Health for this vault. Reading here stops it there; what it already imported stays.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ reads Apple Health for this vault. Reading here stops it there; what it already imported stays."
+          }
+        }
+      }
+    },
+    "Apple Health": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Apple Health"
+          }
+        }
+      }
+    },
+    "Cancel": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cancel"
+          }
+        }
+      }
+    },
+    "Health can’t be read while the device is locked. Memoir reads it again when you unlock.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Health can’t be read while the device is locked. Memoir reads it again when you unlock."
+          }
+        }
+      }
+    },
+    "Health data is read on your iPhone or iPad.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Health data is read on your iPhone or iPad."
+          }
+        }
+      }
+    },
+    "Health data isn’t available on this device. Type your metrics by hand.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Health data isn’t available on this device. Type your metrics by hand."
+          }
+        }
+      }
+    },
+    "Health settings not changed": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Health settings not changed"
+          }
+        }
+      }
+    },
+    "If you didn’t allow Memoir to read it, change that in Settings. You can still type values here.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "If you didn’t allow Memoir to read it, change that in Settings. You can still type values here."
+          }
+        }
+      }
+    },
+    "Memoir reads, never writes. Turn on a metric to fill its days from Health; your own entries always win.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Memoir reads, never writes. Turn on a metric to fill its days from Health; your own entries always win."
+          }
+        }
+      }
+    },
+    "No Health data yet": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No Health data yet"
+          }
+        }
+      }
+    },
+    "Open Health settings": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Open Health settings"
+          }
+        }
+      }
+    },
+    "Read Health now": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Read Health now"
+          }
+        }
+      }
+    },
+    "Read Health on this device instead?": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Read Health on this device instead?"
+          }
+        }
+      }
+    },
+    "Read here instead": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Read here instead"
+          }
+        }
+      }
+    },
+    "Some metrics couldn’t be read from Health. Memoir tries again next time it opens.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Some metrics couldn’t be read from Health. Memoir tries again next time it opens."
+          }
+        }
+      }
+    },
+    "This build of Memoir can’t read Apple Health. Type your metrics by hand.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This build of Memoir can’t read Apple Health. Type your metrics by hand."
+          }
+        }
+      }
+    }
+  },
+  "version": "1.0"
+}

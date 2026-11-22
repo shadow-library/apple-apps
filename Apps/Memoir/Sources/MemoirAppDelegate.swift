@@ -20,6 +20,7 @@ final class MemoirAppDelegate: NSObject {
   let ai = AIServices.memoir()
   let dayTurns = MemoirDayTurns()
   let reminders = ReminderScheduler.live()
+  let health = MemoirHealthImports()
   private var observers: [any NSObjectProtocol] = []
 
   /// Opens the vault if no window has yet, then follows its day and starts its sync; both wait for a call already in flight.
@@ -77,6 +78,7 @@ final class MemoirAppDelegate: NSObject {
         guard let self else { return }
         await vault.protectedDataBecameAvailable()
         await vaultChanged()
+        health.foregrounded(vault.opened)
       }
       if SyncCapabilities.current.receivesPushes { application.registerForRemoteNotifications() }
       return true

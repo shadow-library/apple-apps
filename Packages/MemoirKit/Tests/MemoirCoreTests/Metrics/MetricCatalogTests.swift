@@ -164,6 +164,68 @@ struct QuickLogWriterTests {
     #expect(try await HealthFixture.entityCount(.command, in: stores.main) == 2)
   }
 
+  /// A weight whose `weight.save` never reached the main store (the write between the two failed) was never counted, so saving the day again replaces it
+  /// as a first save rather than asking to replace a weight the owner was told was not saved.
+  @Test func shouldReplaceAWeightNoCommandNamesWithoutAskingAndAppendItsCommand() async throws {
+    let stores = try MemoirStores.openInMemory()
+    let writer = QuickLogWriter(stores: stores, issuer: CommandIssuerSource { _ in CommandIssuer(clock: HealthFixture.utc, wallClock: HealthFixture.wallClock()) })
+    let day = HealthFixture.today
+    let other = try #require(day.adding(days: -1))
+    _ = try await stores.restricted.write { transaction in
+      try WeightRecord(date: day, kilograms: HealthFixture.decimal("70.1"), loggedAtMillis: 1).create(in: &transaction)
+    }
+    guard case .saved = try await writer.saveWeight(HealthFixture.decimal("74"), on: other) else { throw MemoirFixtureError(description: "the weight was not saved") }
+
+    let saved = try await writer.saveWeight(HealthFixture.decimal("72.4"), on: day)
+
+    guard case .saved(let command) = saved else { throw MemoirFixtureError(description: "expected the orphan to be replaced, got \(saved)") }
+    #expect(try MemoirCommandBody(command) == .weightSave(WeightEntry(date: day)))
+    let weight = try await stores.restricted.read { transaction in try WeightRecord.read(key: .weight(day), in: transaction) }
+    #expect(weight.entry?.record.kilograms == HealthFixture.decimal("72.4"))
+    #expect(weight.entry?.record.loggedAtMillis == command.instantMillis)
+    #expect(try await HealthFixture.entityCount(.command, in: stores.main) == 2)
+    let again = try await writer.saveWeight(HealthFixture.decimal("72.9"), on: day)
+    guard case .needsConfirmation(let existing) = again else { throw MemoirFixtureError(description: "a counted weight must ask, got \(again)") }
+    #expect(existing.kilograms == HealthFixture.decimal("72.4"))
+  }
+
+  /// Restricted data syncs in its own store, so another device's weight can arrive before its `weight.save`: it is asked about, never overwritten.
+  @Test func shouldAskBeforeReplacingAWeightAnotherDeviceWroteLast() async throws {
+    let stores = try MemoirStores.openInMemory()
+    let other = try MemoirStores.openInMemory()
+    let writer = QuickLogWriter(stores: stores, issuer: CommandIssuerSource { _ in CommandIssuer(clock: HealthFixture.utc, wallClock: HealthFixture.wallClock()) })
+    let day = HealthFixture.today
+    let theirs = WeightRecord(date: day, kilograms: HealthFixture.decimal("70.1"), loggedAtMillis: 1)
+    _ = try await other.restricted.write { transaction in try theirs.create(in: &transaction) }
+    try await MemoirStoreFixture.exchange(stores.restricted, other.restricted)
+
+    let saved = try await writer.saveWeight(HealthFixture.decimal("72.4"), on: day)
+
+    #expect(saved == .needsConfirmation(existing: theirs))
+    #expect(try await HealthFixture.entityCount(.command, in: stores.main) == 0)
+  }
+
+  /// A `weight.save` this version cannot read may name the day, so an orphan-looking record is asked about.
+  @Test func shouldAskWhenAWeightSaveCannotBeRead() async throws {
+    let stores = try MemoirStores.openInMemory()
+    let issuer = CommandIssuer(clock: HealthFixture.utc, wallClock: HealthFixture.wallClock())
+    let writer = QuickLogWriter(stores: stores, issuer: CommandIssuerSource { _ in issuer })
+    let day = HealthFixture.today
+    let orphan = WeightRecord(date: day, kilograms: HealthFixture.decimal("70.1"), loggedAtMillis: 1)
+    _ = try await stores.restricted.write { transaction in try orphan.create(in: &transaction) }
+    let newer = try issuer.command(.weightSave(WeightEntry(date: day)))
+    var payload = newer.payload.members
+    payload["scale"] = "kitchen"
+    let item = newer.members.values.merging(["payload": .object(payload)]) { $1 }
+    _ = try await stores.main.write { transaction in try transaction.append(MemoirCommand.ref(newer.id), item: item) }
+    #expect(try await stores.main.read { transaction in try MemoirCommand.listing(in: transaction) }.unreadable == 1)
+
+    let saved = try await writer.saveWeight(HealthFixture.decimal("72.4"), on: day)
+
+    #expect(saved == .needsConfirmation(existing: orphan))
+    #expect(try await stores.restricted.read { transaction in try WeightRecord.read(key: .weight(day), in: transaction) }.entry?.record == orphan)
+  }
+
   @Test func shouldWriteAGeneralQuickLogAndItsCommandInOneMainStoreWrite() async throws {
     let stores = try MemoirStores.openInMemory()
     let writer = QuickLogWriter(stores: stores, issuer: CommandIssuerSource { _ in CommandIssuer(clock: HealthFixture.utc, wallClock: HealthFixture.wallClock()) })

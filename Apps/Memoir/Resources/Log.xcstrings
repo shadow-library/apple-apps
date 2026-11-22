@@ -1,0 +1,2553 @@
+{
+  "sourceLanguage": "en",
+  "strings": {
+    "%@ %@": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ %@"
+          }
+        }
+      }
+    },
+    "%@ L": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ L"
+          }
+        }
+      }
+    },
+    "%@ added.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ added."
+          }
+        }
+      }
+    },
+    "%@ can’t be negative.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ can’t be negative."
+          }
+        }
+      }
+    },
+    "%@ cleared.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ cleared."
+          }
+        }
+      }
+    },
+    "%@ deleted.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ deleted."
+          }
+        }
+      }
+    },
+    "%@ for today": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ for today"
+          }
+        }
+      }
+    },
+    "%@ is a whole number.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ is a whole number."
+          }
+        }
+      }
+    },
+    "%@ kcal": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ kcal"
+          }
+        }
+      }
+    },
+    "%@ kg": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ kg"
+          }
+        }
+      }
+    },
+    "%@ lb": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ lb"
+          }
+        }
+      }
+    },
+    "%@ logged.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ logged."
+          }
+        }
+      }
+    },
+    "%@ ml": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ ml"
+          }
+        }
+      }
+    },
+    "%@ reached — “%@” can be completed": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ reached — “%@” can be completed"
+          }
+        }
+      }
+    },
+    "%@ saved.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ saved."
+          }
+        }
+      }
+    },
+    "%@, last 14 days": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@, last 14 days"
+          }
+        }
+      }
+    },
+    "%lld XP": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld XP"
+          }
+        }
+      }
+    },
+    "%lld days": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld day"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld days"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld entries": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld entry"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld entries"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld entries were written by a newer version of Memoir and can’t be shown here.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld entry was written by a newer version of Memoir and can’t be shown here."
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld entries were written by a newer version of Memoir and can’t be shown here."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld logged": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld logged"
+          }
+        }
+      }
+    },
+    "%lld logged this week · %lld rewarded entries left today": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$lld logged this week · %#@left@"
+          },
+          "substitutions": {
+            "left": {
+              "argNum": 2,
+              "formatSpecifier": "lld",
+              "variations": {
+                "plural": {
+                  "one": {
+                    "stringUnit": {
+                      "state": "translated",
+                      "value": "%arg rewarded entry left today"
+                    }
+                  },
+                  "other": {
+                    "stringUnit": {
+                      "state": "translated",
+                      "value": "%arg rewarded entries left today"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld logged this week · today’s rewards are used; logging still works": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld logged this week · today’s rewards are used; logging still works"
+          }
+        }
+      }
+    },
+    "%lld of %lld %@ logged this month. Nothing changes at the limit — entries keep saving.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld of %lld %@ logged this month. Nothing changes at the limit — entries keep saving."
+          }
+        }
+      }
+    },
+    "%lld of %lld entries": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$lld of %#@entries@"
+          },
+          "substitutions": {
+            "entries": {
+              "argNum": 2,
+              "formatSpecifier": "lld",
+              "variations": {
+                "plural": {
+                  "one": {
+                    "stringUnit": {
+                      "state": "translated",
+                      "value": "%arg entry"
+                    }
+                  },
+                  "other": {
+                    "stringUnit": {
+                      "state": "translated",
+                      "value": "%arg entries"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld of %lld side quests": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$lld of %#@quests@"
+          },
+          "substitutions": {
+            "quests": {
+              "argNum": 2,
+              "formatSpecifier": "lld",
+              "variations": {
+                "plural": {
+                  "one": {
+                    "stringUnit": {
+                      "state": "translated",
+                      "value": "%arg side quest"
+                    }
+                  },
+                  "other": {
+                    "stringUnit": {
+                      "state": "translated",
+                      "value": "%arg side quests"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld side quests": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld side quest"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld side quests"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld words": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld word"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld words"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "7-day average": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "7-day average"
+          }
+        }
+      }
+    },
+    "90 days": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "90 days"
+          }
+        }
+      }
+    },
+    "A blank day stays blank — it is not a zero, and it costs nothing.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A blank day stays blank — it is not a zero, and it costs nothing."
+          }
+        }
+      }
+    },
+    "A logged meal keeps the numbers it was logged with. Editing a preset later never changes a past meal.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A logged meal keeps the numbers it was logged with. Editing a preset later never changes a past meal."
+          }
+        }
+      }
+    },
+    "Activity": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Activity"
+          }
+        }
+      }
+    },
+    "Add meal": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Add meal"
+          }
+        }
+      }
+    },
+    "All of this is optional": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "All of this is optional"
+          }
+        }
+      }
+    },
+    "Amount": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Amount"
+          }
+        }
+      }
+    },
+    "Ate out": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ate out"
+          }
+        }
+      }
+    },
+    "Average %@": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Average %@"
+          }
+        }
+      }
+    },
+    "Better when": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Better when"
+          }
+        }
+      }
+    },
+    "Blank days are blank — they are not zeros, they do not break a streak, and they never cost HP. Only quests with an explicit threshold read these numbers.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Blank days are blank — they are not zeros, they do not break a streak, and they never cost HP. Only quests with an explicit threshold read these numbers."
+          }
+        }
+      }
+    },
+    "Body": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Body"
+          }
+        }
+      }
+    },
+    "Body & health": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Body & health"
+          }
+        }
+      }
+    },
+    "Bold": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bold"
+          }
+        }
+      }
+    },
+    "Bright": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bright"
+          }
+        }
+      }
+    },
+    "Calories": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Calories"
+          }
+        }
+      }
+    },
+    "Calories are a whole number, zero or more.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Calories are a whole number, zero or more."
+          }
+        }
+      }
+    },
+    "Calories burned": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Calories burned"
+          }
+        }
+      }
+    },
+    "Calories over the last 14 days": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Calories over the last 14 days"
+          }
+        }
+      }
+    },
+    "Cancel": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cancel"
+          }
+        }
+      }
+    },
+    "Clear": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Clear"
+          }
+        }
+      }
+    },
+    "Complete the quest": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Complete the quest"
+          }
+        }
+      }
+    },
+    "Context, not a target": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Context, not a target"
+          }
+        }
+      }
+    },
+    "Cooked": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cooked"
+          }
+        }
+      }
+    },
+    "Count": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Count"
+          }
+        }
+      }
+    },
+    "Current streak": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Current streak"
+          }
+        }
+      }
+    },
+    "Day": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Day"
+          }
+        }
+      }
+    },
+    "Delete metric": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Delete metric"
+          }
+        }
+      }
+    },
+    "Delete preset": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Delete preset"
+          }
+        }
+      }
+    },
+    "Discipline": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Discipline"
+          }
+        }
+      }
+    },
+    "Duration": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Duration"
+          }
+        }
+      }
+    },
+    "Edit metric": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Edit metric"
+          }
+        }
+      }
+    },
+    "Edit preset": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Edit preset"
+          }
+        }
+      }
+    },
+    "Enter a weight to save.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Enter a weight to save."
+          }
+        }
+      }
+    },
+    "Enter the calories — zero is a valid answer.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Enter the calories — zero is a valid answer."
+          }
+        }
+      }
+    },
+    "Entries": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Entries"
+          }
+        }
+      }
+    },
+    "Entry not saved": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Entry not saved"
+          }
+        }
+      }
+    },
+    "Entry saved.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Entry saved."
+          }
+        }
+      }
+    },
+    "Fixed the bike light": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fixed the bike light"
+          }
+        }
+      }
+    },
+    "Flat": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Flat"
+          }
+        }
+      }
+    },
+    "From Apple Health": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "From Apple Health"
+          }
+        }
+      }
+    },
+    "Glucose": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Glucose"
+          }
+        }
+      }
+    },
+    "Good": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Good"
+          }
+        }
+      }
+    },
+    "Heading": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Heading"
+          }
+        }
+      }
+    },
+    "Health data": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Health data"
+          }
+        }
+      }
+    },
+    "Health data never syncs through iCloud and stays out of device backups. Activity syncs through iCloud only when you allow it in Sync settings. Changing this later starts the metric again without its days.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Health data never syncs through iCloud and stays out of device backups. Activity syncs through iCloud only when you allow it in Sync settings. Changing this later starts the metric again without its days."
+          }
+        }
+      }
+    },
+    "Higher": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Higher"
+          }
+        }
+      }
+    },
+    "In a range": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "In a range"
+          }
+        }
+      }
+    },
+    "Italic": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Italic"
+          }
+        }
+      }
+    },
+    "Journal": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Journal"
+          }
+        }
+      }
+    },
+    "Journal entry": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Journal entry"
+          }
+        }
+      }
+    },
+    "Just logged. Select %@ again to log a second one.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Just logged. Select %@ again to log a second one."
+          }
+        }
+      }
+    },
+    "Kind": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kind"
+          }
+        }
+      }
+    },
+    "Kind of value": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kind of value"
+          }
+        }
+      }
+    },
+    "L": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "L"
+          }
+        }
+      }
+    },
+    "Last 14 days": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Last 14 days"
+          }
+        }
+      }
+    },
+    "Last 28 days of writing": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Last 28 days of writing"
+          }
+        }
+      }
+    },
+    "Last 28 days · %lld written": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Last 28 days · %lld written"
+          }
+        }
+      }
+    },
+    "List": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "List"
+          }
+        }
+      }
+    },
+    "Log a side quest": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Log a side quest"
+          }
+        }
+      }
+    },
+    "Log it": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Log it"
+          }
+        }
+      }
+    },
+    "Logged %@": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Logged %@"
+          }
+        }
+      }
+    },
+    "Logged %@ · replaced %@": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Logged %@ · replaced %@"
+          }
+        }
+      }
+    },
+    "Low": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Low"
+          }
+        }
+      }
+    },
+    "Lower": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lower"
+          }
+        }
+      }
+    },
+    "Markdown-lite · **bold**, _italic_, lists, quotes": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Markdown-lite · **bold**, _italic_, lists, quotes"
+          }
+        }
+      }
+    },
+    "Meal": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Meal"
+          }
+        }
+      }
+    },
+    "Meal not saved": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Meal not saved"
+          }
+        }
+      }
+    },
+    "Meals": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Meals"
+          }
+        }
+      }
+    },
+    "Meals couldn’t be loaded": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Meals couldn’t be loaded"
+          }
+        }
+      }
+    },
+    "Memoir never sets a goal weight and never grants or removes XP for a number on a scale. Weight is here so you can see a trend, nothing more.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Memoir never sets a goal weight and never grants or removes XP for a number on a scale. Weight is here so you can see a trend, nothing more."
+          }
+        }
+      }
+    },
+    "Metric not saved": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Metric not saved"
+          }
+        }
+      }
+    },
+    "Metrics couldn’t be loaded": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Metrics couldn’t be loaded"
+          }
+        }
+      }
+    },
+    "Mind": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mind"
+          }
+        }
+      }
+    },
+    "Mood": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mood"
+          }
+        }
+      }
+    },
+    "Mood is optional": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mood is optional"
+          }
+        }
+      }
+    },
+    "Mood over the month": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mood over the month"
+          }
+        }
+      }
+    },
+    "Mood: %@": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mood: %@"
+          }
+        }
+      }
+    },
+    "More for %@": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "More for %@"
+          }
+        }
+      }
+    },
+    "Mostly %@ across %lld days with a mood.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mostly %1$@ across %#@days@"
+          },
+          "substitutions": {
+            "days": {
+              "argNum": 2,
+              "formatSpecifier": "lld",
+              "variations": {
+                "plural": {
+                  "one": {
+                    "stringUnit": {
+                      "state": "translated",
+                      "value": "%arg day with a mood."
+                    }
+                  },
+                  "other": {
+                    "stringUnit": {
+                      "state": "translated",
+                      "value": "%arg days with a mood."
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "Name": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Name"
+          }
+        }
+      }
+    },
+    "New metric": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "New metric"
+          }
+        }
+      }
+    },
+    "New preset": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "New preset"
+          }
+        }
+      }
+    },
+    "No better way": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No better way"
+          }
+        }
+      }
+    },
+    "No entries yet": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No entries yet"
+          }
+        }
+      }
+    },
+    "No mood": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No mood"
+          }
+        }
+      }
+    },
+    "No mood logged in the last 28 days.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No mood logged in the last 28 days."
+          }
+        }
+      }
+    },
+    "No presets on this account yet. Meals you type still log in one step with Add meal.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No presets on this account yet. Meals you type still log in one step with Add meal."
+          }
+        }
+      }
+    },
+    "No reward": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No reward"
+          }
+        }
+      }
+    },
+    "No trend yet": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No trend yet"
+          }
+        }
+      }
+    },
+    "Not health data": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Not health data"
+          }
+        }
+      }
+    },
+    "Not saved": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Not saved"
+          }
+        }
+      }
+    },
+    "Nothing logged": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nothing logged"
+          }
+        }
+      }
+    },
+    "Nothing logged today": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nothing logged today"
+          }
+        }
+      }
+    },
+    "Nothing logged yet": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nothing logged yet"
+          }
+        }
+      }
+    },
+    "Nothing logged — blank, not zero": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nothing logged — blank, not zero"
+          }
+        }
+      }
+    },
+    "Nothing matches “%@”": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nothing matches “%@”"
+          }
+        }
+      }
+    },
+    "Number": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Number"
+          }
+        }
+      }
+    },
+    "Oats, berries, skyr": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Oats, berries, skyr"
+          }
+        }
+      }
+    },
+    "On this day": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "On this day"
+          }
+        }
+      }
+    },
+    "One value a day. Saving again replaces today’s.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "One value a day. Saving again replaces today’s."
+          }
+        }
+      }
+    },
+    "Porridge": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Porridge"
+          }
+        }
+      }
+    },
+    "Preset": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Preset"
+          }
+        }
+      }
+    },
+    "Preset deleted.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Preset deleted."
+          }
+        }
+      }
+    },
+    "Preset not saved": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Preset not saved"
+          }
+        }
+      }
+    },
+    "Preset saved.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Preset saved."
+          }
+        }
+      }
+    },
+    "Presets": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Presets"
+          }
+        }
+      }
+    },
+    "Quote": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Quote"
+          }
+        }
+      }
+    },
+    "Replace": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Replace"
+          }
+        }
+      }
+    },
+    "Replace today’s weight?": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Replace today’s weight?"
+          }
+        }
+      }
+    },
+    "Replaced %@": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Replaced %@"
+          }
+        }
+      }
+    },
+    "Resting heart rate": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Resting heart rate"
+          }
+        }
+      }
+    },
+    "Save": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Save"
+          }
+        }
+      }
+    },
+    "Save entry": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Save entry"
+          }
+        }
+      }
+    },
+    "Save meal": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Save meal"
+          }
+        }
+      }
+    },
+    "Save metric": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Save metric"
+          }
+        }
+      }
+    },
+    "Save preset": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Save preset"
+          }
+        }
+      }
+    },
+    "Search": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Search"
+          }
+        }
+      }
+    },
+    "Search entries": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Search entries"
+          }
+        }
+      }
+    },
+    "Search journal entries": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Search journal entries"
+          }
+        }
+      }
+    },
+    "Search side quests": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Search side quests"
+          }
+        }
+      }
+    },
+    "Show more": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Show more"
+          }
+        }
+      }
+    },
+    "Side quest not logged": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Side quest not logged"
+          }
+        }
+      }
+    },
+    "Side quests": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Side quests"
+          }
+        }
+      }
+    },
+    "Side quests couldn’t be loaded": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Side quests couldn’t be loaded"
+          }
+        }
+      }
+    },
+    "Sleep duration": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sleep duration"
+          }
+        }
+      }
+    },
+    "Something you did that no quest asked for. It earns XP once, has no schedule and no streak to protect.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Something you did that no quest asked for. It earns XP once, has no schedule and no streak to protect."
+          }
+        }
+      }
+    },
+    "Stat": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Stat"
+          }
+        }
+      }
+    },
+    "Steady": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Steady"
+          }
+        }
+      }
+    },
+    "Step on the scale when it suits you. Missing days are fine.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Step on the scale when it suits you. Missing days are fine."
+          }
+        }
+      }
+    },
+    "Steps": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Steps"
+          }
+        }
+      }
+    },
+    "Text": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Text"
+          }
+        }
+      }
+    },
+    "The first %lld a day carry the reward. Anything after them still records — the log is the point, not the XP.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The first %lld a day carry the reward. Anything after them still records — the log is the point, not the XP."
+          }
+        }
+      }
+    },
+    "The first one can be a single line.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The first one can be a single line."
+          }
+        }
+      }
+    },
+    "The journal couldn’t be loaded": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The journal couldn’t be loaded"
+          }
+        }
+      }
+    },
+    "The small things count here.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The small things count here."
+          }
+        }
+      }
+    },
+    "This month": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This month"
+          }
+        }
+      }
+    },
+    "Threshold met": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Threshold met"
+          }
+        }
+      }
+    },
+    "Today": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Today"
+          }
+        }
+      }
+    },
+    "Today already carries %@. Saving %@ replaces it.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Today already carries %@. Saving %@ replaces it."
+          }
+        }
+      }
+    },
+    "Today · %@": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Today · %@"
+          }
+        }
+      }
+    },
+    "Trend": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Trend"
+          }
+        }
+      }
+    },
+    "Try a different search.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Try a different search."
+          }
+        }
+      }
+    },
+    "Try a shorter word.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Try a shorter word."
+          }
+        }
+      }
+    },
+    "Type a value to save — a blank day stays blank.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Type a value to save — a blank day stays blank."
+          }
+        }
+      }
+    },
+    "Typed": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Typed"
+          }
+        }
+      }
+    },
+    "Typed by you": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Typed by you"
+          }
+        }
+      }
+    },
+    "Unit": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Unit"
+          }
+        }
+      }
+    },
+    "Use digits only, like %@.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Use digits only, like %@."
+          }
+        }
+      }
+    },
+    "Used %lld times": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Used once"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Used %lld times"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "Waist circumference": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Waist circumference"
+          }
+        }
+      }
+    },
+    "Water": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Water"
+          }
+        }
+      }
+    },
+    "Wealth": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Wealth"
+          }
+        }
+      }
+    },
+    "Weight": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Weight"
+          }
+        }
+      }
+    },
+    "Weight couldn’t be loaded": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Weight couldn’t be loaded"
+          }
+        }
+      }
+    },
+    "Weight in %@": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Weight in %@"
+          }
+        }
+      }
+    },
+    "Weight is between %@ and %@.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Weight is between %@ and %@."
+          }
+        }
+      }
+    },
+    "Weight not saved": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Weight not saved"
+          }
+        }
+      }
+    },
+    "Weight trend": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Weight trend"
+          }
+        }
+      }
+    },
+    "Weights from the last 90 days draw the trend once there is one.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Weights from the last 90 days draw the trend once there is one."
+          }
+        }
+      }
+    },
+    "What it is": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "What it is"
+          }
+        }
+      }
+    },
+    "What was it": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "What was it"
+          }
+        }
+      }
+    },
+    "What you did": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "What you did"
+          }
+        }
+      }
+    },
+    "Workout minutes": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Workout minutes"
+          }
+        }
+      }
+    },
+    "Write as much or as little as you like. One line counts.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Write as much or as little as you like. One line counts."
+          }
+        }
+      }
+    },
+    "Writing": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Writing"
+          }
+        }
+      }
+    },
+    "XP from side quests": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "XP from side quests"
+          }
+        }
+      }
+    },
+    "Yes or no": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Yes or no"
+          }
+        }
+      }
+    },
+    "You have logged %lld %@ this month and reached the monthly allowance of %lld. Everything still saves.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You have logged %lld %@ this month and reached the monthly allowance of %lld. Everything still saves."
+          }
+        }
+      }
+    },
+    "You have logged %lld %@ this month, past the monthly allowance of %lld. Everything still saves.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You have logged %lld %@ this month, past the monthly allowance of %lld. Everything still saves."
+          }
+        }
+      }
+    },
+    "You logged %@. The quest is yours to complete: Memoir never completes a quest for you, even when the threshold is met.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You logged %@. The quest is yours to complete: Memoir never completes a quest for you, even when the threshold is met."
+          }
+        }
+      }
+    },
+    "Your estimate. Zero is a valid answer.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your estimate. Zero is a valid answer."
+          }
+        }
+      }
+    },
+    "Your presets": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your presets"
+          }
+        }
+      }
+    },
+    "bpm": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "bpm"
+          }
+        }
+      }
+    },
+    "cm": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "cm"
+          }
+        }
+      }
+    },
+    "expenses": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "expenses"
+          }
+        }
+      }
+    },
+    "h": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "h"
+          }
+        }
+      }
+    },
+    "journal entries": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "journal entries"
+          }
+        }
+      }
+    },
+    "kcal": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "kcal"
+          }
+        }
+      }
+    },
+    "kg": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "kg"
+          }
+        }
+      }
+    },
+    "lb": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "lb"
+          }
+        }
+      }
+    },
+    "meals": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "meals"
+          }
+        }
+      }
+    },
+    "min": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "min"
+          }
+        }
+      }
+    },
+    "ml": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ml"
+          }
+        }
+      }
+    },
+    "mmol/L": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "mmol/L"
+          }
+        }
+      }
+    },
+    "side quests": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "side quests"
+          }
+        }
+      }
+    },
+    "steps": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "steps"
+          }
+        }
+      }
+    },
+    "weight entries": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "weight entries"
+          }
+        }
+      }
+    }
+  },
+  "version": "1.0"
+}
