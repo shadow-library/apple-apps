@@ -6,11 +6,11 @@ let project = Project.app(
   platform: .phoneAndMac,
   dependencies: [
     .product(.novelForgeCore), .shared(.store), .shared(.ai), .shared(.jobs), .shared(.keychain), .shared(.networking), .shared(.designSystem), .shared(.text), .shared(.sync),
-    .shared(.syncRuntime), .shared(.syncCloudKit), .shared(.syncS3),
+    .shared(.syncRuntime), .shared(.syncCloudKit), .shared(.syncS3), .shared(.appShell),
   ],
   testDependencies: [
     .product(.novelForgeCore), .shared(.store), .shared(.keychain), .shared(.testSupport), .shared(.text), .shared(.sync), .shared(.syncRuntime), .shared(.syncCloudKit),
-    .shared(.syncS3),
+    .shared(.syncS3), .shared(.appShell),
   ],
   infoPlist: [
     "UTExportedTypeDeclarations": [

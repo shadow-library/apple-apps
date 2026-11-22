@@ -1,5 +1,6 @@
 import Foundation
 import NovelForgeCore
+import ShadowAppShell
 import ShadowCore
 
 /// What a plan card's refused save shows: a title and the one thing the author can do about it.

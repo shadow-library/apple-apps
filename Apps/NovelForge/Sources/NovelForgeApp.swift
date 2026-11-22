@@ -1,4 +1,5 @@
 import Foundation
+import ShadowAppShell
 import ShadowDesignSystem
 import ShadowStore
 import SwiftUI
@@ -16,7 +17,7 @@ struct NovelForgeApp: App {
   @State private var chats = ChatRuntimes()
   @State private var settingsTabs = SettingsTabs()
 
-  private var vault: VaultModel { delegate.vault }
+  private var vault: NovelForgeVault { delegate.vault }
   private var sync: SyncRuntimes { delegate.sync }
   private var ai: AIServices { delegate.ai }
   private var jobs: JobRuntimes { delegate.jobs }

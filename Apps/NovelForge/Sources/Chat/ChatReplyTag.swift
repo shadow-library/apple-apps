@@ -1,6 +1,7 @@
 import Foundation
 import NovelForgeCore
 import ShadowAI
+import ShadowAppShell
 import ShadowCore
 
 /// The line under a reply (apps/novel-forge-web/src/components/nf/ChatModel.tsx:15-23 over src/lib/chat-model.ts:15-22): its pace, Unrestricted when it

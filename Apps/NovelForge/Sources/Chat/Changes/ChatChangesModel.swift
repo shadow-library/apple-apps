@@ -1,6 +1,7 @@
 import Foundation
 import NovelForgeCore
 import Observation
+import ShadowAppShell
 import ShadowStore
 
 nonisolated struct ChatChangesSnapshot: Equatable, Sendable {

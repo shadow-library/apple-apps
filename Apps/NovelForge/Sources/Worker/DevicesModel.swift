@@ -2,6 +2,7 @@ import Foundation
 import NovelForgeCore
 import OSLog
 import Observation
+import ShadowAppShell
 import ShadowCore
 import ShadowStore
 import ShadowSync

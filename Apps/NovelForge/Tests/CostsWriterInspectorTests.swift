@@ -1,5 +1,6 @@
 import Foundation
 @_spi(Preview) import NovelForgeCore
+import ShadowAppShell
 import ShadowCore
 import ShadowStore
 import Testing

@@ -1,3 +1,5 @@
+import ShadowAppShell
+
 #if os(macOS)
   import Foundation
   import NovelForgeCore

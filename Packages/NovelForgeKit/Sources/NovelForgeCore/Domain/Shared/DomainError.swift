@@ -20,7 +20,7 @@ public enum PromiseRef: Hashable, Sendable {
   }
 }
 
-public enum DomainError: ShadowError, Equatable {
+public enum DomainError: DomainFailure, Equatable {
   case novelNotFound(UUID)
   case novelExists(UUID)
   case wordTargetInverted
@@ -232,5 +232,12 @@ public enum DomainError: ShadowError, Equatable {
 
   public static func == (left: DomainError, right: DomainError) -> Bool {
     left.code == right.code && left.errorDescription == right.errorDescription
+  }
+}
+
+extension DomainError {
+  public var storeFailure: StoreError? {
+    guard case .store(let store) = self else { return nil }
+    return store
   }
 }

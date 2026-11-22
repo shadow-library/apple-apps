@@ -2,6 +2,7 @@ import Foundation
 import NovelForgeCore
 import OSLog
 import Observation
+import ShadowAppShell
 import ShadowStore
 
 /// One turn engine per open vault, shared by every window: the engine alone knows which turns run here, so a second engine on the same vault would read a

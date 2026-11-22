@@ -1,5 +1,6 @@
 import Foundation
 import NovelForgeCore
+import ShadowAppShell
 
 enum ReaderErrors {
   static func headline(for error: DomainError) -> String? {

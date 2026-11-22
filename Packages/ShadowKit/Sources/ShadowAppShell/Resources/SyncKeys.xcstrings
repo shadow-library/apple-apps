@@ -1,0 +1,1136 @@
+{
+  "sourceLanguage": "en",
+  "strings": {
+    "QR code for your other device": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "QR code for your other device"
+          }
+        }
+      }
+    },
+    "The code could not be drawn. Copy its text instead.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The code could not be drawn. Copy its text instead."
+          }
+        }
+      }
+    },
+    "Camera view for scanning the code": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Camera view for scanning the code"
+          }
+        }
+      }
+    },
+    "Camera access is off for %@. Turn it on in System Settings › Privacy & Security › Camera to scan, or paste the code's text below.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Camera access is off for %@. Turn it on in System Settings › Privacy & Security › Camera to scan, or paste the code's text below."
+          }
+        }
+      }
+    },
+    "Camera access is off for %@. Turn it on in Settings to scan, or paste the code's text below.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Camera access is off for %@. Turn it on in Settings to scan, or paste the code's text below."
+          }
+        }
+      }
+    },
+    "This device cannot scan codes. Paste the code's text below.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This device cannot scan codes. Paste the code's text below."
+          }
+        }
+      }
+    },
+    "This Mac has no camera. Paste the code's text below.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This Mac has no camera. Paste the code's text below."
+          }
+        }
+      }
+    },
+    "Or paste the code's text": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Or paste the code's text"
+          }
+        }
+      }
+    },
+    "Code text": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Code text"
+          }
+        }
+      }
+    },
+    "Use": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Use"
+          }
+        }
+      }
+    },
+    "Scan from Another Device": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Scan from Another Device"
+          }
+        }
+      }
+    },
+    "Scan the code your other device now shows.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Scan the code your other device now shows."
+          }
+        }
+      }
+    },
+    "On a device that already has your %@, open Sync Settings, then Keys and Devices, choose Send the Key to Another Device and scan this code.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "On a device that already has your %@, open Sync Settings, then Keys and Devices, choose Send the Key to Another Device and scan this code."
+          }
+        }
+      }
+    },
+    "Type the six-digit code your other device shows. If it is not the code you expected, cancel.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Type the six-digit code your other device shows. If it is not the code you expected, cancel."
+          }
+        }
+      }
+    },
+    "Code from the other device": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Code from the other device"
+          }
+        }
+      }
+    },
+    "Adding the key…": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Adding the key…"
+          }
+        }
+      }
+    },
+    "Your %@'s key is on this device.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your %@'s key is on this device."
+          }
+        }
+      }
+    },
+    "Show This Device's Code": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Show This Device's Code"
+          }
+        }
+      }
+    },
+    "Next: Scan Their Code": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Next: Scan Their Code"
+          }
+        }
+      }
+    },
+    "Add Key": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Add Key"
+          }
+        }
+      }
+    },
+    "Done": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Done"
+          }
+        }
+      }
+    },
+    "Cancel": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cancel"
+          }
+        }
+      }
+    },
+    "Send the Key to Another Device": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Send the Key to Another Device"
+          }
+        }
+      }
+    },
+    "On the device that needs the key, choose Scan from Another Device, then scan the code it shows.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "On the device that needs the key, choose Scan from Another Device, then scan the code it shows."
+          }
+        }
+      }
+    },
+    "Preparing the answer…": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Preparing the answer…"
+          }
+        }
+      }
+    },
+    "Scan this code with the other device.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Scan this code with the other device."
+          }
+        }
+      }
+    },
+    "Type this code on the other device. Its key is added only if the codes match.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Type this code on the other device. Its key is added only if the codes match."
+          }
+        }
+      }
+    },
+    "The Other Device Scanned It": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The Other Device Scanned It"
+          }
+        }
+      }
+    },
+    "Hidden while %@ is not in front": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hidden while %@ is not in front"
+          }
+        }
+      }
+    },
+    "Copied": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Copied"
+          }
+        }
+      }
+    },
+    "Copy Code as Text": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Copy Code as Text"
+          }
+        }
+      }
+    },
+    "Enter Recovery Phrase": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Enter Recovery Phrase"
+          }
+        }
+      }
+    },
+    "%lld keys were added.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld keys were added."
+          }
+        }
+      }
+    },
+    "Type or paste the 24 words of your recovery phrase, in order. Capitals and extra spaces do not matter.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Type or paste the 24 words of your recovery phrase, in order. Capitals and extra spaces do not matter."
+          }
+        }
+      }
+    },
+    "Recovery phrase": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Recovery phrase"
+          }
+        }
+      }
+    },
+    "%lld of 24 words": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld of 24 words"
+          }
+        }
+      }
+    },
+    "Looking for your %@'s keys…": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Looking for your %@'s keys…"
+          }
+        }
+      }
+    },
+    "Recover Key": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Recover Key"
+          }
+        }
+      }
+    },
+    "Set up a recovery phrase": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Set up a recovery phrase"
+          }
+        }
+      }
+    },
+    "If you ever lose all your devices, a recovery phrase is the only way back into your synced %@.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "If you ever lose all your devices, a recovery phrase is the only way back into your synced %@."
+          }
+        }
+      }
+    },
+    "Set Up Recovery Phrase": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Set Up Recovery Phrase"
+          }
+        }
+      }
+    },
+    "Not Now": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Not Now"
+          }
+        }
+      }
+    },
+    "Recovery Phrase": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Recovery Phrase"
+          }
+        }
+      }
+    },
+    "Saving your recovery phrase…": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Saving your recovery phrase…"
+          }
+        }
+      }
+    },
+    "Your recovery phrase is set up.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your recovery phrase is set up."
+          }
+        }
+      }
+    },
+    "With it, any device can open your %@'s keys, even when none of your devices is at hand. Keep it somewhere safe.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "With it, any device can open your %@'s keys, even when none of your devices is at hand. Keep it somewhere safe."
+          }
+        }
+      }
+    },
+    "A few of its copies finish the next time this device syncs.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A few of its copies finish the next time this device syncs."
+          }
+        }
+      }
+    },
+    "I Wrote Them Down": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "I Wrote Them Down"
+          }
+        }
+      }
+    },
+    "Show the Words Again": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Show the Words Again"
+          }
+        }
+      }
+    },
+    "Save Phrase": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Save Phrase"
+          }
+        }
+      }
+    },
+    "Write these 24 words down in order and keep them somewhere safe, away from your devices. They are shown only now, and %@ does not keep them. Anyone who has them can open your %@.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Write these 24 words down in order and keep them somewhere safe, away from your devices. They are shown only now, and %@ does not keep them. Anyone who has them can open your %@."
+          }
+        }
+      }
+    },
+    "Type these words from what you wrote down, to check it.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Type these words from what you wrote down, to check it."
+          }
+        }
+      }
+    },
+    "Word %lld": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Word %lld"
+          }
+        }
+      }
+    },
+    "This is not word %lld.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This is not word %lld."
+          }
+        }
+      }
+    },
+    "Bring the Key Here": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bring the Key Here"
+          }
+        }
+      }
+    },
+    "Waiting for this %@'s key from your other devices": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Waiting for this %@'s key from your other devices"
+          }
+        }
+      }
+    },
+    "Enter your recovery phrase, or scan from another device, to bring it here now.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Enter your recovery phrase, or scan from another device, to bring it here now."
+          }
+        }
+      }
+    },
+    "Sync is off on this device. Turn it on to bring your %@'s key here.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sync is off on this device. Turn it on to bring your %@'s key here."
+          }
+        }
+      }
+    },
+    "Your %@'s keys can be managed once sync has started.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your %@'s keys can be managed once sync has started."
+          }
+        }
+      }
+    },
+    "Sync cannot reach your %@'s synced copy right now. The sync status says why.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sync cannot reach your %@'s synced copy right now. The sync status says why."
+          }
+        }
+      }
+    },
+    "Sync could not open your %@'s keys. Try again.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sync could not open your %@'s keys. Try again."
+          }
+        }
+      }
+    },
+    "Your %@ could not be read or saved on this device.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your %@ could not be read or saved on this device."
+          }
+        }
+      }
+    },
+    "The keys stored for this phrase could not be read.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The keys stored for this phrase could not be read."
+          }
+        }
+      }
+    },
+    "This device does not hold your %@'s key, so it cannot set up a recovery phrase.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This device does not hold your %@'s key, so it cannot set up a recovery phrase."
+          }
+        }
+      }
+    },
+    "Words %@ do not match. Check what you wrote down.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Words %@ do not match. Check what you wrote down."
+          }
+        }
+      }
+    },
+    "This recovery phrase is already saved. Start again to make a new one.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This recovery phrase is already saved. Start again to make a new one."
+          }
+        }
+      }
+    },
+    "This phrase does not unlock this %@. It may belong to another %@, or a newer phrase may have replaced it.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This phrase does not unlock this %@. It may belong to another %@, or a newer phrase may have replaced it."
+          }
+        }
+      }
+    },
+    "The keys stored for this phrase failed a check, so none were added.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The keys stored for this phrase failed a check, so none were added."
+          }
+        }
+      }
+    },
+    "That code could not be read. Scan it again.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "That code could not be read. Scan it again."
+          }
+        }
+      }
+    },
+    "The other device sent the key of another %@, so nothing was added. Start again.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The other device sent the key of another %@, so nothing was added. Start again."
+          }
+        }
+      }
+    },
+    "That code answers another request. Scan the code the other device shows for this one.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "That code answers another request. Scan the code the other device shows for this one."
+          }
+        }
+      }
+    },
+    "This exchange has ended. Start again on both devices.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This exchange has ended. Start again on both devices."
+          }
+        }
+      }
+    },
+    "That code failed a check, so nothing was added. Start again on both devices.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "That code failed a check, so nothing was added. Start again on both devices."
+          }
+        }
+      }
+    },
+    "That code could not be used. Start again on both devices.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "That code could not be used. Start again on both devices."
+          }
+        }
+      }
+    },
+    "This device does not hold your %@'s key, so it cannot send it.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This device does not hold your %@'s key, so it cannot send it."
+          }
+        }
+      }
+    },
+    "This device already answered that code. Start again on the other device to show a new one.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This device already answered that code. Start again on the other device to show a new one."
+          }
+        }
+      }
+    },
+    "Scan the other device's code first.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Scan the other device's code first."
+          }
+        }
+      }
+    },
+    "The codes do not match, so no key was added. Start again on both devices.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The codes do not match, so no key was added. Start again on both devices."
+          }
+        }
+      }
+    },
+    "This exchange is already complete.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This exchange is already complete."
+          }
+        }
+      }
+    },
+    "A recovery phrase has 24 words, and this has %lld.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A recovery phrase has 24 words, and this has %lld."
+          }
+        }
+      }
+    },
+    "Word %lld is not a recovery phrase word. Check its spelling.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Word %lld is not a recovery phrase word. Check its spelling."
+          }
+        }
+      }
+    },
+    "These words are not a valid recovery phrase. A word may be wrong or out of order.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "These words are not a valid recovery phrase. A word may be wrong or out of order."
+          }
+        }
+      }
+    },
+    "The sync storage refused access. Check that you are signed in.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The sync storage refused access. Check that you are signed in."
+          }
+        }
+      }
+    },
+    "The sync storage is busy. Try again in a moment.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The sync storage is busy. Try again in a moment."
+          }
+        }
+      }
+    },
+    "The sync storage could not be reached. Check that this device is online, then try again.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The sync storage could not be reached. Check that this device is online, then try again."
+          }
+        }
+      }
+    },
+    "Sync changed while this was open, so it stopped. Nothing was changed.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sync changed while this was open, so it stopped. Nothing was changed."
+          }
+        }
+      }
+    },
+    "The key arrived, but it opens nothing in your %@'s synced copy yet. Try again once your other devices have synced.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The key arrived, but it opens nothing in your %@'s synced copy yet. Try again once your other devices have synced."
+          }
+        }
+      }
+    },
+    "Unlock this device, then try again.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Unlock this device, then try again."
+          }
+        }
+      }
+    },
+    "This build of %@ cannot use the keychain on this device, so it cannot keep your %@'s key.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This build of %@ cannot use the keychain on this device, so it cannot keep your %@'s key."
+          }
+        }
+      }
+    },
+    "The keychain could not be used, so your %@'s key cannot be kept here.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The keychain could not be used, so your %@'s key cannot be kept here."
+          }
+        }
+      }
+    },
+    "Keys and Devices": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Keys and Devices"
+          }
+        }
+      }
+    },
+    "Your other devices hand the key to this one on their own, and %@ keeps looking for it. You can also bring it here yourself.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your other devices hand the key to this one on their own, and %@ keeps looking for it. You can also bring it here yourself."
+          }
+        }
+      }
+    },
+    "Some of your %@'s changes are sealed with a key that has not reached this device.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Some of your %@'s changes are sealed with a key that has not reached this device."
+          }
+        }
+      }
+    },
+    "This Device": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This Device"
+          }
+        }
+      }
+    },
+    "Make a new recovery phrase?": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Make a new recovery phrase?"
+          }
+        }
+      }
+    },
+    "The phrase you have now stops working for your %@ once the new one is saved.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The phrase you have now stops working for your %@ once the new one is saved."
+          }
+        }
+      }
+    },
+    "Make a New Phrase": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Make a New Phrase"
+          }
+        }
+      }
+    },
+    "Make a New Phrase…": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Make a New Phrase…"
+          }
+        }
+      }
+    },
+    "A recovery phrase is 24 words that open your %@'s keys on any device, for when none of your other devices is at hand.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A recovery phrase is 24 words that open your %@'s keys on any device, for when none of your other devices is at hand."
+          }
+        }
+      }
+    },
+    "No recovery phrase is set up. Without one, losing all your devices means losing your synced %@.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No recovery phrase is set up. Without one, losing all your devices means losing your synced %@."
+          }
+        }
+      }
+    },
+    "A recovery phrase is set up, since %@.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A recovery phrase is set up, since %@."
+          }
+        }
+      }
+    },
+    "Your recovery phrase was replaced on another device.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your recovery phrase was replaced on another device."
+          }
+        }
+      }
+    },
+    "The phrase you wrote down on this device no longer opens your %@'s keys. Use the new phrase, or make a new one here.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The phrase you wrote down on this device no longer opens your %@'s keys. Use the new phrase, or make a new one here."
+          }
+        }
+      }
+    },
+    "Other Devices": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Other Devices"
+          }
+        }
+      }
+    },
+    "For a device that is waiting for your %@'s key: it shows a code, this device scans it, and the two compare six digits.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "For a device that is waiting for your %@'s key: it shows a code, this device scans it, and the two compare six digits."
+          }
+        }
+      }
+    },
+    "Devices with the Key": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Devices with the Key"
+          }
+        }
+      }
+    },
+    "A device shows here once it has synced with a key. This device holds every key listed.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A device shows here once it has synced with a key. This device holds every key listed."
+          }
+        }
+      }
+    },
+    "No device has synced with this key yet.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No device has synced with this key yet."
+          }
+        }
+      }
+    },
+    "Key %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Key %@"
+          }
+        }
+      }
+    },
+    "Key from %@ (%@)": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Key from %@ (%@)"
+          }
+        }
+      }
+    },
+    "Unnamed device": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Unnamed device"
+          }
+        }
+      }
+    },
+    "Your %@'s key is on this device. Sync starts now.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your %@'s key is on this device. Sync starts now."
+          }
+        }
+      }
+    },
+    "Your recovery phrase is saved.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your recovery phrase is saved."
+          }
+        }
+      }
+    }
+  },
+  "version": "1.0"
+}

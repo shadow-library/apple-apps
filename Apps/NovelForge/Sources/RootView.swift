@@ -1,8 +1,9 @@
+import ShadowAppShell
 import ShadowDesignSystem
 import SwiftUI
 
 struct RootView: View {
-  let vault: VaultModel
+  let vault: NovelForgeVault
 
   var body: some View {
     Group {

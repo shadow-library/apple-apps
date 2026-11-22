@@ -1,4 +1,5 @@
 import Foundation
+import ShadowAppShell
 
 enum DraftImportErrors {
   static func presented(_ error: any Error) -> PresentedError {

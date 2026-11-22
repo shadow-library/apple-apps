@@ -1,5 +1,6 @@
 import Foundation
 import NovelForgeCore
+import ShadowAppShell
 import ShadowCore
 import ShadowJobs
 import ShadowStore
@@ -228,7 +229,7 @@ private struct StatusWorld {
     _ = try await store.write { transaction in
       try ChapterDrafts.save(novel: novel, chapter: 1, DraftEdit(body: "The tide came in."), base: nil, at: Date(), in: &transaction)
     }
-    let services = AIServices.live(defaults: try #require(UserDefaults(suiteName: "JobsStatusTests-\(UUID().uuidString)")))
+    let services = AIServices.novelForge(defaults: try #require(UserDefaults(suiteName: "JobsStatusTests-\(UUID().uuidString)")))
     let engine = try JobEngine(
       store: store, router: { requestGuard in await services.router(store: store, requestGuard: requestGuard) }, consent: ConsentDisclosure.novelText.requirement,
       clock: LeaseClock(trusted: nil))

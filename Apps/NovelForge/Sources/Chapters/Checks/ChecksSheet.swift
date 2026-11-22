@@ -2,6 +2,7 @@ import CryptoKit
 import Foundation
 import NovelForgeCore
 import ShadowAI
+import ShadowAppShell
 import ShadowDesignSystem
 import ShadowJobs
 import ShadowStore

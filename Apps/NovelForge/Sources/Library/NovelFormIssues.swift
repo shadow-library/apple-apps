@@ -1,5 +1,6 @@
 import Foundation
 import NovelForgeCore
+import ShadowAppShell
 
 struct NovelFormIssues: Equatable {
   var title: String?

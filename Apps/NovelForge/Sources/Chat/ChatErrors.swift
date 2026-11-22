@@ -1,6 +1,7 @@
 import Foundation
 import NovelForgeCore
 import ShadowAI
+import ShadowAppShell
 
 struct ChatNotice: Equatable {
   let error: PresentedError
@@ -16,12 +17,12 @@ struct ChatFailureCopy: Equatable {
 enum ChatErrors {
   static func notice(_ error: ChatTurnError) -> ChatNotice {
     guard case .routing(let routing) = error else { return ChatNotice(error: presented(error), opensSettings: false) }
-    return ChatNotice(error: AIErrors.presented(routing), opensSettings: opensSettings(routing))
+    return ChatNotice(error: AIErrors.presented(routing, app: .novelForge), opensSettings: opensSettings(routing))
   }
 
   static func presented(_ error: ChatTurnError) -> PresentedError {
     switch error {
-    case .routing(let routing): AIErrors.presented(routing)
+    case .routing(let routing): AIErrors.presented(routing, app: .novelForge)
     case .store(let store): PresentedError(store)
     default: PresentedError(headline: headline(for: error), detail: error.code)
     }

@@ -2,6 +2,7 @@ import Foundation
 import NovelForgeCore
 import Observation
 import ShadowAI
+import ShadowAppShell
 import ShadowCore
 import ShadowDesignSystem
 import ShadowJobs

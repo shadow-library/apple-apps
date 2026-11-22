@@ -1,6 +1,7 @@
 import Foundation
 import NovelForgeCore
 import ShadowAI
+import ShadowAppShell
 import ShadowCore
 import ShadowJobs
 import ShadowStore
@@ -483,7 +484,7 @@ struct JobsRuntimeTests {
   @Test func shouldTellTheHostWhenTheSceneGoesToTheBackgroundAndComesBack() async throws {
     let host = RecordingHost()
     let runtimes = JobRuntimes(host: host)
-    let services = AIServices.live(defaults: try #require(UserDefaults(suiteName: "JobsRuntimeTests-\(UUID().uuidString)")))
+    let services = AIServices.novelForge(defaults: try #require(UserDefaults(suiteName: "JobsRuntimeTests-\(UUID().uuidString)")))
     await runtimes.phaseChanged(.background)
     #expect(host.backgrounds == 0)
 
@@ -497,7 +498,7 @@ struct JobsRuntimeTests {
 
   @Test func shouldStampAndReadLeasesWithTheVaultsTrustedClock() async throws {
     let runtimes = JobRuntimes()
-    let services = AIServices.live(defaults: try #require(UserDefaults(suiteName: "JobsRuntimeTests-\(UUID().uuidString)")))
+    let services = AIServices.novelForge(defaults: try #require(UserDefaults(suiteName: "JobsRuntimeTests-\(UUID().uuidString)")))
     let trusted = TrustedClock()
     let ahead = Date().addingTimeInterval(3600)
     trusted.record(serverDate: ahead)
@@ -509,7 +510,7 @@ struct JobsRuntimeTests {
 
   @Test func shouldKeepOneRuntimePerVaultAndLetViewsOnlyReadIt() async throws {
     let runtimes = JobRuntimes()
-    let services = AIServices.live(defaults: try #require(UserDefaults(suiteName: "JobsRuntimeTests-\(UUID().uuidString)")))
+    let services = AIServices.novelForge(defaults: try #require(UserDefaults(suiteName: "JobsRuntimeTests-\(UUID().uuidString)")))
     let store = try NovelForgeStore.openInMemory()
     #expect(runtimes.existing(for: store) == nil)
     let clock = TrustedClock()

@@ -1,3 +1,5 @@
+import ShadowAppShell
+
 #if os(macOS)
   import Foundation
   import NovelForgeCore
@@ -74,7 +76,7 @@
     }
 
     static func live(sync: SyncRuntimes) -> WorkerModel {
-      guard !VaultOpener.isHostedByTests else {
+      guard !VaultDirectory.isHostedByTests else {
         let suite = "com.shadow.apps.novelforge.tests.worker-host"
         let defaults = UserDefaults(suiteName: suite) ?? .standard
         defaults.removePersistentDomain(forName: suite)

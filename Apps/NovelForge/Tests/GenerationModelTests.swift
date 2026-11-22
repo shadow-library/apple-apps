@@ -1,6 +1,7 @@
 import Foundation
 import NovelForgeCore
 import ShadowAI
+import ShadowAppShell
 import ShadowJobs
 import ShadowStore
 import ShadowTestSupport

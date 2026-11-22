@@ -3,6 +3,7 @@ import NovelForgeCore
 import OSLog
 import Observation
 import ShadowAI
+import ShadowAppShell
 import ShadowCore
 import ShadowJobs
 import ShadowStore

@@ -1,5 +1,6 @@
 import Foundation
 import NovelForgeCore
+import ShadowAppShell
 
 enum StoryBibleErrors {
   static func presented(_ error: any Error) -> PresentedError {

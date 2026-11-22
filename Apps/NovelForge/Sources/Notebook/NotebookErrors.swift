@@ -1,5 +1,6 @@
 import Foundation
 import NovelForgeCore
+import ShadowAppShell
 
 enum NotebookErrors {
   static func present(_ error: any Error) -> PresentedError {

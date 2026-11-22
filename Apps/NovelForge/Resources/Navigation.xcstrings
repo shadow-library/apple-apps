@@ -133,17 +133,6 @@
         }
       }
     },
-    "Something went wrong.": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Something went wrong."
-          }
-        }
-      }
-    },
     "Story": {
       "extractionState": "manual",
       "localizations": {

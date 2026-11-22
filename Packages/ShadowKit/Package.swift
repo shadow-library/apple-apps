@@ -11,6 +11,7 @@ let swiftSettings: [SwiftSetting] = [
 
 let package = Package(
   name: "ShadowKit",
+  defaultLocalization: "en",
   platforms: [.iOS(.v26), .macOS(.v26), .watchOS(.v26), .tvOS(.v26), .visionOS(.v26)],
   products: [
     .library(name: "ShadowCore", targets: ["ShadowCore"]),
@@ -27,6 +28,7 @@ let package = Package(
     .library(name: "ShadowAI", targets: ["ShadowAI"]),
     .library(name: "ShadowJobs", targets: ["ShadowJobs"]),
     .library(name: "ShadowDesignSystem", targets: ["ShadowDesignSystem"]),
+    .library(name: "ShadowAppShell", targets: ["ShadowAppShell"]),
     .library(name: "ShadowTestSupport", targets: ["ShadowTestSupport"]),
   ],
   dependencies: [
@@ -54,6 +56,15 @@ let package = Package(
     .target(name: "ShadowJobs", dependencies: ["ShadowCore", "ShadowStore", .product(name: "GRDB", package: "GRDB.swift")], swiftSettings: swiftSettings),
     .target(name: "ShadowDesignSystem", swiftSettings: swiftSettings + [.defaultIsolation(MainActor.self)]),
     .target(
+      name: "ShadowAppShell",
+      dependencies: [
+        "ShadowCore", "ShadowNetworking", "ShadowKeychain", "ShadowStore", "ShadowSync", "ShadowSyncS3", "ShadowSyncCloudKit", "ShadowSyncRuntime", "ShadowAI",
+        "ShadowDesignSystem",
+      ],
+      resources: [.process("Resources")],
+      swiftSettings: swiftSettings + [.defaultIsolation(MainActor.self)]
+    ),
+    .target(
       name: "ShadowTestSupport", dependencies: ["ShadowCore", "ShadowNetworking", "ShadowKeychain", "ShadowStore", "ShadowSync", "ShadowSyncCloudKit", "ShadowAI", "ShadowText"],
       swiftSettings: swiftSettings),
 
@@ -71,5 +82,6 @@ let package = Package(
     .testTarget(name: "ShadowAITests", dependencies: ["ShadowAI", "ShadowTestSupport"], swiftSettings: swiftSettings),
     .testTarget(name: "ShadowJobsTests", dependencies: ["ShadowJobs", "ShadowTestSupport"], swiftSettings: swiftSettings),
     .testTarget(name: "ShadowDesignSystemTests", dependencies: ["ShadowDesignSystem"], swiftSettings: swiftSettings),
+    .testTarget(name: "ShadowAppShellTests", dependencies: ["ShadowAppShell", "ShadowTestSupport"], swiftSettings: swiftSettings),
   ]
 )

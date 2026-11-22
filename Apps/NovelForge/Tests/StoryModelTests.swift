@@ -1,5 +1,6 @@
 import Foundation
 import NovelForgeCore
+import ShadowAppShell
 import ShadowCore
 import ShadowStore
 import SwiftUI

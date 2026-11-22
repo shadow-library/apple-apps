@@ -1,6 +1,7 @@
 import Foundation
 import NovelForgeCore
 import Observation
+import ShadowAppShell
 
 enum EntityFormMode: Equatable {
   case create(type: EntityType)

@@ -1,25 +1,16 @@
 import Foundation
 import NovelForgeCore
+import ShadowAppShell
 import ShadowStore
 
 nonisolated enum VaultOpener {
-  static let vaultName = "Default"
-
   static func defaultLocation(fileManager: FileManager = .default, bundleIdentifier: String? = Bundle.main.bundleIdentifier) throws(VaultOpenError) -> StoreLocation {
-    guard let bundleIdentifier else { throw .locationUnavailable("the app has no bundle identifier") }
-    do {
-      let support = try fileManager.url(for: .applicationSupportDirectory, in: .userDomainMask, appropriateFor: nil, create: true)
-      return .file(support.appending(path: bundleIdentifier).appending(path: "Vaults").appending(path: vaultName).appending(path: "vault.sqlite"))
-    } catch {
-      throw .locationUnavailable(error.localizedDescription)
-    }
+    .file(try VaultDirectory.default(fileManager: fileManager, bundleIdentifier: bundleIdentifier).appending(path: "vault.sqlite"))
   }
-
-  static var isHostedByTests: Bool { ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] != nil }
 
   /// The app's own vault, or an in-memory one while XCTest hosts the app.
   static func appLocation() throws(VaultOpenError) -> StoreLocation {
-    guard !isHostedByTests else { return .inMemory }
+    guard !VaultDirectory.isHostedByTests else { return .inMemory }
     return try defaultLocation()
   }
 

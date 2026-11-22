@@ -1,3 +1,4 @@
+import ShadowAppShell
 import ShadowStore
 import ShadowSyncRuntime
 import SwiftUI
@@ -14,9 +15,9 @@ final class NovelForgeAppDelegate: NSObject {
   static let pushDeadline = Duration.seconds(25)
   static let quitDeadline = Duration.seconds(3)
 
-  let vault = VaultModel(locate: { () throws(VaultOpenError) -> StoreLocation in try VaultOpener.appLocation() })
-  let sync = SyncRuntimes.live()
-  let ai = AIServices.live()
+  let vault = NovelForgeVault { wallClock throws(VaultOpenError) in try await VaultOpener.open(try VaultOpener.appLocation(), wallClock: wallClock) }
+  let sync = SyncRuntimes.live(identity: .novelForge)
+  let ai = AIServices.novelForge()
   let jobs = JobRuntimes(host: JobRunHosts.system())
   let retrieval = RetrievalRuntimes()
   #if os(macOS)

@@ -1,6 +1,7 @@
 import Foundation
 import NovelForgeCore
 import Observation
+import ShadowAppShell
 import ShadowStore
 
 /// TurnProposalCard.tsx:55-108: suggested changes reviewed one by one, re-read on every commit so a synced decision or a conflict shows at once.

@@ -1,6 +1,7 @@
 import Foundation
 import NovelForgeCore
 import ShadowAI
+import ShadowAppShell
 import ShadowStore
 import ShadowTestSupport
 import Testing
@@ -283,9 +284,7 @@ struct ChatConsentTests {
   @Test("should keep one runtime per open vault")
   func shouldKeepOneRuntimePerOpenVault() throws {
     let runtimes = ChatRuntimes()
-    let settings = try SettingsFixtures.world()
-    defer { settings.tearDown() }
-    let services = settings.services
+    let services = AIServices.novelForge(defaults: try #require(UserDefaults(suiteName: "ChatSessionModelTests-\(UUID().uuidString)")))
     let store = try NovelForgeStore.openInMemory()
     #expect(runtimes.runtime(for: store, services: services) === runtimes.runtime(for: store, services: services))
     #expect(runtimes.runtime(for: try NovelForgeStore.openInMemory(), services: services) !== runtimes.runtime(for: store, services: services))

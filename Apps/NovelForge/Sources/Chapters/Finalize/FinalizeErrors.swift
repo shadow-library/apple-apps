@@ -1,5 +1,6 @@
 import Foundation
 import NovelForgeCore
+import ShadowAppShell
 
 /// Headlines for what approve, the finalize review's answers and finalize refuse (apps/novel-forge-server/src/classes/app-error-code.ts:17-84, 295-311); the
 /// job codes a read surfaces keep `JobsErrors`' words.

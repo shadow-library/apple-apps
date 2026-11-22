@@ -2,6 +2,7 @@ import Foundation
 import NovelForgeCore
 import Observation
 import ShadowAI
+import ShadowAppShell
 import ShadowStore
 
 nonisolated struct ChatTranscriptSnapshot: Equatable, Sendable {

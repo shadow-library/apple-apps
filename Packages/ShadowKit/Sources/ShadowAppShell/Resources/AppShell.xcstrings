@@ -1,0 +1,26 @@
+{
+  "sourceLanguage": "en",
+  "strings": {
+    "Something went wrong.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Something went wrong."
+          }
+        }
+      }
+    },
+    "Your data could not be read or saved.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your data could not be read or saved."
+          }
+        }
+      }
+    }
+  },
+  "version": "1.0"
+}

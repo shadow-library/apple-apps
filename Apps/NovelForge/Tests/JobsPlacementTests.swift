@@ -1,5 +1,6 @@
 import Foundation
 import NovelForgeCore
+import ShadowAppShell
 import ShadowCore
 import ShadowJobs
 import ShadowStore
@@ -104,7 +105,7 @@ private struct PlacementWorld {
   static func make(_ platform: JobPlatform, fake: FakeEngine = FakeEngine()) async throws -> PlacementWorld {
     let store = try NovelForgeStore.openInMemory()
     let novel = try await store.writeDomain { transaction throws(DomainError) in try Library.create(NewNovel(title: "Ashfall"), in: &transaction) }
-    let services = AIServices.live(defaults: try #require(UserDefaults(suiteName: "JobsPlacementTests-\(UUID().uuidString)")))
+    let services = AIServices.novelForge(defaults: try #require(UserDefaults(suiteName: "JobsPlacementTests-\(UUID().uuidString)")))
     let clock = LeaseClock(trusted: nil)
     let runtime = JobRuntime(store: store, clock: clock, platform: platform, takeOverDelay: .milliseconds(20), calls: fake.calls) { () throws(JobEngineError) in
       try JobEngine(

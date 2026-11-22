@@ -1,5 +1,6 @@
 import Foundation
 import NovelForgeCore
+import ShadowAppShell
 
 /// A refusal as a card shows it, with the one recovery the card can run for it.
 struct ChatCardNotice: Equatable {

@@ -1,0 +1,706 @@
+{
+  "sourceLanguage": "en",
+  "strings": {
+    "No model is set up for this request. Choose one in AI settings.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No model is set up for this request. Choose one in AI settings."
+          }
+        }
+      }
+    },
+    "Unrestricted writing has no model chosen. Choose one in AI settings.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Unrestricted writing has no model chosen. Choose one in AI settings."
+          }
+        }
+      }
+    },
+    "%@ is not available in this version of the app.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ is not available in this version of the app."
+          }
+        }
+      }
+    },
+    "Add your %@ key in AI settings first.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Add your %@ key in AI settings first."
+          }
+        }
+      }
+    },
+    "Allow %@ to send this to %@ first.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Allow %@ to send this to %@ first."
+          }
+        }
+      }
+    },
+    "Today's AI spend limit of %@ has been reached. Raise it in AI settings or try again tomorrow.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Today's AI spend limit of %@ has been reached. Raise it in AI settings or try again tomorrow."
+          }
+        }
+      }
+    },
+    "This month's AI spend limit of %@ has been reached. Raise it in AI settings or wait until next month.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This month's AI spend limit of %@ has been reached. Raise it in AI settings or wait until next month."
+          }
+        }
+      }
+    },
+    "Your AI spend so far could not be worked out, so nothing was sent.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your AI spend so far could not be worked out, so nothing was sent."
+          }
+        }
+      }
+    },
+    "Your AI cost records could not be read, so nothing was sent.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your AI cost records could not be read, so nothing was sent."
+          }
+        }
+      }
+    },
+    "The provider did not accept this key.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The provider did not accept this key."
+          }
+        }
+      }
+    },
+    "This key is not allowed to make requests.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This key is not allowed to make requests."
+          }
+        }
+      }
+    },
+    "The provider account has run out of credit.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The provider account has run out of credit."
+          }
+        }
+      }
+    },
+    "The provider is busy. Try again in a moment.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The provider is busy. Try again in a moment."
+          }
+        }
+      }
+    },
+    "The provider had a problem on its side. Try again later.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The provider had a problem on its side. Try again later."
+          }
+        }
+      }
+    },
+    "This device is offline.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This device is offline."
+          }
+        }
+      }
+    },
+    "The provider could not be reached.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The provider could not be reached."
+          }
+        }
+      }
+    },
+    "The check was cancelled.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The check was cancelled."
+          }
+        }
+      }
+    },
+    "The provider's reply could not be used.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The provider's reply could not be used."
+          }
+        }
+      }
+    },
+    "Your keychain could not be read or written. Check that %@ may use it.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your keychain could not be read or written. Check that %@ may use it."
+          }
+        }
+      }
+    },
+    "AI Settings": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "AI Settings"
+          }
+        }
+      }
+    },
+    "Done": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Done"
+          }
+        }
+      }
+    },
+    "This does not look like a key. Paste it again without extra characters.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This does not look like a key. Paste it again without extra characters."
+          }
+        }
+      }
+    },
+    "Remove this key?": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Remove this key?"
+          }
+        }
+      }
+    },
+    "Remove Key": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Remove Key"
+          }
+        }
+      }
+    },
+    "%@ stops working on every device that shares your keychain until you add a key again.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ stops working on every device that shares your keychain until you add a key again."
+          }
+        }
+      }
+    },
+    "Something went wrong": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Something went wrong"
+          }
+        }
+      }
+    },
+    "OK": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "OK"
+          }
+        }
+      }
+    },
+    "Provider": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Provider"
+          }
+        }
+      }
+    },
+    "Add your %@ key below to use it.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Add your %@ key below to use it."
+          }
+        }
+      }
+    },
+    "Choose a model for each pace below.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Choose a model for each pace below."
+          }
+        }
+      }
+    },
+    "AI provider": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "AI provider"
+          }
+        }
+      }
+    },
+    "Standard requests go to this provider. Keys sync through your keychain; the provider choice, models and spend caps stay on this device.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Standard requests go to this provider. Keys sync through your keychain; the provider choice, models and spend caps stay on this device."
+          }
+        }
+      }
+    },
+    "Key saved": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Key saved"
+          }
+        }
+      }
+    },
+    "API key": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "API key"
+          }
+        }
+      }
+    },
+    "Check and Save": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Check and Save"
+          }
+        }
+      }
+    },
+    "Paste a new key to replace it": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Paste a new key to replace it"
+          }
+        }
+      }
+    },
+    "Paste your key": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Paste your key"
+          }
+        }
+      }
+    },
+    "The key could not be checked.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The key could not be checked."
+          }
+        }
+      }
+    },
+    "Save Anyway": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Save Anyway"
+          }
+        }
+      }
+    },
+    "Save Models": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Save Models"
+          }
+        }
+      }
+    },
+    "OpenRouter models": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "OpenRouter models"
+          }
+        }
+      }
+    },
+    "Type the OpenRouter model identifier for each pace, for example vendor/model-name. Leave a pace empty to leave it unavailable. Authoring screens show only the pace, never the model.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Type the OpenRouter model identifier for each pace, for example vendor/model-name. Leave a pace empty to leave it unavailable. Authoring screens show only the pace, never the model."
+          }
+        }
+      }
+    },
+    "Model identifier": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Model identifier"
+          }
+        }
+      }
+    },
+    "Choose": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Choose"
+          }
+        }
+      }
+    },
+    "A model identifier has no spaces.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A model identifier has no spaces."
+          }
+        }
+      }
+    },
+    "OpenRouter's list does not include this identifier.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "OpenRouter's list does not include this identifier."
+          }
+        }
+      }
+    },
+    "Daily cap (USD)": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Daily cap (USD)"
+          }
+        }
+      }
+    },
+    "Monthly cap (USD)": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Monthly cap (USD)"
+          }
+        }
+      }
+    },
+    "Save Caps": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Save Caps"
+          }
+        }
+      }
+    },
+    "Spend caps": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Spend caps"
+          }
+        }
+      }
+    },
+    "Requests are refused once your recorded spend reaches a cap. Leave a field empty for no cap. Caps apply to this device's view of the ledger.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Requests are refused once your recorded spend reaches a cap. Leave a field empty for no cap. Caps apply to this device's view of the ledger."
+          }
+        }
+      }
+    },
+    "No cap": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No cap"
+          }
+        }
+      }
+    },
+    "Enter an amount in dollars, such as 5 or 2.50.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Enter an amount in dollars, such as 5 or 2.50."
+          }
+        }
+      }
+    },
+    "A cap must be more than zero. Clear the field for no cap.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A cap must be more than zero. Clear the field for no cap."
+          }
+        }
+      }
+    },
+    "A cap can be at most 1,000,000 dollars.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A cap can be at most 1,000,000 dollars."
+          }
+        }
+      }
+    },
+    "The daily cap cannot be higher than the monthly cap.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The daily cap cannot be higher than the monthly cap."
+          }
+        }
+      }
+    },
+    "Allowed sharing is unavailable right now.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Allowed sharing is unavailable right now."
+          }
+        }
+      }
+    },
+    "Nothing has been allowed yet. %@ asks the first time it needs to send something.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nothing has been allowed yet. %@ asks the first time it needs to send something."
+          }
+        }
+      }
+    },
+    "Revoke": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Revoke"
+          }
+        }
+      }
+    },
+    "Allowed sharing": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Allowed sharing"
+          }
+        }
+      }
+    },
+    "Revoking stops %@ sending that data to the provider until you allow it again.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Revoking stops %@ sending that data to the provider until you allow it again."
+          }
+        }
+      }
+    },
+    "Swift": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Swift"
+          }
+        }
+      }
+    },
+    "Steady": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Steady"
+          }
+        }
+      }
+    },
+    "Meticulous": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Meticulous"
+          }
+        }
+      }
+    },
+    "You can revoke this at any time in AI settings.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You can revoke this at any time in AI settings."
+          }
+        }
+      }
+    },
+    "Send this to %@?": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Send this to %@?"
+          }
+        }
+      }
+    },
+    "Don't Allow": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Don't Allow"
+          }
+        }
+      }
+    },
+    "Allow": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Allow"
+          }
+        }
+      }
+    },
+    "This request needs a newer version of %@.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This request needs a newer version of %@."
+          }
+        }
+      }
+    },
+    "It describes data this version cannot explain, so nothing can be allowed here.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "It describes data this version cannot explain, so nothing can be allowed here."
+          }
+        }
+      }
+    }
+  },
+  "version": "1.0"
+}
