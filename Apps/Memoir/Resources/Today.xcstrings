@@ -1,0 +1,2958 @@
+{
+  "sourceLanguage": "en",
+  "strings": {
+    "%@": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@"
+          }
+        }
+      }
+    },
+    "%@ / %@ XP": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ / %@ XP"
+          }
+        }
+      }
+    },
+    "%@ XP to level %lld": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ XP to level %lld"
+          }
+        }
+      }
+    },
+    "%@ completed.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ completed."
+          }
+        }
+      }
+    },
+    "%@ gains a point.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ gains a point."
+          }
+        }
+      }
+    },
+    "%@ is next · %@.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ is next · %@."
+          }
+        }
+      }
+    },
+    "%@ is open again.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ is open again."
+          }
+        }
+      }
+    },
+    "%@ moved to %@. The streak is untouched.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ moved to %@. The streak is untouched."
+          }
+        }
+      }
+    },
+    "%@ moved to tomorrow.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ moved to tomorrow."
+          }
+        }
+      }
+    },
+    "%@ recorded as partial, and the streak holds.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ recorded as partial, and the streak holds."
+          }
+        }
+      }
+    },
+    "%@ skipped.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ skipped."
+          }
+        }
+      }
+    },
+    "%@ skipped. The reason is only ever shown to you.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ skipped. The reason is only ever shown to you."
+          }
+        }
+      }
+    },
+    "%@. The record stays.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@. The record stays."
+          }
+        }
+      }
+    },
+    "%@: %@": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@: %@"
+          }
+        }
+      }
+    },
+    "%lld characters": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld character"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld characters"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld coins": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld coin"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld coins"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld d": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld d"
+          }
+        }
+      }
+    },
+    "%lld moves a week is the cap on %@ quests. Past it a move is recorded as a postpone instead of disappearing, so the history stays honest either way.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld moves a week is the cap on %@ quests. Past it a move is recorded as a postpone instead of disappearing, so the history stays honest either way."
+          }
+        }
+      }
+    },
+    "%lld moves a week is the cap on %@ quests. Past it a move is recorded as a postpone instead of disappearing, so the history stays honest either way. The cap frees up for occurrences from %@.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld moves a week is the cap on %@ quests. Past it a move is recorded as a postpone instead of disappearing, so the history stays honest either way. The cap frees up for occurrences from %@."
+          }
+        }
+      }
+    },
+    "%lld of %lld": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld of %lld"
+          }
+        }
+      }
+    },
+    "%lld of %lld done": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld of %lld done"
+          }
+        }
+      }
+    },
+    "%lld of %lld done · %lld partial": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld of %lld done · %lld partial"
+          }
+        }
+      }
+    },
+    "%lld of %lld quests completed, %lld partial.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$lld of %#@quests@ completed, %3$lld partial."
+          },
+          "substitutions": {
+            "quests": {
+              "argNum": 2,
+              "formatSpecifier": "lld",
+              "variations": {
+                "plural": {
+                  "one": {
+                    "stringUnit": {
+                      "state": "translated",
+                      "value": "%arg quest"
+                    }
+                  },
+                  "other": {
+                    "stringUnit": {
+                      "state": "translated",
+                      "value": "%arg quests"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld of %lld quests completed.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$lld of %#@quests@ completed."
+          },
+          "substitutions": {
+            "quests": {
+              "argNum": 2,
+              "formatSpecifier": "lld",
+              "variations": {
+                "plural": {
+                  "one": {
+                    "stringUnit": {
+                      "state": "translated",
+                      "value": "%arg quest"
+                    }
+                  },
+                  "other": {
+                    "stringUnit": {
+                      "state": "translated",
+                      "value": "%arg quests"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld reschedules used in the last 7 days": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld reschedules used in the last 7 days"
+          }
+        }
+      }
+    },
+    "%lld shields": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld shield"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld shields"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld skipped.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld skipped."
+          }
+        }
+      }
+    },
+    "%lld%% kept so far": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld%% kept so far"
+          }
+        }
+      }
+    },
+    "%lld-day streak": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld-day streak"
+          }
+        }
+      }
+    },
+    "%lld-occurrence streak": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld-occurrence streak"
+          }
+        }
+      }
+    },
+    "+%lld XP": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "+%lld XP"
+          }
+        }
+      }
+    },
+    "A fixed time, with thirty minutes of grace. A break spends HP when the day closes, unless your intensity is gentle.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A fixed time, with thirty minutes of grace. A break spends HP when the day closes, unless your intensity is gentle."
+          }
+        }
+      }
+    },
+    "A held shield bridges the break — the streak continues, but the shield is spent.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A held shield bridges the break — the streak continues, but the shield is spent."
+          }
+        }
+      }
+    },
+    "A line about how it went (optional)": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A line about how it went (optional)"
+          }
+        }
+      }
+    },
+    "A partial keeps the streak and grants XP for what you did. It is a real outcome, not a failure.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A partial keeps the streak and grants XP for what you did. It is a real outcome, not a failure."
+          }
+        }
+      }
+    },
+    "A purchase was withdrawn": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A purchase was withdrawn"
+          }
+        }
+      }
+    },
+    "A quest is a promise you keep to yourself, not a task. Start with one that takes ten minutes — it is easier to keep a small promise every day than a large one twice.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A quest is a promise you keep to yourself, not a task. Start with one that takes ten minutes — it is easier to keep a small promise every day than a large one twice."
+          }
+        }
+      }
+    },
+    "A quest was missed yesterday, so today also offers a lighter recovery quest you can keep before the day closes. Nothing you have earned was taken away.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A quest was missed yesterday, so today also offers a lighter recovery quest you can keep before the day closes. Nothing you have earned was taken away."
+          }
+        }
+      }
+    },
+    "A reason is only ever shown to you and used in your own patterns.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A reason is only ever shown to you and used in your own patterns."
+          }
+        }
+      }
+    },
+    "A reason is optional, and any you give is only ever shown to you.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A reason is optional, and any you give is only ever shown to you."
+          }
+        }
+      }
+    },
+    "A recovery quest is on today": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A recovery quest is on today"
+          }
+        }
+      }
+    },
+    "A window the length of the quest. A break spends HP when the day closes, unless your intensity is gentle.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A window the length of the quest. A break spends HP when the day closes, unless your intensity is gentle."
+          }
+        }
+      }
+    },
+    "Actions for %@": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Actions for %@"
+          }
+        }
+      }
+    },
+    "Add a reason": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Add a reason"
+          }
+        }
+      }
+    },
+    "Add a reason — %@": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Add a reason — %@"
+          }
+        }
+      }
+    },
+    "Adds a reason to what was recorded. It is only ever shown to you.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Adds a reason to what was recorded. It is only ever shown to you."
+          }
+        }
+      }
+    },
+    "All": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "All"
+          }
+        }
+      }
+    },
+    "Already moved once today.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Already moved once today."
+          }
+        }
+      }
+    },
+    "Already recorded as kept.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Already recorded as kept."
+          }
+        }
+      }
+    },
+    "Already recorded as late.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Already recorded as late."
+          }
+        }
+      }
+    },
+    "Already recorded as missed.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Already recorded as missed."
+          }
+        }
+      }
+    },
+    "Already recorded as moved.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Already recorded as moved."
+          }
+        }
+      }
+    },
+    "Already recorded as partial.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Already recorded as partial."
+          }
+        }
+      }
+    },
+    "Already recorded as postponed.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Already recorded as postponed."
+          }
+        }
+      }
+    },
+    "Already recorded as recovery.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Already recorded as recovery."
+          }
+        }
+      }
+    },
+    "Already recorded as skipped.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Already recorded as skipped."
+          }
+        }
+      }
+    },
+    "Anchor": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Anchor"
+          }
+        }
+      }
+    },
+    "Anchor Holder": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Anchor Holder"
+          }
+        }
+      }
+    },
+    "Another device recorded something this version can’t read. Your hero is shown as it was before it until Memoir is updated.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Another device recorded something this version can’t read. Your hero is shown as it was before it until Memoir is updated."
+          }
+        }
+      }
+    },
+    "Anything worth remembering (optional)": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Anything worth remembering (optional)"
+          }
+        }
+      }
+    },
+    "Architect": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Architect"
+          }
+        }
+      }
+    },
+    "Body": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Body"
+          }
+        }
+      }
+    },
+    "Body Tempered": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Body Tempered"
+          }
+        }
+      }
+    },
+    "Breaks the streak.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Breaks the streak."
+          }
+        }
+      }
+    },
+    "Cancel": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cancel"
+          }
+        }
+      }
+    },
+    "Close": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Close"
+          }
+        }
+      }
+    },
+    "Closed %lld days ago": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Closed %lld day ago"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Closed %lld days ago"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "Closed today": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Closed today"
+          }
+        }
+      }
+    },
+    "Closed unkept": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Closed unkept"
+          }
+        }
+      }
+    },
+    "Closed yesterday": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Closed yesterday"
+          }
+        }
+      }
+    },
+    "Comeback Steady": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Comeback Steady"
+          }
+        }
+      }
+    },
+    "Coming up": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Coming up"
+          }
+        }
+      }
+    },
+    "Complete": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Complete"
+          }
+        }
+      }
+    },
+    "Completed: %@": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Completed: %@"
+          }
+        }
+      }
+    },
+    "Cost": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cost"
+          }
+        }
+      }
+    },
+    "Couldn’t complete ‘%@’: %@": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Couldn’t complete ‘%@’: %@"
+          }
+        }
+      }
+    },
+    "Couldn’t move ‘%@’: %@": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Couldn’t move ‘%@’: %@"
+          }
+        }
+      }
+    },
+    "Couldn’t postpone ‘%@’: %@": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Couldn’t postpone ‘%@’: %@"
+          }
+        }
+      }
+    },
+    "Couldn’t save the partial for ‘%@’: %@": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Couldn’t save the partial for ‘%@’: %@"
+          }
+        }
+      }
+    },
+    "Couldn’t save the reason for ‘%@’: %@": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Couldn’t save the reason for ‘%@’: %@"
+          }
+        }
+      }
+    },
+    "Couldn’t save the recovery quest: %@": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Couldn’t save the recovery quest: %@"
+          }
+        }
+      }
+    },
+    "Couldn’t skip ‘%@’: %@": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Couldn’t skip ‘%@’: %@"
+          }
+        }
+      }
+    },
+    "Couldn’t undo ‘%@’: %@": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Couldn’t undo ‘%@’: %@"
+          }
+        }
+      }
+    },
+    "Create your first quest": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Create your first quest"
+          }
+        }
+      }
+    },
+    "Cross-Stat Climber": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cross-Stat Climber"
+          }
+        }
+      }
+    },
+    "Crown closes": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Crown closes"
+          }
+        }
+      }
+    },
+    "Crown · this week · day %lld of %lld · %lld%% kept": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Crown · this week · day %lld of %lld · %lld%% kept"
+          }
+        }
+      }
+    },
+    "Crown · today · %lld%% kept": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Crown · today · %lld%% kept"
+          }
+        }
+      }
+    },
+    "Discipline": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Discipline"
+          }
+        }
+      }
+    },
+    "Doesn’t touch a streak — this quest doesn’t keep one.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Doesn’t touch a streak — this quest doesn’t keep one."
+          }
+        }
+      }
+    },
+    "End of day": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "End of day"
+          }
+        }
+      }
+    },
+    "Entries older than 7 days can’t be changed.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Entries older than 7 days can’t be changed."
+          }
+        }
+      }
+    },
+    "Expenses, meals, weight and journal entries all work before your first quest exists. Side quests earn XP on their own.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Expenses, meals, weight and journal entries all work before your first quest exists. Side quests earn XP on their own."
+          }
+        }
+      }
+    },
+    "Experience towards level %lld": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Experience towards level %lld"
+          }
+        }
+      }
+    },
+    "Goal": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Goal"
+          }
+        }
+      }
+    },
+    "Goal Keeper": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Goal Keeper"
+          }
+        }
+      }
+    },
+    "HP": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "HP"
+          }
+        }
+      }
+    },
+    "HP %lld of %lld": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "HP %lld of %lld"
+          }
+        }
+      }
+    },
+    "Hero": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hero"
+          }
+        }
+      }
+    },
+    "Highest level reached": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Highest level reached"
+          }
+        }
+      }
+    },
+    "Honest Planner": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Honest Planner"
+          }
+        }
+      }
+    },
+    "It changed since, so it can’t be undone any more.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "It changed since, so it can’t be undone any more."
+          }
+        }
+      }
+    },
+    "It has already been moved twice this week.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "It has already been moved twice this week."
+          }
+        }
+      }
+    },
+    "It is judged on the day rather than the hour, and keeping it earns its own reward.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "It is judged on the day rather than the hour, and keeping it earns its own reward."
+          }
+        }
+      }
+    },
+    "Judged on the day, not the hour. A break never costs HP.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Judged on the day, not the hour. A break never costs HP."
+          }
+        }
+      }
+    },
+    "Keep the plan": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Keep the plan"
+          }
+        }
+      }
+    },
+    "Keep the recovery quest": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Keep the recovery quest"
+          }
+        }
+      }
+    },
+    "Keep today": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Keep today"
+          }
+        }
+      }
+    },
+    "Keeps the streak and grants XP for what you did. A reason is optional.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Keeps the streak and grants XP for what you did. A reason is optional."
+          }
+        }
+      }
+    },
+    "Kept": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kept"
+          }
+        }
+      }
+    },
+    "Kept — a move inside the cap does not break it": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Kept — a move inside the cap does not break it"
+          }
+        }
+      }
+    },
+    "Late": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Late"
+          }
+        }
+      }
+    },
+    "Level %lld": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Level %lld"
+          }
+        }
+      }
+    },
+    "Lock broken": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lock broken"
+          }
+        }
+      }
+    },
+    "Locked": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Locked"
+          }
+        }
+      }
+    },
+    "Locked plan": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Locked plan"
+          }
+        }
+      }
+    },
+    "Log a side quest": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Log a side quest"
+          }
+        }
+      }
+    },
+    "Mark complete: %@": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mark complete: %@"
+          }
+        }
+      }
+    },
+    "Mark kept": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mark kept"
+          }
+        }
+      }
+    },
+    "Memoir counts the account’s days in this device’s time zone until its time zone data is updated.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Memoir counts the account’s days in this device’s time zone until its time zone data is updated."
+          }
+        }
+      }
+    },
+    "Memoir keeps counting the account’s days at UTC%@, the last offset recorded for it, until this device’s time zone data is updated.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Memoir keeps counting the account’s days at UTC%@, the last offset recorded for it, until this device’s time zone data is updated."
+          }
+        }
+      }
+    },
+    "Merging another device’s changes left %lld coins for an item costing %lld, so the purchase was undone and nothing was charged.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Merging another device’s changes left %lld coins for an item costing %lld, so the purchase was undone and nothing was charged."
+          }
+        }
+      }
+    },
+    "Mind": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mind"
+          }
+        }
+      }
+    },
+    "Mind Cultivated": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mind Cultivated"
+          }
+        }
+      }
+    },
+    "Missed": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Missed"
+          }
+        }
+      }
+    },
+    "Momentum %@": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Momentum %@"
+          }
+        }
+      }
+    },
+    "Move it": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Move it"
+          }
+        }
+      }
+    },
+    "Move it anyway": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Move it anyway"
+          }
+        }
+      }
+    },
+    "Move to": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Move to"
+          }
+        }
+      }
+    },
+    "Moved": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Moved"
+          }
+        }
+      }
+    },
+    "Moved to %@": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Moved to %@"
+          }
+        }
+      }
+    },
+    "Moves only this occurrence’s time today. The streak is untouched while the move is inside the cap.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Moves only this occurrence’s time today. The streak is untouched while the move is inside the cap."
+          }
+        }
+      }
+    },
+    "No HP is spent — gentle intensity.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No HP is spent — gentle intensity."
+          }
+        }
+      }
+    },
+    "No HP is spent.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No HP is spent."
+          }
+        }
+      }
+    },
+    "No streaks yet. One starts the first day you keep a quest.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No streaks yet. One starts the first day you keep a quest."
+          }
+        }
+      }
+    },
+    "No title displayed": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No title displayed"
+          }
+        }
+      }
+    },
+    "None of your active quests is scheduled again in the next year.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "None of your active quests is scheduled again in the next year."
+          }
+        }
+      }
+    },
+    "Nothing else is scheduled yet.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nothing else is scheduled yet."
+          }
+        }
+      }
+    },
+    "Nothing is due today": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nothing is due today"
+          }
+        }
+      }
+    },
+    "Nothing is scheduled today to lock.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nothing is scheduled today to lock."
+          }
+        }
+      }
+    },
+    "Offered after %@ was missed. It never costs HP and keeps no streak.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Offered after %@ was missed. It never costs HP and keeps no streak."
+          }
+        }
+      }
+    },
+    "Offered after a missed quest. It never costs HP and keeps no streak.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Offered after a missed quest. It never costs HP and keeps no streak."
+          }
+        }
+      }
+    },
+    "Offered the day after a miss. It never costs HP, keeps no streak and can never trigger another.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Offered the day after a miss. It never costs HP, keeps no streak and can never trigger another."
+          }
+        }
+      }
+    },
+    "Open until %@": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Open until %@"
+          }
+        }
+      }
+    },
+    "Optional": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Optional"
+          }
+        }
+      }
+    },
+    "Optional Surplus": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Optional Surplus"
+          }
+        }
+      }
+    },
+    "Partial": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Partial"
+          }
+        }
+      }
+    },
+    "Partial — %@": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Partial — %@"
+          }
+        }
+      }
+    },
+    "Partial: %@": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Partial: %@"
+          }
+        }
+      }
+    },
+    "Pick a time that hasn’t passed yet.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pick a time that hasn’t passed yet."
+          }
+        }
+      }
+    },
+    "Plan locked": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Plan locked"
+          }
+        }
+      }
+    },
+    "Plan tomorrow": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Plan tomorrow"
+          }
+        }
+      }
+    },
+    "Postpone": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Postpone"
+          }
+        }
+      }
+    },
+    "Postpone does not apply to this strictness.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Postpone does not apply to this strictness."
+          }
+        }
+      }
+    },
+    "Postpone to tomorrow": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Postpone to tomorrow"
+          }
+        }
+      }
+    },
+    "Postpone — %@": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Postpone — %@"
+          }
+        }
+      }
+    },
+    "Postponed": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Postponed"
+          }
+        }
+      }
+    },
+    "Postponing breaks today’s locked plan, so its lock bonus stops for every quest in it.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Postponing breaks today’s locked plan, so its lock bonus stops for every quest in it."
+          }
+        }
+      }
+    },
+    "Quest": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Quest"
+          }
+        }
+      }
+    },
+    "Quiet Climber": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Quiet Climber"
+          }
+        }
+      }
+    },
+    "Quiet Year": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Quiet Year"
+          }
+        }
+      }
+    },
+    "Reached — this move is recorded as a postpone": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reached — this move is recorded as a postpone"
+          }
+        }
+      }
+    },
+    "Reason": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reason"
+          }
+        }
+      }
+    },
+    "Reason note": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reason note"
+          }
+        }
+      }
+    },
+    "Reason saved. It is only ever shown to you.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reason saved. It is only ever shown to you."
+          }
+        }
+      }
+    },
+    "Recovery": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Recovery"
+          }
+        }
+      }
+    },
+    "Recovery quest": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Recovery quest"
+          }
+        }
+      }
+    },
+    "Recovery quest kept": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Recovery quest kept"
+          }
+        }
+      }
+    },
+    "Recurring plan": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Recurring plan"
+          }
+        }
+      }
+    },
+    "Reflection": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reflection"
+          }
+        }
+      }
+    },
+    "Reflective Practitioner": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reflective Practitioner"
+          }
+        }
+      }
+    },
+    "Reschedule cap": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reschedule cap"
+          }
+        }
+      }
+    },
+    "Reschedule doesn’t apply to this strictness.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reschedule doesn’t apply to this strictness."
+          }
+        }
+      }
+    },
+    "Reschedule to another time": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reschedule to another time"
+          }
+        }
+      }
+    },
+    "Reschedule — %@": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reschedule — %@"
+          }
+        }
+      }
+    },
+    "Restorer": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Restorer"
+          }
+        }
+      }
+    },
+    "Returner": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Returner"
+          }
+        }
+      }
+    },
+    "Reward only. A break never costs HP, and ends a streak only if you keep one for it.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reward only. A break never costs HP, and ends a streak only if you keep one for it."
+          }
+        }
+      }
+    },
+    "Routine": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Routine"
+          }
+        }
+      }
+    },
+    "Routine Forged": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Routine Forged"
+          }
+        }
+      }
+    },
+    "Save partial": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Save partial"
+          }
+        }
+      }
+    },
+    "Save reason": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Save reason"
+          }
+        }
+      }
+    },
+    "Saving replaces the reason already recorded, tag and note together.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Saving replaces the reason already recorded, tag and note together."
+          }
+        }
+      }
+    },
+    "See recovery choices": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "See recovery choices"
+          }
+        }
+      }
+    },
+    "See the week": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "See the week"
+          }
+        }
+      }
+    },
+    "Skip": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Skip"
+          }
+        }
+      }
+    },
+    "Skip quest": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Skip quest"
+          }
+        }
+      }
+    },
+    "Skip — %@": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Skip — %@"
+          }
+        }
+      }
+    },
+    "Skipped": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Skipped"
+          }
+        }
+      }
+    },
+    "Spends %lld HP when the day closes.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Spends %lld HP when the day closes."
+          }
+        }
+      }
+    },
+    "Steady Builder": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Steady Builder"
+          }
+        }
+      }
+    },
+    "Streak": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Streak"
+          }
+        }
+      }
+    },
+    "Streaks": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Streaks"
+          }
+        }
+      }
+    },
+    "That day hasn’t started yet.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "That day hasn’t started yet."
+          }
+        }
+      }
+    },
+    "That day is already closed.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "That day is already closed."
+          }
+        }
+      }
+    },
+    "That quest isn’t in your plan any more.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "That quest isn’t in your plan any more."
+          }
+        }
+      }
+    },
+    "That quest isn’t scheduled on that day.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "That quest isn’t scheduled on that day."
+          }
+        }
+      }
+    },
+    "The last change to this quest is still being saved.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The last change to this quest is still being saved."
+          }
+        }
+      }
+    },
+    "The record stays.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The record stays."
+          }
+        }
+      }
+    },
+    "The reschedule cap is reached, so moving this occurrence is recorded as a postpone.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The reschedule cap is reached, so moving this occurrence is recorded as a postpone."
+          }
+        }
+      }
+    },
+    "There’s no recovery quest waiting today.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "There’s no recovery quest waiting today."
+          }
+        }
+      }
+    },
+    "There’s nothing logged for that quest to change.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "There’s nothing logged for that quest to change."
+          }
+        }
+      }
+    },
+    "This changes only today’s time — the day and the recurring plan don’t move.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This changes only today’s time — the day and the recurring plan don’t move."
+          }
+        }
+      }
+    },
+    "This device doesn’t know the time zone %@.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This device doesn’t know the time zone %@."
+          }
+        }
+      }
+    },
+    "This moves the occurrence to tomorrow.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This moves the occurrence to tomorrow."
+          }
+        }
+      }
+    },
+    "This quest is in today’s locked plan, so its schedule stays as planned.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This quest is in today’s locked plan, so its schedule stays as planned."
+          }
+        }
+      }
+    },
+    "Today": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Today"
+          }
+        }
+      }
+    },
+    "Today can hold about %lld quests.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Today can hold about %#@quests@."
+          },
+          "substitutions": {
+            "quests": {
+              "argNum": 1,
+              "formatSpecifier": "lld",
+              "variations": {
+                "plural": {
+                  "one": {
+                    "stringUnit": {
+                      "state": "translated",
+                      "value": "%arg quest"
+                    }
+                  },
+                  "other": {
+                    "stringUnit": {
+                      "state": "translated",
+                      "value": "%arg quests"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "Today couldn’t be read": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Today couldn’t be read"
+          }
+        }
+      }
+    },
+    "Today · locked plan": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Today · locked plan"
+          }
+        }
+      }
+    },
+    "Today · moved": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Today · moved"
+          }
+        }
+      }
+    },
+    "Today · moved from %@": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Today · moved from %@"
+          }
+        }
+      }
+    },
+    "Today’s plan is over its capacity of about %lld quests.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Today’s plan is over its capacity of about %#@quests@."
+          },
+          "substitutions": {
+            "quests": {
+              "argNum": 1,
+              "formatSpecifier": "lld",
+              "variations": {
+                "plural": {
+                  "one": {
+                    "stringUnit": {
+                      "state": "translated",
+                      "value": "%arg quest"
+                    }
+                  },
+                  "other": {
+                    "stringUnit": {
+                      "state": "translated",
+                      "value": "%arg quests"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "Today’s plan isn’t locked.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Today’s plan isn’t locked."
+          }
+        }
+      }
+    },
+    "Today’s plan was locked while this was open. Postponing now breaks the lock; choose Postpone again to go ahead.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Today’s plan was locked while this was open. Postponing now breaks the lock; choose Postpone again to go ahead."
+          }
+        }
+      }
+    },
+    "Tomorrow": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tomorrow"
+          }
+        }
+      }
+    },
+    "Try Again": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Try Again"
+          }
+        }
+      }
+    },
+    "Unchanged": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Unchanged"
+          }
+        }
+      }
+    },
+    "Undo": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Undo"
+          }
+        }
+      }
+    },
+    "Unnamed quest": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Unnamed quest"
+          }
+        }
+      }
+    },
+    "Untouched — only today’s occurrence moves": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Untouched — only today’s occurrence moves"
+          }
+        }
+      }
+    },
+    "Update Memoir": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Update Memoir"
+          }
+        }
+      }
+    },
+    "Wealth": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Wealth"
+          }
+        }
+      }
+    },
+    "Wealth Disciplined": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Wealth Disciplined"
+          }
+        }
+      }
+    },
+    "Welcome back": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Welcome back"
+          }
+        }
+      }
+    },
+    "While you decide, anything you log still counts": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "While you decide, anything you log still counts"
+          }
+        }
+      }
+    },
+    "Write a line about today": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Write a line about today"
+          }
+        }
+      }
+    },
+    "You have been away for a while. Your experience, levels and titles are untouched, and streaks that closed while you were gone keep their records in History.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You have been away for a while. Your experience, levels and titles are untouched, and streaks that closed while you were gone keep their records in History."
+          }
+        }
+      }
+    },
+    "Your first day is empty on purpose": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your first day is empty on purpose"
+          }
+        }
+      }
+    },
+    "Your last change to this quest wasn’t saved.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your last change to this quest wasn’t saved."
+          }
+        }
+      }
+    },
+    "about %@ of wake window left": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "about %@ of wake window left"
+          }
+        }
+      }
+    },
+    "all day": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "all day"
+          }
+        }
+      }
+    },
+    "avoided it": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "avoided it"
+          }
+        }
+      }
+    },
+    "emotional resistance": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "emotional resistance"
+          }
+        }
+      }
+    },
+    "ended at %lld": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ended at %lld"
+          }
+        }
+      }
+    },
+    "family or social": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "family or social"
+          }
+        }
+      }
+    },
+    "forgot": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "forgot"
+          }
+        }
+      }
+    },
+    "health": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "health"
+          }
+        }
+      }
+    },
+    "lvl": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "lvl"
+          }
+        }
+      }
+    },
+    "not important anymore": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "not important anymore"
+          }
+        }
+      }
+    },
+    "not started": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "not started"
+          }
+        }
+      }
+    },
+    "other": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "other"
+          }
+        }
+      }
+    },
+    "poorly planned": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "poorly planned"
+          }
+        }
+      }
+    },
+    "returning": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "returning"
+          }
+        }
+      }
+    },
+    "schedule conflict": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "schedule conflict"
+          }
+        }
+      }
+    },
+    "settling": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "settling"
+          }
+        }
+      }
+    },
+    "starting": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "starting"
+          }
+        }
+      }
+    },
+    "steady": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "steady"
+          }
+        }
+      }
+    },
+    "task too big": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "task too big"
+          }
+        }
+      }
+    },
+    "the wake window has closed": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "the wake window has closed"
+          }
+        }
+      }
+    },
+    "too tired": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "too tired"
+          }
+        }
+      }
+    },
+    "travel": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "travel"
+          }
+        }
+      }
+    },
+    "warm": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "warm"
+          }
+        }
+      }
+    },
+    "work emergency": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "work emergency"
+          }
+        }
+      }
+    },
+    "— a tag, a note or both": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "— a tag, a note or both"
+          }
+        }
+      }
+    },
+    "— optional, used only in your own patterns": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "— optional, used only in your own patterns"
+          }
+        }
+      }
+    }
+  },
+  "version": "1.0"
+}
