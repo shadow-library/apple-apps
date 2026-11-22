@@ -98,6 +98,11 @@ struct FinalizeAcknowledgements {
 
   let defaults: UserDefaults
 
+  /// This device's, or the demo's in its own defaults.
+  static func device(isDemo: Bool) -> FinalizeAcknowledgements {
+    FinalizeAcknowledgements(defaults: isDemo ? DemoDefaults.suite(for: .novelForge) : .standard)
+  }
+
   func isAcknowledged(_ sets: FinalizePresentation.TwoSets, novel: UUID, chapter: Int) -> Bool {
     (defaults.stringArray(forKey: Self.key) ?? []).contains(Self.entry(sets, novel: novel, chapter: chapter))
   }
@@ -129,7 +134,9 @@ struct ChapterFinalizeBar: View {
   @State private var confirming: FinalizeOffer.Confirmation?
   @State private var acknowledged = false
 
-  private var acknowledgements: FinalizeAcknowledgements { FinalizeAcknowledgements(defaults: .standard) }
+  @Environment(AIServices.self) private var services
+
+  private var acknowledgements: FinalizeAcknowledgements { .device(isDemo: services.isDemo) }
 
   init(context: NovelContext, chapter: Int, row: ChapterRow?, revision: String?) {
     self.context = context

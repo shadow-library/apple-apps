@@ -16,30 +16,23 @@ struct NovelForgeApp: App {
   @Environment(\.scenePhase) private var scenePhase
   @State private var settingsTabs = SettingsTabs()
 
-  private var vault: NovelForgeVault { delegate.vault }
-  private var sync: SyncRuntimes { delegate.sync }
-  private var ai: AIServices { delegate.ai }
-  private var jobs: JobRuntimes { delegate.jobs }
-  private var chats: ChatRuntimes { delegate.chats }
-  private var adult: AdultConfirmationModel { delegate.adult }
-  private var retrieval: RetrievalRuntimes { delegate.retrieval }
+  private var active: NovelForgeRuntimeSet { delegate.windows.active }
 
   var body: some Scene {
     WindowGroup(id: Self.libraryWindow) {
-      RootView(vault: vault)
-        .environment(ai)
-        .environment(chats)
-        .environment(adult)
-        .environment(delegate.welcome)
-        .environment(jobs)
-        .environment(sync)
+      RootView(vault: active.vault)
+        .id(ObjectIdentifier(active.vault))
+        .environment(active.ai)
+        .environment(active.chats)
+        .environment(active.adult)
+        .environment(active.welcome)
+        .environment(active.jobs)
+        .environment(active.sync)
         .environment(settingsTabs)
-        .diagnostics(.novelForge(store: vault.store, sync: sync, ai: ai))
-        .task { await ai.loadOpenRouterModelsIfKeyed() }
-        .task(id: vault.store.map(ObjectIdentifier.init)) { await chats.launch(vault.store, services: ai) }
-        .task(id: vault.store.map(ObjectIdentifier.init)) { await jobs.launch(vault.store, services: ai, trustedClock: vault.trustedClock) }
-        .task(id: vault.store.map(ObjectIdentifier.init)) { await retrieval.launch(vault.store, embedders: ai.embedders) }
-        .task(id: vault.store.map(ObjectIdentifier.init)) { await sync.launch(vault.store, trustedClock: vault.trustedClock) }
+        .diagnostics(.novelForge(store: active.vault.store, sync: active.sync, ai: active.ai))
+        .task(id: ObjectIdentifier(active.ai)) { await active.ai.loadOpenRouterModelsIfKeyed() }
+        .task(id: active.vault.store.map(ObjectIdentifier.init)) { await delegate.windows.launchActive() }
+        .demoSession(delegate.demo, identity: .novelForge)
         .shadowTheme()
         .flushingUnsavedWork()
         #if os(macOS)
@@ -47,9 +40,7 @@ struct NovelForgeApp: App {
         #endif
     }
     .onChange(of: scenePhase, initial: true) { _, phase in
-      Task { await retrieval.phaseChanged(phase) }
-      Task { await sync.phaseChanged(phase) }
-      Task { await jobs.phaseChanged(phase) }
+      Task { await delegate.windows.phaseChanged(phase) }
     }
     .commands { NovelForgeCommands() }
     #if os(macOS)
@@ -57,8 +48,11 @@ struct NovelForgeApp: App {
     #endif
     #if os(macOS)
       Settings {
-        NovelForgeSettingsScene(vault: vault, services: ai, sync: sync, adult: adult, jobs: jobs, worker: delegate.worker, tabs: settingsTabs)
-          .diagnostics(.novelForge(store: vault.store, sync: sync, ai: ai))
+        NovelForgeSettingsScene(
+          vault: active.vault, services: active.ai, sync: active.sync, adult: active.adult, jobs: active.jobs, worker: delegate.worker, tabs: settingsTabs
+        )
+        .diagnostics(.novelForge(store: active.vault.store, sync: active.sync, ai: active.ai))
+        .demoOffer(delegate.demo)
       }
       WorkerMenuBar(worker: delegate.worker, tabs: settingsTabs)
     #endif

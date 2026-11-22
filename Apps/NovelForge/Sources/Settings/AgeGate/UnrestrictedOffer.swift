@@ -36,8 +36,11 @@ struct UnrestrictedAccess {
     self.adultConfirmed = adultConfirmed
   }
 
+  /// The demo offers none: its services refuse unrestricted calls.
   static func live(services: AIServices, adult: AdultConfirmationModel) -> UnrestrictedAccess {
-    UnrestrictedAccess(modelAssigned: { services.settings.assignments.hasUnrestrictedModel }, adultConfirmed: { adult.isConfirmed })
+    UnrestrictedAccess(
+      available: UnrestrictedWriting.isAvailable && !services.isDemo, modelAssigned: { services.settings.assignments.hasUnrestrictedModel },
+      adultConfirmed: { adult.isConfirmed })
   }
 
   func offer(languageCovered: Bool) -> UnrestrictedOffer {

@@ -76,7 +76,8 @@ final class HeroModel {
   private let context: MemoirScreenContext
   private let acknowledgements: WithdrawalAcknowledgements
 
-  init(context: MemoirScreenContext, acknowledgements: WithdrawalAcknowledgements = WithdrawalAcknowledgements()) {
+  init(context: MemoirScreenContext, acknowledgements: WithdrawalAcknowledgements? = nil) {
+    let acknowledgements = acknowledgements ?? WithdrawalAcknowledgements(defaults: context.defaults)
     self.context = context
     self.acknowledgements = acknowledgements
     acknowledged = acknowledgements.commands

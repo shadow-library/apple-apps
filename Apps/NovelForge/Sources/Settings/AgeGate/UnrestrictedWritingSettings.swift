@@ -94,7 +94,7 @@ struct UnrestrictedWritingLink: View {
 
   var body: some View {
     #if !os(macOS)
-      if UnrestrictedWriting.isAvailable {
+      if UnrestrictedWriting.isAvailable, !services.isDemo {
         NavigationLink {
           UnrestrictedWritingSettings(adult: adult, services: services).navigationTitle(Text("Unrestricted Writing", tableName: "AgeGate"))
         } label: {

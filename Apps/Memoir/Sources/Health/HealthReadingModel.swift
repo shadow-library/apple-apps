@@ -35,7 +35,7 @@ final class HealthReadingModel {
   }
 
   convenience init(context: MemoirScreenContext) {
-    self.init(environment: .live(), stores: context.stores, clock: context.clock)
+    self.init(environment: context.isDemo ? .demo : .live(), stores: context.stores, clock: context.clock)
   }
 
   var availability: HealthAvailability { environment.availability }

@@ -38,7 +38,7 @@ struct NovelForgeSettingsScene: View {
           Image(systemName: "arrow.triangle.2.circlepath")
         }
       }
-      if UnrestrictedWriting.isAvailable {
+      if UnrestrictedWriting.isAvailable, !services.isDemo {
         Tab(value: SettingsTabs.Tab.unrestricted) {
           UnrestrictedWritingSettings(adult: adult, services: services)
             .shadowTheme()
@@ -52,15 +52,17 @@ struct NovelForgeSettingsScene: View {
         }
       }
       #if os(macOS)
-        Tab(value: SettingsTabs.Tab.worker) {
-          DevicesAndWorkerView(store: vault.store, jobs: jobs, worker: worker)
-            .shadowTheme()
-            .frame(minWidth: 520, idealWidth: 600, minHeight: 480, idealHeight: 640)
-        } label: {
-          Label {
-            Text("Devices and Worker", tableName: "Worker")
-          } icon: {
-            Image(systemName: "macbook.and.iphone")
+        if !services.isDemo {
+          Tab(value: SettingsTabs.Tab.worker) {
+            DevicesAndWorkerView(store: vault.store, jobs: jobs, worker: worker)
+              .shadowTheme()
+              .frame(minWidth: 520, idealWidth: 600, minHeight: 480, idealHeight: 640)
+          } label: {
+            Label {
+              Text("Devices and Worker", tableName: "Worker")
+            } icon: {
+              Image(systemName: "macbook.and.iphone")
+            }
           }
         }
       #endif

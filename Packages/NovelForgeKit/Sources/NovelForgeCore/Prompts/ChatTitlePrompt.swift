@@ -17,6 +17,8 @@ func chatTitleMessages(message: String) -> [PromptMessage] {
   [PromptMessage(.system, chatTitleSystem), PromptMessage(.user, "The author's opening message:\n\(message)")]
 }
 
+let chatTitleSchemaName = "chat-title"
+
 let chatTitleSchema: OrderedJSON = jsonObject([
   ("type", .string("object")),
   ("additionalProperties", .bool(false)),

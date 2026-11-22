@@ -47,7 +47,8 @@ final class WeightModel {
   private let preference: WeightUnitPreference
   private let locale: Locale
 
-  init(context: MemoirScreenContext, preference: WeightUnitPreference = WeightUnitPreference(), locale: Locale = .current) {
+  init(context: MemoirScreenContext, preference: WeightUnitPreference? = nil, locale: Locale = .current) {
+    let preference = preference ?? WeightUnitPreference(suiteName: context.isDemo ? DemoDefaults.suiteName(for: .memoir) : nil)
     self.context = context
     self.preference = preference
     self.locale = locale

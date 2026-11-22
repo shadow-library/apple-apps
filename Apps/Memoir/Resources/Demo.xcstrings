@@ -1,0 +1,39 @@
+{
+  "sourceLanguage": "en",
+  "strings": {
+    "In the demo, answers come from a script on this device and use only the sample data. Nothing is sent anywhere.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "In the demo, answers come from a script on this device and use only the sample data. Nothing is sent anywhere."
+          }
+        }
+      }
+    },
+    "See Memoir at work on a sample week, with answers scripted on this device. No key is used, and your own data is not touched.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "See Memoir at work on a sample week, with answers scripted on this device. No key is used, and your own data is not touched."
+          }
+        }
+      }
+    },
+    "Try the demo": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Try the demo"
+          }
+        }
+      }
+    }
+  },
+  "version": "1.0"
+}

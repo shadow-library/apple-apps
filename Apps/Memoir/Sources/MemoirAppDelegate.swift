@@ -9,8 +9,8 @@ import SwiftUI
   import UIKit
 #endif
 
-/// Owns the vault, its day turns, its reminders, its sync and the AI services for the life of the process rather than of a window: a silent push may wake the app with no window to
-/// open them, and on the Mac quitting must reach them after every window has closed.
+/// Owns the vault, its day turns, its reminders, its sync, the AI services and the demo for the life of the process rather than of a window: a silent
+/// push may wake the app with no window to open them, and on the Mac quitting must reach them after every window has closed.
 final class MemoirAppDelegate: NSObject {
   static let pushDeadline = Duration.seconds(25)
   static let quitDeadline = Duration.seconds(3)
@@ -25,6 +25,14 @@ final class MemoirAppDelegate: NSObject {
   lazy var deletion = MemoirVaultDeletion(vault: vault, sync: sync, dayTurns: dayTurns, reminders: reminders, insights: insights) { [weak self] in
     await self?.vaultChanged()
   }
+  let demo = MemoirDemoEnvironment.session()
+  private(set) lazy var windows = MemoirWindowRuntimes(
+    owner: MemoirRuntimeSet(vault: vault, ai: ai, sync: sync, insights: insights, dayTurns: dayTurns), demo: demo,
+    ownerVaultChanged: { [weak self] in await self?.vaultChanged() },
+    ownerForegrounded: { [weak self] in
+      guard let self else { return }
+      health.foregrounded(vault.opened)
+    })
   private var observers: [any NSObjectProtocol] = []
 
   /// Opens the vault if no window has yet, then follows its day and starts its sync; both wait for a call already in flight.
@@ -60,6 +68,7 @@ final class MemoirAppDelegate: NSObject {
     func applicationDidFinishLaunching(_ notification: Notification) {
       MemoirExports.clearLeftovers()
       DiagnosticsArchives.clearLeftovers(identity: .memoir)
+      Task { await demo.launched() }
       observe(NSApplication.didBecomeActiveNotification) { [sync] in await sync.activated() }
       observe(NSWindow.didBecomeMainNotification) { [sync] in await sync.activated() }
       if SyncCapabilities.current.receivesPushes { NSApplication.shared.registerForRemoteNotifications() }
@@ -83,6 +92,7 @@ final class MemoirAppDelegate: NSObject {
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil) -> Bool {
       MemoirExports.clearLeftovers()
       DiagnosticsArchives.clearLeftovers(identity: .memoir)
+      Task { await demo.launched() }
       observe(UIApplication.protectedDataDidBecomeAvailableNotification) { [weak self] in
         guard let self else { return }
         await vault.protectedDataBecameAvailable()

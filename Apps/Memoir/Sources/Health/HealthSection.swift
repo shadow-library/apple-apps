@@ -20,6 +20,7 @@ struct HealthSection: View {
         case .otherPlatform: note(Text("Health data is read on your iPhone or iPad.", tableName: "Health"))
         case .notEntitled: note(Text("This build of Memoir can’t read Apple Health. Type your metrics by hand.", tableName: "Health"))
         case .unavailableOnDevice: note(Text("Health data isn’t available on this device. Type your metrics by hand.", tableName: "Health"))
+        case .demo: note(Text("The demo never reads Apple Health. Type your metrics by hand.", tableName: "Health"))
         }
         if let reader = model.otherReader {
           note(Text("\(reader.name) reads Apple Health for this vault.", tableName: "Health"))

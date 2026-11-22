@@ -56,7 +56,6 @@ enum ChatAutoTitle {
   // apps/novel-forge-server/src/modules/ai/defaults.ts:55
   private static let task = ModelTask.helper
   private static let role = "title"
-  private static let schemaName = "chat-title"
 
   private struct Output: Decodable {
     let title: String
@@ -165,7 +164,7 @@ enum ChatAutoTitle {
     let messages = prompt.filter { $0.role != .system }.map { ModelMessage(role: $0.role == .assistant ? .assistant : .user, text: $0.text) }
     let result: StructuredResult
     do throws(StructuredStreamFailure) {
-      result = try await call.streamStructured(call.request(system: system, messages: messages), name: schemaName, schema: JSONValue(schema: chatTitleSchema))
+      result = try await call.streamStructured(call.request(system: system, messages: messages), name: chatTitleSchemaName, schema: JSONValue(schema: chatTitleSchema))
     } catch {
       if let hit = error.error.hardLineHit { return .refused(hit, callIDs: error.callIDs) }
       throw .model(error.error, callIDs: error.callIDs)

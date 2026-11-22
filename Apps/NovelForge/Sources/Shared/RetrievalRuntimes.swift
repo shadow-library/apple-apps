@@ -17,7 +17,7 @@ final class RetrievalRuntimes {
   private let stopsInBackground: Bool
   private let debounce: Duration
   private var current: (store: ObjectIdentifier, upkeep: RetrievalUpkeep)?
-  private var inBackground = false
+  private(set) var inBackground = false
   private var changing: Task<Void, Never>?
 
   init(stopsInBackground: Bool = RetrievalRuntimes.stopsInBackground, debounce: Duration = RetrievalUpkeep.defaultDebounce) {
@@ -27,11 +27,21 @@ final class RetrievalRuntimes {
 
   var upkeep: RetrievalUpkeep? { current?.upkeep }
 
+  /// The vault whose upkeep runs.
+  var launched: ObjectIdentifier? { current?.store }
+
   /// Once per vault: a vault opened in place of another stops the other's upkeep first.
   func launch(_ store: VaultStore?, embedders: any EmbedderProvider) async {
     guard let store, current?.store != ObjectIdentifier(store) else { return }
     let replaced = current?.upkeep
     current = (ObjectIdentifier(store), RetrievalUpkeep(store: store, embedders: embedders, debounce: debounce))
+    await apply(stopping: replaced)
+  }
+
+  /// Stops the upkeep for good, as before its vault closes.
+  func shutDown() async {
+    let replaced = current?.upkeep
+    current = nil
     await apply(stopping: replaced)
   }
 

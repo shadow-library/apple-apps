@@ -13,41 +13,37 @@ struct MemoirApp: App {
   @Environment(\.scenePhase) private var scenePhase
   @State private var settingsTabs = SettingsTabs()
 
-  private var vault: MemoirVaultModel { delegate.vault }
-  private var sync: SyncRuntimes { delegate.sync }
-  private var ai: AIServices { delegate.ai }
+  private var windows: MemoirWindowRuntimes { delegate.windows }
+  private var active: MemoirRuntimeSet { windows.active }
 
   var body: some Scene {
     WindowGroup {
-      MemoirRootView(vault: vault)
-        .environment(ai)
-        .environment(sync)
+      MemoirRootView(vault: active.vault)
+        .id(ObjectIdentifier(active.vault))
+        .environment(active.ai)
+        .environment(active.sync)
         .environment(settingsTabs)
-        .environment(delegate.reminders)
-        .environment(delegate.insights)
-        .environment(delegate.deletion)
-        .diagnostics(.memoir(vault.opened, sync: sync, ai: ai))
+        .environment(windows.isDemo ? nil : delegate.reminders)
+        .environment(active.insights)
+        .environment(windows.isDemo ? nil : delegate.deletion)
+        .diagnostics(.memoir(active.vault.opened, sync: active.sync, ai: active.ai))
         .vaultDeletionNotice(delegate.deletion)
-        .syncSettingsSection { MemoirSyncSettingsSection(vault: vault) }
-        .task { await ai.loadOpenRouterModelsIfKeyed() }
-        .task(id: vault.opened.map { ObjectIdentifier($0.stores.main) }) {
-          await delegate.vaultChanged()
-          delegate.health.foregrounded(vault.opened)
-        }
+        .syncSettingsSection { MemoirSyncSettingsSection(vault: active.vault) }
+        .demoSession(delegate.demo, identity: .memoir)
+        .task(id: ObjectIdentifier(active.ai)) { await active.ai.loadOpenRouterModelsIfKeyed() }
+        .task(id: active.vault.opened.map { ObjectIdentifier($0.stores.main) }) { await windows.activeVaultChanged() }
         .shadowTheme()
         #if os(macOS)
           .frame(minWidth: 800, minHeight: 560)
         #endif
     }
     .onChange(of: scenePhase, initial: true) { _, phase in
-      Task { await sync.phaseChanged(phase) }
-      Task { await delegate.insights.phaseChanged(isActive: phase == .active) }
-      guard phase == .active else { return }
-      delegate.dayTurns.restart()
-      delegate.health.foregrounded(vault.opened)
+      Task { await windows.phaseChanged(phase) }
     }
     #if os(macOS)
-      Settings { MemoirSettingsScene(vault: vault, services: ai, sync: sync, tabs: settingsTabs) }
+      Settings {
+        MemoirSettingsScene(vault: active.vault, services: active.ai, sync: active.sync, tabs: settingsTabs).demoOffer(delegate.demo)
+      }
     #endif
   }
 }

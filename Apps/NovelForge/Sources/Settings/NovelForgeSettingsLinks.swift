@@ -17,12 +17,15 @@ extension AISettingsButton where Links == NovelForgeSettingsLinks {
 /// The AI settings sheet's further pages on iPhone and iPad; the Mac shows them in tabs of Settings instead.
 struct NovelForgeSettingsLinks: View {
   let store: VaultStore
+  @Environment(AIServices.self) private var services
 
   var body: some View {
     #if !os(macOS)
       HStack(spacing: Spacing.space3) {
-        UnrestrictedWritingLink()
-        DevicesAndWorkerLink(store: store)
+        if !services.isDemo {
+          UnrestrictedWritingLink()
+          DevicesAndWorkerLink(store: store)
+        }
         NavigationLink {
           AboutView(identity: .novelForge, disclosures: AboutDisclosure.novelForge)
         } label: {

@@ -14,7 +14,6 @@ private let maxLookupRounds = 3
 private let lookupBudgetExhausted = "\n\nLookup budget exhausted — answer with what you have; do not request more lookups."
 
 // apps/novel-forge-server/src/modules/ai/prompts/chat-refine.prompt.ts:76
-private let schemaName = "chat-refine"
 private let role = "chat"
 
 /// Native: the reference appends its reply before staging, so a staging failure leaves the reply without its cards and says nothing.
@@ -220,7 +219,7 @@ final class ChatTurnRun: Sendable {
     var repairs = [PromptMessage]()
     let result: StructuredResult
     do {
-      result = try await call.streamStructured(request, name: schemaName, schema: JSONValue(schema: chatRefineSchema), review: review) { event in
+      result = try await call.streamStructured(request, name: chatRefineSchemaName, schema: JSONValue(schema: chatRefineSchema), review: review) { event in
         switch event {
         case .attemptStarted(let attempt):
           stream.sent(attempt)

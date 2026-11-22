@@ -29,6 +29,8 @@ let chapterContinuationStateSchema: OrderedJSON = shapeSchema(
   ], required: [])
 
 // apps/novel-forge-server/src/modules/ai/schemas/generation.schema.ts:37
+let chapterGenerationSchemaName = "generation"
+
 let chapterGenerationSchema: OrderedJSON = shapeSchema(
   [
     ("title", textSchema(minLength: 1, maxLength: 200, description: #"chapter title"#)),
@@ -38,6 +40,8 @@ let chapterGenerationSchema: OrderedJSON = shapeSchema(
   ], required: ["title", "body", "summary"])
 
 // apps/novel-forge-server/src/modules/ai/schemas/chapter-expand.schema.ts:4
+let chapterExpandSchemaName = "chapter-expand"
+
 let chapterExpandSchema: OrderedJSON = shapeSchema(
   [
     (
@@ -47,6 +51,8 @@ let chapterExpandSchema: OrderedJSON = shapeSchema(
   ], required: ["body"])
 
 // apps/novel-forge-server/src/modules/ai/schemas/title.schema.ts:4
+let chapterTitleSchemaName = "title"
+
 let chapterTitleSchema: OrderedJSON = shapeSchema(
   [
     ("title", textSchema(minLength: 1, maxLength: 200, description: #"chapter title, evocative and consistent with established chapter title style"#)),
@@ -54,6 +60,8 @@ let chapterTitleSchema: OrderedJSON = shapeSchema(
   ], required: ["title"])
 
 // apps/novel-forge-server/src/modules/ai/schemas/fix.schema.ts:20
+let chapterFixSchemaName = "fix"
+
 let chapterFixSchema: OrderedJSON = withConditional(
   shapeSchema(
     [

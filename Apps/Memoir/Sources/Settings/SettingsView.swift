@@ -7,6 +7,8 @@ import SwiftUI
 struct SettingsView: View {
   let context: MemoirScreenContext
   @State private var model: SettingsModel
+  @Environment(AIServices.self) private var ai: AIServices?
+  @Environment(\.demoEntry) private var demoEntry
 
   init(context: MemoirScreenContext) {
     self.context = context
@@ -30,7 +32,8 @@ struct SettingsView: View {
       Section {
         MemoirSettingsLinks(stores: context.stores)
       }
-      SettingsDataSection()
+      if ai?.isDemo != true { SettingsDataSection() }
+      if demoEntry != nil { SettingsDemoSection() }
       Section {
         NavigationLink(value: MemoirRoute.settings(.about)) {
           VStack(alignment: .leading, spacing: Spacing.space1) {
@@ -47,6 +50,20 @@ struct SettingsView: View {
     .navigationTitle(Text(MemoirDestination.settings.title))
     .shadowScreen(.root)
     .task { await model.run() }
+  }
+}
+
+/// The way into the demo while it is not running; the demo itself has no data to export or delete.
+private struct SettingsDemoSection: View {
+  var body: some View {
+    Section {
+      Text("See Memoir at work on a sample week, with answers scripted on this device. No key is used, and your own data is not touched.", tableName: "Demo")
+        .shadowFont(.subheadline)
+        .foregroundStyle(ShadowColor.textSecondary)
+      TryDemoButton()
+    } header: {
+      Text("Try the demo", tableName: "Demo")
+    }
   }
 }
 

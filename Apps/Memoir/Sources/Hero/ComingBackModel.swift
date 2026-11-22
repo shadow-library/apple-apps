@@ -18,11 +18,11 @@ final class ComingBackModel {
   var failure: IntensityFailure?
 
   private let context: MemoirScreenContext
-  private let dismissal: ComingBackDismissal
+  let dismissal: ComingBackDismissal
 
-  init(context: MemoirScreenContext, dismissal: ComingBackDismissal = ComingBackDismissal()) {
+  init(context: MemoirScreenContext, dismissal: ComingBackDismissal? = nil) {
     self.context = context
-    self.dismissal = dismissal
+    self.dismissal = dismissal ?? ComingBackDismissal(defaults: context.defaults)
   }
 
   func run() async {

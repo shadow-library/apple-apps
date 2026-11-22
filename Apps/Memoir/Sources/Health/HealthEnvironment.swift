@@ -15,6 +15,8 @@ nonisolated enum HealthAvailability: Equatable, Sendable {
   case notEntitled
   /// HealthKit says this device holds no Health data, as some iPads.
   case unavailableOnDevice
+  /// The demo's vault, which never reads Health.
+  case demo
 
   /// `HealthKit` is the one `ShadowCapabilities` entry written as a string: `YES` only in an iPhone or iPad build signed with the entitlement.
   static func resolve(isPhoneOrPad: Bool, infoDictionary: [String: Any]?, isHealthDataAvailable: () -> Bool) -> HealthAvailability {
@@ -66,6 +68,10 @@ nonisolated struct HealthEnvironment: Sendable {
       return HealthEnvironment(availability: .otherPlatform, device: nil, source: nil, preferences: HealthPreferences())
     #endif
   }
+
+  /// The demo's: it reads nothing and keeps its metric choices apart from the device's.
+  static let demo = HealthEnvironment(
+    availability: .demo, device: nil, source: nil, preferences: HealthPreferences(suiteName: DemoDefaults.suiteName(for: .memoir)))
 
   var canRead: Bool { availability == .available && device != nil && source != nil }
 }

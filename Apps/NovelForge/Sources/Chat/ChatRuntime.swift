@@ -30,6 +30,9 @@ final class ChatRuntimes {
     guard let store else { return }
     await runtime(for: store, services: services).launch()
   }
+
+  /// The store the current runtime serves.
+  var store: VaultStore? { current?.runtime.store }
 }
 
 @MainActor

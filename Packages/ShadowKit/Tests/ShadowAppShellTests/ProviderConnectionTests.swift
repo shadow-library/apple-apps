@@ -128,6 +128,27 @@ struct ProviderConnectionTests {
     #expect(!model.storedKeys.contains(.openRouter))
   }
 
+  @Test("should enter the demo from the prompt and close it without the action that opened it, even once a provider is ready")
+  func shouldLeaveForTheDemoWithoutTheHeldAction() async throws {
+    let world = try SettingsFixtures.world()
+    defer { world.tearDown() }
+    let connection = ProviderConnectionModel(services: world.services)
+    var entered = 0
+
+    connection.tryDemo(DemoEntry(isEntering: true) { entered += 1 })
+    #expect(entered == 0)
+    #expect(!connection.closes)
+    connection.tryDemo(DemoEntry(isEntering: false) { entered += 1 })
+
+    #expect(entered == 1)
+    #expect(connection.leftForDemo && connection.closes)
+    try world.services.keys.save(try #require(world.services.keys.makeCredential(SettingsFixtures.secret, for: .anthropic)), for: .anthropic)
+    world.services.update { $0.provider = .anthropic }
+    #expect(world.services.isReadyForStandardCalls)
+    #expect(!ProviderConnectionModel.continuesHeldAction(services: world.services, leftForDemo: true))
+    #expect(ProviderConnectionModel.continuesHeldAction(services: world.services, leftForDemo: false))
+  }
+
   @Test("should recommend Anthropic and make a key saved through the prompt the provider requests go to")
   func shouldConnectThePromptedProvider() async throws {
     let world = try SettingsFixtures.world()

@@ -67,6 +67,8 @@ private func chatRefineSchema(_ properties: [(String, OrderedJSON)]) -> OrderedJ
   ])
 }
 
+let chatRefineSchemaName = "chat-refine"
+
 // apps/novel-forge-server/src/modules/ai/schemas/chat-refine.schema.ts:14
 let chatRefineSchema: OrderedJSON = chatRefineSchema(chatRefineProperties)
 

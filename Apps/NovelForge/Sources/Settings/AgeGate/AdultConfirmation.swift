@@ -1,6 +1,7 @@
 import Foundation
 import NovelForgeCore
 import Observation
+import ShadowAppShell
 
 /// The day the owner declared on this device that they are 18 or older. It is kept in this device's defaults and never synced, and no birth date is asked
 /// for or kept.
@@ -41,6 +42,11 @@ final class AdultConfirmationModel {
 
   static func live() -> AdultConfirmationModel {
     AdultConfirmationModel(store: AdultConfirmationStore(defaults: .standard))
+  }
+
+  /// The demo's, in the demo's own defaults, so it never reads or writes the owner's confirmation; the demo offers no way to confirm.
+  static func demo() -> AdultConfirmationModel {
+    AdultConfirmationModel(store: AdultConfirmationStore(defaults: DemoDefaults.suite(for: .novelForge)))
   }
 
   var isConfirmed: Bool { confirmedOn != nil }

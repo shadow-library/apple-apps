@@ -66,7 +66,6 @@ enum ChatCompaction {
   // apps/novel-forge-server/src/modules/ai/defaults.ts:56
   private static let task = ModelTask.helper
   private static let role = "compact"
-  private static let schemaName = "chat-compact"
 
   private struct Snapshot: Sendable {
     let window: ChatConversationWindow
@@ -174,7 +173,7 @@ enum ChatCompaction {
     let result: StructuredResult
     do throws(StructuredStreamFailure) {
       result = try await call.streamStructured(
-        call.request(system: system.map { ContextSegment(text: $0) }, messages: messages), name: schemaName, schema: JSONValue(schema: chatCompactSchema))
+        call.request(system: system.map { ContextSegment(text: $0) }, messages: messages), name: chatCompactSchemaName, schema: JSONValue(schema: chatCompactSchema))
     } catch {
       if let hit = error.error.hardLineHit { return .refused(hit, callIDs: error.callIDs) }
       throw .model(error.error, callIDs: error.callIDs)

@@ -25,6 +25,7 @@ public struct AISettingsView: View {
           CapsSection(model: model)
         }
         ConsentSection(model: model)
+        if model.provider != .demo { TryDemoSection(identity: model.services.identity) }
       }
       .padding(Spacing.space4)
       .frame(maxWidth: 640)

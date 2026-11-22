@@ -1,0 +1,106 @@
+{
+  "sourceLanguage": "en",
+  "strings": {
+    "Demo": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Demo"
+          }
+        }
+      }
+    },
+    "Everything made in the demo is deleted, and %@ opens your own data as you left it.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Everything made in the demo is deleted, and %@ opens your own data as you left it."
+          }
+        }
+      }
+    },
+    "Leave Demo": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Leave Demo"
+          }
+        }
+      }
+    },
+    "Leave the demo?": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Leave the demo?"
+          }
+        }
+      }
+    },
+    "OK": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "OK"
+          }
+        }
+      }
+    },
+    "Sample content with scripted answers. Nothing here is kept.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sample content with scripted answers. Nothing here is kept."
+          }
+        }
+      }
+    },
+    "See %@ at work on sample content, with answers scripted on this device. No key is used, and your own data and keys are not touched.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "See %@ at work on sample content, with answers scripted on this device. No key is used, and your own data and keys are not touched."
+          }
+        }
+      }
+    },
+    "The demo could not start": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The demo could not start"
+          }
+        }
+      }
+    },
+    "Try the Demo": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Try the Demo"
+          }
+        }
+      }
+    },
+    "Try without a key": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Try without a key"
+          }
+        }
+      }
+    }
+  },
+  "version": "1.0"
+}

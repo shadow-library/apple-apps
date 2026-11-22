@@ -9,8 +9,8 @@ import ShadowJobs
 import ShadowStore
 
 /// What the Ask screen and the foreground hook run insights through: the vault's one `InsightEngine` (one runner per vault keeps a second attempt of a
-/// job from starting on this device), its router, whether a provider key is there to call with, and the settler that prices calls left pending
-/// (a cancelled call, or an OpenRouter figure that had not arrived), which otherwise stay out of the spend and its caps.
+/// job from starting on this device), its router, whether a provider is there to call (a stored key, or the demo), and the settler that prices calls
+/// left pending (a cancelled call, or an OpenRouter figure that had not arrived), which otherwise stay out of the spend and its caps.
 nonisolated struct InsightAccess: Sendable {
   let engine: InsightEngine
   let router: InsightEngine.RouterSource
@@ -38,7 +38,7 @@ final class MemoirInsights {
   private(set) var access: InsightAccess?
   private var foregroundRun: Task<Void, Never>?
   private var resumed = false
-  private var isActive = false
+  private(set) var isActive = false
 
   convenience init(ai: AIServices, trustedClock: TrustedClock?) {
     self.init { opened in Self.access(stores: opened.stores, clock: opened.clock, ai: ai, trustedClock: trustedClock) }
@@ -95,7 +95,7 @@ final class MemoirInsights {
     let router: InsightEngine.RouterSource = { await ai.router(store: main) }
     let engine = InsightEngine(
       stores: stores, replay: ProjectionInsightReplay(main: main, now: clock.now, deviceZone: clock.deviceZone), router: router, clock: leases)
-    return InsightAccess(engine: engine, router: router, hasKey: { await ai.hasProviderKey }, leases: leases, settler: ai.settler(for: main))
+    return InsightAccess(engine: engine, router: router, hasKey: { await ai.hasUsableProvider }, leases: leases, settler: ai.settler(for: main))
   }
 
   /// Waits for what it started, then prices the calls those attempts left pending.
@@ -120,10 +120,6 @@ final class MemoirInsights {
     for handle in started { _ = await handle.result }
     await access.settler?.settle()
   }
-}
-
-extension AIServices {
-  var hasProviderKey: Bool { (try? keys.contains(settings.provider)) == true }
 }
 
 extension MemoirClock {

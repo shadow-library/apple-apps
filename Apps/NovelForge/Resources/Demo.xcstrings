@@ -1,0 +1,28 @@
+{
+  "sourceLanguage": "en",
+  "strings": {
+    "In the demo, Novel Forge reads the parts of the sample novel a request needs and your message, and the demo answers them from a script on this device. Nothing is sent anywhere.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "In the demo, Novel Forge reads the parts of the sample novel a request needs and your message, and the demo answers them from a script on this device. Nothing is sent anywhere."
+          }
+        }
+      }
+    },
+    "The sample novel's text": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The sample novel's text"
+          }
+        }
+      }
+    }
+  },
+  "version": "1.0"
+}

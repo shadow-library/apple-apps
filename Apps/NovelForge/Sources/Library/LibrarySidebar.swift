@@ -93,6 +93,7 @@ struct LibrarySidebar: View {
           } label: {
             Text("New Novel", tableName: "Library")
           }
+          if !welcome.shows(list) { TryDemoButton() }
         }
       }
     }

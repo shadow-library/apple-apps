@@ -16,10 +16,12 @@ final class JobRuntimes {
   private var current: (store: ObjectIdentifier, runtime: JobRuntime)?
   @ObservationIgnored private let host: any JobRunHost
   @ObservationIgnored private let ageGate: AgeGate
+  @ObservationIgnored private let platform: JobPlatform
 
-  init(host: any JobRunHost = ForegroundRunHost(), ageGate: AgeGate = AgeGate(passed: false)) {
+  init(host: any JobRunHost = ForegroundRunHost(), ageGate: AgeGate = AgeGate(passed: false), platform: JobPlatform = .current) {
     self.host = host
     self.ageGate = ageGate
+    self.platform = platform
   }
 
   /// The open vault's runtime, whichever vault that is.
@@ -34,9 +36,14 @@ final class JobRuntimes {
   func runtime(for store: VaultStore, services: AIServices, trustedClock: TrustedClock) -> JobRuntime {
     if let existing = existing(for: store) { return existing }
     current?.runtime.shutDown()
-    let created = JobRuntime.live(store: store, services: services, trustedClock: trustedClock, ageGate: ageGate, host: host)
+    let created = JobRuntime.live(store: store, services: services, trustedClock: trustedClock, ageGate: ageGate, platform: platform, host: host)
     current = (ObjectIdentifier(store), created)
     return created
+  }
+
+  func shutDown() {
+    current?.runtime.shutDown()
+    current = nil
   }
 
   func launch(_ store: VaultStore?, services: AIServices, trustedClock: TrustedClock) async {
@@ -166,11 +173,12 @@ final class JobRuntime {
 
   /// `trustedClock` is the vault's, which sync feeds from the storage's time, so leases are stamped and read against it.
   static func live(
-    store: VaultStore, services: AIServices, trustedClock: TrustedClock, ageGate: AgeGate, host: any JobRunHost = ForegroundRunHost()
+    store: VaultStore, services: AIServices, trustedClock: TrustedClock, ageGate: AgeGate, platform: JobPlatform = .current,
+    host: any JobRunHost = ForegroundRunHost()
   ) -> JobRuntime {
     let clock = LeaseClock(trusted: trustedClock)
     let (consent, embedders) = (ConsentDisclosure.novelText.requirement, services.embedders)
-    return JobRuntime(store: store, clock: clock, settler: services.settler(for: store), host: host) { () throws(JobEngineError) -> JobEngine in
+    return JobRuntime(store: store, clock: clock, platform: platform, settler: services.settler(for: store), host: host) { () throws(JobEngineError) -> JobEngine in
       try JobEngine(
         store: store, router: { requestGuard in await services.router(store: store, requestGuard: requestGuard) }, consent: consent, clock: clock, ageGate: ageGate,
         embedders: embedders)

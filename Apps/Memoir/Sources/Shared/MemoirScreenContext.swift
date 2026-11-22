@@ -1,19 +1,22 @@
 import Foundation
 import MemoirCore
+import ShadowAppShell
 import ShadowStore
 
 /// What every Memoir screen is given: the vault's stores to read, the writer to change them through, and the account's day.
 nonisolated struct MemoirScreenContext: Sendable {
   let stores: MemoirStores
   let writer: MemoirWriter
+  let isDemo: Bool
 
-  init(stores: MemoirStores, clock: MemoirClock) {
+  init(stores: MemoirStores, clock: MemoirClock, isDemo: Bool = false) {
     self.stores = stores
     writer = MemoirWriter(stores: stores, clock: clock)
+    self.isDemo = isDemo
   }
 
   init(_ opened: MemoirOpenedVault) {
-    self.init(stores: opened.stores, clock: opened.clock)
+    self.init(stores: opened.stores, clock: opened.clock, isDemo: opened.isDemo)
   }
 
   /// In-memory stores with the projection, for previews.
@@ -23,6 +26,9 @@ nonisolated struct MemoirScreenContext: Sendable {
   }
 
   var clock: MemoirClock { writer.clock }
+
+  /// Where this device's own choices about the vault's screens are kept: the demo keeps its in the demo's suite, never in the owner's defaults.
+  var defaults: UserDefaults { isDemo ? DemoDefaults.suite(for: .memoir) : .standard }
 
   func today() async throws(MemoirWriteError) -> MemoirToday {
     let zone = try await writer.accountZone()

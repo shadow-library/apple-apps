@@ -23,6 +23,9 @@ final class NovelForgeAppDelegate: NSObject {
   private(set) lazy var chats = ChatRuntimes(adult: adult)
   private(set) lazy var jobs = JobRuntimes(host: JobRunHosts.system(), ageGate: adult.gate)
   let retrieval = RetrievalRuntimes()
+  let demo = NovelForgeDemoRun.session()
+  private(set) lazy var windows = NovelForgeWindowRuntimes(
+    owner: NovelForgeRuntimeSet(vault: vault, ai: ai, sync: sync, adult: adult, welcome: welcome, chats: chats, jobs: jobs, retrieval: retrieval), demo: demo)
   #if os(macOS)
     private(set) lazy var worker = WorkerModel.live(sync: sync)
   #endif
@@ -53,6 +56,7 @@ final class NovelForgeAppDelegate: NSObject {
   extension NovelForgeAppDelegate: NSApplicationDelegate {
     func applicationDidFinishLaunching(_ notification: Notification) {
       DiagnosticsArchives.clearLeftovers(identity: .novelForge)
+      Task { await demo.launched() }
       observe(NSWindow.willCloseNotification) { await UnsavedWork.shared.flushAll(within: .seconds(3)) }
       observe(NSApplication.didBecomeActiveNotification) { [sync, worker] in
         worker.refreshLoginItem()
@@ -108,6 +112,7 @@ final class NovelForgeAppDelegate: NSObject {
   extension NovelForgeAppDelegate: UIApplicationDelegate {
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil) -> Bool {
       DiagnosticsArchives.clearLeftovers(identity: .novelForge)
+      Task { await demo.launched() }
       observe(UIApplication.protectedDataDidBecomeAvailableNotification) { [weak self] in
         guard let self else { return }
         await vault.protectedDataBecameAvailable()

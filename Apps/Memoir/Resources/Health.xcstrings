@@ -177,6 +177,17 @@
         }
       }
     },
+    "The demo never reads Apple Health. Type your metrics by hand.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The demo never reads Apple Health. Type your metrics by hand."
+          }
+        }
+      }
+    },
     "This build of Memoir can’t read Apple Health. Type your metrics by hand.": {
       "extractionState": "manual",
       "localizations": {

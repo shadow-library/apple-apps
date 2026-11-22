@@ -12,6 +12,8 @@ nonisolated struct MemoirOpenedVault: Sendable {
   let stores: MemoirStores
   let projection: MemoirReconciler
   let clock: MemoirClock
+  /// The demo's vault, whose screens never read Health.
+  var isDemo = false
 
   func refreshDay() async throws(StoreError) {
     try await projection.refresh(stores.main)

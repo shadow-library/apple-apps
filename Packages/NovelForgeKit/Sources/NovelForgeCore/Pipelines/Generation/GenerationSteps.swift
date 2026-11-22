@@ -247,7 +247,7 @@ struct GenerationDraftStep: JobStep {
     let (json, sent) = try await calls.structured(
       try calls.route(.draft, isolated: false), prompt,
       screening: [("chapterBrief", pack.brief.chapterBrief), ("endingContract", pack.brief.endingContract), ("guidance", state.pinned.guidance)],
-      sections: calls.sections(pinned), name: "generation", schema: chapterGenerationSchema)
+      sections: calls.sections(pinned), name: chapterGenerationSchemaName, schema: chapterGenerationSchema)
     guard let json, let body = json["body"]?.stringValue else { throw GenerationJobError.reply("generation") }
     state.write(json, body: body)
     state.title = json["title"]?.stringValue ?? ""
@@ -294,7 +294,7 @@ struct GenerationExpandStep: JobStep {
         route, prompt,
         screening: [
           ("chapterBrief", pack.brief.chapterBrief), ("endingContract", pack.brief.endingContract), ("guidance", state.writerGuidance), ("draftBody", request.draftBody),
-        ], sections: calls.sections(pinned), name: "chapter-expand", schema: chapterExpandSchema
+        ], sections: calls.sections(pinned), name: chapterExpandSchemaName, schema: chapterExpandSchema
       ).json?["body"]?.stringValue
     } catch {
       guard case .call = error, !calls.isStopping else { throw error }
@@ -321,7 +321,7 @@ struct GenerationTitleStep: JobStep {
     let prompt = ChapterPromptRequest(chapterTitleMessages(existingTitles: input.existingTitles, chapterSummary: input.chapterSummary), layout: .plain, breakpointsAt: [])
     let (json, _) = try await calls.structured(
       try calls.route(.title, isolated: state.isolated), prompt, screening: [("existingTitles", input.existingTitles), ("chapterSummary", input.chapterSummary)],
-      sections: [], name: "title", schema: chapterTitleSchema)
+      sections: [], name: chapterTitleSchemaName, schema: chapterTitleSchema)
     state.title = json?["title"]?.stringValue ?? ""
     return AttemptStepOutput(state: try state.json, next: GenerationStep.save.rawValue)
   }
@@ -442,7 +442,7 @@ struct GenerationRepairStep: JobStep {
     let prompt = chapterFixRequest(contextPack: pinned.rendered, prose: state.prose, findings: findings)
     let (json, sent) = try await calls.structured(
       try calls.route(.repair, isolated: state.isolated), prompt, screening: [("prose", state.prose), ("findings", findings)], sections: calls.sections(pinned),
-      name: "fix", schema: chapterFixSchema)
+      name: chapterFixSchemaName, schema: chapterFixSchema)
     guard let json, let action = json["action"]?.stringValue.flatMap(RepairMode.init(rawValue:)) else { throw GenerationJobError.reply("fix") }
     let patches = json["patches"]?.arrayValue?.compactMap { patch in
       patch["find"]?.stringValue.flatMap { find in patch["replace"]?.stringValue.map { ProsePatch(find: find, replace: $0) } }
@@ -489,7 +489,7 @@ struct GenerationRewriteStep: JobStep {
     let (json, sent) = try await calls.structured(
       try calls.route(.draft, isolated: state.isolated), prompt,
       screening: [("chapterBrief", pack.brief.chapterBrief), ("endingContract", pack.brief.endingContract), ("guidance", guidance)], sections: calls.sections(pinned),
-      name: "generation", schema: chapterGenerationSchema)
+      name: chapterGenerationSchemaName, schema: chapterGenerationSchema)
     guard let json, let body = json["body"]?.stringValue else { throw GenerationJobError.reply("generation") }
     if let rewritten = calls.snapshot(
       .rewrite, attempt: state.attempt + 1, prompt: prompt, disclosure: disclosure, omitted: pinned.omitted, bible: GenerationCalls.bible(of: pinned),

@@ -99,9 +99,10 @@ struct AskProviderCallout: View {
       message: Text("Memoir answers with your own Anthropic or OpenRouter key. Add one in AI settings; nothing is sent until you allow it.", tableName: "Ask"),
       intent: .info, systemImage: "key"
     ) {
-      HStack(spacing: Spacing.space3) {
+      ShadowFlowLayout(spacing: Spacing.space3) {
         AISettingsButton(store: store) { _ in EmptyView() }
         Button(action: recheck) { Text("Check Again", tableName: "Ask") }
+        TryDemoButton()
       }
     }
   }

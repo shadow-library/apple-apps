@@ -13,6 +13,8 @@ func chatCompactMessages(priorSummary: String, transcript: String) -> [PromptMes
   ]
 }
 
+let chatCompactSchemaName = "chat-compact"
+
 let chatCompactSchema: OrderedJSON = jsonObject([
   ("type", .string("object")),
   ("additionalProperties", .bool(false)),
