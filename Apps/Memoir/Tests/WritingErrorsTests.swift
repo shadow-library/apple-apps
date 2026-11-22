@@ -22,6 +22,13 @@ struct WritingErrorsTests {
     #expect(WritingErrors.presented(QuickLogError.issue(.refused(.categoryNotArchivable(CategoryKey("uncat")!))))?.headline.hasPrefix("Uncategorised and Subscriptions") == true)
   }
 
+  @Test("should fall back to the generic headline with its code for a replay refusal the reference has no words for")
+  func presentsAReplayRefusalWithoutWords() {
+    let presented = WritingErrors.presented(ReplayRefusal.notAccountDay(TestClock.day(0)))
+
+    #expect(presented == PresentedError(headline: PresentedError.genericHeadline, detail: "memoir_replay.cmd_002"))
+  }
+
   @Test("should say the details were not valid for a refusal the reference answers with a validation error")
   func saysDetailsWereInvalid() {
     let presented = WritingErrors.presented(MemoirWriteError.command(.refused(.invalidField(field: "name", problem: .required))))

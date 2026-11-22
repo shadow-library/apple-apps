@@ -1,0 +1,3292 @@
+{
+  "sourceLanguage": "en",
+  "strings": {
+    "%@ +%lld": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ +%lld"
+          }
+        }
+      }
+    },
+    "%@ against your strongest stat": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ against your strongest stat"
+          }
+        }
+      }
+    },
+    "%@ earned": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ earned"
+          }
+        }
+      }
+    },
+    "%@ from your next rollover — %@ stays active today.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ from your next rollover — %@ stays active today."
+          }
+        }
+      }
+    },
+    "%@ kept": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ kept"
+          }
+        }
+      }
+    },
+    "%@ kept late": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ kept late"
+          }
+        }
+      }
+    },
+    "%@ partly kept": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ partly kept"
+          }
+        }
+      }
+    },
+    "%@ · earned %@": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ · earned %@"
+          }
+        }
+      }
+    },
+    "%@: banked": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@: banked"
+          }
+        }
+      }
+    },
+    "%@: not banked": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@: not banked"
+          }
+        }
+      }
+    },
+    "%lld / %lld XP": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld / %lld XP"
+          }
+        }
+      }
+    },
+    "%lld achievements": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld achievement"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld achievements"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld active days": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld active day"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld active days"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld coins": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld coin"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld coins"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld days away": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld day away"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld days away"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld misses": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld miss"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld misses"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld more coins": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld more coin"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld more coins"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld of %lld": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld of %lld"
+          }
+        }
+      }
+    },
+    "%lld of %lld achievements in the catalogue are yours so far. They arrive on their own — there is nothing to claim.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld of %lld achievements in the catalogue are yours so far. They arrive on their own — there is nothing to claim."
+          }
+        }
+      }
+    },
+    "%lld of %lld comeback bonuses claimed today.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld of %lld comeback bonuses claimed today."
+          }
+        }
+      }
+    },
+    "%lld shielded": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld shielded"
+          }
+        }
+      }
+    },
+    "%lld to level %lld · experience is never taken away": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld to level %lld · experience is never taken away"
+          }
+        }
+      }
+    },
+    "%lld%%": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld%%"
+          }
+        }
+      }
+    },
+    "+%lld XP": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "+%lld XP"
+          }
+        }
+      }
+    },
+    "+%lld coins": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "+%lld coin"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "+%lld coins"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "A Hundred Days": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A Hundred Days"
+          }
+        }
+      }
+    },
+    "A change from another device needs a newer version of Memoir. Your hero shows everything up to it until you update.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A change from another device needs a newer version of Memoir. Your hero shows everything up to it until you update."
+          }
+        }
+      }
+    },
+    "A cold steel edge on the hero card.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A cold steel edge on the hero card."
+          }
+        }
+      }
+    },
+    "A comeback bonus is ready": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A comeback bonus is ready"
+          }
+        }
+      }
+    },
+    "A full crown period with most of its occurrences kept.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A full crown period with most of its occurrences kept."
+          }
+        }
+      }
+    },
+    "A full day with no quest missed.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A full day with no quest missed."
+          }
+        }
+      }
+    },
+    "A hundred experience earned.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A hundred experience earned."
+          }
+        }
+      }
+    },
+    "A hundred routine quests kept": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A hundred routine quests kept"
+          }
+        }
+      }
+    },
+    "A hundred-day run on one quest.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A hundred-day run on one quest."
+          }
+        }
+      }
+    },
+    "A lighter accent across every surface.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A lighter accent across every surface."
+          }
+        }
+      }
+    },
+    "A locked day cleared in full.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A locked day cleared in full."
+          }
+        }
+      }
+    },
+    "A miss never costs HP, HP refills faster overnight, and the crown is counted over the whole week.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A miss never costs HP, HP refills faster overnight, and the crown is counted over the whole week."
+          }
+        }
+      }
+    },
+    "A missed, skipped or postponed anchor or routine quest costs one HP when the day closes, and the crown is counted day by day.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A missed, skipped or postponed anchor or routine quest costs one HP when the day closes, and the crown is counted day by day."
+          }
+        }
+      }
+    },
+    "A quest": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A quest"
+          }
+        }
+      }
+    },
+    "A quest kept": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A quest kept"
+          }
+        }
+      }
+    },
+    "A quest kept late": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A quest kept late"
+          }
+        }
+      }
+    },
+    "A quest partly kept": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A quest partly kept"
+          }
+        }
+      }
+    },
+    "A quest was missed yesterday, so today also offers a lighter recovery quest you can keep before the day closes. Nothing you have earned was taken away.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A quest was missed yesterday, so today also offers a lighter recovery quest you can keep before the day closes. Nothing you have earned was taken away."
+          }
+        }
+      }
+    },
+    "A radiant edge on the hero card. Comes with a hundred-day run.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A radiant edge on the hero card. Comes with a hundred-day run."
+          }
+        }
+      }
+    },
+    "A recovery quest is on today": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A recovery quest is on today"
+          }
+        }
+      }
+    },
+    "A recovery quest kept": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A recovery quest kept"
+          }
+        }
+      }
+    },
+    "A seven-day run on any quest.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A seven-day run on any quest."
+          }
+        }
+      }
+    },
+    "A thirty-day run on any quest. It says more about your evenings than your mornings.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A thirty-day run on any quest. It says more about your evenings than your mornings."
+          }
+        }
+      }
+    },
+    "A three-day run on any quest.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A three-day run on any quest."
+          }
+        }
+      }
+    },
+    "A warm accent across every surface. Comes with the Returner ritual.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A warm accent across every surface. Comes with the Returner ritual."
+          }
+        }
+      }
+    },
+    "A warm edge on the hero card.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A warm edge on the hero card."
+          }
+        }
+      }
+    },
+    "A week-long run on three quests": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A week-long run on three quests"
+          }
+        }
+      }
+    },
+    "A year of days with something kept": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A year of days with something kept"
+          }
+        }
+      }
+    },
+    "Achievements": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Achievements"
+          }
+        }
+      }
+    },
+    "After recent misses, the next anchor or routine quest you keep today earns extra experience and a coin.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "After recent misses, the next anchor or routine quest you keep today earns extra experience and a coin."
+          }
+        }
+      }
+    },
+    "All four stats at thirty": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "All four stats at thirty"
+          }
+        }
+      }
+    },
+    "An achievement earned": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "An achievement earned"
+          }
+        }
+      }
+    },
+    "Anchor Holder": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Anchor Holder"
+          }
+        }
+      }
+    },
+    "Anchors, tidiness, follow-through": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Anchors, tidiness, follow-through"
+          }
+        }
+      }
+    },
+    "Architect": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Architect"
+          }
+        }
+      }
+    },
+    "Arrives with your first quest kept.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Arrives with your first quest kept."
+          }
+        }
+      }
+    },
+    "Aurora accent": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aurora accent"
+          }
+        }
+      }
+    },
+    "Body": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Body"
+          }
+        }
+      }
+    },
+    "Body Tempered": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Body Tempered"
+          }
+        }
+      }
+    },
+    "Body at sixty": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Body at sixty"
+          }
+        }
+      }
+    },
+    "Body, mind, wealth and discipline all moved.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Body, mind, wealth and discipline all moved."
+          }
+        }
+      }
+    },
+    "Bronze badge": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bronze badge"
+          }
+        }
+      }
+    },
+    "Cancel": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cancel"
+          }
+        }
+      }
+    },
+    "Choose a name": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Choose a name"
+          }
+        }
+      }
+    },
+    "Clear displayed title": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Clear displayed title"
+          }
+        }
+      }
+    },
+    "Closes at the end of today · %lld%% kept.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Closes at the end of today · %lld%% kept."
+          }
+        }
+      }
+    },
+    "Coins": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Coins"
+          }
+        }
+      }
+    },
+    "Coins come from kept quests and crowns. They cannot be bought, and nothing here changes how the game plays.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Coins come from kept quests and crowns. They cannot be bought, and nothing here changes how the game plays."
+          }
+        }
+      }
+    },
+    "Coins granted": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Coins granted"
+          }
+        }
+      }
+    },
+    "Comeback": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Comeback"
+          }
+        }
+      }
+    },
+    "Comeback Steady": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Comeback Steady"
+          }
+        }
+      }
+    },
+    "Comeback bonus claimed": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Comeback bonus claimed"
+          }
+        }
+      }
+    },
+    "Comeback progress": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Comeback progress"
+          }
+        }
+      }
+    },
+    "Comes with an achievement": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Comes with an achievement"
+          }
+        }
+      }
+    },
+    "Comes with an achievement, never with coins.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Comes with an achievement, never with coins."
+          }
+        }
+      }
+    },
+    "Coming back": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Coming back"
+          }
+        }
+      }
+    },
+    "Committed": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Committed"
+          }
+        }
+      }
+    },
+    "Cosmetic unlocked": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cosmetic unlocked"
+          }
+        }
+      }
+    },
+    "Cosmetics": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cosmetics"
+          }
+        }
+      }
+    },
+    "Cosmetics you can’t yet afford wait here until your balance reaches them.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cosmetics you can’t yet afford wait here until your balance reaches them."
+          }
+        }
+      }
+    },
+    "Couldn’t change intensity to ‘%@’": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Couldn’t change intensity to ‘%@’"
+          }
+        }
+      }
+    },
+    "Couldn’t clear the displayed title": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Couldn’t clear the displayed title"
+          }
+        }
+      }
+    },
+    "Couldn’t display ‘%@’": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Couldn’t display ‘%@’"
+          }
+        }
+      }
+    },
+    "Couldn’t equip ‘%@’": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Couldn’t equip ‘%@’"
+          }
+        }
+      }
+    },
+    "Couldn’t unlock ‘%@’": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Couldn’t unlock ‘%@’"
+          }
+        }
+      }
+    },
+    "Couldn’t unlock ‘%@’ — undone": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Couldn’t unlock ‘%@’ — undone"
+          }
+        }
+      }
+    },
+    "Cross-Stat Climber": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cross-Stat Climber"
+          }
+        }
+      }
+    },
+    "Crown %@: %lld%% kept": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Crown %@: %lld%% kept"
+          }
+        }
+      }
+    },
+    "Crown banked": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Crown banked"
+          }
+        }
+      }
+    },
+    "Crown kept": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Crown kept"
+          }
+        }
+      }
+    },
+    "Crown period opened": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Crown period opened"
+          }
+        }
+      }
+    },
+    "Crown share lost on %@": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Crown share lost on %@"
+          }
+        }
+      }
+    },
+    "Crown · %@": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Crown · %@"
+          }
+        }
+      }
+    },
+    "Day %lld of %lld · closes %@ · %lld%% kept.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Day %lld of %lld · closes %@ · %lld%% kept."
+          }
+        }
+      }
+    },
+    "Deep indigo in light mode and moonlit indigo in dark, across every surface.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Deep indigo in light mode and moonlit indigo in dark, across every surface."
+          }
+        }
+      }
+    },
+    "Demanding": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Demanding"
+          }
+        }
+      }
+    },
+    "Discipline": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Discipline"
+          }
+        }
+      }
+    },
+    "Discipline at sixty": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Discipline at sixty"
+          }
+        }
+      }
+    },
+    "Dismiss": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dismiss"
+          }
+        }
+      }
+    },
+    "Display %@": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Display %@"
+          }
+        }
+      }
+    },
+    "Displayed": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Displayed"
+          }
+        }
+      }
+    },
+    "Each of these is optional and reversible.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Each of these is optional and reversible."
+          }
+        }
+      }
+    },
+    "Earned": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Earned"
+          }
+        }
+      }
+    },
+    "Earned %@": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Earned %@"
+          }
+        }
+      }
+    },
+    "Effect: %@": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Effect: %@"
+          }
+        }
+      }
+    },
+    "Ember accent": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ember accent"
+          }
+        }
+      }
+    },
+    "Equip": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Equip"
+          }
+        }
+      }
+    },
+    "Equipped": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Equipped"
+          }
+        }
+      }
+    },
+    "Everything you have earned, and nothing you can lose. Experience only ever goes up.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Everything you have earned, and nothing you can lose. Experience only ever goes up."
+          }
+        }
+      }
+    },
+    "Experience only ever goes up": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Experience only ever goes up"
+          }
+        }
+      }
+    },
+    "Experience towards level %lld": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Experience towards level %lld"
+          }
+        }
+      }
+    },
+    "Fewer HP that refill more slowly, and the crown counted day by day.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fewer HP that refill more slowly, and the crown counted day by day."
+          }
+        }
+      }
+    },
+    "First Crown": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "First Crown"
+          }
+        }
+      }
+    },
+    "First Hundred": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "First Hundred"
+          }
+        }
+      }
+    },
+    "First Promise": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "First Promise"
+          }
+        }
+      }
+    },
+    "Five Hundred": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Five Hundred"
+          }
+        }
+      }
+    },
+    "Five hundred experience earned.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Five hundred experience earned."
+          }
+        }
+      }
+    },
+    "Five recovery quests kept": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Five recovery quests kept"
+          }
+        }
+      }
+    },
+    "Four Directions": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Four Directions"
+          }
+        }
+      }
+    },
+    "From tomorrow": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "From tomorrow"
+          }
+        }
+      }
+    },
+    "Frost accent": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Frost accent"
+          }
+        }
+      }
+    },
+    "Gentle": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Gentle"
+          }
+        }
+      }
+    },
+    "Go to today": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Go to today"
+          }
+        }
+      }
+    },
+    "Goal Keeper": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Goal Keeper"
+          }
+        }
+      }
+    },
+    "Gold streak badge": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Gold streak badge"
+          }
+        }
+      }
+    },
+    "Grants experience as usual.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Grants experience as usual."
+          }
+        }
+      }
+    },
+    "Grants experience with the comeback bonus added.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Grants experience with the comeback bonus added."
+          }
+        }
+      }
+    },
+    "HP": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "HP"
+          }
+        }
+      }
+    },
+    "HP %lld of %lld": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "HP %lld of %lld"
+          }
+        }
+      }
+    },
+    "Hero": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hero"
+          }
+        }
+      }
+    },
+    "Hero sections": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hero sections"
+          }
+        }
+      }
+    },
+    "Highest level reached": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Highest level reached"
+          }
+        }
+      }
+    },
+    "Highest level reached · experience is never taken away": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Highest level reached · experience is never taken away"
+          }
+        }
+      }
+    },
+    "Honest Ledger": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Honest Ledger"
+          }
+        }
+      }
+    },
+    "Honest Planner": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Honest Planner"
+          }
+        }
+      }
+    },
+    "How much the app should ask of you. This changes load and strictness across every quest at once, and it never changes experience already earned.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "How much the app should ask of you. This changes load and strictness across every quest at once, and it never changes experience already earned."
+          }
+        }
+      }
+    },
+    "How shields work": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "How shields work"
+          }
+        }
+      }
+    },
+    "Intensity": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Intensity"
+          }
+        }
+      }
+    },
+    "It is on today’s list and judged on the day rather than the hour.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "It is on today’s list and judged on the day rather than the hour."
+          }
+        }
+      }
+    },
+    "Journal entry written": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Journal entry written"
+          }
+        }
+      }
+    },
+    "Keep an anchor or routine quest": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Keep an anchor or routine quest"
+          }
+        }
+      }
+    },
+    "Keep one quest today": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Keep one quest today"
+          }
+        }
+      }
+    },
+    "Keep the recovery quest": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Keep the recovery quest"
+          }
+        }
+      }
+    },
+    "Level %lld": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Level %lld"
+          }
+        }
+      }
+    },
+    "Level %lld reached": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Level %lld reached"
+          }
+        }
+      }
+    },
+    "Lighter Version": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lighter Version"
+          }
+        }
+      }
+    },
+    "Locked": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Locked"
+          }
+        }
+      }
+    },
+    "Locked achievement": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Locked achievement"
+          }
+        }
+      }
+    },
+    "Locked achievements show no counter and no progress bar. A number here would turn this into a chore, and you will know when it happens.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Locked achievements show no counter and no progress bar. A number here would turn this into a chore, and you will know when it happens."
+          }
+        }
+      }
+    },
+    "Look over the week": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Look over the week"
+          }
+        }
+      }
+    },
+    "Meal logged": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Meal logged"
+          }
+        }
+      }
+    },
+    "Memoir needs updating": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Memoir needs updating"
+          }
+        }
+      }
+    },
+    "Midnight theme": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Midnight theme"
+          }
+        }
+      }
+    },
+    "Mind": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mind"
+          }
+        }
+      }
+    },
+    "Mind Cultivated": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mind Cultivated"
+          }
+        }
+      }
+    },
+    "Mind at sixty": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mind at sixty"
+          }
+        }
+      }
+    },
+    "Missed": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Missed"
+          }
+        }
+      }
+    },
+    "Missing a quest can end a streak or spend HP. It never removes experience or a level you have earned, and nothing you have already done is undone.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Missing a quest can end a streak or spend HP. It never removes experience or a level you have earned, and nothing you have already done is undone."
+          }
+        }
+      }
+    },
+    "Momentum": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Momentum"
+          }
+        }
+      }
+    },
+    "Momentum describes the last two weeks. It is not a currency and it cannot go negative.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Momentum describes the last two weeks. It is not a currency and it cannot go negative."
+          }
+        }
+      }
+    },
+    "Movement, sleep, food, strength": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Movement, sleep, food, strength"
+          }
+        }
+      }
+    },
+    "Moving or pausing a quest can make the coming days lighter.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Moving or pausing a quest can make the coming days lighter."
+          }
+        }
+      }
+    },
+    "Named the Recurring": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Named the Recurring"
+          }
+        }
+      }
+    },
+    "New hero": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "New hero"
+          }
+        }
+      }
+    },
+    "No HP yet": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No HP yet"
+          }
+        }
+      }
+    },
+    "No titles yet": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No titles yet"
+          }
+        }
+      }
+    },
+    "None of your quests can hold a shield yet. Quests on a streak earn them as you keep them.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "None of your quests can hold a shield yet. Quests on a streak earn them as you keep them."
+          }
+        }
+      }
+    },
+    "Not now": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Not now"
+          }
+        }
+      }
+    },
+    "Not yet": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Not yet"
+          }
+        }
+      }
+    },
+    "Nothing changes until you move or pause something.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nothing changes until you move or pause something."
+          }
+        }
+      }
+    },
+    "Nothing has happened yet. The first quest you keep appears here, and everything after it stays.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nothing has happened yet. The first quest you keep appears here, and everything after it stays."
+          }
+        }
+      }
+    },
+    "Nothing is waiting for you here today. After a missed day or a break, this page shows what changed and the choices open to you.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nothing is waiting for you here today. After a missed day or a break, this page shows what changed and the choices open to you."
+          }
+        }
+      }
+    },
+    "Nothing to come back from": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nothing to come back from"
+          }
+        }
+      }
+    },
+    "OK": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "OK"
+          }
+        }
+      }
+    },
+    "One title is shown at a time, and every one you have earned is kept whatever you display.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "One title is shown at a time, and every one you have earned is kept whatever you display."
+          }
+        }
+      }
+    },
+    "Open choices": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Open choices"
+          }
+        }
+      }
+    },
+    "Optional Surplus": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Optional Surplus"
+          }
+        }
+      }
+    },
+    "Overview": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Overview"
+          }
+        }
+      }
+    },
+    "Pick whichever quest on today’s list feels manageable. There is nothing to catch up on.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pick whichever quest on today’s list feels manageable. There is nothing to catch up on."
+          }
+        }
+      }
+    },
+    "Plain, heavy and slow to earn.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Plain, heavy and slow to earn."
+          }
+        }
+      }
+    },
+    "Quiet Climber": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Quiet Climber"
+          }
+        }
+      }
+    },
+    "Quiet Year": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Quiet Year"
+          }
+        }
+      }
+    },
+    "Reading, writing, study, focus": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reading, writing, study, focus"
+          }
+        }
+      }
+    },
+    "Recent progression": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Recent progression"
+          }
+        }
+      }
+    },
+    "Recently missed": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Recently missed"
+          }
+        }
+      }
+    },
+    "Recovery quest closed unkept": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Recovery quest closed unkept"
+          }
+        }
+      }
+    },
+    "Recovery quest kept": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Recovery quest kept"
+          }
+        }
+      }
+    },
+    "Recovery quest offered": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Recovery quest offered"
+          }
+        }
+      }
+    },
+    "Recovery quest offered for %@": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Recovery quest offered for %@"
+          }
+        }
+      }
+    },
+    "Reflective Practitioner": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reflective Practitioner"
+          }
+        }
+      }
+    },
+    "Regenerates overnight, on its own.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Regenerates overnight, on its own."
+          }
+        }
+      }
+    },
+    "Restorer": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Restorer"
+          }
+        }
+      }
+    },
+    "Returner": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Returner"
+          }
+        }
+      }
+    },
+    "Returner theme": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Returner theme"
+          }
+        }
+      }
+    },
+    "Returning": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Returning"
+          }
+        }
+      }
+    },
+    "Routine Forged": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Routine Forged"
+          }
+        }
+      }
+    },
+    "Saving…": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Saving…"
+          }
+        }
+      }
+    },
+    "Second Level": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Second Level"
+          }
+        }
+      }
+    },
+    "See the week": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "See the week"
+          }
+        }
+      }
+    },
+    "Settling": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Settling"
+          }
+        }
+      }
+    },
+    "Seven Days": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Seven Days"
+          }
+        }
+      }
+    },
+    "Shielded": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Shielded"
+          }
+        }
+      }
+    },
+    "Shields": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Shields"
+          }
+        }
+      }
+    },
+    "Shields held": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Shields held"
+          }
+        }
+      }
+    },
+    "Side quest logged": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Side quest logged"
+          }
+        }
+      }
+    },
+    "Silver badge": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Silver badge"
+          }
+        }
+      }
+    },
+    "Something about a day with nothing dropped": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Something about a day with nothing dropped"
+          }
+        }
+      }
+    },
+    "Something about a full week": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Something about a full week"
+          }
+        }
+      }
+    },
+    "Something about a hundred of anything": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Something about a hundred of anything"
+          }
+        }
+      }
+    },
+    "Something about a quiet month of spending": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Something about a quiet month of spending"
+          }
+        }
+      }
+    },
+    "Something about a whole period": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Something about a whole period"
+          }
+        }
+      }
+    },
+    "Something about beginning": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Something about beginning"
+          }
+        }
+      }
+    },
+    "Something about being more than one thing": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Something about being more than one thing"
+          }
+        }
+      }
+    },
+    "Something about coming back twice": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Something about coming back twice"
+          }
+        }
+      }
+    },
+    "Something about deciding in advance": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Something about deciding in advance"
+          }
+        }
+      }
+    },
+    "Something about five hundred": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Something about five hundred"
+          }
+        }
+      }
+    },
+    "Something about money that repeats": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Something about money that repeats"
+          }
+        }
+      }
+    },
+    "Something about starting smaller": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Something about starting smaller"
+          }
+        }
+      }
+    },
+    "Something about the first climb": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Something about the first climb"
+          }
+        }
+      }
+    },
+    "Something about the first hundred": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Something about the first hundred"
+          }
+        }
+      }
+    },
+    "Something about three days": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Something about three days"
+          }
+        }
+      }
+    },
+    "Something about winter mornings": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Something about winter mornings"
+          }
+        }
+      }
+    },
+    "Something you have not attempted yet": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Something you have not attempted yet"
+          }
+        }
+      }
+    },
+    "Spending, saving, admin": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Spending, saving, admin"
+          }
+        }
+      }
+    },
+    "Standard": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Standard"
+          }
+        }
+      }
+    },
+    "Starter crest": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Starter crest"
+          }
+        }
+      }
+    },
+    "Steady": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Steady"
+          }
+        }
+      }
+    },
+    "Steady Builder": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Steady Builder"
+          }
+        }
+      }
+    },
+    "Sunrise theme": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sunrise theme"
+          }
+        }
+      }
+    },
+    "Ten comebacks": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ten comebacks"
+          }
+        }
+      }
+    },
+    "Ten locked days cleared": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ten locked days cleared"
+          }
+        }
+      }
+    },
+    "Ten moves logged with a reason": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ten moves logged with a reason"
+          }
+        }
+      }
+    },
+    "The Returner": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The Returner"
+          }
+        }
+      }
+    },
+    "The Returner ritual, completed.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The Returner ritual, completed."
+          }
+        }
+      }
+    },
+    "The crest you started with.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The crest you started with."
+          }
+        }
+      }
+    },
+    "The first comeback bonus you claimed after recent misses.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The first comeback bonus you claimed after recent misses."
+          }
+        }
+      }
+    },
+    "The first level you reached.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The first level you reached."
+          }
+        }
+      }
+    },
+    "The first quest after a return": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The first quest after a return"
+          }
+        }
+      }
+    },
+    "The first quest you completed.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The first quest you completed."
+          }
+        }
+      }
+    },
+    "The first receipt you scanned into an expense.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The first receipt you scanned into an expense."
+          }
+        }
+      }
+    },
+    "The first recovery quest you completed.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The first recovery quest you completed."
+          }
+        }
+      }
+    },
+    "The first subscription you confirmed.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The first subscription you confirmed."
+          }
+        }
+      }
+    },
+    "The lighter version of %@ is on today’s list and judged on the day rather than the hour.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The lighter version of %@ is on today’s list and judged on the day rather than the hour."
+          }
+        }
+      }
+    },
+    "The rest of the catalogue arrives on its own, with no hints and no counters.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The rest of the catalogue arrives on its own, with no hints and no counters."
+          }
+        }
+      }
+    },
+    "These choices are set aside for today. They come back tomorrow if they still apply.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "These choices are set aside for today. They come back tomorrow if they still apply."
+          }
+        }
+      }
+    },
+    "Thirty Mornings": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Thirty Mornings"
+          }
+        }
+      }
+    },
+    "Thirty days on an anchor": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Thirty days on an anchor"
+          }
+        }
+      }
+    },
+    "Thirty goal quests kept": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Thirty goal quests kept"
+          }
+        }
+      }
+    },
+    "Thirty optional quests kept": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Thirty optional quests kept"
+          }
+        }
+      }
+    },
+    "This couldn’t be read": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This couldn’t be read"
+          }
+        }
+      }
+    },
+    "Three Days": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Three Days"
+          }
+        }
+      }
+    },
+    "Titles": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Titles"
+          }
+        }
+      }
+    },
+    "Titles arrive by themselves, from patterns you keep rather than goals you set. There is nothing to unlock and nothing to aim at, so this stays quiet until the first one appears.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Titles arrive by themselves, from patterns you keep rather than goals you set. There is nothing to unlock and nothing to aim at, so this stays quiet until the first one appears."
+          }
+        }
+      }
+    },
+    "Today": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Today"
+          }
+        }
+      }
+    },
+    "Try Again": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Try Again"
+          }
+        }
+      }
+    },
+    "Twenty reasons across twenty days": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Twenty reasons across twenty days"
+          }
+        }
+      }
+    },
+    "Unknown until it happens": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Unknown until it happens"
+          }
+        }
+      }
+    },
+    "Unlock": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Unlock"
+          }
+        }
+      }
+    },
+    "Unlock %@": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Unlock %@"
+          }
+        }
+      }
+    },
+    "Unlock %@ for %@? You have %lld.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Unlock %@ for %@? You have %lld."
+          }
+        }
+      }
+    },
+    "Unlock for %@": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Unlock for %@"
+          }
+        }
+      }
+    },
+    "Unlocks": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Unlocks"
+          }
+        }
+      }
+    },
+    "Warm": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Warm"
+          }
+        }
+      }
+    },
+    "Wealth": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Wealth"
+          }
+        }
+      }
+    },
+    "Wealth Disciplined": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Wealth Disciplined"
+          }
+        }
+      }
+    },
+    "Wealth at sixty": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Wealth at sixty"
+          }
+        }
+      }
+    },
+    "Weight logged": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Weight logged"
+          }
+        }
+      }
+    },
+    "Welcome back": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Welcome back"
+          }
+        }
+      }
+    },
+    "What happened recently, and every choice open to you now. Doing nothing is one of them, and it costs nothing.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "What happened recently, and every choice open to you now. Doing nothing is one of them, and it costs nothing."
+          }
+        }
+      }
+    },
+    "Whole Day": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Whole Day"
+          }
+        }
+      }
+    },
+    "Yesterday": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Yesterday"
+          }
+        }
+      }
+    },
+    "You have been away for a while. Your experience, levels and titles are untouched, and streaks that closed while you were gone keep their records in History.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You have been away for a while. Your experience, levels and titles are untouched, and streaks that closed while you were gone keep their records in History."
+          }
+        }
+      }
+    },
+    "You hold %lld of %lld shields across your quests. A shield keeps a quest’s streak alive through a missed occurrence, and the day is marked shielded in History.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You hold %lld of %lld shields across your quests. A shield keeps a quest’s streak alive through a missed occurrence, and the day is marked shielded in History."
+          }
+        }
+      }
+    },
+    "You kept a quest after recent misses today, and the comeback bonus was added to it. There is nothing else to do.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You kept a quest after recent misses today, and the comeback bonus was added to it. There is nothing else to do."
+          }
+        }
+      }
+    },
+    "Your hero couldn’t be read": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your hero couldn’t be read"
+          }
+        }
+      }
+    },
+    "Your returner shield goes to the next quest you create.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your returner shield goes to the next quest you create."
+          }
+        }
+      }
+    },
+    "Your returner shield went to %@.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your returner shield went to %@."
+          }
+        }
+      }
+    },
+    "a quest": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "a quest"
+          }
+        }
+      }
+    },
+    "full": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "full"
+          }
+        }
+      }
+    },
+    "last %@": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "last %@"
+          }
+        }
+      }
+    },
+    "last active %@": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "last active %@"
+          }
+        }
+      }
+    },
+    "level": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "level"
+          }
+        }
+      }
+    },
+    "this week": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "this week"
+          }
+        }
+      }
+    },
+    "today": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "today"
+          }
+        }
+      }
+    },
+    "−%lld coins": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "−%lld coin"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "−%lld coins"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "version": "1.0"
+}

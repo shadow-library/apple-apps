@@ -36,6 +36,8 @@ enum WritingErrors {
       case .finance(let error): headline(for: error)
       default: refusal.referenceCode.flatMap(copy(referenceCode:)) ?? invalidDetails
       }
+    case let refusal as ReplayRefusal:
+      copy(referenceCode: refusal.referenceCode)
     case let error as FinanceError:
       switch error {
       case .expenseFieldFixed: copy(referenceCode: "FIN_006")
@@ -81,7 +83,9 @@ enum WritingErrors {
     switch referenceCode {
     case "QST_003": String(localized: "Anchor quests need a start time.", table: "Writing")
     case "LCK_001": String(localized: "That quest isn’t in your plan any more.", table: "Writing")
+    case "HRO_001": String(localized: "You don’t have enough coins for that.", table: "Writing")
     case "CSM_002": String(localized: "That item isn’t available.", table: "Writing")
+    case "CSM_003": String(localized: "Unlock it before equipping it.", table: "Writing")
     case "CSM_004": String(localized: "That item comes with an achievement, not with coins.", table: "Writing")
     case "TTL_001": String(localized: "That title hasn’t been earned yet.", table: "Writing")
     case "FIN_004": String(localized: "That subscription no longer exists.", table: "Writing")
