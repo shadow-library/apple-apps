@@ -537,6 +537,14 @@ mise run new-app Example --platform phoneAndMac   # ios | macos | multiplatform 
 
 This creates `Apps/Example` with app, test target and scheme, bundle ID `com.shadow.apps.example`, and regenerates the workspace.
 
+## Privacy manifests
+
+Novel Forge and Memoir each ship `Resources/PrivacyInfo.xcprivacy`: no tracking, no tracking domains, no collected data types, and the
+required-reason APIs their own code and the statically linked ShadowKit, NovelForgeKit and MemoirKit call (UserDefaults CA92.1 and FileTimestamp
+3B52.1 in both). GRDB brings its own manifest in `GRDB_GRDB.bundle`. A new call to a listed API
+needs an entry in the manifest of every app that links it; `mise run privacy:check` finds the gap. Reasons, evidence and the guard's limits are in
+[`Docs/privacy-manifests.md`](Docs/privacy-manifests.md).
+
 ## Tasks
 
 | Command                   | What it does                                          |
@@ -547,7 +555,8 @@ This creates `Apps/Example` with app, test target and scheme, bundle ID `com.sha
 | `mise run test:apps`      | App tests without UI tests (`tuist test --skip-ui-tests`) |
 | `mise run tokens`         | Regenerates design-token sources from `Design/tokens.json` |
 | `mise run screenshots`    | Captures Catalog pages (see Screenshot harness)       |
-| `mise run lint`           | `swift format lint --strict`                          |
+| `mise run lint`           | `swift format lint --strict`, then `privacy:check`    |
+| `mise run privacy:check`  | Fails when an app uses a required-reason API its privacy manifest does not declare |
 | `mise run lint:graph`     | Fails on implicit or redundant module dependencies    |
 | `mise run format`         | Formats sources in place                              |
 | `mise run clean`          | Removes generated projects and build artifacts        |

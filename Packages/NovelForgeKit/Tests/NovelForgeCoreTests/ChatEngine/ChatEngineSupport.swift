@@ -103,7 +103,7 @@ enum EngineWorld {
   ) async throws -> ChatTurnEngine {
     let gated: any ModelProvider = turnsWait.map { TitleSplittingProvider(titles: provider, turns: provider, turnsWait: $0) } ?? provider
     let router = try await CompactionWorld.router(gated, store: store)
-    let timing = ChatTurnEngine.Timing(flushInterval: .seconds(3_600), monotonic: { ProcessInfo.processInfo.systemUptime * 1000 }, now: now)
+    let timing = ChatTurnEngine.Timing(flushInterval: .seconds(3_600), monotonic: ChatTurnEngine.Timing.standard.monotonic, now: now)
     return ChatTurnEngine(
       store: store, router: { router }, consent: CompactionWorld.consent, upkeep: upkeep.seam, timing: timing, faults: faults,
       unrestrictedAvailable: unrestrictedAvailable, embedders: embedders)

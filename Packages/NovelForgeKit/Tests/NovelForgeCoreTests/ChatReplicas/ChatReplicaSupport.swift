@@ -158,7 +158,7 @@ enum ChatReplicaWorld {
       let store = await replicas.store(index)
       let model = DeviceModel(device: index)
       let router = try await router(model, store: store)
-      let timing = ChatTurnEngine.Timing(flushInterval: .seconds(3_600), monotonic: { ProcessInfo.processInfo.systemUptime * 1000 }, now: { Date() })
+      let timing = ChatTurnEngine.Timing(flushInterval: .seconds(3_600), monotonic: ChatTurnEngine.Timing.standard.monotonic, now: { Date() })
       let engine = ChatTurnEngine(
         store: store, router: { router }, consent: CompactionWorld.consent, upkeep: RecordedUpkeep().seam, timing: timing,
         unrestrictedAvailable: true)

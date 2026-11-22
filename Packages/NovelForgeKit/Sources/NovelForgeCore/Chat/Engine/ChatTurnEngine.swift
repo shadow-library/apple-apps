@@ -18,7 +18,10 @@ public final class ChatTurnEngine: Sendable {
     let monotonic: @Sendable () -> Double
     let now: @Sendable () -> Date
 
-    static let standard = Timing(flushInterval: .seconds(3), monotonic: { ProcessInfo.processInfo.systemUptime * 1000 }, now: { Date() })
+    static let standard: Timing = {
+      let clock = SystemMonotonicTimeSource()
+      return Timing(flushInterval: .seconds(3), monotonic: { Double(clock.nanoseconds()) / 1_000_000 }, now: { Date() })
+    }()
   }
 
   /// Where a run can be made to end as a crash ends it, or to fail a write, so recovery can be checked at every step.

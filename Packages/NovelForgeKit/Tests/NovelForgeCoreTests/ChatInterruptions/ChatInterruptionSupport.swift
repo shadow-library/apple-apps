@@ -151,7 +151,7 @@ enum CrashWorld {
     let router = TaskRouter(
       configuration: TaskRouterConfiguration(provider: .anthropic, assignments: OpenRouterAssignments(unrestricted: CompactionWorld.unrestrictedModel)),
       anthropic: standard, openRouter: unrestricted, credentials: credentials, store: store, requestGuard: { ModelRequestGuard.hardLine(for: $0) })
-    let timing = ChatTurnEngine.Timing(flushInterval: flush, monotonic: { ProcessInfo.processInfo.systemUptime * 1000 }, now: { Date() })
+    let timing = ChatTurnEngine.Timing(flushInterval: flush, monotonic: ChatTurnEngine.Timing.standard.monotonic, now: { Date() })
     return ChatTurnEngine(
       store: store,
       router: {

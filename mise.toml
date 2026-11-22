@@ -30,8 +30,12 @@ description = "Run every test"
 depends = ["test:packages", "test:apps"]
 
 [tasks.lint]
-description = "Check formatting and style"
-run = "swift format lint --strict --recursive --parallel Apps Packages Scripts Tuist Tuist.swift Workspace.swift"
+description = "Check formatting, style and the privacy manifests"
+run = ["swift format lint --strict --recursive --parallel Apps Packages Scripts Tuist Tuist.swift Workspace.swift", "swift Scripts/check-privacy-manifests.swift"]
+
+[tasks."privacy:check"]
+description = "Fail when an app uses a required-reason API its privacy manifest does not declare"
+run = "swift Scripts/check-privacy-manifests.swift"
 
 [tasks.format]
 description = "Format sources in place"
