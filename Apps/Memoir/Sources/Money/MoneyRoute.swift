@@ -1,12 +1,31 @@
+import Foundation
+import MemoirCore
 import SwiftUI
 
-enum MoneyRoute: Hashable {}
+enum MoneyRoute: Hashable {
+  case expense(UUID)
+  case newExpense
+  /// Every expense of a scope; a category in it is memoir-web's `?category=` filter.
+  case expenses(ExpenseListScope)
+  case subscriptions
+  case subscription(UUID)
+  case newSubscription
+  case categories
+}
 
 struct MoneyRouteView: View {
   let route: MoneyRoute
   let context: MemoirScreenContext
 
   var body: some View {
-    EmptyView()
+    switch route {
+    case .expense(let id): ExpenseDetailView(id: id, context: context)
+    case .newExpense: ExpenseFormScreen(editing: nil, context: context)
+    case .expenses(let scope): ExpensesView(scope: scope, context: context)
+    case .subscriptions: SubscriptionsView(context: context)
+    case .subscription(let id): SubscriptionFormScreen(editing: id, context: context)
+    case .newSubscription: SubscriptionFormScreen(editing: nil, context: context)
+    case .categories: CategoriesView(context: context)
+    }
   }
 }
