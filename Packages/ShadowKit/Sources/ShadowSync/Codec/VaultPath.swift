@@ -56,9 +56,16 @@ public enum VaultPath {
     return objectKey("keys/" + recipient + "/" + key.description)
   }
 
+  public static let blobsPrefix = "blobs/"
+
+  public static func blobPrefix(_ name: String) -> String {
+    precondition(CodecText.isLowerHex(name, count: blobNameLength), "a blob name is \(blobNameLength) lower-case hex characters")
+    return blobsPrefix + name + "/"
+  }
+
   public static func blobPart(name: String, part: Int, parts: Int) -> ObjectKey {
     precondition(CodecText.isLowerHex(name, count: blobNameLength), "a blob name is \(blobNameLength) lower-case hex characters")
-    return objectKey("blobs/" + name + "/" + partName(part, of: parts))
+    return objectKey(blobPrefix(name) + partName(part, of: parts))
   }
 
   public static func classify(_ key: ObjectKey) -> VaultObject {

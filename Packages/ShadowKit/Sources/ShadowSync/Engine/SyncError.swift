@@ -25,6 +25,7 @@ public enum SyncError: ShadowError {
   /// The state holds a change stamped beyond the reader limit, which readers would hold back.
   case clockAhead(HLCTimestamp)
   case replicaRetired(ReplicaID)
+  case blob(BlobError)
   case corruptState(String)
 
   public var code: String {
@@ -47,6 +48,7 @@ public enum SyncError: ShadowError {
     case .awaitingKey: "sync.awaiting-key"
     case .clockAhead: "sync.clock-ahead"
     case .replicaRetired: "sync.replica-retired"
+    case .blob(let error): error.code
     case .corruptState: "sync.corrupt-state"
     }
   }
@@ -73,6 +75,7 @@ public enum SyncError: ShadowError {
     case .awaitingKey: "This device does not hold the vault's current key yet."
     case .clockAhead(let clock): "A change is stamped \(clock), too far ahead of trusted time to be read by other devices."
     case .replicaRetired(let replica): "Replica \(replica) is retired; it must continue as a new replica before it can move the vault."
+    case .blob(let error): error.errorDescription
     case .corruptState(let reason): "The sync bookkeeping is corrupt: \(reason)."
     }
   }

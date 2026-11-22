@@ -85,6 +85,22 @@ struct StoreBackupExclusionTests {
     #expect(try await settles(on: true, directory.url))
   }
 
+  @Test("should accept the store's blob folder beside the database and refuse any other folder")
+  func shouldAcceptBlobFolder() async throws {
+    let directory = TemporaryDirectory()
+    let store = try open(directory)
+    let blobs = try #require(store.blobDirectory)
+    try FileManager.default.createDirectory(at: blobs, withIntermediateDirectories: true)
+    try Data("blob".utf8).write(to: blobs.appending(path: "a"))
+
+    try store.setExcludedFromBackup(true)
+    #expect(try await settles(on: true, directory.url))
+    #expect(blobs.deletingLastPathComponent().standardizedFileURL == directory.url.standardizedFileURL)
+
+    try FileManager.default.createDirectory(at: directory.url.appending(path: "other-blobs"), withIntermediateDirectories: true)
+    #expect(throws: StoreError.self) { try store.setExcludedFromBackup(true) }
+  }
+
   @Test("should ignore the request for an in-memory store")
   func shouldIgnoreInMemory() throws {
     let store = try VaultStore.open(.inMemory, registry: Fixture.v1)

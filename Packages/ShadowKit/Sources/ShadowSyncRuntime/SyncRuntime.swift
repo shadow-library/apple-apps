@@ -123,6 +123,13 @@ public actor SyncRuntime {
     pump()
   }
 
+  /// The blob's local file: held here, or fetched from the attached storage, verified and kept here. It does not wait for a sync run.
+  public func fetchBlob(_ id: BlobID) async throws(BlobError) -> URL {
+    if let held = try await VaultBlobs(store: store, maximumBytes: configuration.maximumBlobBytes).localURL(of: id) { return held }
+    guard let attached = engine, phase?.canSync == true else { throw .notAttached }
+    return try await attached.engine.fetchBlob(id)
+  }
+
   /// A hint that storage changed, such as a silent push; returns once the sync it starts is done.
   public func changeNotice() async {
     noteChange()
@@ -599,9 +606,11 @@ public actor SyncRuntime {
     return nil
   }
 
+  /// A blob waiting to upload counts, so a queue left by an earlier launch resumes without a new write.
   private func hasPendingChanges() async -> Bool {
     do {
-      return try await !store.pendingChanges(limit: 1).isEmpty
+      guard try await store.pendingChanges(limit: 1).isEmpty else { return true }
+      return try await VaultBlobs.hasPendingUploads(in: store)
     } catch {
       return true
     }

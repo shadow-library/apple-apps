@@ -139,7 +139,8 @@ public struct SyncMover: Sendable {
     }
   }
 
-  /// A fresh move checks, before it writes anything, that nobody moved the vault already, that the target holds no vault and that every blob fits there.
+  /// A fresh move checks, before it writes anything, that nobody moved the vault already, that the target holds no vault and that every blob fits there and
+  /// is of a class the target may hold.
   private func begin() async throws(SyncMoveError) -> ReplicaID {
     switch try journal.load() {
     case .movingOut(let from, let saved)? where saved == target: return from
@@ -148,7 +149,9 @@ public struct SyncMover: Sendable {
     }
     if let notice = try await readNotice() { throw .alreadyMoved(notice) }
     try await requireEmptyTarget()
-    _ = try await listBlobs()
+    if !(try await listBlobs()).isEmpty, !engine.admitsBlobs(on: targetProvider.capabilities.classPolicy) {
+      throw .sync(.blob(.classRefused(engine.blobSyncClass)))
+    }
     let from = engine.replica
     try journal.save(.movingOut(from: from, target: target))
     try checkpoint(.journaled)
@@ -217,7 +220,7 @@ public struct SyncMover: Sendable {
     return blobs
   }
 
-  /// Blobs are named by a keyed hash of their content and sealed for their path, so the same bytes are valid at the same name in the new location.
+  /// Blobs are named by a random id and sealed for their path, so the same bytes are valid at the same name in the new location.
   private func copyBlobs() async throws(SyncMoveError) -> [ObjectKey: SHA256.Digest] {
     var digests: [ObjectKey: SHA256.Digest] = [:]
     for blob in try await listBlobs() {

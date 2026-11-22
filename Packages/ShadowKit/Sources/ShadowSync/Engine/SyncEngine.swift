@@ -123,7 +123,7 @@ public actor SyncEngine {
   public static var migrations: [StoreMigration] {
     ReplicaLifecycle.migrations + [
       SyncEngineSchema.migration, SyncEngineSchema.heldMigration, SyncEngineSchema.compactionMigration, SyncEngineSchema.adoptionMigration, SyncEngineSchema.strayMigration,
-      RecoveryCopies.migration, SyncMoveSchema.migration,
+      RecoveryCopies.migration, SyncMoveSchema.migration, SyncBlobTable.migration,
     ]
   }
 
@@ -317,7 +317,29 @@ public actor SyncEngine {
       store: store, provider: provider, vault: vault, lifecycle: lifecycle, trustedClock: trustedClock, configuration: configuration, replica: settled.replica,
       key: settled.key, now: preferredNow, checkpoint: compactionCheckpoint
     ) { key, replica async throws(SyncError) in try await self.putManifest(sealedWith: key, as: replica) }
-    return try await SyncCompactor(context: context).run(force: force, listing: settled.listing)
+    let outcome = try await SyncCompactor(context: context).run(force: force, listing: settled.listing)
+    if let blobs = blobContext { try await SyncBlobCollector(context: blobs, replica: settled.replica, lifecycle: lifecycle).run() }
+    return outcome
+  }
+
+  /// The sync class this store's blobs carry: the most restricted class its registry declares.
+  public nonisolated var blobSyncClass: SyncClass { .ofBlobs(in: store.registry) }
+
+  public nonisolated func admitsBlobs(on policy: StorageClassPolicy) -> Bool {
+    policy.admits(blobSyncClass, under: configuration)
+  }
+
+  /// The blob's local file, fetched from storage, verified and kept here when this device does not hold it yet. It does not wait for a running sync call.
+  public func fetchBlob(_ id: BlobID) async throws(BlobError) -> URL {
+    guard let blobs = blobContext else { throw .noDirectory }
+    return try await SyncBlobFetcher(context: blobs).fetch(id)
+  }
+
+  private var blobContext: SyncBlobContext? {
+    guard let directory = store.blobDirectory else { return nil }
+    return SyncBlobContext(
+      store: store, provider: provider, vault: vault, ring: ring, configuration: configuration, trustedClock: trustedClock, files: BlobFiles(directory: directory),
+      now: preferredNow)
   }
 
   private func performAdoption() async throws(SyncError) -> SyncAdoptionOutcome {
@@ -384,6 +406,7 @@ public actor SyncEngine {
         replica = next
         continue
       }
+      if let blobs = blobContext { try await SyncBlobUploader(context: blobs).run(sealedWith: key) }
       uploaded += try await sendPending(sealedWith: key, as: replica)
       return .settled(SyncSettledUploads(replica: replica, key: key, listing: listing, uploaded: uploaded, reminted: remints > 0))
     }
@@ -587,7 +610,11 @@ public actor SyncEngine {
   }
 
   private func putManifest(sealedWith key: VaultKey, as replica: ReplicaID) async throws(SyncError) {
-    let applied = try await read { try SyncAppliedTable.points(excluding: replica, in: $0.database) }
+    let applied = try await write(as: replica) { transaction in
+      try SyncPublishedTable.publishable(
+        current: try SyncAppliedTable.points(excluding: replica, in: transaction.database), hasPending: try transaction.hasPendingChanges(), excluding: replica,
+        in: transaction.database)
+    }
     let manifest = try await lifecycleCall { () async throws(ReplicaLifecycleError) in try await lifecycle.manifest(applied: applied) }
     guard manifest.replica == replica else { throw .replicaChanged }
     let sealed: (key: ObjectKey, data: Data)
@@ -631,7 +658,11 @@ public actor SyncEngine {
       }
       try SyncCompactionTable.clear(db)
       try SyncAdoptionTable.clear(db)
-      if mode == .rebuild || reason == .vaultMoved { try SyncAppliedTable.clear(db) }
+      try SyncBlobTable.restartReleases(in: db)
+      if mode == .rebuild || reason == .vaultMoved {
+        try SyncAppliedTable.clear(db)
+        try SyncPublishedTable.clear(db)
+      }
       if reason == .vaultMoved {
         try SyncHeldTable.replace(with: [], in: db)
         try SyncMoveNoticeTable.clear(db)

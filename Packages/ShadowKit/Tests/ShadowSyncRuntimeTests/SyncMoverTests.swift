@@ -279,6 +279,22 @@ struct SyncMoverTests {
   }
 
   @Test
+  func shouldRefuseAMoveWhenTheNewLocationMayNotHoldTheStoresBlobs() async throws {
+    let target = InMemoryStorageProvider(classPolicy: .iCloud)
+    let world = try await MoveWorld.synced(new: target)
+    try await MoveCheck.putBlob(Data(repeating: 5, count: 1024), in: world.old, ring: world.mover.ring)
+    let engine = try await world.mover.started(on: world.old)
+    await #expect {
+      _ = try await world.mover(engine: engine).run()
+    } throws: { error in
+      guard case SyncMoveError.sync(.blob(.classRefused(.health))) = error else { return false }
+      return true
+    }
+    #expect(try await target.listAll(prefix: "").isEmpty)
+    #expect(try world.mover.journal.load() == nil)
+  }
+
+  @Test
   func shouldSplitTheBaseToTheNewLocationsLimitAndCopyItsBlobs() async throws {
     let limit = 4 * 1024
     let target = InMemoryStorageProvider(maxObjectBytes: limit)

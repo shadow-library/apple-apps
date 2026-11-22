@@ -82,6 +82,10 @@ public struct SchemaRegistry: Sendable {
     entities[kind]
   }
 
+  public var syncClasses: Set<SyncClass> {
+    Set(entities.values.map(\.syncClass))
+  }
+
   var schemas: [EntitySchema] {
     entities.values.sorted { $0.kind < $1.kind }
   }

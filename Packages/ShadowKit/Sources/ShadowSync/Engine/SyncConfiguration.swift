@@ -2,6 +2,8 @@ import Foundation
 import ShadowStore
 
 public struct SyncConfiguration: Sendable, Equatable {
+  public static let defaultMaximumBlobBytes = 64 * 1024 * 1024
+
   public var maximumSegmentBytes: Int
   public var maximumSegmentLines: Int
   public var clockTolerance: Duration
@@ -25,6 +27,12 @@ public struct SyncConfiguration: Sendable, Equatable {
   public var adoptionAbandonDelay: Duration
   /// The owner's opt-in that lets activity-class changes reach an `.iCloud` provider; health class never does (App Store guideline 5.1.3(ii)).
   public var activityOnICloud: Bool
+  /// The largest blob put or fetched.
+  public var maximumBlobBytes: Int
+  /// Plaintext bytes in one stored part of a blob; a provider with a smaller object limit gets smaller parts.
+  public var blobPartBytes: Int
+  /// How long a blob this device put stays stored after nothing names it, and how long its local file outlives its removal.
+  public var blobRetention: Duration
 
   public init(
     maximumSegmentBytes: Int = 512 * 1024,
@@ -41,7 +49,10 @@ public struct SyncConfiguration: Sendable, Equatable {
     basePartBytes: Int = BaseCodec.defaultPartPayloadBytes,
     adoptionDelay: Duration = .seconds(30 * 24 * 60 * 60),
     adoptionAbandonDelay: Duration? = nil,
-    activityOnICloud: Bool = false
+    activityOnICloud: Bool = false,
+    maximumBlobBytes: Int = defaultMaximumBlobBytes,
+    blobPartBytes: Int = 8 * 1024 * 1024,
+    blobRetention: Duration = .seconds(30 * 24 * 60 * 60)
   ) {
     self.maximumSegmentBytes = maximumSegmentBytes
     self.maximumSegmentLines = maximumSegmentLines
@@ -58,6 +69,9 @@ public struct SyncConfiguration: Sendable, Equatable {
     self.adoptionDelay = adoptionDelay
     self.adoptionAbandonDelay = adoptionAbandonDelay ?? adoptionDelay
     self.activityOnICloud = activityOnICloud
+    self.maximumBlobBytes = maximumBlobBytes
+    self.blobPartBytes = blobPartBytes
+    self.blobRetention = blobRetention
   }
 }
 

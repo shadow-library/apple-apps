@@ -45,6 +45,16 @@ public final class VaultStore: Sendable {
     currentReplica.withLock { $0 }
   }
 
+  /// Beside the database, so the directory's backup policy and file protection cover it; nil for an in-memory store.
+  public var blobDirectory: URL? {
+    guard let directory, let databaseName else { return nil }
+    return directory.appending(path: Self.blobFolderName(databaseName), directoryHint: .isDirectory)
+  }
+
+  static func blobFolderName(_ databaseName: String) -> String {
+    databaseName + "-blobs"
+  }
+
   /// The database's directory belongs to the vault; see ``setExcludedFromBackup(_:)``. A registry declaring a kind outside `admittedClasses` is refused.
   public static func open(
     _ location: StoreLocation, registry: SchemaRegistry, migrations: [StoreMigration] = [], wallClock: @escaping @Sendable () -> Date = { Date() },

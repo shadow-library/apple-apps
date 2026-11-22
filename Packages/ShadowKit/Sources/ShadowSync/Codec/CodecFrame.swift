@@ -122,6 +122,11 @@ struct CodecFields {
     return value
   }
 
+  func string(_ name: String) throws(VaultCodecError) -> String {
+    guard case .string(let value)? = members[name] else { throw .malformed("\(name) is not a string") }
+    return value
+  }
+
   func count(_ name: String) throws(VaultCodecError) -> Int {
     guard let value = Int(exactly: try int(name)), value >= 0 else { throw .malformed("\(name) is out of range") }
     return value

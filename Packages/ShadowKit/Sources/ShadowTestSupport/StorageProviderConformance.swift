@@ -27,6 +27,7 @@ public enum StorageProviderConformance {
     try await checker.allowedCharacters()
     try await checker.sizeLimit()
     checker.changeNoticesAreAvailable()
+    try await BlobChecker(provider: checker.provider, consistency: consistency).run()
   }
 }
 
@@ -34,7 +35,7 @@ private final class Checker {
   private static let maxPolls = 2000
   private static let maxPages = 10_000
 
-  private let provider: any StorageProvider
+  let provider: any StorageProvider
   private let consistency: StorageProviderConformance.Consistency
   private var everPut: Set<ObjectKey> = []
 
