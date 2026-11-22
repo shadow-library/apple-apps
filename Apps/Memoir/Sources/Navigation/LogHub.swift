@@ -9,7 +9,7 @@ struct LogHub: View {
     List {
       Section {
         ForEach(destinations) { destination in
-          NavigationLink(value: destination) {
+          NavigationLink(value: MemoirRoute.destination(destination)) {
             ShadowListRow(title: Text(destination.title)) { ShadowSymbolTile(systemImage: destination.systemImage) }
           }
         }

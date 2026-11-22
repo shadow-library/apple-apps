@@ -23,8 +23,9 @@ struct MemoirSidebarShell: View {
       .navigationTitle(Text("Memoir", tableName: "Navigation"))
       .shadowColumnWidth(.sidebar)
     } detail: {
-      NavigationStack {
+      NavigationStack(path: Bindable(navigator).detailPath) {
         MemoirDestinationView(destination: navigator.selection, stores: stores)
+          .navigationDestination(for: MemoirRoute.self) { MemoirRouteView(route: $0, stores: stores) }
       }
       .id(navigator.selection)
     }

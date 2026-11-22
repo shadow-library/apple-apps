@@ -1,3 +1,4 @@
+import Foundation
 import Testing
 
 @testable import Memoir
@@ -13,14 +14,14 @@ struct MemoirNavigatorTests {
     navigator.layout = .tabs
 
     #expect(navigator.tab == destination.tab)
-    #expect(navigator.paths[destination.tab] == [destination])
+    #expect(navigator.paths[destination.tab] == [.destination(destination)])
   }
 
   @Test("should open a tab at its root when the sidebar shows that root", arguments: [MemoirDestination.today, .planningBoard, .money, .hero])
   func carriesRootToTabs(destination: MemoirDestination) {
     let navigator = MemoirNavigator(layout: .sidebar)
     navigator.selection = destination
-    navigator.paths[destination.tab] = [.settings]
+    navigator.paths[destination.tab] = [.destination(.settings)]
 
     navigator.layout = .tabs
 
@@ -77,6 +78,48 @@ struct MemoirNavigatorTests {
     navigator.layout = .tabs
 
     #expect(navigator.tab == .plan)
-    #expect(navigator.paths[.plan] == [.quests])
+    #expect(navigator.paths[.plan] == [.destination(.quests)])
+  }
+
+  @Test("should carry the details pushed in the sidebar onto the tab's stack and back")
+  func carriesDetailsBetweenLayouts() {
+    let quest = MemoirRoute.quest(.detail(UUID(uuidString: "0190f3a0-0000-7000-8000-000000000001")!))
+    let navigator = MemoirNavigator(layout: .sidebar)
+    navigator.selection = .quests
+    navigator.detailPath = [quest]
+
+    navigator.layout = .tabs
+
+    #expect(navigator.tab == .plan)
+    #expect(navigator.paths[.plan] == [.destination(.quests), quest])
+
+    navigator.layout = .sidebar
+
+    #expect(navigator.selection == .quests)
+    #expect(navigator.detailPath == [quest])
+  }
+
+  @Test("should keep a tab root's details when it moves to the sidebar")
+  func carriesRootDetailsToSidebar() {
+    let quest = MemoirRoute.quest(.detail(UUID(uuidString: "0190f3a0-0000-7000-8000-000000000002")!))
+    let navigator = MemoirNavigator(layout: .tabs)
+    navigator.tab = .today
+    navigator.paths[.today] = [quest]
+
+    navigator.layout = .sidebar
+
+    #expect(navigator.selection == .today)
+    #expect(navigator.detailPath == [quest])
+  }
+
+  @Test("should clear the sidebar's details when another screen is selected")
+  func clearsDetailsOnSelection() {
+    let navigator = MemoirNavigator(layout: .sidebar)
+    navigator.selection = .quests
+    navigator.detailPath = [.quest(.detail(UUID(uuidString: "0190f3a0-0000-7000-8000-000000000003")!))]
+
+    navigator.selection = .money
+
+    #expect(navigator.detailPath.isEmpty)
   }
 }

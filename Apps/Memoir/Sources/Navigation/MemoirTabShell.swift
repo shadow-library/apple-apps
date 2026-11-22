@@ -12,7 +12,7 @@ struct MemoirTabShell: View {
         Tab(value: tab) {
           NavigationStack(path: path(of: tab)) {
             root(of: tab)
-              .navigationDestination(for: MemoirDestination.self) { MemoirDestinationView(destination: $0, stores: stores) }
+              .navigationDestination(for: MemoirRoute.self) { MemoirRouteView(route: $0, stores: stores) }
           }
         } label: {
           Label(title: { Text(tab.title) }, icon: { Image(systemName: tab.systemImage) })
@@ -21,7 +21,7 @@ struct MemoirTabShell: View {
     }
   }
 
-  private func path(of tab: MemoirTab) -> Binding<[MemoirDestination]> {
+  private func path(of tab: MemoirTab) -> Binding<[MemoirRoute]> {
     Binding(get: { navigator.paths[tab] ?? [] }, set: { navigator.paths[tab] = $0 })
   }
 
