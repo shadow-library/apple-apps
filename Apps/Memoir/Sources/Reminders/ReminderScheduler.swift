@@ -99,6 +99,11 @@ final class ReminderScheduler {
     enqueue { [weak self] in await self?.withdraw(delivered: true) }
   }
 
+  /// After the device's own defaults were cleared, as when the vault is deleted: the setting reads its default again.
+  func deviceSettingCleared() {
+    isOnThisDevice = setting.isOn
+  }
+
   func setOnThisDevice(_ isOn: Bool) {
     guard isOn != isOnThisDevice else { return }
     setting.set(isOn)

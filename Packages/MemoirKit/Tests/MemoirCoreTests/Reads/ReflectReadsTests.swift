@@ -180,6 +180,7 @@ struct ReflectReadsTests {
     let nextWeek = MoneyReadsFixture.date("2026-11-16")
     #expect(try await stores.main.read { try WeeklyReviewAnswers.answers(week: week, in: $0) } == .none, "read before any write, without the tables")
     #expect(try await !Self.reviewTablesExist(stores))
+    #expect(try await stores.main.read { try WeeklyReviewAnswers.weeks(in: $0) }.isEmpty)
     try await WeeklyReviewAnswers.save("Slept earlier", for: .better, week: week, in: stores)
     try await WeeklyReviewAnswers.save("Less", for: .carry, week: week, in: stores)
     try await WeeklyReviewAnswers.save("", for: .carry, week: week, in: stores)
@@ -188,14 +189,17 @@ struct ReflectReadsTests {
     #expect(try await Self.reviewTablesExist(stores))
     let answers = try await stores.main.read { try WeeklyReviewAnswers.answers(week: week, in: $0) }
     #expect(answers == ReviewAnswers(answers: [.better: "Slept earlier"], completedAtMillis: 5))
+    #expect(try await stores.main.read { try WeeklyReviewAnswers.weeks(in: $0) } == [week: answers])
     #expect(try await stores.main.pendingChanges(limit: 100).isEmpty, "answers never sync")
 
     try await WeeklyReviewAnswers.save("Plan Sundays", for: .change, week: nextWeek, in: stores)
     #expect(try await stores.main.read { try WeeklyReviewAnswers.answers(week: week, in: $0) } == .none, "a new week's review clears the last one's")
     #expect(try await stores.main.read { try WeeklyReviewAnswers.answers(week: nextWeek, in: $0) }.answers == [.change: "Plan Sundays"])
+    #expect(try await stores.main.read { try WeeklyReviewAnswers.weeks(in: $0) }.keys.sorted() == [nextWeek], "whichever week is stored is found")
 
     try await stores.main.write { transaction in try WeeklyReviewAnswers.clear(in: transaction.database) }
     #expect(try await !Self.reviewTablesExist(stores))
+    #expect(try await stores.main.read { try WeeklyReviewAnswers.weeks(in: $0) }.isEmpty)
   }
 
   @Test func shouldReEmitTheReviewWhenAnAnswerIsSaved() async throws {

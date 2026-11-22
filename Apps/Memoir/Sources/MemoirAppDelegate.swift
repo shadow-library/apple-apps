@@ -22,6 +22,9 @@ final class MemoirAppDelegate: NSObject {
   let reminders = ReminderScheduler.live()
   let health = MemoirHealthImports()
   lazy var insights = MemoirInsights(ai: ai, trustedClock: vault.trustedClock)
+  lazy var deletion = MemoirVaultDeletion(vault: vault, sync: sync, dayTurns: dayTurns, reminders: reminders, insights: insights) { [weak self] in
+    await self?.vaultChanged()
+  }
   private var observers: [any NSObjectProtocol] = []
 
   /// Opens the vault if no window has yet, then follows its day and starts its sync; both wait for a call already in flight.
@@ -55,6 +58,7 @@ final class MemoirAppDelegate: NSObject {
 #if os(macOS)
   extension MemoirAppDelegate: NSApplicationDelegate {
     func applicationDidFinishLaunching(_ notification: Notification) {
+      MemoirExports.clearLeftovers()
       observe(NSApplication.didBecomeActiveNotification) { [sync] in await sync.activated() }
       observe(NSWindow.didBecomeMainNotification) { [sync] in await sync.activated() }
       if SyncCapabilities.current.receivesPushes { NSApplication.shared.registerForRemoteNotifications() }
@@ -76,6 +80,7 @@ final class MemoirAppDelegate: NSObject {
 #else
   extension MemoirAppDelegate: UIApplicationDelegate {
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil) -> Bool {
+      MemoirExports.clearLeftovers()
       observe(UIApplication.protectedDataDidBecomeAvailableNotification) { [weak self] in
         guard let self else { return }
         await vault.protectedDataBecameAvailable()

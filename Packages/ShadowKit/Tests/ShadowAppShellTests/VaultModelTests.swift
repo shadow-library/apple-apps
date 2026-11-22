@@ -189,6 +189,114 @@ struct VaultModelTests {
     #expect(abs(stamped.timeIntervalSince(trusted)) < 60)
   }
 
+  @Test("should close the vault while the body erases it and open a fresh one afterwards")
+  func reopensAfterErasing() async throws {
+    let directory = try temporaryDirectory()
+    defer { try? FileManager.default.removeItem(at: directory) }
+    let database = directory.appending(path: "Vaults").appending(path: "vault.sqlite")
+    let model = vault(locate: { .file(database) }, hasUnlockedSinceBoot: { true })
+    await model.open()
+    let before = try #require(model.opened)
+    try await ShellStore.writeNote("Ashfall", in: before)
+
+    var closedDuringBody = false
+    try await model.reopen { () throws(VaultOpenError) in
+      closedDuringBody = model.opened == nil && !model.isLocked && model.failure == nil
+      do {
+        try FileManager.default.removeItem(at: database.deletingLastPathComponent())
+      } catch {
+        throw .openFailed(error.localizedDescription)
+      }
+    }
+
+    let after = try #require(model.opened)
+    #expect(closedDuringBody)
+    #expect(after !== before)
+    #expect(try await after.loadState(.vault).isEmpty)
+  }
+
+  @Test("should open the vault again and rethrow when the body fails")
+  func reopensAfterAFailedBody() async throws {
+    let model = vault(locate: { .inMemory }, hasUnlockedSinceBoot: { true })
+    await model.open()
+    let before = try #require(model.opened)
+
+    await #expect(throws: VaultOpenError.openFailed("refused")) {
+      try await model.reopen { () throws(VaultOpenError) in throw .openFailed("refused") }
+    }
+
+    let after = try #require(model.opened)
+    #expect(after !== before)
+  }
+
+  @Test("should make an open that arrives while the vault is closed wait for it to open again")
+  func holdsOpensWhileClosed() async throws {
+    let attempts = Attempts()
+    let model = vault(
+      locate: {
+        _ = attempts.next()
+        return .inMemory
+      }, hasUnlockedSinceBoot: { true })
+    await model.open()
+    let released = Flag()
+
+    let reopening = Task {
+      try await model.reopen { () throws(VaultOpenError) in
+        while !released.value { try? await Task.sleep(for: .milliseconds(10)) }
+      }
+    }
+    try await until { model.opened == nil }
+    let opening = Task { () -> Bool in
+      await model.open()
+      return model.opened != nil
+    }
+    try await Task.sleep(for: .milliseconds(100))
+    #expect(attempts.value == 1, "no open runs while the body holds the vault closed")
+    released.set()
+
+    try await reopening.value
+    #expect(await opening.value)
+    #expect(attempts.value == 2)
+  }
+
+  @Test("should run reopens one at a time and hold an open until the last has opened the vault again")
+  func serializesReopens() async throws {
+    let attempts = Attempts()
+    let model = vault(
+      locate: {
+        _ = attempts.next()
+        return .inMemory
+      }, hasUnlockedSinceBoot: { true })
+    await model.open()
+    let inside = Attempts()
+    let overlapped = Flag()
+    let released = Flag()
+    let body: @MainActor @Sendable () async throws(VaultOpenError) -> Void = { () async throws(VaultOpenError) in
+      if inside.next() > 1 { overlapped.set() }
+      repeat { try? await Task.sleep(for: .milliseconds(20)) } while !released.value
+      inside.leave()
+    }
+
+    let first = Task { try await model.reopen(after: body) }
+    try await until { inside.value == 1 }
+    let second = Task { try await model.reopen(after: body) }
+    let third = Task { try await model.reopen(after: body) }
+    try await Task.sleep(for: .milliseconds(100))
+    let opening = Task { () -> Bool in
+      await model.open()
+      return model.opened != nil
+    }
+    try await Task.sleep(for: .milliseconds(100))
+    released.set()
+
+    try await first.value
+    try await second.value
+    try await third.value
+    #expect(await opening.value)
+    #expect(!overlapped.value, "no reopen's body runs while another's does")
+    #expect(attempts.value == 4, "the first open and one per reopen; the open that arrived meanwhile only waited")
+  }
+
   @Test("should name the vault under the bundle identifier inside Application Support")
   func resolvesDefaultLocation() throws {
     let url = try VaultDirectory.default(bundleIdentifier: "example.test")
@@ -245,5 +353,9 @@ private nonisolated final class Attempts: Sendable {
       value += 1
       return value
     }
+  }
+
+  func leave() {
+    count.withLock { $0 -= 1 }
   }
 }

@@ -117,6 +117,13 @@ public final class VaultStore: Sendable {
     }
   }
 
+  /// Closes the database for good, as before its files are deleted: a read or write in flight finishes first and every later one fails. It throws when
+  /// the writer connection refuses to close (a statement still open on it), which leaves the store usable, or when a reader refuses, which leaves it
+  /// closed all the same.
+  public func close() throws(StoreError) {
+    try StoreError.wrapping { try writer.close() }
+  }
+
   /// The flag is guidance to the system, not a guarantee, and `true` is refused while the directory holds files the vault does not own.
   /// An in-memory store ignores it; a store opened with ``StoreBackupPolicy/alwaysExcluded`` refuses `false`.
   public func setExcludedFromBackup(_ excluded: Bool) throws(StoreError) {

@@ -25,6 +25,8 @@ struct MemoirApp: App {
         .environment(settingsTabs)
         .environment(delegate.reminders)
         .environment(delegate.insights)
+        .environment(delegate.deletion)
+        .vaultDeletionNotice(delegate.deletion)
         .syncSettingsSection { MemoirSyncSettingsSection(vault: vault) }
         .task { await ai.loadOpenRouterModelsIfKeyed() }
         .task(id: vault.opened.map { ObjectIdentifier($0.stores.main) }) {

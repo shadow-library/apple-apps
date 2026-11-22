@@ -61,6 +61,27 @@ public final class VaultModel<Opened: Sendable> {
     await task.value
   }
 
+  /// Closes the vault while `body` runs, as to erase its files, then opens it again whether or not `body` succeeded. It waits for an open or another
+  /// reopen in flight first, so two never overlap, and an `open()` that arrives meanwhile waits for the vault to open again. Closing drops only this
+  /// model's hold: whatever else holds `Opened` keeps it.
+  public func reopen<Failure: Error>(after body: @escaping @MainActor () async throws(Failure) -> Void) async throws(Failure) {
+    while let opening { await opening.value }
+    let outcome = ReopenOutcome<Failure>()
+    let run = Task {
+      state = .opening
+      do throws(Failure) {
+        try await body()
+      } catch {
+        outcome.result = .failure(error)
+      }
+      await attempt()
+      opening = nil
+    }
+    opening = run
+    await run.value
+    try outcome.result.get()
+  }
+
   /// After the device's first unlock: a vault that waited for it opens, including one whose attempt was still deciding when the unlock arrived; any other
   /// state is left alone.
   public func protectedDataBecameAvailable() async {
@@ -82,6 +103,11 @@ public final class VaultModel<Opened: Sendable> {
       state = .locked
     }
   }
+}
+
+@MainActor
+private final class ReopenOutcome<Failure: Error> {
+  var result = Result<Void, Failure>.success(())
 }
 
 private nonisolated let vaultLogger = Logger(category: "vault")

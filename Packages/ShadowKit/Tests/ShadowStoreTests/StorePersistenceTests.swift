@@ -126,3 +126,21 @@ struct StorePersistenceTests {
     }
   }
 }
+
+@Suite("VaultStore closing", TestTimeLimit.standard)
+struct StoreClosingTests {
+  @Test("should fail every read and write after closing and leave the files for a new store to open")
+  func shouldRefuseAccessOnceClosed() async throws {
+    let directory = TemporaryDirectory()
+    let store = try VaultStore.open(.file(directory.storeURL), registry: Fixture.v1)
+    let ref = EntityRef(kind: Fixture.note, key: Fixture.key("kept"))
+    _ = try await store.write { transaction in try transaction.set(ref, ["origin": "before closing"]) }
+
+    try store.close()
+
+    await #expect(throws: StoreError.self) { try await store.loadState(.vault) }
+    await #expect(throws: StoreError.self) { try await store.write { transaction in try transaction.set(ref, ["origin": "after closing"]) } }
+    let reopened = try VaultStore.open(.file(directory.storeURL), registry: Fixture.v1)
+    #expect(try await reopened.read { transaction in try transaction.state(of: ref) } != nil)
+  }
+}

@@ -21,7 +21,7 @@ public struct ReviewAnswers: Sendable, Hashable {
 /// The weekly review's answers and its completion: this device's own, never synced, as memoir-web keeps them in store metadata
 /// (`lib/sync/synced-reflect-provider.ts:116-121,278-288`). `mm_local_review_answer` and `mm_local_review_completion` are created by the first write,
 /// read only after a `tableExists` check, and hold one week, the week under review: a write for a week clears every other week's rows, as the web
-/// replaces a review left over from an earlier week. `clear(in:)` is the hook a vault reset must call to remove them; nothing calls it yet.
+/// replaces a review left over from an earlier week. `clear(in:)` removes them when the vault is deleted.
 public enum WeeklyReviewAnswers {
   static let answerTable = "mm_local_review_answer"
   static let completionTable = "mm_local_review_completion"
@@ -69,6 +69,24 @@ public enum WeeklyReviewAnswers {
         ? try Int64.fetchOne(database, sql: "SELECT completed_at_millis FROM \(completionTable) WHERE week_start = ?", arguments: [week.isoString]) : nil
       return ReviewAnswers(answers: answers, completedAtMillis: completed)
     }
+  }
+
+  /// Every week this device holds answers or a completion for, normally the one under review, whichever week that was; for the export.
+  public static func weeks(in transaction: ReadTransaction) throws(StoreError) -> [LocalDate: ReviewAnswers] {
+    let starts = try MemoirProjectionSQL.run {
+      let database = transaction.database
+      var starts = Set<String>()
+      for table in [answerTable, completionTable] where try database.tableExists(table) {
+        starts.formUnion(try String.fetchAll(database, sql: "SELECT DISTINCT week_start FROM \(table)"))
+      }
+      return starts
+    }
+    var weeks = [LocalDate: ReviewAnswers]()
+    for start in starts {
+      guard let week = LocalDate(isoString: start) else { continue }
+      weeks[week] = try answers(week: week, in: transaction)
+    }
+    return weeks
   }
 
   /// Drops both tables, every week's answers and completion with them. A vault reset must call it.

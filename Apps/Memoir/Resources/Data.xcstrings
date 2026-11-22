@@ -1,0 +1,996 @@
+{
+  "sourceLanguage": "en",
+  "strings": {
+    "A zip archive: your records as JSON, with your receipt images as files.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A zip archive: your records as JSON, with your receipt images as files."
+          }
+        }
+      }
+    },
+    "Apple Health and permissions": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Apple Health and permissions"
+          }
+        }
+      }
+    },
+    "Archives you exported": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Archives you exported"
+          }
+        }
+      }
+    },
+    "Body and health": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Body and health"
+          }
+        }
+      }
+    },
+    "Both statements need to be true before anything goes further.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Both statements need to be true before anything goes further."
+          }
+        }
+      }
+    },
+    "Clear": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Clear"
+          }
+        }
+      }
+    },
+    "Coaching results": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Coaching results"
+          }
+        }
+      }
+    },
+    "Collecting your records.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Collecting your records."
+          }
+        }
+      }
+    },
+    "Confirm the deletion": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Confirm the deletion"
+          }
+        }
+      }
+    },
+    "Continue to confirmation": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Continue to confirmation"
+          }
+        }
+      }
+    },
+    "Data export": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Data export"
+          }
+        }
+      }
+    },
+    "Delete all your data now?": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Delete all your data now?"
+          }
+        }
+      }
+    },
+    "Delete everything": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Delete everything"
+          }
+        }
+      }
+    },
+    "Delete everything…": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Delete everything…"
+          }
+        }
+      }
+    },
+    "Delete your data": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Delete your data"
+          }
+        }
+      }
+    },
+    "Deleting starts the moment you confirm, and it cannot be stopped or undone. It erases everything Memoir keeps on this device and turns sync off; what sync already sent stays at its location and on your other devices.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Deleting starts the moment you confirm, and it cannot be stopped or undone. It erases everything Memoir keeps on this device and turns sync off; what sync already sent stays at its location and on your other devices."
+          }
+        }
+      }
+    },
+    "Deleting…": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Deleting…"
+          }
+        }
+      }
+    },
+    "Did not finish": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Did not finish"
+          }
+        }
+      }
+    },
+    "Entries": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Entries"
+          }
+        }
+      }
+    },
+    "Erases everything on this device and turns sync off. It cannot be stopped or undone.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Erases everything on this device and turns sync off. It cannot be stopped or undone."
+          }
+        }
+      }
+    },
+    "Everything Memoir kept on this device is gone. What sync already sent stays at its location until you remove it there.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Everything Memoir kept on this device is gone. What sync already sent stays at its location until you remove it there."
+          }
+        }
+      }
+    },
+    "Everything is still included; only the counts are missing.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Everything is still included; only the counts are missing."
+          }
+        }
+      }
+    },
+    "Everything you have logged, health data included, in formats you can open without this app.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Everything you have logged, health data included, in formats you can open without this app."
+          }
+        }
+      }
+    },
+    "Expenses": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Expenses"
+          }
+        }
+      }
+    },
+    "Export and keep your data": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Export and keep your data"
+          }
+        }
+      }
+    },
+    "Export everything": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Export everything"
+          }
+        }
+      }
+    },
+    "Export first": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Export first"
+          }
+        }
+      }
+    },
+    "Export your data": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Export your data"
+          }
+        }
+      }
+    },
+    "How it works": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "How it works"
+          }
+        }
+      }
+    },
+    "I have exported anything I want to keep, or I do not want to keep any of it.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "I have exported anything I want to keep, or I do not want to keep any of it."
+          }
+        }
+      }
+    },
+    "I understand my quests, my history, my records and my experience are erased from this device permanently and cannot be restored from it.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "I understand my quests, my history, my records and my experience are erased from this device permanently and cannot be restored from it."
+          }
+        }
+      }
+    },
+    "If it is the coaching or the reminders you want gone, both are switches rather than a deletion.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "If it is the coaching or the reminders you want gone, both are switches rather than a deletion."
+          }
+        }
+      }
+    },
+    "It includes everything Memoir keeps on this device, activity and health data too, as plain JSON with your receipt images beside it. Anyone who has the file can read it, so keep it somewhere only you can open.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "It includes everything Memoir keeps on this device, activity and health data too, as plain JSON with your receipt images beside it. Anyone who has the file can read it, so keep it somewhere only you can open."
+          }
+        }
+      }
+    },
+    "Journal": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Journal"
+          }
+        }
+      }
+    },
+    "Keep going": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Keep going"
+          }
+        }
+      }
+    },
+    "Keep my data": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Keep my data"
+          }
+        }
+      }
+    },
+    "Keys and connections": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Keys and connections"
+          }
+        }
+      }
+    },
+    "Lighter options": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lighter options"
+          }
+        }
+      }
+    },
+    "Logged actions": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Logged actions"
+          }
+        }
+      }
+    },
+    "Meals": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Meals"
+          }
+        }
+      }
+    },
+    "Memoir builds the archive on this device and hands it to you; nothing is uploaded. The copy waiting here is removed when you clear it, leave this screen or next open Memoir, so save or share it first. There is no library of past archives to keep — prepare a fresh one whenever you want.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Memoir builds the archive on this device and hands it to you; nothing is uploaded. The copy waiting here is removed when you clear it, leave this screen or next open Memoir, so save or share it first. There is no library of past archives to keep — prepare a fresh one whenever you want."
+          }
+        }
+      }
+    },
+    "Memoir couldn’t turn sync off, so nothing was erased. Try again, or turn sync off in Sync Settings first.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Memoir couldn’t turn sync off, so nothing was erased. Try again, or turn sync off in Sync Settings first."
+          }
+        }
+      }
+    },
+    "Memoir never writes to Health, so nothing there changes. Health and notification permissions stay until you change them in Settings.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Memoir never writes to Health, so nothing there changes. Health and notification permissions stay until you change them in Settings."
+          }
+        }
+      }
+    },
+    "Memoir opened again with what was left. Delete your data again from Settings to remove the rest. (%@)": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Memoir opened again with what was left. Delete your data again from Settings to remove the rest. (%@)"
+          }
+        }
+      }
+    },
+    "Memoir stops syncing and leaves what it already sent where it is, so your other devices keep their data. Remove it with the storage’s own tools if you want it gone there too.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Memoir stops syncing and leaves what it already sent where it is, so your other devices keep their data. Remove it with the storage’s own tools if you want it gone there too."
+          }
+        }
+      }
+    },
+    "Metric days": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Metric days"
+          }
+        }
+      }
+    },
+    "Money": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Money"
+          }
+        }
+      }
+    },
+    "Nothing has started and nothing is erased. The two statements you ticked are cleared, so starting again begins from the top.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nothing has started and nothing is erased. The two statements you ticked are cleared, so starting again begins from the top."
+          }
+        }
+      }
+    },
+    "OK": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "OK"
+          }
+        }
+      }
+    },
+    "One archive with every record you have created, in formats you can open without this app. Exporting changes nothing.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "One archive with every record you have created, in formats you can open without this app. Exporting changes nothing."
+          }
+        }
+      }
+    },
+    "Pause instead": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pause instead"
+          }
+        }
+      }
+    },
+    "Prepare the export": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Prepare the export"
+          }
+        }
+      }
+    },
+    "Quests": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Quests"
+          }
+        }
+      }
+    },
+    "Quests and history": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Quests and history"
+          }
+        }
+      }
+    },
+    "Ready": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ready"
+          }
+        }
+      }
+    },
+    "Receipt images not on this device": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Receipt images not on this device"
+          }
+        }
+      }
+    },
+    "Receipts": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Receipts"
+          }
+        }
+      }
+    },
+    "Results": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Results"
+          }
+        }
+      }
+    },
+    "Save the archive…": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Save the archive…"
+          }
+        }
+      }
+    },
+    "Set intensity to gentle, or deactivate your quests. Nothing is deleted and the streaks stay as records.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Set intensity to gentle, or deactivate your quests. Nothing is deleted and the streaks stay as records."
+          }
+        }
+      }
+    },
+    "Share…": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Share…"
+          }
+        }
+      }
+    },
+    "Side quests": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Side quests"
+          }
+        }
+      }
+    },
+    "Some of your data couldn’t be erased": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Some of your data couldn’t be erased"
+          }
+        }
+      }
+    },
+    "Something went wrong on this device. Nothing was erased.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Something went wrong on this device. Nothing was erased."
+          }
+        }
+      }
+    },
+    "Stop deleting your data?": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Stop deleting your data?"
+          }
+        }
+      }
+    },
+    "Stop here": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Stop here"
+          }
+        }
+      }
+    },
+    "Stopped. Nothing was started and nothing was erased.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Stopped. Nothing was started and nothing was erased."
+          }
+        }
+      }
+    },
+    "Subscriptions": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Subscriptions"
+          }
+        }
+      }
+    },
+    "Take the archive now. Your data can be deleted at any later time.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Take the archive now. Your data can be deleted at any later time."
+          }
+        }
+      }
+    },
+    "The archive could not be assembled. Nothing was deleted or changed, and retrying is safe.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The archive could not be assembled. Nothing was deleted or changed, and retrying is safe."
+          }
+        }
+      }
+    },
+    "The archive couldn’t be saved.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The archive couldn’t be saved."
+          }
+        }
+      }
+    },
+    "The archive holds your health data and is not encrypted": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The archive holds your health data and is not encrypted"
+          }
+        }
+      }
+    },
+    "The archive lists these receipts without their image. Open each one on this device first to bring its image here.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The archive lists these receipts without their image. Open each one on this device first to bring its image here."
+          }
+        }
+      }
+    },
+    "The copy at your sync location": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The copy at your sync location"
+          }
+        }
+      }
+    },
+    "The deletion did not start": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The deletion did not start"
+          }
+        }
+      }
+    },
+    "The vault’s keys stay in your keychain, since your other devices may still need them, and so do your AI provider key and sync sign-ins. Remove the provider key in AI Settings.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The vault’s keys stay in your keychain, since your other devices may still need them, and so do your AI provider key and sync sign-ins. Remove the provider key in AI Settings."
+          }
+        }
+      }
+    },
+    "They stay wherever you saved or shared them.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "They stay wherever you saved or shared them."
+          }
+        }
+      }
+    },
+    "This erases everything Memoir keeps on this device and turns sync off.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This erases everything Memoir keeps on this device and turns sync off."
+          }
+        }
+      }
+    },
+    "This erases your quests and history, your money, your journal, your body and health records and your coaching results from this device, and turns sync off. It starts the moment you confirm, and it cannot be stopped or undone.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This erases your quests and history, your money, your journal, your body and health records and your coaching results from this device, and turns sync off. It starts the moment you confirm, and it cannot be stopped or undone."
+          }
+        }
+      }
+    },
+    "Try again": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Try again"
+          }
+        }
+      }
+    },
+    "Turn off coaching and reminders": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Turn off coaching and reminders"
+          }
+        }
+      }
+    },
+    "Type %@ to confirm": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Type %@ to confirm"
+          }
+        }
+      }
+    },
+    "Usually under a minute.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Usually under a minute."
+          }
+        }
+      }
+    },
+    "Weights": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Weights"
+          }
+        }
+      }
+    },
+    "What is left is your own confirmation.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "What is left is your own confirmation."
+          }
+        }
+      }
+    },
+    "What stays": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "What stays"
+          }
+        }
+      }
+    },
+    "What this covers couldn’t be counted": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "What this covers couldn’t be counted"
+          }
+        }
+      }
+    },
+    "Where the archive goes": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Where the archive goes"
+          }
+        }
+      }
+    },
+    "Your data has been erased": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your data has been erased"
+          }
+        }
+      }
+    },
+    "Your data isn’t open on this device yet, so nothing was erased.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your data isn’t open on this device yet, so nothing was erased."
+          }
+        }
+      }
+    }
+  },
+  "version": "1.0"
+}
