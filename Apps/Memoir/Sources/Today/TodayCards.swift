@@ -41,7 +41,7 @@ struct TodayComingBack: View {
   var body: some View {
     ShadowCallout(title, message: message, intent: .info, systemImage: "arrow.uturn.left.circle") {
       HStack(spacing: Spacing.space2) {
-        NavigationLink(value: MemoirRoute.destination(.hero)) { Text("See recovery choices", tableName: "Today") }.buttonStyle(.shadowBordered)
+        NavigationLink(value: MemoirRoute.hero(.comingBack)) { Text("See recovery choices", tableName: "Today") }.buttonStyle(.shadowBordered)
         NavigationLink(value: MemoirRoute.destination(.planningBoard)) { Text("See the week", tableName: "Today") }.buttonStyle(.shadowPlain)
       }
     }
@@ -185,7 +185,7 @@ struct TodayFirstDay: View {
           "A quest is a promise you keep to yourself, not a task. Start with one that takes ten minutes — it is easier to keep a small promise every day than a large one twice.",
           tableName: "Today")
       ) {
-        NavigationLink(value: MemoirRoute.destination(.quests)) { Text("Create your first quest", tableName: "Today") }.buttonStyle(.shadowFilled)
+        NavigationLink(value: MemoirRoute.quest(.new)) { Text("Create your first quest", tableName: "Today") }.buttonStyle(.shadowFilled)
       }
       .frame(maxWidth: .infinity)
       .shadowCard()

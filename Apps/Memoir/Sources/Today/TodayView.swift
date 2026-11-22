@@ -82,7 +82,7 @@ private struct TodayScreen: View {
       Text(verbatim: TodayFormat.dayName(snapshot.today.date)).shadowFont(.subheadline).foregroundStyle(ShadowColor.textSecondary)
       ForEach(snapshot.notices, id: \.self) { TodayNoticeView(notice: $0) }
       TodayHeroCard(hero: snapshot.hero, summary: board.summary, comingBack: board.comingBack, showsCrown: snapshot.hasActiveQuests)
-      if let reason = board.comingBack, reason != .comeback {
+      if let reason = board.comingBack, reason != .comeback, !ComingBackDismissal().isDismissed(on: snapshot.today.date) {
         TodayComingBack(reason: reason)
       }
       if let recovery = board.recovery {
