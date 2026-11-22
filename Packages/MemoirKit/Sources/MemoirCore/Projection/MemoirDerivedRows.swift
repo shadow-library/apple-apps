@@ -418,10 +418,13 @@ struct DerivedRows: Equatable {
   let recoveries: Set<RecoveryRow>
   let returners: Set<ReturnerRow>
   let heroEvents: Set<HeroEventRow>
+  let quickLogs: Set<QuickLogRow>
+  let quickLogDays: Set<QuickLogDayRow>
 
   init(
     hero: Set<HeroSummaryRow>, questLogs: Set<QuestLogRow>, days: Set<DayRow>, unlocks: Set<UnlockRow>, notices: Set<NoticeRow>, quests: Set<QuestRow>,
-    reschedules: Set<RescheduleRow>, recoveries: Set<RecoveryRow>, returners: Set<ReturnerRow>, heroEvents: Set<HeroEventRow>
+    reschedules: Set<RescheduleRow>, recoveries: Set<RecoveryRow>, returners: Set<ReturnerRow>, heroEvents: Set<HeroEventRow>, quickLogs: Set<QuickLogRow>,
+    quickLogDays: Set<QuickLogDayRow>
   ) {
     self.hero = hero
     self.questLogs = questLogs
@@ -433,6 +436,8 @@ struct DerivedRows: Equatable {
     self.recoveries = recoveries
     self.returners = returners
     self.heroEvents = heroEvents
+    self.quickLogs = quickLogs
+    self.quickLogDays = quickLogDays
   }
 
   init(_ state: ReplayState) {
@@ -454,15 +459,18 @@ struct DerivedRows: Equatable {
       events.indices.reversed().lazy.filter { !HeroEventRow.hiddenTypes.contains(events[$0].type) }.prefix(Self.recentHeroEvents).map {
         HeroEventRow(ordinal: $0, event: events[$0])
       })
+    quickLogs = Set(state.records.quickLogs.map { QuickLogRow(id: $0.key, outcome: $0.value) })
+    quickLogDays = QuickLogDayRow.rows(events)
   }
 
   static let definitions = [
     HeroSummaryRow.definition, QuestLogRow.definition, DayRow.definition, UnlockRow.definition, NoticeRow.definition, QuestRow.definition, RescheduleRow.definition,
-    RecoveryRow.definition, ReturnerRow.definition, HeroEventRow.definition,
+    RecoveryRow.definition, ReturnerRow.definition, HeroEventRow.definition, QuickLogRow.definition, QuickLogDayRow.definition,
   ]
   static let tables = [
     HeroSummaryRow.databaseTableName, QuestLogRow.databaseTableName, DayRow.databaseTableName, UnlockRow.databaseTableName, NoticeRow.databaseTableName,
     QuestRow.databaseTableName, RescheduleRow.databaseTableName, RecoveryRow.databaseTableName, ReturnerRow.databaseTableName, HeroEventRow.databaseTableName,
+    QuickLogRow.databaseTableName, QuickLogDayRow.databaseTableName,
   ]
 
   static func stored(in database: Database) throws -> DerivedRows {
@@ -470,7 +478,8 @@ struct DerivedRows: Equatable {
       hero: Set(try HeroSummaryRow.fetchAll(database)), questLogs: Set(try QuestLogRow.fetchAll(database)), days: Set(try DayRow.fetchAll(database)),
       unlocks: Set(try UnlockRow.fetchAll(database)), notices: Set(try NoticeRow.fetchAll(database)), quests: Set(try QuestRow.fetchAll(database)),
       reschedules: Set(try RescheduleRow.fetchAll(database)), recoveries: Set(try RecoveryRow.fetchAll(database)), returners: Set(try ReturnerRow.fetchAll(database)),
-      heroEvents: Set(try HeroEventRow.fetchAll(database)))
+      heroEvents: Set(try HeroEventRow.fetchAll(database)), quickLogs: Set(try QuickLogRow.fetchAll(database)),
+      quickLogDays: Set(try QuickLogDayRow.fetchAll(database)))
   }
 
   /// Rewrites only the rows that differ from what the tables hold.
@@ -486,6 +495,8 @@ struct DerivedRows: Equatable {
     try Self.replace(stored.recoveries, with: recoveries, in: database)
     try Self.replace(stored.returners, with: returners, in: database)
     try Self.replace(stored.heroEvents, with: heroEvents, in: database)
+    try Self.replace(stored.quickLogs, with: quickLogs, in: database)
+    try Self.replace(stored.quickLogDays, with: quickLogDays, in: database)
   }
 
   private static func replace<Output: PersistableRecord & Hashable>(_ stored: Set<Output>, with rows: Set<Output>, in database: Database) throws {

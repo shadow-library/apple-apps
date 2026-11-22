@@ -130,7 +130,7 @@ public struct HistoryPage: Sendable, Equatable {
       records.append(
         HistoryRecord(
           id: "side-quest:\(sideQuest.id.lowercasedString)", kind: .sideQuest, date: sideQuest.date, atMillis: sideQuest.loggedAtMillis, syncClass: .general,
-          item: .sideQuest(sideQuest, rewarded: general.rewards.grants[sideQuest.id] != nil), haystack: sideQuest.name))
+          item: .sideQuest(sideQuest, rewarded: general.sideQuestOutcomes.isRewarded(sideQuest.id)), haystack: sideQuest.name))
     }
     for unlock in general.unlocks {
       guard let date = unlock.unlockedOn else { continue }

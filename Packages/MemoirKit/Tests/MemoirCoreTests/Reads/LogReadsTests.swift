@@ -134,7 +134,8 @@ struct LogReadsTests {
 
   /// `SIDE_QUEST_DAILY_REWARD_LIMIT` and `nextSideQuestReward` (`quick-logs.rules.ts:102,192-197`), as replay's `logSideQuest` grants them.
   @Test func shouldCapSideQuestRewardsAtThreeADay() async throws {
-    let stores = try MemoirStores.openInMemory()
+    let horizon = MoneyReadsFixture.stamp(Self.today, hour: 20)
+    let stores = try MemoirStores.openInMemory(projection: try MemoirReconciler(appVersion: "1", horizon: { horizon }))
     let dates = ["2026-11-21", "2026-11-21", "2026-11-21", "2026-11-21", "2026-11-20"]
     try await MoneyReadsFixture.write(stores.main) { transaction in
       for (index, date) in dates.enumerated() {

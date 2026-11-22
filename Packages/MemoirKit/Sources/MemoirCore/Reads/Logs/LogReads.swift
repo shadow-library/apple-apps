@@ -112,9 +112,7 @@ public enum LogReads {
 
   static func sideQuests(in transaction: ReadTransaction, today: LocalDate) throws(StoreError) -> SideQuestsOverview {
     let sideQuests = try ReadSources.listing(SideQuestRecord.self, in: transaction)
-    let commands = try ReadSources.commands(in: transaction)
-    return SideQuestsOverview.make(
-      sideQuests.records, rewards: SideQuestRewards(commands.commands), unreadable: sideQuests.unreadable + commands.unreadable, today: today)
+    return SideQuestsOverview.make(sideQuests.records, outcomes: try SideQuestOutcomes.load(in: transaction), unreadable: sideQuests.unreadable, today: today)
   }
 
   static func weight(in transaction: ReadTransaction, today: LocalDate) throws(StoreError) -> WeightOverview {

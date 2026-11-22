@@ -14,6 +14,7 @@ struct ProjectionConvergenceTests {
   @Test func shouldKeepEveryReplicasDerivedTablesEqualToAFullReplayForAnyDeliveryOrder() async throws {
     var reopened = 0
     var resumed = 0
+    var quickLogged = 0
     try await forAll(iterations: 8) { generator in
       let horizon = try ProjectionSupport.stamp(try #require(LocalDate(daysSinceEpoch: ReplaySamples.firstDay)), plus: 12)
       let reconcilers = try (0..<Self.replicaCount).map { _ in try MemoirReconciler(appVersion: "1", horizon: { horizon }) }
@@ -70,6 +71,7 @@ struct ProjectionConvergenceTests {
 
       let expected = try await ProjectionSupport.expected(in: replicas.store(0), through: horizon)
       #expect(expected.hero.first?.totalXP ?? 0 > 0)
+      quickLogged += min(expected.quickLogs.count, expected.quickLogDays.count)
       for index in 0..<Self.replicaCount {
         let store = await replicas.store(index)
         #expect(try await ProjectionSupport.derived(in: store) == expected, "every replica converges on the same derived rows")
@@ -78,5 +80,6 @@ struct ProjectionConvergenceTests {
     }
     #expect(reopened > 0, "a late command rewrote a day a replica had closed")
     #expect(resumed > 0, "replicas resumed from checkpoints")
+    #expect(quickLogged > 0, "the quick-log outcomes and their days were compared")
   }
 }

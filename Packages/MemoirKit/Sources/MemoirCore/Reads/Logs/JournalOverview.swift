@@ -110,16 +110,16 @@ public struct SideQuestsOverview: Sendable, Equatable {
   public var remainingRewardsToday: Int { max(0, rewardLimit - rewardedToday) }
   public var isRewardCapReached: Bool { rewardedToday >= rewardLimit }
 
-  static func make(_ sideQuests: [SideQuestRecord], rewards: SideQuestRewards, unreadable: Int, today: LocalDate) -> SideQuestsOverview {
+  static func make(_ sideQuests: [SideQuestRecord], outcomes: SideQuestOutcomes, unreadable: Int, today: LocalDate) -> SideQuestsOverview {
     let items = sideQuests.sorted { ($0.loggedAtMillis, $0.id.uuidString) > ($1.loggedAtMillis, $1.id.uuidString) }.map {
-      Item(sideQuest: $0, rewarded: rewards.grants[$0.id] != nil)
+      Item(sideQuest: $0, rewarded: outcomes.isRewarded($0.id))
     }
     let weekStart = today.adding(days: -7) ?? today
     let month = DateSpan.month(of: today)
     let thisMonth = items.filter { month?.contains($0.sideQuest.date) ?? false }
     return SideQuestsOverview(
       items: items, loggedThisWeek: items.count { $0.sideQuest.date >= weekStart }, loggedThisMonth: thisMonth.count,
-      xpThisMonth: Exact.sum(thisMonth.compactMap { rewards.grants[$0.sideQuest.id]?.xp }), rewardedToday: rewards.rewardedPerDay[today] ?? 0,
+      xpThisMonth: month.map(outcomes.xp(in:)) ?? 0, rewardedToday: outcomes.rewarded(on: today),
       rewardLimit: Ruleset.current.quickLogs[.sideQuest].maxRewardedPerDay, unreadable: unreadable)
   }
 }

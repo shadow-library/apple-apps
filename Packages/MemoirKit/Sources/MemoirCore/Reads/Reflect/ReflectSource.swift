@@ -9,7 +9,7 @@ struct ReflectGeneral: Sendable, Equatable {
   let journal: [JournalEntryRecord]
   let meals: [MealRecord]
   let sideQuests: [SideQuestRecord]
-  let rewards: SideQuestRewards
+  let sideQuestOutcomes: SideQuestOutcomes
   let unlocks: [UnlockRow]
   let hero: HeroSummaryRow?
   let today: DayRow?
@@ -27,7 +27,7 @@ struct ReflectGeneral: Sendable, Equatable {
     let sideQuests = try ReadSources.listing(SideQuestRecord.self, in: transaction)
     return ReflectGeneral(
       logs: try ReadSources.allQuestLogs(in: transaction), questNames: try ReadSources.questNames(in: transaction), book: book, journal: journal.records,
-      meals: meals.records, sideQuests: sideQuests.records, rewards: SideQuestRewards(try ReadSources.commands(in: transaction).commands),
+      meals: meals.records, sideQuests: sideQuests.records, sideQuestOutcomes: try SideQuestOutcomes.load(in: transaction),
       unlocks: try MemoirDerived.unlocks(in: transaction), hero: try MemoirDerived.hero(in: transaction),
       today: try MemoirDerived.days(from: today, through: today, in: transaction).first,
       unreadable: book.unreadable + journal.unreadable + meals.unreadable + sideQuests.unreadable)
@@ -38,7 +38,7 @@ struct ReflectGeneral: Sendable, Equatable {
   }
 
   func xp(in span: DateSpan) -> Int {
-    Exact.adding(Exact.sum(logs(in: span).map(\.entry.xpAwarded)), rewards.xp(in: span))
+    Exact.adding(Exact.sum(logs(in: span).map(\.entry.xpAwarded)), sideQuestOutcomes.xp(in: span))
   }
 }
 

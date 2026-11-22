@@ -41,36 +41,27 @@ enum ReadSources {
   }
 }
 
-/// Which side quests earned their reward, read from the `sidequest.log` commands in clock order as replay's `logSideQuest` grants it: the first
-/// `maxRewardedPerDay` logged for the day they were issued on, under each command's own ruleset. The derived tables hold no quick-log outcomes yet, so
-/// this reads the commands; it differs from replay only for a side quest logged on an open day a backward time-zone change left ahead of its
-/// `issuedOn`, or once replay has halted.
-struct SideQuestRewards: Sendable, Equatable {
-  struct Grant: Sendable, Equatable {
-    let date: LocalDate
-    let xp: Int
-    let coins: Int
+/// Replay's side-quest outcomes from the projection: whether each log earned its reward, and the slots and XP each day's rewards took.
+struct SideQuestOutcomes: Sendable, Equatable {
+  let logs: [UUID: QuickLogRow]
+  let days: [LocalDate: QuickLogDayRow]
+
+  static func load(in transaction: ReadTransaction) throws(StoreError) -> SideQuestOutcomes {
+    let logs = try MemoirDerived.quickLogs(.sideQuest, from: .earliest, through: .latest, in: transaction)
+    let days = try MemoirDerived.quickLogDays(.sideQuest, from: .earliest, through: .latest, in: transaction)
+    return SideQuestOutcomes(
+      logs: Dictionary(uniqueKeysWithValues: logs.map { ($0.id, $0) }), days: Dictionary(uniqueKeysWithValues: days.map { ($0.date, $0) }))
   }
 
-  let grants: [UUID: Grant]
-  let rewardedPerDay: [LocalDate: Int]
+  func isRewarded(_ sideQuest: UUID) -> Bool {
+    logs[sideQuest]?.rewarded ?? false
+  }
 
-  init(_ commands: [(command: MemoirCommand, body: MemoirCommandBody)]) {
-    var grants = [UUID: Grant]()
-    var perDay = [LocalDate: Int]()
-    for (command, body) in commands {
-      guard case .sideQuestLog(let entry) = body, grants[entry.id] == nil, let ruleset = Ruleset.version(command.rulesetVersion) else { continue }
-      let reward = ruleset.quickLogs[.sideQuest]
-      let rewarded = perDay[entry.date] ?? 0
-      guard entry.date == command.issuedOn, rewarded < reward.maxRewardedPerDay else { continue }
-      perDay[entry.date] = rewarded + 1
-      grants[entry.id] = Grant(date: entry.date, xp: reward.xp, coins: reward.coins)
-    }
-    self.grants = grants
-    rewardedPerDay = perDay
+  func rewarded(on date: LocalDate) -> Int {
+    days[date]?.rewarded ?? 0
   }
 
   func xp(in span: DateSpan) -> Int {
-    Exact.sum(grants.values.filter { span.contains($0.date) }.map(\.xp))
+    Exact.sum(days.values.filter { span.contains($0.date) }.map(\.reward.xp))
   }
 }
