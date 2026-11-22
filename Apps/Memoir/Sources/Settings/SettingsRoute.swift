@@ -1,3 +1,4 @@
+import ShadowAppShell
 import SwiftUI
 
 enum SettingsRoute: Hashable {
@@ -5,6 +6,7 @@ enum SettingsRoute: Hashable {
   case currencies
   case export
   case deleteVault
+  case about
 }
 
 struct SettingsRouteView: View {
@@ -17,6 +19,7 @@ struct SettingsRouteView: View {
     case .currencies: EnabledCurrenciesView(context: context)
     case .export: ExportView(context: context)
     case .deleteVault: DeleteVaultView(context: context)
+    case .about: AboutView(identity: .memoir, disclosures: AboutDisclosure.memoir)
     }
   }
 }

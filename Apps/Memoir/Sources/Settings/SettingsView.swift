@@ -32,10 +32,13 @@ struct SettingsView: View {
       }
       SettingsDataSection()
       Section {
-        LabeledContent {
-          Text(verbatim: SettingsCopy.version()).textSelection(.enabled)
-        } label: {
-          Text("Version", tableName: "Settings")
+        NavigationLink(value: MemoirRoute.settings(.about)) {
+          VStack(alignment: .leading, spacing: Spacing.space1) {
+            Text("About Memoir", tableName: "Settings")
+            Text("What leaves this device, and the notices of the third-party work Memoir includes.", tableName: "Settings")
+              .shadowFont(.footnote)
+              .foregroundStyle(ShadowColor.textSecondary)
+          }
         }
       } header: {
         Text("About", tableName: "Settings")

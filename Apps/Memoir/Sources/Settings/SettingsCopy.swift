@@ -1,5 +1,6 @@
 import Foundation
 import MemoirCore
+import ShadowAppShell
 
 /// The reference's words for Settings (`features/settings/settings-screen.tsx`), with times and lengths in the locale's formats.
 nonisolated enum SettingsCopy {
@@ -36,8 +37,6 @@ nonisolated enum SettingsCopy {
   }
 
   static func version(bundle: Bundle = .main) -> String {
-    let short = bundle.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "?"
-    guard let build = bundle.object(forInfoDictionaryKey: "CFBundleVersion") as? String, build != short else { return short }
-    return String(localized: "\(short) (\(build))", table: "Settings")
+    AppVersion(bundle: bundle).text
   }
 }

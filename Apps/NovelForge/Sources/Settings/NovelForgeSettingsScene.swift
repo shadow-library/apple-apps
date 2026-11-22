@@ -49,6 +49,15 @@ struct NovelForgeSettingsScene: View {
           }
         }
       #endif
+      Tab(value: SettingsTabs.Tab.about) {
+        NavigationStack {
+          AboutView(identity: .novelForge, disclosures: AboutDisclosure.novelForge)
+        }
+        .shadowTheme()
+        .frame(minWidth: 520, idealWidth: 600, minHeight: 480, idealHeight: 640)
+      } label: {
+        AboutLabel(identity: .novelForge)
+      }
     }
     .onDisappear { tabs.syncKeys = nil }
   }

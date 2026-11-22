@@ -1,17 +1,6 @@
 {
   "sourceLanguage": "en",
   "strings": {
-    "%@ (%@)": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%@ (%@)"
-          }
-        }
-      }
-    },
     "%@ from your next rollover — %@ stays active today.": {
       "extractionState": "manual",
       "localizations": {
@@ -41,6 +30,17 @@
           "stringUnit": {
             "state": "translated",
             "value": "About"
+          }
+        }
+      }
+    },
+    "About Memoir": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "About Memoir"
           }
         }
       }
@@ -162,6 +162,17 @@
           "stringUnit": {
             "state": "translated",
             "value": "Fixed when you set up, so the totals in your history stay comparable. Spend in another currency keeps its own and converts to this one."
+          }
+        }
+      }
+    },
+    "Health data never syncs through iCloud, and activity data does only while you turn it on in Sync settings. Other storage you choose receives both, encrypted like the rest of your vault.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Health data never syncs through iCloud, and activity data does only while you turn it on in Sync settings. Other storage you choose receives both, encrypted like the rest of your vault."
           }
         }
       }
@@ -331,6 +342,17 @@
         }
       }
     },
+    "The text of a receipt goes to your AI provider only after you allow it; the photo stays in your vault.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The text of a receipt goes to your AI provider only after you allow it; the photo stays in your vault."
+          }
+        }
+      }
+    },
     "The time zone wasn’t changed": {
       "extractionState": "manual",
       "localizations": {
@@ -408,17 +430,6 @@
         }
       }
     },
-    "Version": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Version"
-          }
-        }
-      }
-    },
     "Wake time": {
       "extractionState": "manual",
       "localizations": {
@@ -437,6 +448,17 @@
           "stringUnit": {
             "state": "translated",
             "value": "Week starts on"
+          }
+        }
+      }
+    },
+    "What leaves this device, and the notices of the third-party work Memoir includes.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "What leaves this device, and the notices of the third-party work Memoir includes."
           }
         }
       }

@@ -1,4 +1,5 @@
 import ShadowAppShell
+import ShadowDesignSystem
 import ShadowStore
 import SwiftUI
 
@@ -6,9 +7,27 @@ extension SettingsTabs.Tab {
   static let worker = SettingsTabs.Tab("worker")
 }
 
-extension AISettingsButton where Links == DevicesAndWorkerLink {
+extension AISettingsButton where Links == NovelForgeSettingsLinks {
   init(store: VaultStore) {
-    self.init(store: store) { DevicesAndWorkerLink(store: $0) }
+    self.init(store: store) { NovelForgeSettingsLinks(store: $0) }
+  }
+}
+
+/// The AI settings sheet's further pages on iPhone and iPad; the Mac shows them in tabs of Settings instead.
+struct NovelForgeSettingsLinks: View {
+  let store: VaultStore
+
+  var body: some View {
+    #if !os(macOS)
+      HStack(spacing: Spacing.space3) {
+        DevicesAndWorkerLink(store: store)
+        NavigationLink {
+          AboutView(identity: .novelForge, disclosures: AboutDisclosure.novelForge)
+        } label: {
+          AboutLabel(identity: .novelForge)
+        }
+      }
+    #endif
   }
 }
 

@@ -1,0 +1,136 @@
+{
+  "sourceLanguage": "en",
+  "strings": {
+    "About %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "About %@"
+          }
+        }
+      }
+    },
+    "Acknowledgements": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Acknowledgements"
+          }
+        }
+      }
+    },
+    "Contact": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Contact"
+          }
+        }
+      }
+    },
+    "Nothing else leaves your devices: %@ has no account, analytics or advertising, and its developer receives none of your data.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nothing else leaves your devices: %@ has no account, analytics or advertising, and its developer receives none of your data."
+          }
+        }
+      }
+    },
+    "Privacy Policy": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Privacy Policy"
+          }
+        }
+      }
+    },
+    "Privacy and support": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Privacy and support"
+          }
+        }
+      }
+    },
+    "Support": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Support"
+          }
+        }
+      }
+    },
+    "The notices of the third-party work %@ includes.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The notices of the third-party work %@ includes."
+          }
+        }
+      }
+    },
+    "Version %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Version %@"
+          }
+        }
+      }
+    },
+    "What leaves this device": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "What leaves this device"
+          }
+        }
+      }
+    },
+    "When you turn on sync, your %@ is encrypted on this device before it goes to the storage you chose.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "When you turn on sync, your %@ is encrypted on this device before it goes to the storage you chose."
+          }
+        }
+      }
+    },
+    "When you use AI, %@ sends what the request needs from your own devices straight to the provider you chose, under your own key, and only the kinds of data you allowed in AI settings. OpenRouter passes each request on to the company that runs the model you picked.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "When you use AI, %@ sends what the request needs from your own devices straight to the provider you chose, under your own key, and only the kinds of data you allowed in AI settings. OpenRouter passes each request on to the company that runs the model you picked."
+          }
+        }
+      }
+    },
+    "While iCloud Keychain is on, %@ keeps your AI provider keys, your %@'s sync keys and your storage credentials in it, end-to-end encrypted by Apple.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "While iCloud Keychain is on, %@ keeps your AI provider keys, your %@'s sync keys and your storage credentials in it, end-to-end encrypted by Apple."
+          }
+        }
+      }
+    }
+  },
+  "version": "1.0"
+}

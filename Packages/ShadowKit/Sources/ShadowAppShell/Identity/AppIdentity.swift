@@ -1,3 +1,5 @@
+import Foundation
+
 /// Who the shell works for: the app's reverse-DNS id, which names its keychain services and defaults keys, and the words its screens use for the app and
 /// for what it keeps in its vault. An app makes one and passes it in; the shell never names an app itself.
 public nonisolated struct AppIdentity: Equatable, Sendable {
@@ -10,13 +12,24 @@ public nonisolated struct AppIdentity: Equatable, Sendable {
   public let vaultTitle: String
   /// The bucket name the S3 form shows as its placeholder, such as "my-novels".
   public let exampleBucketName: String
+  /// The About screen shows a privacy policy, support or contact row only for a value set here; an unset one leaves no row.
+  public let privacyPolicyURL: URL?
+  public let supportURL: URL?
+  /// An email address, offered as a mailto link.
+  public let contactAddress: String?
 
-  public init(id: String, displayName: String, vaultNoun: String, vaultTitle: String, exampleBucketName: String) {
+  public init(
+    id: String, displayName: String, vaultNoun: String, vaultTitle: String, exampleBucketName: String, privacyPolicyURL: URL? = nil, supportURL: URL? = nil,
+    contactAddress: String? = nil
+  ) {
     self.id = id
     self.displayName = displayName
     self.vaultNoun = vaultNoun
     self.vaultTitle = vaultTitle
     self.exampleBucketName = exampleBucketName
+    self.privacyPolicyURL = privacyPolicyURL
+    self.supportURL = supportURL
+    self.contactAddress = contactAddress
   }
 
   public var aiKeychainService: String { "\(id).ai" }
