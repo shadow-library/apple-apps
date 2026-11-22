@@ -14,6 +14,7 @@ struct MemoirSchemaTests {
     (.main, "schema/registry-v1.json", 1), (.activity, "schema/activity-registry-v1.json", 1), (.restricted, "schema/restricted-registry-v1.json", 1),
     (.main, "schema/registry-v2.json", 2), (.activity, "schema/activity-registry-v2.json", 2), (.restricted, "schema/restricted-registry-v2.json", 2),
     (.main, "schema/registry-v3.json", 3), (.activity, "schema/activity-registry-v3.json", 3), (.restricted, "schema/restricted-registry-v3.json", 3),
+    (.main, "schema/registry-v4.json", 4),
   ]
 
   @Test func shouldMatchTheFrozenRegistryDescriptions() throws {

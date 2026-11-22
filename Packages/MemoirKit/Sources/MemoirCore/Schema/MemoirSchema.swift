@@ -38,7 +38,7 @@ public enum MemoirStoreKind: String, CaseIterable, Sendable {
 }
 
 public enum MemoirSchema {
-  public static let mainVersion = 3
+  public static let mainVersion = 4
   public static let activityVersion = 3
   public static let restrictedVersion = 3
 
@@ -67,7 +67,7 @@ public enum MemoirSchema {
 
   private static func schema(of kind: MemoirKind) -> EntitySchema {
     switch kind {
-    case .command, .commandNote:
+    case .command, .commandNote, .expenseChange:
       EntitySchema(kind: kind.entityKind, shape: .appended, syncClass: kind.syncClass)
     case .quest:
       record(kind, registers(QuestField.self))

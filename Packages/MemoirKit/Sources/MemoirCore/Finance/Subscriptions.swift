@@ -105,6 +105,7 @@ public enum SubscriptionCycles {
 
   /// Writes the cycle's expense in the transaction that appends the confirm command, with its rate captured. Returns `nil` when this device already
   /// holds the cycle's expense in any state, so confirming again here never re-inserts an expense the owner deleted (the reference re-inserts it).
+  /// Change records an earlier expense under that id left are purged, as the reference clears the audit of a cycle's new expense.
   /// A device that has not yet received the expense writes it again under the same derived id. Its fields are registers, so when that write carries the
   /// later clock it restores an expense the owner deleted elsewhere and reverts the owner's edits made elsewhere.
   @discardableResult
@@ -128,6 +129,11 @@ public enum SubscriptionCycles {
     }
     _ = try BillingTerms(subscription)
     guard existing == nil else { return nil }
+    do throws(MemoirRecordError) {
+      try ExpenseChangeRecord.purge(expense: expenseID(for: confirmation), in: &transaction)
+    } catch {
+      throw FinanceError(error)
+    }
     return try self.expense(for: confirmation, of: subscription, loggedAtMillis: loggedAtMillis).createCapturingRate(in: &transaction)
   }
 }

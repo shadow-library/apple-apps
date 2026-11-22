@@ -83,6 +83,17 @@ public enum ExpenseRateMember: String, MemoirField {
   case quote
 }
 
+public enum ExpenseChangeMember: String, MemoirField {
+  case expense
+  case changes
+}
+
+public enum ExpenseFieldChangeMember: String, MemoirField {
+  case field
+  case from
+  case to
+}
+
 public enum SubscriptionField: String, MemoirField {
   case name
   case note

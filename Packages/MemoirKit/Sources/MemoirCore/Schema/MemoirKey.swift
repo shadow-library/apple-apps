@@ -57,7 +57,7 @@ public enum MemoirKey: Hashable, Sendable {
       guard members.isEmpty else { throw .invalid(field: CommonField.naturalKey.rawValue) }
       self = .insightSchedule
     case .command, .commandNote, .quest, .journalEntry, .meal, .mealPreset, .sideQuest, .expense, .subscription, .receipt, .generalMetric, .activityMetric, .healthMetric,
-      .generalQuestThreshold, .activityQuestThreshold, .healthQuestThreshold, .generalInsight, .activityInsight, .healthInsight:
+      .generalQuestThreshold, .activityQuestThreshold, .healthQuestThreshold, .generalInsight, .activityInsight, .healthInsight, .expenseChange:
       throw .identity(ref)
     }
     guard self.ref == ref else { throw .keyMismatch(ref) }

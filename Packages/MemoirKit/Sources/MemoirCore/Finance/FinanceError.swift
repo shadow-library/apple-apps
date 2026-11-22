@@ -14,6 +14,9 @@ public enum FinanceError: ShadowError, Equatable, Hashable {
   case billingDayOutOfRange(Int)
   case dateOutOfRange
   case subscriptionAbsent(UUID)
+  /// The reference's `FIN_006` for the currency: an expense keeps the currency, rate, receipt and logging time of its first write.
+  case expenseFieldFixed(String)
+  case expenseExists(UUID)
   case unreadable(EntityRef)
   case store(String)
   case recordWrite(String)
@@ -31,6 +34,8 @@ public enum FinanceError: ShadowError, Equatable, Hashable {
     case .billingDayOutOfRange: "memoir_finance.billing_day_out_of_range"
     case .dateOutOfRange: "memoir_finance.date_out_of_range"
     case .subscriptionAbsent: "memoir_finance.subscription_absent"
+    case .expenseFieldFixed: "memoir_finance.expense_field_fixed"
+    case .expenseExists: "memoir_finance.expense_exists"
     case .unreadable: "memoir_finance.unreadable"
     case .store: "memoir_finance.store"
     case .recordWrite: "memoir_finance.record_write"
@@ -51,6 +56,8 @@ public enum FinanceError: ShadowError, Equatable, Hashable {
     case .billingDayOutOfRange(let day): "Billing day \(day) is not between 1 and 31."
     case .dateOutOfRange: "The date falls outside the years 0000 to 9999."
     case .subscriptionAbsent(let id): "Subscription \(id.lowercasedString) is not in the vault."
+    case .expenseFieldFixed(let field): "An expense's \(field) cannot change after it is written; record a new expense instead."
+    case .expenseExists(let id): "Expense \(id.lowercasedString) already exists."
     case .unreadable(let ref): "\(ref.kind)/\(ref.key) cannot be read."
     case .store(let reason): "The store failed: \(reason)"
     case .recordWrite(let reason): "The record write was refused: \(reason)"
