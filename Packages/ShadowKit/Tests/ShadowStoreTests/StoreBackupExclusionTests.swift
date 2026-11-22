@@ -5,6 +5,9 @@ import Testing
 
 @Suite("VaultStore backup exclusion")
 struct StoreBackupExclusionTests {
+  /// The attribute Foundation writes for `isExcludedFromBackup`; the resource value can lag its removal under load, the attribute itself cannot.
+  private static let excludeItem = "com.apple.metadata:com_apple_backup_excludeItem"
+
   private func isExcluded(_ url: URL) throws -> Bool {
     var fresh = url
     fresh.removeAllCachedResourceValues()
@@ -55,9 +58,11 @@ struct StoreBackupExclusionTests {
     let store = try open(directory)
     try store.setExcludedFromBackup(true)
     #expect(try await settles(on: true, directory.url))
-    #expect(removexattr(directory.url.path(percentEncoded: false), "com.apple.metadata:com_apple_backup_excludeItem", 0) == 0)
-    #expect(try await settles(on: false, directory.url))
+    let path = directory.url.path(percentEncoded: false)
+    #expect(removexattr(path, Self.excludeItem, 0) == 0)
+    #expect(getxattr(path, Self.excludeItem, nil, 0, 0, 0) == -1)
     try store.setExcludedFromBackup(true)
+    #expect(getxattr(path, Self.excludeItem, nil, 0, 0, 0) > 0)
     #expect(try await settles(on: true, directory.url))
   }
 
