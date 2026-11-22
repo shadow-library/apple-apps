@@ -4,7 +4,7 @@ import Foundation
 /// to the same canonical JSON; the recurrence cursors are a cache and are never encoded. Decoding refuses another `codingVersion` and a state whose parts
 /// contradict each other.
 extension ReplayState: Codable {
-  public static let codingVersion = 1
+  public static let codingVersion = 2
 
   private enum CodingKeys: String, CodingKey {
     case version
@@ -23,6 +23,7 @@ extension ReplayState: Codable {
     case position
     case openDay
     case latestIssuedOn
+    case latestUtcOffsetMinutes
     case highestRulesetVersion
     case outcomes
     case notices
@@ -54,6 +55,7 @@ extension ReplayState: Codable {
     state.position = try container.decodeIfPresent(ReplayPosition.self, forKey: .position)
     state.openDay = try container.decodeIfPresent(LocalDate.self, forKey: .openDay)
     state.latestIssuedOn = try container.decodeIfPresent(LocalDate.self, forKey: .latestIssuedOn)
+    state.latestUtcOffsetMinutes = try container.decodeIfPresent(Int.self, forKey: .latestUtcOffsetMinutes)
     state.highestRulesetVersion = try container.decodeIfPresent(Int.self, forKey: .highestRulesetVersion)
     state.outcomes = try container.decodeMap(ReplayOutcome.self, forKey: .outcomes)
     state.notices = try container.decode([ReplayNotice].self, forKey: .notices)
@@ -85,6 +87,7 @@ extension ReplayState: Codable {
     try container.encodeIfPresent(position, forKey: .position)
     try container.encodeIfPresent(openDay, forKey: .openDay)
     try container.encodeIfPresent(latestIssuedOn, forKey: .latestIssuedOn)
+    try container.encodeIfPresent(latestUtcOffsetMinutes, forKey: .latestUtcOffsetMinutes)
     try container.encodeIfPresent(highestRulesetVersion, forKey: .highestRulesetVersion)
     try container.encodeMap(outcomes, forKey: .outcomes)
     try container.encode(notices, forKey: .notices)

@@ -23,6 +23,12 @@ extension Ruleset {
     return Int128(input.minuteOfDay) - windowEnd < Int128(reward.timing.lateStepMinutes) ? .late0To2h : .late2hPlus
   }
 
+  /// The minute of the occurrence's day from which a completion counts as late; nil for a day-level quest or one without a start time.
+  public func onTimeUntilMinute(strictness: Strictness, startMinute: Int?, durationMinutes: Int) -> Int? {
+    onTimeWindowEnd(TimingBandInput(strictness: strictness, startMinute: startMinute, durationMinutes: durationMinutes, daysElapsed: 0, minuteOfDay: 0))
+      .map { Int(clamping: $0) }
+  }
+
   private func onTimeWindowEnd(_ input: TimingBandInput) -> Int128? {
     guard let startMinute = input.startMinute else { return nil }
     return switch strictness[input.strictness].schedulingModel {

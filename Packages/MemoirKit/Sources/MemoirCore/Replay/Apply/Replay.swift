@@ -198,6 +198,7 @@ public enum Replay {
     state.outcomes[stored.id] = outcome
     state.commandCount += 1
     state.latestIssuedOn = max(stored.issuedOn, state.latestIssuedOn ?? stored.issuedOn)
+    state.latestUtcOffsetMinutes = stored.utcOffsetMinutes
     state.highestRulesetVersion = max(ruleset.version, state.highestRulesetVersion ?? ruleset.version)
   }
 }

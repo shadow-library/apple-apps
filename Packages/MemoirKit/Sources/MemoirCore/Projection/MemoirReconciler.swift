@@ -14,22 +14,40 @@ import Synchronization
 /// cannot read halts replay, and the hero row says the app needs an update.
 public struct MemoirReconciler: StoreReconciler {
   /// Raise it when replay's meaning changes, so every checkpoint and derived row is rebuilt.
-  public static let replayVersion = 1
+  public static let replayVersion = 2
   public static let recentCheckpoints = 7
   static let layoutTable = "mm_derived_layout"
   static let fingerprintDomain = "com.shadow.library.memoircore.projection"
 
   public let registry: SchemaRegistry
   public let fingerprint: String
-  private let horizon: @Sendable () -> IssueStamp?
+  private let horizon: Horizon
   private let cache = CheckpointCache()
 
+  private enum Horizon {
+    case given(@Sendable () -> IssueStamp?)
+    case accountZone(now: @Sendable () -> Date, device: @Sendable () -> TimeZone)
+  }
+
   /// `appVersion` must change with every build that can change replay, derived rows or their encoding: pass the build number (`CFBundleVersion`), never
-  /// the marketing version, which two builds share. `horizon` is the app's local day as `IssueClock.stamp` gives it in the zone in force; nil leaves the
-  /// view at the latest command's day.
+  /// the marketing version, which two builds share. `horizon` is the local day as `IssueClock.stamp` gives it; nil leaves the view at the latest command's
+  /// day. An app passes `now` and `deviceZone` instead, so the horizon follows the account's zone in force.
   public init(registry: SchemaRegistry = MemoirSchema.mainRegistry, appVersion: String, horizon: @escaping @Sendable () -> IssueStamp? = { nil })
     throws(ReplayCheckpointError)
   {
+    try self.init(registry: registry, appVersion: appVersion, horizon: .given(horizon))
+  }
+
+  /// The horizon is `now` in the clock `AccountZone` gives for the replayed state: the account's zone in force on its open day, the staged one once
+  /// that day has passed, and `deviceZone` only before any zone is set. `deviceZone` is the app's `{ TimeZone.current }`.
+  public init(
+    registry: SchemaRegistry = MemoirSchema.mainRegistry, appVersion: String, now: @escaping @Sendable () -> Date,
+    deviceZone: @escaping @Sendable () -> TimeZone
+  ) throws(ReplayCheckpointError) {
+    try self.init(registry: registry, appVersion: appVersion, horizon: .accountZone(now: now, device: deviceZone))
+  }
+
+  private init(registry: SchemaRegistry, appVersion: String, horizon: Horizon) throws(ReplayCheckpointError) {
     self.registry = registry
     self.horizon = horizon
     let parts =
@@ -150,6 +168,13 @@ public struct MemoirReconciler: StoreReconciler {
     return .initial
   }
 
+  private func horizon(for state: ReplayState) -> IssueStamp? {
+    switch horizon {
+    case .given(let stamp): stamp()
+    case .accountZone(let now, let device): AccountZone(state).horizon(at: now(), device: device())
+    }
+  }
+
   private func run(from start: ReplayState, with commands: [ReplayCommand], in database: Database) throws {
     var retention = CheckpointRetention(recent: Self.recentCheckpoints, stamp: fingerprint, cache: cache)
     var state = start
@@ -160,7 +185,7 @@ public struct MemoirReconciler: StoreReconciler {
     try retention.finish(in: database)
     try ReplayCheckpointTable.prune(keepingRecent: Self.recentCheckpoints, in: database)
     var view = state
-    if let horizon = horizon() { Replay.walk(&view, through: horizon) }
+    if let horizon = horizon(for: state) { Replay.walk(&view, through: horizon) }
     try DerivedRows(view).write(in: database)
   }
 }

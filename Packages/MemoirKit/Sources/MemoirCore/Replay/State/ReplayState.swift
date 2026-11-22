@@ -29,6 +29,8 @@ public struct ReplayState: Sendable, Hashable {
   public internal(set) var openDay: LocalDate?
   /// The latest `issuedOn` replay has seen, the day the walk closes up to.
   public internal(set) var latestIssuedOn: LocalDate?
+  /// The UTC offset the latest command taken in recorded, the zone's offset as the account last lived it.
+  public internal(set) var latestUtcOffsetMinutes: Int?
   /// The highest ruleset version replay has seen; a day closes under it.
   public internal(set) var highestRulesetVersion: Int?
   public internal(set) var outcomes: [UUID: ReplayOutcome] = [:]

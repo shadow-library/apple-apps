@@ -76,6 +76,19 @@ public struct IssueClock: Sendable {
 
   public static var current: IssueClock { IssueClock(timeZone: .current) }
 
+  /// The clock of a zone a command named; nil when this device's zone data does not know it.
+  public init?(zoneIdentifier: String) {
+    guard let zone = TimeZone(identifier: zoneIdentifier) else { return nil }
+    self.init(timeZone: zone)
+  }
+
+  /// A clock that keeps one offset, for a zone this device's data lacks; nil outside the offsets a zone can have.
+  public init?(fixedOffsetMinutes: Int) {
+    let (seconds, overflow) = fixedOffsetMinutes.multipliedReportingOverflow(by: 60)
+    guard !overflow, let zone = TimeZone(secondsFromGMT: seconds) else { return nil }
+    self.init(timeZone: zone)
+  }
+
   /// `issuedOn` comes from the recorded whole-minute offset, as `MemoirCommand` checks it, so in a zone whose offset has seconds it can differ
   /// from `localDate(at:)` in the seconds around midnight.
   public func stamp(at instantMillis: Int64) throws(CalendarError) -> IssueStamp {
