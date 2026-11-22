@@ -18,7 +18,7 @@ open ShadowLibrary.xcworkspace
 Xcode projects and the workspace are generated from Swift manifests and are never committed. Re-run `tuist generate` after changing any
 `Project.swift`, `Tuist/Package.swift` or helper; adding or removing source files does not need it, since targets use buildable folders.
 
-To sign for devices, export your team before generating: `export TUIST_DEVELOPMENT_TEAM=ABCDE12345`.
+To sign for devices, export your team before generating: `export TUIST_DEVELOPMENT_TEAM=ABCDE12345`. Store builds take more variables; see Store builds.
 
 ## Layout
 
@@ -531,6 +531,28 @@ tuist test Memoir --platform macOS --no-selective-testing
 - CI runs `swift test` for the packages, then `tuist test` per platform: iOS with UI tests, macOS with `--skip-ui-tests`, and visionOS with `--skip-ui-tests` on `Catalog` only (the new apps have no visionOS destination).
 - Swift Testing tests that resolve `Color` or `Font` must be `@MainActor`.
 
+## Store builds
+
+Every store-build option is read from a `TUIST_*` variable when the workspace is generated and applies to every app generated with it; unset, each gives the development build. Regenerating without a variable restores its default. A malformed value stops generation, though Tuist drops the manifest's message and reports only that `Project.swift` or `Tuist/Package.swift` failed to load.
+
+| Variable                  | Values                                    | Effect |
+| ------------------------- | ----------------------------------------- | ------ |
+| `TUIST_DEVELOPMENT_TEAM`  | a team id                                 | Signs, and emits the capabilities that need a team |
+| `TUIST_MARKETING_VERSION` | one to three period-separated integers    | `MARKETING_VERSION` (`CFBundleShortVersionString`); default `1.0.0` |
+| `TUIST_BUILD_NUMBER`      | one to three period-separated integers    | `CURRENT_PROJECT_VERSION` (`CFBundleVersion`); default `1` |
+| `TUIST_USES_NON_EXEMPT_ENCRYPTION` | `true` or `false`                | Written as `ITSAppUsesNonExemptEncryption`. Unset leaves the key out, and App Store Connect asks at every upload |
+| `TUIST_UNRESTRICTED`      | `1` or `0`                                | `1` compiles `NovelForgeCore` with `SHADOW_UNRESTRICTED`; unset or `0` leaves it out |
+
+```sh
+TUIST_DEVELOPMENT_TEAM=ABCDE12345 TUIST_MARKETING_VERSION=1.0.0 TUIST_BUILD_NUMBER=7 TUIST_USES_NON_EXEMPT_ENCRYPTION=false tuist generate --no-open
+```
+
+- `SHADOW_UNRESTRICTED` reaches only `NovelForgeCore`, through `Tuist/Package.swift`'s `PackageSettings` (`SettingsDictionary.novelForgeCore`), where `UnrestrictedWriting.isAvailable` reads it; apps learn it from `isAvailable`. SwiftPM builds (`swift test`) never define it unless given `-Xswiftc -DSHADOW_UNRESTRICTED`.
+- `pushNotifications` writes `aps-environment` (`com.apple.developer.aps-environment` on the Mac) as `development` in every configuration, so any build signed with a development profile works, Release included. Exporting an archive for App Store Connect or TestFlight re-signs it with the distribution profile, and Xcode takes the profile's `production` value then.
+- `Project.app(category:)` writes `LSApplicationCategoryType` (`AppCategory`): Novel Forge `public.app-category.productivity`, Memoir `public.app-category.lifestyle` (provisional). Catalog has none.
+- Each app's icon is `Resources/Assets.xcassets/AppIcon.appiconset`, which `Project.app` names in `ASSETCATALOG_COMPILER_APPICON_NAME` on the app target (an app with an `AccentColor` colour set passes `accentColor: true`, as Catalog does; otherwise Tuist's default accent name is cleared so actool does not warn about a missing one): a 1024-pixel image for iOS and the Mac's 512@2x, and a 512-pixel one for 512@1x, opaque since iOS refuses an icon with alpha. Novel Forge's and Memoir's are placeholders, a gradient and the app's initial drawn from `Design/tokens.json` by `mise run icons:placeholder`, until the final artwork replaces them.
+- `mise run check:build-options` (run by CI's lint job) dumps the manifests under each option and checks that every key is present exactly when asked for and that a malformed value stops generation.
+
 ## Adding an app
 
 ```sh
@@ -556,6 +578,8 @@ needs an entry in the manifest of every app that links it; `mise run privacy:che
 | `mise run test:packages`  | Shared package tests only — no project generation     |
 | `mise run test:apps`      | App tests without UI tests (`tuist test --skip-ui-tests`) |
 | `mise run tokens`         | Regenerates design-token sources from `Design/tokens.json` |
+| `mise run icons:placeholder` | Redraws Novel Forge's and Memoir's placeholder app icons |
+| `mise run check:build-options` | Checks the store-build options in the generated manifests |
 | `mise run screenshots`    | Captures Catalog pages (see Screenshot harness)       |
 | `mise run lint`           | `swift format lint --strict`, then `privacy:check`    |
 | `mise run privacy:check`  | Fails when an app uses a required-reason API its privacy manifest does not declare |

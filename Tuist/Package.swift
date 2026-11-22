@@ -4,6 +4,7 @@ import PackageDescription
 
 #if TUIST
   import ProjectDescription
+  import ProjectDescriptionHelpers
 
   let libraryTargets = [
     "ShadowCore", "ShadowNetworking", "ShadowKeychain", "ShadowStore", "ShadowSync", "ShadowSyncS3", "ShadowSyncOneDrive", "ShadowSyncGoogleDrive", "ShadowSyncCloudKit",
@@ -11,10 +12,15 @@ import PackageDescription
     "ShadowDesignSystem", "ShadowAppShell", "ShadowTestSupport", "NovelForgeCore", "MemoirCore",
   ]
 
+  let targetSettings: [String: SettingsDictionary] = ["NovelForgeCore": .novelForgeCore]
+
   let packageSettings = PackageSettings(
     productTypes: [:],
     targetSettings: Dictionary(
-      uniqueKeysWithValues: libraryTargets.map { ($0, Settings.settings(base: ["PRODUCT_BUNDLE_IDENTIFIER": .string("com.shadow.library.\($0.lowercased())")])) }
+      uniqueKeysWithValues: libraryTargets.map { target in
+        let bundleId: SettingsDictionary = ["PRODUCT_BUNDLE_IDENTIFIER": .string("com.shadow.library.\(target.lowercased())")]
+        return (target, Settings.settings(base: bundleId.merging(targetSettings[target] ?? [:]) { $1 }))
+      }
     )
   )
 #endif

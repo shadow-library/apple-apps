@@ -4,6 +4,7 @@ import ProjectDescriptionHelpers
 let project = Project.app(
   name: "Memoir",
   platform: .phoneAndMac,
+  category: .lifestyle,
   dependencies: [
     .product(.memoirCore), .shared(.core), .shared(.store), .shared(.ai), .shared(.jobs), .shared(.sync), .shared(.syncRuntime), .shared(.designSystem), .shared(.appShell),
   ],

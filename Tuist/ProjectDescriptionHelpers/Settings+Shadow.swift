@@ -15,11 +15,21 @@ extension SettingsDictionary {
 
   static let shadowApp: SettingsDictionary = shadowBase.merging([
     "SWIFT_DEFAULT_ACTOR_ISOLATION": "MainActor",
-    "MARKETING_VERSION": "1.0.0",
-    "CURRENT_PROJECT_VERSION": "1",
+    "MARKETING_VERSION": .string(BuildEnvironment.marketingVersion),
+    "CURRENT_PROJECT_VERSION": .string(BuildEnvironment.buildNumber),
     "ENABLE_HARDENED_RUNTIME": "YES",
     "ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS": "YES",
   ]) { $1 }
+
+  static func shadowAppBundle(accentColor: Bool) -> SettingsDictionary {
+    var settings = shadowApp.merging(["ASSETCATALOG_COMPILER_APPICON_NAME": "AppIcon"]) { $1 }
+    if !accentColor { settings["ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME"] = "" }
+    return settings
+  }
+
+  /// `SHADOW_UNRESTRICTED` compiles unrestricted writing into NovelForgeCore, whose `UnrestrictedWriting.isAvailable` is the only reader.
+  public static let novelForgeCore: SettingsDictionary =
+    BuildEnvironment.unrestricted ? ["SWIFT_ACTIVE_COMPILATION_CONDITIONS": ["$(inherited)", "SHADOW_UNRESTRICTED"]] : [:]
 }
 
 extension Settings {

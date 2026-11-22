@@ -4,6 +4,7 @@ import ProjectDescriptionHelpers
 let project = Project.app(
   name: "NovelForge",
   platform: .phoneAndMac,
+  category: .productivity,
   dependencies: [
     .product(.novelForgeCore), .shared(.store), .shared(.ai), .shared(.jobs), .shared(.keychain), .shared(.networking), .shared(.designSystem), .shared(.text), .shared(.sync),
     .shared(.syncRuntime), .shared(.syncCloudKit), .shared(.syncS3), .shared(.appShell),

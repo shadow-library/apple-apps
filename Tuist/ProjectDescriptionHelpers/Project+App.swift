@@ -6,20 +6,25 @@ extension Project {
     name: String,
     platform: AppPlatform,
     bundleIdSuffix: String? = nil,
+    category: AppCategory? = nil,
     dependencies: [TargetDependency] = [],
     testDependencies: [TargetDependency] = [],
     includesUITests: Bool = false,
+    accentColor: Bool = false,
     infoPlist: [String: Plist.Value] = [:],
     capabilities: [AppCapability] = []
   ) -> Project {
     let bundleId = "\(Organization.appBundleIdPrefix).\(bundleIdSuffix ?? name.lowercased())"
     let resolved = AppCapabilities(capabilities, bundleId: bundleId, platform: platform)
-    let defaultInfoPlist: [String: Plist.Value] = [
+    var defaultInfoPlist: [String: Plist.Value] = [
       "CFBundleDisplayName": .string(name),
       "CFBundleShortVersionString": "$(MARKETING_VERSION)",
       "CFBundleVersion": "$(CURRENT_PROJECT_VERSION)",
       "UILaunchScreen": [:],
-    ].merging(resolved.infoPlist) { $1 }
+    ]
+    if let category { defaultInfoPlist["LSApplicationCategoryType"] = .string(category.rawValue) }
+    if let encryption = BuildEnvironment.usesNonExemptEncryption { defaultInfoPlist["ITSAppUsesNonExemptEncryption"] = .boolean(encryption) }
+    defaultInfoPlist.merge(resolved.infoPlist) { $1 }
 
     let app: Target = .target(
       name: name,
@@ -31,7 +36,7 @@ extension Project {
       buildableFolders: ["Sources", "Resources"],
       entitlements: resolved.entitlements,
       dependencies: dependencies,
-      settings: .shadow(.shadowApp, capabilities: resolved)
+      settings: .shadow(.shadowAppBundle(accentColor: accentColor), capabilities: resolved)
     )
 
     let tests: Target = .target(

@@ -13,9 +13,17 @@ run = "tuist generate"
 description = "Fail on implicit or redundant module dependencies"
 run = "tuist inspect dependencies"
 
+[tasks."check:build-options"]
+description = "Check the store-build options Project.app and Tuist/Package.swift read from TUIST_* variables"
+run = "swift Scripts/check-build-options.swift"
+
 [tasks.tokens]
 description = "Regenerate the design-token Swift sources from Design/tokens.json"
 run = "swift Scripts/generate-design-tokens.swift"
+
+[tasks."icons:placeholder"]
+description = "Redraw the placeholder app icons of Novel Forge and Memoir from Design/tokens.json"
+run = "swift Scripts/generate-placeholder-icons.swift"
 
 [tasks."test:packages"]
 description = "Run every package's tests with SwiftPM"
