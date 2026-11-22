@@ -1,3 +1,4 @@
+import MemoirCore
 import ShadowAppShell
 import ShadowDesignSystem
 import SwiftUI
@@ -11,7 +12,8 @@ struct MemoirRootView: View {
       case .opening:
         ProgressView().frame(maxWidth: .infinity, maxHeight: .infinity).background(ShadowColor.surfaceApp)
       case .ready(let opened):
-        MemoirShell(context: MemoirScreenContext(opened))
+        let context = MemoirScreenContext(opened)
+        MemoirOnboardingGate(context: context) { MemoirShell(context: context) }.id(ObjectIdentifier(opened.stores.main))
       case .locked:
         MemoirVaultLockedView { Task { await vault.open() } }
       case .failed(let error):

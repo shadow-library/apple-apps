@@ -1,0 +1,1075 @@
+{
+  "sourceLanguage": "en",
+  "strings": {
+    "%@ · about %@ of promises. %@": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ · about %@ of promises. %@"
+          }
+        }
+      }
+    },
+    "%@ · fixed from here, so your totals stay comparable": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ · fixed from here, so your totals stay comparable"
+          }
+        }
+      }
+    },
+    "%lld days": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld day"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld days"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld days a week": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld day a week"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld days a week"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "A day in Memoir runs from when you wake to when you sleep, not from midnight. Two times and a currency, and you never have to think about this again.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A day in Memoir runs from when you wake to when you sleep, not from midnight. Two times and a currency, and you never have to think about this again."
+          }
+        }
+      }
+    },
+    "A promise, not a task.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A promise, not a task."
+          }
+        }
+      }
+    },
+    "Already use Memoir on another device? Turn on sync with the same storage, and Memoir opens with your data instead of setting up again.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Already use Memoir on another device? Turn on sync with the same storage, and Memoir opens with your data instead of setting up again."
+          }
+        }
+      }
+    },
+    "Anchor needs a start time before you can continue.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Anchor needs a start time before you can continue."
+          }
+        }
+      }
+    },
+    "Anchor quests happen at a fixed time each day, with thirty minutes of grace.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Anchor quests happen at a fixed time each day, with thirty minutes of grace."
+          }
+        }
+      }
+    },
+    "Anchors, tidiness, follow-through": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Anchors, tidiness, follow-through"
+          }
+        }
+      }
+    },
+    "Back": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Back"
+          }
+        }
+      }
+    },
+    "Bed by 22:30": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bed by 22:30"
+          }
+        }
+      }
+    },
+    "Choose a start time": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Choose a start time"
+          }
+        }
+      }
+    },
+    "Choose a start time to continue.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Choose a start time to continue."
+          }
+        }
+      }
+    },
+    "Choose at least one day.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Choose at least one day."
+          }
+        }
+      }
+    },
+    "Chosen days": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Chosen days"
+          }
+        }
+      }
+    },
+    "Chosen once. Spend in another currency keeps its own and converts to this one, and this stays fixed afterwards.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Chosen once. Spend in another currency keeps its own and converts to this one, and this stays fixed afterwards."
+          }
+        }
+      }
+    },
+    "Concrete beats ambitious: read ten pages keeps better than read more.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Concrete beats ambitious: read ten pages keeps better than read more."
+          }
+        }
+      }
+    },
+    "Continue": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Continue"
+          }
+        }
+      }
+    },
+    "Create it and start": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Create it and start"
+          }
+        }
+      }
+    },
+    "Days of the week": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Days of the week"
+          }
+        }
+      }
+    },
+    "Detected from this device. Travel will not move your day unless you change it.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Detected from this device. Travel will not move your day unless you change it."
+          }
+        }
+      }
+    },
+    "Every day": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Every day"
+          }
+        }
+      }
+    },
+    "Everything else here can be changed in Settings, including after a year of history. Changing your wake window never rewrites past days.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Everything else here can be changed in Settings, including after a year of history. Changing your wake window never rewrites past days."
+          }
+        }
+      }
+    },
+    "Experience when kept · %@ up one": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Experience when kept · %@ up one"
+          }
+        }
+      }
+    },
+    "Fewer days kept beats more days planned.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fewer days kept beats more days planned."
+          }
+        }
+      }
+    },
+    "First occurrence": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "First occurrence"
+          }
+        }
+      }
+    },
+    "Home currency": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Home currency"
+          }
+        }
+      }
+    },
+    "How many days a week?": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "How many days a week?"
+          }
+        }
+      }
+    },
+    "How much should a missed day cost? This is the one setting that changes how the app feels. You can lower it at any time, and raising it takes effect next week.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "How much should a missed day cost? This is the one setting that changes how the app feels. You can lower it at any time, and raising it takes effect next week."
+          }
+        }
+      }
+    },
+    "How strict is it?": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "How strict is it?"
+          }
+        }
+      }
+    },
+    "If a bad week makes it hard to keep, drop a day rather than the quest.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "If a bad week makes it hard to keep, drop a day rather than the quest."
+          }
+        }
+      }
+    },
+    "If you miss it": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "If you miss it"
+          }
+        }
+      }
+    },
+    "Light enough to keep on a bad week.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Light enough to keep on a bad week."
+          }
+        }
+      }
+    },
+    "Memoir opens with it as soon as sync finishes, so there may be nothing to set up here. Wait a moment before creating anything.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Memoir opens with it as soon as sync finishes, so there may be nothing to set up here. Wait a moment before creating anything."
+          }
+        }
+      }
+    },
+    "Movement, sleep, food, strength": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Movement, sleep, food, strength"
+          }
+        }
+      }
+    },
+    "Name the promise to continue.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Name the promise to continue."
+          }
+        }
+      }
+    },
+    "Name the promise — for example, read 10 pages.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Name the promise — for example, read 10 pages."
+          }
+        }
+      }
+    },
+    "Next is your Today screen with this quest on it.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Next is your Today screen with this quest on it."
+          }
+        }
+      }
+    },
+    "Next is your Today screen. This quest starts %@, so today stays clear until then.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Next is your Today screen. This quest starts %@, so today stays clear until then."
+          }
+        }
+      }
+    },
+    "No takeaway today": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No takeaway today"
+          }
+        }
+      }
+    },
+    "Nothing else is set up, and nothing else needs to be — expenses, meals, weight and journal all work whenever you first reach for them.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nothing else is set up, and nothing else needs to be — expenses, meals, weight and journal all work whenever you first reach for them."
+          }
+        }
+      }
+    },
+    "Nothing is saved until the last step.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nothing is saved until the last step."
+          }
+        }
+      }
+    },
+    "Nothing was changed. Go back to check the details, then create it again.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nothing was changed. Go back to check the details, then create it again."
+          }
+        }
+      }
+    },
+    "One quest is enough to start. Pick something you could do today even on a bad day — the point is the promise, not the size of it.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "One quest is enough to start. Pick something you could do today even on a bad day — the point is the promise, not the size of it."
+          }
+        }
+      }
+    },
+    "One quest, on today, with nothing else in the way.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "One quest, on today, with nothing else in the way."
+          }
+        }
+      }
+    },
+    "One quest, starting %@, with nothing else in the way.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "One quest, starting %@, with nothing else in the way."
+          }
+        }
+      }
+    },
+    "Quests scheduled before this are not counted late.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Quests scheduled before this are not counted late."
+          }
+        }
+      }
+    },
+    "Read 10 pages": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Read 10 pages"
+          }
+        }
+      }
+    },
+    "Reading, writing, study, focus": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reading, writing, study, focus"
+          }
+        }
+      }
+    },
+    "Ready": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ready"
+          }
+        }
+      }
+    },
+    "Review": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Review"
+          }
+        }
+      }
+    },
+    "Reward": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reward"
+          }
+        }
+      }
+    },
+    "Set Up Sync": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Set Up Sync"
+          }
+        }
+      }
+    },
+    "Set up": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Set up"
+          }
+        }
+      }
+    },
+    "Set up your day": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Set up your day"
+          }
+        }
+      }
+    },
+    "Setup wasn’t saved": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Setup wasn’t saved"
+          }
+        }
+      }
+    },
+    "Shields cover the days you could not help": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Shields cover the days you could not help"
+          }
+        }
+      }
+    },
+    "Sleep time": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sleep time"
+          }
+        }
+      }
+    },
+    "Spending, saving, admin": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Spending, saving, admin"
+          }
+        }
+      }
+    },
+    "Spread across your week on %@. Choose the exact days with Chosen days.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Spread across your week on %@. Choose the exact days with Chosen days."
+          }
+        }
+      }
+    },
+    "Start time": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Start time"
+          }
+        }
+      }
+    },
+    "Starts %@ · your Today screen stays clear until then": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Starts %@ · your Today screen stays clear until then"
+          }
+        }
+      }
+    },
+    "Step %lld of %lld": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Step %lld of %lld"
+          }
+        }
+      }
+    },
+    "Sync": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sync"
+          }
+        }
+      }
+    },
+    "That is every day of the week.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "That is every day of the week."
+          }
+        }
+      }
+    },
+    "This device is set to %@. Travel will not move your day unless you change it.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This device is set to %@. Travel will not move your day unless you change it."
+          }
+        }
+      }
+    },
+    "This device is waiting for your data’s key": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This device is waiting for your data’s key"
+          }
+        }
+      }
+    },
+    "This is the setting that decides how the app feels.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This is the setting that decides how the app feels."
+          }
+        }
+      }
+    },
+    "Time zone": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Time zone"
+          }
+        }
+      }
+    },
+    "Times a week": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Times a week"
+          }
+        }
+      }
+    },
+    "Today · it goes on your Today screen as soon as you start": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Today · it goes on your Today screen as soon as you start"
+          }
+        }
+      }
+    },
+    "Try again": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Try again"
+          }
+        }
+      }
+    },
+    "Two decisions about time, one about money.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Two decisions about time, one about money."
+          }
+        }
+      }
+    },
+    "Two minutes, and no tour afterwards.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Two minutes, and no tour afterwards."
+          }
+        }
+      }
+    },
+    "Wake time": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Wake time"
+          }
+        }
+      }
+    },
+    "Walk 20 minutes": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Walk 20 minutes"
+          }
+        }
+      }
+    },
+    "What is the promise?": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "What is the promise?"
+          }
+        }
+      }
+    },
+    "Whatever you choose, a miss never removes experience or a level.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Whatever you choose, a miss never removes experience or a level."
+          }
+        }
+      }
+    },
+    "When it happens": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "When it happens"
+          }
+        }
+      }
+    },
+    "When should “%@” come round? Most people start with fewer days than they expect to keep.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "When should “%@” come round? Most people start with fewer days than they expect to keep."
+          }
+        }
+      }
+    },
+    "Which part of you does it grow?": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Which part of you does it grow?"
+          }
+        }
+      }
+    },
+    "Write one line": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Write one line"
+          }
+        }
+      }
+    },
+    "You can change all of this later.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You can change all of this later."
+          }
+        }
+      }
+    },
+    "You earn one shield for each kept week, up to three. A shield protects a streak on an unavoidable miss, with no explanation required from you.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You earn one shield for each kept week, up to three. A shield protects a streak on an unavoidable miss, with no explanation required from you."
+          }
+        }
+      }
+    },
+    "Your day closes here — logs after it still belong to today.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your day closes here — logs after it still belong to today."
+          }
+        }
+      }
+    },
+    "Your first quest": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your first quest"
+          }
+        }
+      }
+    },
+    "Your other device’s data is still arriving": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your other device’s data is still arriving"
+          }
+        }
+      }
+    },
+    "Your other device’s data is still arriving. Finish adding this device in Sync, and Memoir opens with your data instead.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your other device’s data is still arriving. Finish adding this device in Sync, and Memoir opens with your data instead."
+          }
+        }
+      }
+    },
+    "Your week would look like this": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your week would look like this"
+          }
+        }
+      }
+    },
+    "e.g. Read 10 pages": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "e.g. Read 10 pages"
+          }
+        }
+      }
+    },
+    "no cost, ever": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "no cost, ever"
+          }
+        }
+      }
+    },
+    "streak ends, 1 HP": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "streak ends, 1 HP"
+          }
+        }
+      }
+    },
+    "streak ends, 1 HP, fixed time": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "streak ends, 1 HP, fixed time"
+          }
+        }
+      }
+    },
+    "streak ends, no HP": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "streak ends, no HP"
+          }
+        }
+      }
+    }
+  },
+  "version": "1.0"
+}
