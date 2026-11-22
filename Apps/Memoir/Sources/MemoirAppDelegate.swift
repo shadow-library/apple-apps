@@ -21,6 +21,7 @@ final class MemoirAppDelegate: NSObject {
   let dayTurns = MemoirDayTurns()
   let reminders = ReminderScheduler.live()
   let health = MemoirHealthImports()
+  lazy var insights = MemoirInsights(ai: ai, trustedClock: vault.trustedClock)
   private var observers: [any NSObjectProtocol] = []
 
   /// Opens the vault if no window has yet, then follows its day and starts its sync; both wait for a call already in flight.
@@ -32,8 +33,9 @@ final class MemoirAppDelegate: NSObject {
   func vaultChanged() async {
     dayTurns.follow(vault.opened)
     reminders.follow(vault.opened)
-    guard let opened = vault.opened else { return }
+    guard let opened = vault.opened else { return await insights.follow(nil) }
     await sync.launch(MemoirSyncRoutes.vault(opened.stores), trustedClock: vault.trustedClock)
+    await insights.follow(opened)
   }
 
   private func syncAfterPush() async -> Bool {

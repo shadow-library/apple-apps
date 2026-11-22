@@ -273,7 +273,7 @@ struct InsightRows: Sendable {
     let row: JSONRow
     switch event {
     case .recoveryQuest(let date, let source, let state, let isReturnerDay, let completed, let reflection):
-      var recovery = JSONRow().put("entity", "recovery_quest").put("date", date.isoString).put("sourceQuestId", source.lowercasedString).put("state", state.rawValue).put(
+      var recovery = JSONRow().put("entity", "recovery_quest").put("date", date.isoString).put("sourceQuestId", source?.lowercasedString).put("state", state.rawValue).put(
         "isReturnerDay", isReturnerDay
       ).put("completedAt", completed.map(instant) ?? .null)
       if includingText { recovery = recovery.put("reflectionText", reflection) }
@@ -285,9 +285,9 @@ struct InsightRows: Sendable {
     case .shieldConsumption(let date, let quest):
       row = JSONRow().put("entity", "shield_consumption").put("date", date.isoString).put("questId", quest.lowercasedString)
     case .achievement(let id, let earned):
-      row = JSONRow().put("entity", "achievement").put("achievementId", id).put("earnedAt", instant(earned))
+      row = JSONRow().put("entity", "achievement").put("achievementId", id).put("earnedOn", earned.isoString)
     case .title(let id, let earned):
-      row = JSONRow().put("entity", "title").put("titleId", id).put("earnedAt", instant(earned))
+      row = JSONRow().put("entity", "title").put("titleId", id).put("earnedOn", earned.isoString)
     }
     let texts = includingText ? [event.reflectionText].compactMap { $0 }.filter { !$0.isEmpty } : []
     return InsightRow(date: event.date, object: row.object, texts: texts)

@@ -73,6 +73,32 @@ public final class InsightEngine: Sendable {
     return try await drive(try InsightJob.request(.scheduled, target: .night(night), question: schedule.question, replica: stores.main.replica))
   }
 
+  /// Asks a request again: its own run while another attempt may still start, the next run once it failed for good or was cancelled. A request that
+  /// succeeded or runs is left as it is.
+  public func retry(job ref: EntityRef) async throws(InsightError) -> InsightDue {
+    let existing = try await requireSnapshot(ref)
+    let job = try InsightJob(existing.job)
+    switch verdict(existing) {
+    case nil:
+      return try await drive(existing.job.request)
+    case .cancelled?, .failed?:
+      let run = existing.job.request.key.run + 1
+      return try await drive(try InsightJob.request(job.kind, target: job.target, question: job.question, replica: stores.main.replica, run: run))
+    case let settled?:
+      return settled
+    }
+  }
+
+  /// Cancels the request and stops this device's attempt of it; an answer already stored stays.
+  public func cancel(job ref: EntityRef) async throws(InsightError) -> JobCancelOutcome {
+    guard InsightJobAddress.kind(of: try await requireSnapshot(ref).job.request.key) != nil else { throw .notAnInsightJob(ref) }
+    do {
+      return try await runner.cancel(job: ref)
+    } catch {
+      throw .run(error)
+    }
+  }
+
   /// Continues this device's interrupted insight attempts from their checkpoints.
   public func resumeInterrupted() async throws(InsightError) -> [AttemptHandle] {
     let pipeline = pipeline
@@ -123,6 +149,11 @@ public final class InsightEngine: Sendable {
     } catch {
       throw .run(error)
     }
+  }
+
+  private func requireSnapshot(_ ref: EntityRef) async throws(InsightError) -> JobSnapshot {
+    guard let existing = try await snapshot(ref) else { throw .job(.jobNotFound(ref)) }
+    return existing
   }
 
   private func snapshot(_ ref: EntityRef) async throws(InsightError) -> JobSnapshot? {

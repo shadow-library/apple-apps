@@ -5,7 +5,7 @@ let project = Project.app(
   name: "Memoir",
   platform: .phoneAndMac,
   dependencies: [
-    .product(.memoirCore), .shared(.core), .shared(.store), .shared(.ai), .shared(.sync), .shared(.syncRuntime), .shared(.designSystem), .shared(.appShell),
+    .product(.memoirCore), .shared(.core), .shared(.store), .shared(.ai), .shared(.jobs), .shared(.sync), .shared(.syncRuntime), .shared(.designSystem), .shared(.appShell),
   ],
   testDependencies: [
     .product(.memoirCore), .shared(.core), .shared(.store), .shared(.sync), .shared(.syncRuntime), .shared(.keychain), .shared(.testSupport), .shared(.appShell),

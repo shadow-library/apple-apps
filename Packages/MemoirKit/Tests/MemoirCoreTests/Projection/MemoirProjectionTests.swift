@@ -183,7 +183,7 @@ struct MemoirProjectionTests {
   /// Every part of the fingerprint is hashed as canonical bytes, so it is the same in every process; update the literal deliberately when a part changes.
   @Test func shouldPinTheFingerprintSoEveryLaunchKeepsItsCheckpoints() throws {
     let fingerprint = try MemoirReconciler(appVersion: "1").fingerprint
-    #expect(fingerprint == "3fbfc952b4f0d83c0f5237115925037ea30775651e2312314b6c0c57ed2d99de")
+    #expect(fingerprint == "8d9ef8bf27f9feea5816b514b90d266682768c8248242e1fbdf1a50080e1dbd1")
     #expect(try MemoirReconciler(appVersion: "2").fingerprint != fingerprint)
   }
 

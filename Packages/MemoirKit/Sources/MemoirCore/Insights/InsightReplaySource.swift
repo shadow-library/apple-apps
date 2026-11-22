@@ -131,16 +131,17 @@ public struct InsightHeroEvent: Sendable, Equatable {
 public struct InsightDailyState: Sendable, Equatable {
   public var date: LocalDate
   public var intensityMode: IntensityMode
-  public var hpStart: Int
-  public var hpEnd: Int
-  public var hpMax: Int
+  /// Nil on a day the walk opened without HP, as before the first quest.
+  public var hpStart: Int?
+  public var hpEnd: Int?
+  public var hpMax: Int?
   public var crownXPGranted: Int
   public var crownBankedXP: Int
   public var momentumBucket: String?
   public var missedCount: Int
 
   public init(
-    date: LocalDate, intensityMode: IntensityMode, hpStart: Int, hpEnd: Int, hpMax: Int, crownXPGranted: Int = 0, crownBankedXP: Int = 0, momentumBucket: String? = nil,
+    date: LocalDate, intensityMode: IntensityMode, hpStart: Int?, hpEnd: Int?, hpMax: Int?, crownXPGranted: Int = 0, crownBankedXP: Int = 0, momentumBucket: String? = nil,
     missedCount: Int = 0
   ) {
     self.date = date
@@ -157,12 +158,13 @@ public struct InsightDailyState: Sendable, Equatable {
 
 /// The compassion trail and the earned catalogues, read as one class (ai-read.repository.ts:101-148).
 public enum InsightProgressionEvent: Sendable, Equatable {
-  case recoveryQuest(date: LocalDate, sourceQuest: UUID, state: QuestLogState, isReturnerDay: Bool, completedAtMillis: Int64?, reflectionText: String?)
+  case recoveryQuest(date: LocalDate, sourceQuest: UUID?, state: RecoveryQuestState, isReturnerDay: Bool, completedAtMillis: Int64?, reflectionText: String?)
   case comeback(date: LocalDate, kind: String, xpBonus: Int, coinBonus: Int)
   case returner(date: LocalDate, daysAbsent: Int, shieldPending: Bool)
   case shieldConsumption(date: LocalDate, quest: UUID)
-  case achievement(id: String, earnedAtMillis: Int64)
-  case title(id: String, earnedAtMillis: Int64)
+  /// Replay keeps the day a catalogue entry was earned, not the instant.
+  case achievement(id: String, earnedOn: LocalDate)
+  case title(id: String, earnedOn: LocalDate)
 
   var date: LocalDate? {
     switch self {

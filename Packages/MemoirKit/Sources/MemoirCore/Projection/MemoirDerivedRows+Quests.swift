@@ -171,7 +171,7 @@ public struct ReturnerRow: Hashable, Sendable, FetchableRecord, PersistableRecor
   }
 }
 
-/// One of the latest hero trail entries a screen lists, at its place in the whole trail.
+/// One entry of the hero trail, at its place in it; screens list only the latest visible ones (`MemoirDerived.recentHeroEvents`).
 public struct HeroEventRow: Hashable, Sendable, FetchableRecord, PersistableRecord {
   public static let databaseTableName = "mm_derived_hero_event"
   /// `HIDDEN_EVENT_TYPES` (`lib/sync/synced-hero-provider.ts:61`): a Crown period opening is never listed, so it never takes a place in the view.
@@ -289,9 +289,18 @@ extension MemoirDerived {
     } ?? []
   }
 
-  /// The latest hero trail entries the view keeps, latest first.
-  public static func recentHeroEvents(in transaction: ReadTransaction) throws(StoreError) -> [HeroEventRow] {
-    try fetch(HeroEventRow.self, in: transaction) { database in try HeroEventRow.order(Column("ordinal").desc).fetchAll(database) } ?? []
+  /// The latest hero trail entries a screen lists, hidden kinds left out, latest first.
+  public static func recentHeroEvents(limit: Int = recentHeroEventLimit, in transaction: ReadTransaction) throws(StoreError) -> [HeroEventRow] {
+    try fetch(HeroEventRow.self, in: transaction) { database in
+      try HeroEventRow.filter(!HeroEventRow.hiddenTypes.map(\.rawValue).contains(Column("type"))).order(Column("ordinal").desc).limit(max(0, limit)).fetchAll(database)
+    } ?? []
+  }
+
+  public static let recentHeroEventLimit = 32
+
+  /// The whole hero trail, hidden kinds included, in the order replay granted it.
+  public static func heroEvents(in transaction: ReadTransaction) throws(StoreError) -> [HeroEventRow] {
+    try fetch(HeroEventRow.self, in: transaction) { database in try HeroEventRow.order(Column("ordinal")).fetchAll(database) } ?? []
   }
 
   /// The days a Crown period closed on, latest first.

@@ -24,6 +24,7 @@ struct MemoirApp: App {
         .environment(sync)
         .environment(settingsTabs)
         .environment(delegate.reminders)
+        .environment(delegate.insights)
         .syncSettingsSection { MemoirSyncSettingsSection(vault: vault) }
         .task { await ai.loadOpenRouterModelsIfKeyed() }
         .task(id: vault.opened.map { ObjectIdentifier($0.stores.main) }) {
@@ -37,6 +38,7 @@ struct MemoirApp: App {
     }
     .onChange(of: scenePhase, initial: true) { _, phase in
       Task { await sync.phaseChanged(phase) }
+      Task { await delegate.insights.phaseChanged(isActive: phase == .active) }
       guard phase == .active else { return }
       delegate.dayTurns.restart()
       delegate.health.foregrounded(vault.opened)

@@ -180,7 +180,7 @@ struct InsightHarness {
       quests: [InsightQuestState(quest: quest, startTimeMinutes: 1140, durationMinutes: 30, statAffinity: .body, strictness: .routine)],
       questLogs: [InsightQuestLog(quest: quest, date: date, state: .missed, strictness: .routine, intensityModeAtLog: .standard, reasonNote: reasonNote)],
       dailyStates: [InsightDailyState(date: date, intensityMode: .standard, hpStart: 100, hpEnd: 95, hpMax: 100)],
-      progressionEvents: [.title(id: "early_bird", earnedAtMillis: 1_763_600_000_000)])
+      progressionEvents: [.title(id: "early_bird", earnedOn: date)])
   }
 
   static func reply(answer: String = "Evening quests slip on late work days.", suggestions: [[String: String]] = [], note: String? = nil) -> String {

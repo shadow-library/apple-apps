@@ -405,9 +405,6 @@ public struct NoticeRow: Hashable, Sendable, FetchableRecord, PersistableRecord 
 
 /// The derived rows of one replay state, table by table.
 struct DerivedRows: Equatable {
-  /// The hero trail keeps every grant; the view keeps only the latest a screen lists, hidden kinds left out.
-  static let recentHeroEvents = 32
-
   let hero: Set<HeroSummaryRow>
   let questLogs: Set<QuestLogRow>
   let days: Set<DayRow>
@@ -420,11 +417,13 @@ struct DerivedRows: Equatable {
   let heroEvents: Set<HeroEventRow>
   let quickLogs: Set<QuickLogRow>
   let quickLogDays: Set<QuickLogDayRow>
+  let comebacks: Set<ComebackRow>
+  let shields: Set<ShieldConsumptionRow>
 
   init(
     hero: Set<HeroSummaryRow>, questLogs: Set<QuestLogRow>, days: Set<DayRow>, unlocks: Set<UnlockRow>, notices: Set<NoticeRow>, quests: Set<QuestRow>,
     reschedules: Set<RescheduleRow>, recoveries: Set<RecoveryRow>, returners: Set<ReturnerRow>, heroEvents: Set<HeroEventRow>, quickLogs: Set<QuickLogRow>,
-    quickLogDays: Set<QuickLogDayRow>
+    quickLogDays: Set<QuickLogDayRow>, comebacks: Set<ComebackRow>, shields: Set<ShieldConsumptionRow>
   ) {
     self.hero = hero
     self.questLogs = questLogs
@@ -438,6 +437,8 @@ struct DerivedRows: Equatable {
     self.heroEvents = heroEvents
     self.quickLogs = quickLogs
     self.quickLogDays = quickLogDays
+    self.comebacks = comebacks
+    self.shields = shields
   }
 
   init(_ state: ReplayState) {
@@ -455,22 +456,22 @@ struct DerivedRows: Equatable {
     recoveries = Set(state.compassion.recoveries.values.map(RecoveryRow.init))
     returners = Set(state.compassion.returnerEvents.values.map(ReturnerRow.init))
     let events = state.hero.events
-    heroEvents = Set(
-      events.indices.reversed().lazy.filter { !HeroEventRow.hiddenTypes.contains(events[$0].type) }.prefix(Self.recentHeroEvents).map {
-        HeroEventRow(ordinal: $0, event: events[$0])
-      })
+    heroEvents = Set(events.enumerated().map { HeroEventRow(ordinal: $0.offset, event: $0.element) })
     quickLogs = Set(state.records.quickLogs.map { QuickLogRow(id: $0.key, outcome: $0.value) })
     quickLogDays = QuickLogDayRow.rows(events)
+    comebacks = Set(state.days.values.flatMap { day in day.comebackEvents.values.map { ComebackRow(date: day.date, event: $0) } })
+    shields = Set(state.shieldConsumptions.map(ShieldConsumptionRow.init))
   }
 
   static let definitions = [
     HeroSummaryRow.definition, QuestLogRow.definition, DayRow.definition, UnlockRow.definition, NoticeRow.definition, QuestRow.definition, RescheduleRow.definition,
-    RecoveryRow.definition, ReturnerRow.definition, HeroEventRow.definition, QuickLogRow.definition, QuickLogDayRow.definition,
+    RecoveryRow.definition, ReturnerRow.definition, HeroEventRow.definition, QuickLogRow.definition, QuickLogDayRow.definition, ComebackRow.definition,
+    ShieldConsumptionRow.definition,
   ]
   static let tables = [
     HeroSummaryRow.databaseTableName, QuestLogRow.databaseTableName, DayRow.databaseTableName, UnlockRow.databaseTableName, NoticeRow.databaseTableName,
     QuestRow.databaseTableName, RescheduleRow.databaseTableName, RecoveryRow.databaseTableName, ReturnerRow.databaseTableName, HeroEventRow.databaseTableName,
-    QuickLogRow.databaseTableName, QuickLogDayRow.databaseTableName,
+    QuickLogRow.databaseTableName, QuickLogDayRow.databaseTableName, ComebackRow.databaseTableName, ShieldConsumptionRow.databaseTableName,
   ]
 
   static func stored(in database: Database) throws -> DerivedRows {
@@ -479,7 +480,8 @@ struct DerivedRows: Equatable {
       unlocks: Set(try UnlockRow.fetchAll(database)), notices: Set(try NoticeRow.fetchAll(database)), quests: Set(try QuestRow.fetchAll(database)),
       reschedules: Set(try RescheduleRow.fetchAll(database)), recoveries: Set(try RecoveryRow.fetchAll(database)), returners: Set(try ReturnerRow.fetchAll(database)),
       heroEvents: Set(try HeroEventRow.fetchAll(database)), quickLogs: Set(try QuickLogRow.fetchAll(database)),
-      quickLogDays: Set(try QuickLogDayRow.fetchAll(database)))
+      quickLogDays: Set(try QuickLogDayRow.fetchAll(database)), comebacks: Set(try ComebackRow.fetchAll(database)),
+      shields: Set(try ShieldConsumptionRow.fetchAll(database)))
   }
 
   /// Rewrites only the rows that differ from what the tables hold.
@@ -497,6 +499,8 @@ struct DerivedRows: Equatable {
     try Self.replace(stored.heroEvents, with: heroEvents, in: database)
     try Self.replace(stored.quickLogs, with: quickLogs, in: database)
     try Self.replace(stored.quickLogDays, with: quickLogDays, in: database)
+    try Self.replace(stored.comebacks, with: comebacks, in: database)
+    try Self.replace(stored.shields, with: shields, in: database)
   }
 
   private static func replace<Output: PersistableRecord & Hashable>(_ stored: Set<Output>, with rows: Set<Output>, in database: Database) throws {
