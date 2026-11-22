@@ -3,24 +3,29 @@ import GRDB
 import ShadowCore
 import ShadowStore
 
-/// Whether a journal entry, meal or side quest earned its reward, as replay last decided it for the record's id (`RecordIndex.quickLogs`); a weight
-/// records no outcome, and a log replay has not taken in (after a halt) has no row.
+/// Whether a journal entry, meal or side quest earned its reward, and what replay credited for it, as replay last decided it for the record's id
+/// (`RecordIndex.quickLogs`); a weight records no outcome, and a log replay has not taken in (after a halt) has no row.
 public struct QuickLogRow: Hashable, Sendable, FetchableRecord, PersistableRecord {
   public static let databaseTableName = "mm_derived_quick_log"
   static let definition = """
-    CREATE TABLE mm_derived_quick_log (id BLOB PRIMARY KEY, kind TEXT NOT NULL, date TEXT NOT NULL, rewarded INTEGER NOT NULL) STRICT, WITHOUT ROWID
+    CREATE TABLE mm_derived_quick_log (
+      id BLOB PRIMARY KEY, kind TEXT NOT NULL, date TEXT NOT NULL, xp INTEGER, coins INTEGER, CHECK ((xp IS NULL) = (coins IS NULL))
+    ) STRICT, WITHOUT ROWID
     """
 
   public let id: UUID
   public let source: QuickLogSource
   public let date: LocalDate
-  public let rewarded: Bool
+  /// nil when the log earned nothing.
+  public let reward: RewardAmount?
+
+  public var rewarded: Bool { reward != nil }
 
   init(id: UUID, outcome: QuickLogOutcome) {
     self.id = id
     source = outcome.source
     date = outcome.date
-    rewarded = outcome.rewarded
+    reward = outcome.reward
   }
 
   public init(row: Row) throws {
@@ -28,14 +33,19 @@ public struct QuickLogRow: Hashable, Sendable, FetchableRecord, PersistableRecor
     source = try DerivedColumn.required(row, "kind")
     guard let date = try DerivedColumn.date(row, "date") else { throw StoreError.corruptStore("a quick log row has no date") }
     self.date = date
-    rewarded = try row.decode(Bool.self, forColumn: "rewarded")
+    switch (try row.decode(Int?.self, forColumn: "xp"), try row.decode(Int?.self, forColumn: "coins")) {
+    case (let xp?, let coins?): reward = RewardAmount(xp: xp, coins: coins)
+    case (nil, nil): reward = nil
+    default: throw StoreError.corruptStore("a quick log row credits XP or coins without the other")
+    }
   }
 
   public func encode(to container: inout PersistenceContainer) throws {
     container["id"] = id
     container["kind"] = source.rawValue
     container["date"] = date.isoString
-    container["rewarded"] = rewarded
+    container["xp"] = reward?.xp
+    container["coins"] = reward?.coins
   }
 }
 

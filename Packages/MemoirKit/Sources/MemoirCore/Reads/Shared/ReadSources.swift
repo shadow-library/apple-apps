@@ -53,8 +53,8 @@ struct SideQuestOutcomes: Sendable, Equatable {
       logs: Dictionary(uniqueKeysWithValues: logs.map { ($0.id, $0) }), days: Dictionary(uniqueKeysWithValues: days.map { ($0.date, $0) }))
   }
 
-  func isRewarded(_ sideQuest: UUID) -> Bool {
-    logs[sideQuest]?.rewarded ?? false
+  func reward(of sideQuest: UUID) -> RewardAmount? {
+    logs[sideQuest]?.reward
   }
 
   func rewarded(on date: LocalDate) -> Int {

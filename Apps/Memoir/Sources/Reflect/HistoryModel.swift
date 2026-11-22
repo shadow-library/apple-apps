@@ -35,7 +35,7 @@ final class HistoryModel {
   }
 
   var query: HistoryQuery? {
-    try? HistoryQuery.page(page, kinds: kind.map { [$0] }, search: search)
+    try? HistoryQuery.page(page, kinds: kind.map { [$0] }, search: search, categoryNames: ReflectCopy.builtInCategoryNames)
   }
 
   var readKey: HistoryReadKey? {
@@ -179,7 +179,7 @@ final class HistoryRecordModel {
   func observe() async {
     guard let today = day.day?.today else { return }
     let stores = context.stores
-    let query = HistoryQuery(kinds: kinds, search: search, page: .all)
+    let query = HistoryQuery(kinds: kinds, search: search, categoryNames: ReflectCopy.builtInCategoryNames, page: .all)
     let bodyClasses = bodyClasses
     await history.run { ReflectReads.observeHistory(in: stores, matching: query, bodyClasses: bodyClasses, today: today) }
   }

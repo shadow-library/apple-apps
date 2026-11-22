@@ -16,14 +16,14 @@ nonisolated enum ReminderCopy {
         identifier: reminder.identifier, title: title(quest.name, fallback: String(localized: "Quest reminder", table: "Reminders", locale: locale)),
         body: questBody(startMinute: quest.startMinute, leadMinutes: quest.leadMinutes, isRescheduled: quest.isRescheduled, locale: locale),
         fireAt: reminder.fireAt, thread: threadPrefix + ReminderKind.quest.rawValue,
-        userInfo: userInfo(.quest, record: quest.quest, date: quest.date))
+        userInfo: userInfo(reminder.occurrence))
     case .subscription(let subscription):
       ReminderRequest(
         identifier: reminder.identifier,
         title: title(subscription.name, fallback: String(localized: "Subscription reminder", table: "Reminders", locale: locale)),
         body: subscriptionBody(dueOn: subscription.dueOn, lead: subscription.lead, amount: subscription.amount, locale: locale),
         fireAt: reminder.fireAt, thread: threadPrefix + ReminderKind.subscription.rawValue,
-        userInfo: userInfo(.subscription, record: subscription.subscription, date: subscription.dueOn))
+        userInfo: userInfo(reminder.occurrence))
     }
   }
 
@@ -84,7 +84,15 @@ nonisolated enum ReminderCopy {
     name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? fallback : name
   }
 
-  private static func userInfo(_ kind: ReminderKind, record: UUID, date: LocalDate) -> [String: String] {
-    ["kind": kind.rawValue, "record": record.uuidString.lowercased(), "date": date.isoString]
+  static func userInfo(_ occurrence: ReminderOccurrence) -> [String: String] {
+    ["kind": occurrence.kind.rawValue, "record": occurrence.record.uuidString.lowercased(), "date": occurrence.date.isoString]
+  }
+
+  /// nil for a request this version did not write.
+  static func occurrence(in userInfo: [String: String]) -> ReminderOccurrence? {
+    guard let kind = userInfo["kind"].flatMap(ReminderKind.init(rawValue:)), let record = userInfo["record"].flatMap(UUID.init(uuidString:)),
+      let date = userInfo["date"].flatMap(LocalDate.init(isoString:))
+    else { return nil }
+    return ReminderOccurrence(kind: kind, record: record, date: date)
   }
 }

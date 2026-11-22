@@ -95,7 +95,10 @@ public struct MealsOverview: Sendable, Equatable {
 public struct SideQuestsOverview: Sendable, Equatable {
   public struct Item: Sendable, Equatable {
     public let sideQuest: SideQuestRecord
-    public let rewarded: Bool
+    /// What replay credited for it; nil when it earned nothing.
+    public let reward: RewardAmount?
+
+    public var rewarded: Bool { reward != nil }
   }
 
   /// Newest first by when it was logged.
@@ -112,7 +115,7 @@ public struct SideQuestsOverview: Sendable, Equatable {
 
   static func make(_ sideQuests: [SideQuestRecord], outcomes: SideQuestOutcomes, unreadable: Int, today: LocalDate) -> SideQuestsOverview {
     let items = sideQuests.sorted { ($0.loggedAtMillis, $0.id.uuidString) > ($1.loggedAtMillis, $1.id.uuidString) }.map {
-      Item(sideQuest: $0, rewarded: outcomes.isRewarded($0.id))
+      Item(sideQuest: $0, reward: outcomes.reward(of: $0.id))
     }
     let weekStart = today.adding(days: -7) ?? today
     let month = DateSpan.month(of: today)

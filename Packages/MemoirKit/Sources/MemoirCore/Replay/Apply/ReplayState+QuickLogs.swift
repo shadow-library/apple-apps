@@ -6,8 +6,8 @@ extension ReplayState {
   mutating func logFirstOfDay(
     _ id: UUID, _ source: QuickLogSource, on date: LocalDate, link: QuestModuleLink, type: HeroEventType, in context: ApplyContext
   ) throws(ReplayRefusal) -> ReplayOutcome {
-    let rewarded = try grantFirstOfDay(source, on: date, link: link, type: type, in: context)
-    records.quickLogs[id] = QuickLogOutcome(source: source, date: date, rewarded: rewarded)
+    let reward = try grantFirstOfDay(source, on: date, link: link, type: type, in: context)
+    records.quickLogs[id] = QuickLogOutcome(source: source, date: date, reward: reward)
     return .applied
   }
 
@@ -43,19 +43,19 @@ extension ReplayState {
   mutating func logSideQuest(_ entry: SideQuestEntry, in context: ApplyContext) throws(ReplayRefusal) -> ReplayOutcome {
     let reward = context.ruleset.quickLogs[.sideQuest]
     let rewardedToday = records.sideQuestsRewarded[entry.date] ?? 0
-    var rewarded = false
+    var credited: RewardAmount?
     if entry.date == context.accountDay && rewardedToday < reward.maxRewardedPerDay {
       let slot = rewardedToday + 1
-      let outcomes = hero.credit(
-        [
-          GrantIntent(
-            key: "sidequest_\(entry.date)_\(slot)", type: .sideQuest, date: entry.date, xpDelta: reward.xp, coinsDelta: reward.coins,
-            statAffinity: entry.statAffinity, statDelta: reward.statTick)
-        ], ruleset: context.ruleset)
-      rewarded = outcomes.allSatisfy(\.isApplied)
-      if rewarded { records.sideQuestsRewarded[entry.date] = slot }
+      credited = Self.credited(
+        hero.credit(
+          [
+            GrantIntent(
+              key: "sidequest_\(entry.date)_\(slot)", type: .sideQuest, date: entry.date, xpDelta: reward.xp, coinsDelta: reward.coins,
+              statAffinity: entry.statAffinity, statDelta: reward.statTick)
+          ], ruleset: context.ruleset))
+      if credited != nil { records.sideQuestsRewarded[entry.date] = slot }
     }
-    records.quickLogs[entry.id] = QuickLogOutcome(source: .sideQuest, date: entry.date, rewarded: rewarded)
+    records.quickLogs[entry.id] = QuickLogOutcome(source: .sideQuest, date: entry.date, reward: credited)
     return .applied
   }
 
@@ -71,11 +71,17 @@ extension ReplayState {
 
   private mutating func grantFirstOfDay(
     _ source: QuickLogSource, on date: LocalDate, link: QuestModuleLink, type: HeroEventType, in context: ApplyContext
-  ) throws(ReplayRefusal) -> Bool {
-    guard date == context.accountDay, !linkedQuestExists(link, on: date) else { return false }
+  ) throws(ReplayRefusal) -> RewardAmount? {
+    guard date == context.accountDay, !linkedQuestExists(link, on: date) else { return nil }
     let reward = context.ruleset.quickLogs[source]
-    let outcomes = hero.credit(
-      [GrantIntent(key: "\(source.rawValue)_\(date)", type: type, date: date, xpDelta: reward.xp, coinsDelta: reward.coins)], ruleset: context.ruleset)
-    return outcomes.allSatisfy(\.isApplied)
+    return Self.credited(
+      hero.credit(
+        [GrantIntent(key: "\(source.rawValue)_\(date)", type: type, date: date, xpDelta: reward.xp, coinsDelta: reward.coins)], ruleset: context.ruleset))
+  }
+
+  /// What the grants added to the hero, or nil when one was already in the trail.
+  private static func credited(_ outcomes: [GrantOutcome]) -> RewardAmount? {
+    guard outcomes.allSatisfy(\.isApplied) else { return nil }
+    return RewardAmount(xp: Exact.sum(outcomes.map(\.event.xpDelta)), coins: Exact.sum(outcomes.map(\.event.coinsDelta)))
   }
 }

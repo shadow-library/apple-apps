@@ -60,6 +60,10 @@ public struct ReminderPlan: Sendable, Equatable {
   public let reminders: [Reminder]
   /// Reminders inside the window left out by the limit.
   public let omitted: Int
+  /// Occurrences settled on today or the day before in the zone in force, whose reminders the app withdraws from those it has shown: a quest occurrence
+  /// with an outcome the owner logged (any but missed or rescheduled), each occurrence on those days of a reminded quest deleted or paused, and a
+  /// subscription cycle confirmed on one of those days.
+  public let settled: Set<ReminderOccurrence>
   /// When the plan next changes with no write: the soonest reminder's fire instant, the instant the next reminder beyond the window enters it, or the next
   /// midnight in the zone in force, whichever comes first.
   public let changesAt: Date
@@ -77,7 +81,8 @@ public struct ReminderPlan: Sendable, Equatable {
     let entering = candidates.filter { $0.fireAtMillis > end }.map(\.fireAtMillis).min().map { $0 - (end - nowMillis) }
     let changes = [kept.first?.fireAtMillis, entering, resolver.nextMidnight()].compactMap(\.self).min() ?? end
     return ReminderPlan(
-      reminders: kept, omitted: inWindow.count - kept.count, changesAt: Date(timeIntervalSince1970: TimeInterval(changes) / 1000), halt: sources.halt)
+      reminders: kept, omitted: inWindow.count - kept.count, settled: settled(sources, resolver: resolver),
+      changesAt: Date(timeIntervalSince1970: TimeInterval(changes) / 1000), halt: sources.halt)
   }
 
   public var identifiers: Set<String> { Set(reminders.map(\.identifier)) }
@@ -111,6 +116,24 @@ public struct ReminderPlan: Sendable, Equatable {
       }
     }
     return reminders
+  }
+
+  private static func settled(_ sources: ReminderSources, resolver: LocalTimes) -> Set<ReminderOccurrence> {
+    guard let today = resolver.today, let yesterday = today.adding(days: -1) else { return [] }
+    let days = yesterday...today
+    var settled = Set<ReminderOccurrence>()
+    for (occurrence, logged) in sources.logs where days.contains(occurrence.date) && !QuestLogEntry.yieldingStates.contains(logged.state) {
+      settled.insert(ReminderOccurrence(kind: .quest, record: occurrence.quest, date: occurrence.date))
+    }
+    for quest in sources.inactiveQuests {
+      for occurrence in quest.schedule.recurrence.expand(from: yesterday, through: today).occurrences {
+        settled.insert(ReminderOccurrence(kind: .quest, record: quest.id, date: occurrence.date))
+      }
+    }
+    for confirmed in sources.confirmations where days.contains(confirmed.issuedOn) {
+      settled.insert(ReminderOccurrence(kind: .subscription, record: confirmed.cycle.subscription, date: confirmed.cycle.billingDate))
+    }
+    return settled
   }
 
   private static func subscriptionReminders(_ sources: ReminderSources, resolver: LocalTimes) -> [Reminder] {

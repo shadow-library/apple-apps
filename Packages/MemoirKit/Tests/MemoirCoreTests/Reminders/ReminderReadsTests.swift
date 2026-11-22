@@ -85,6 +85,26 @@ struct ReminderReadsTests {
     #expect(try await ReminderReads.plan(in: stores, query: try Self.query(days: 2), now: now).reminders.isEmpty)
   }
 
+  @Test func shouldSettleTheRemindedOccurrencesCompletedOrDeletedTodayAndYesterday() async throws {
+    let (device, stores) = try await Self.seeded()
+    let today = Self.date(Device.day(0), minute: 600)
+    #expect(try await ReminderReads.plan(in: stores, query: try Self.query(), now: today).settled.isEmpty)
+
+    try await device.issue(.questComplete(Occurrence(quest: Device.routine, date: Device.day(0))), on: Device.day(0), minute: 500)
+    try await device.issue(.questComplete(Occurrence(quest: Device.anchor, date: Device.day(0))), on: Device.day(0), minute: 510)
+    try await device.issue(.questDelete(QuestReference(questId: Device.goal)), on: Device.day(0), minute: 520)
+    let plan = try await ReminderReads.plan(in: stores, query: try Self.query(), now: today)
+    #expect(
+      plan.settled == [
+        ReminderOccurrence(kind: .quest, record: Device.routine, date: Device.day(0)), ReminderOccurrence(kind: .quest, record: Device.goal, date: Device.day(0)),
+      ], "the anchor asks for no reminder; the goal began on day 0")
+
+    try await device.walk(to: Device.day(2))
+    let later = try await ReminderReads.plan(in: stores, query: try Self.query(), now: Self.date(Device.day(2), minute: 600))
+    #expect(
+      later.settled == [ReminderOccurrence(kind: .quest, record: Device.goal, date: Device.day(1)), ReminderOccurrence(kind: .quest, record: Device.goal, date: Device.day(2))])
+  }
+
   @Test func shouldGiveTheSameIdentifiersOnEveryDeviceAndAfterAnotherReplay() async throws {
     let (first, firstStores) = try await Self.seeded()
     let (_, secondStores) = try await Self.seeded()
@@ -126,7 +146,10 @@ struct ReminderReadsTests {
             subscription: Self.subscription, name: "Music", dueOn: Device.day(3), amount: MoneyAmount(amountMinor: 1_299, currency: eur), lead: .oneDay)))
 
     try await device.issue(.subscriptionConfirmCycle(CycleConfirmation(subscription: Self.subscription, billingDate: Device.day(3))), on: Device.day(0))
-    #expect(try await ReminderReads.plan(in: stores, query: try Self.query(), now: now).reminders.isEmpty, "the next cycle is a month away")
+    let confirmed = try await ReminderReads.plan(in: stores, query: try Self.query(), now: now)
+    #expect(confirmed.reminders.isEmpty, "the next cycle is a month away")
+    #expect(confirmed.settled == [ReminderOccurrence(kind: .subscription, record: Self.subscription, date: Device.day(3))])
+    #expect(try await ReminderReads.plan(in: stores, query: try Self.query(), now: Self.date(Device.day(2), minute: 600)).settled.isEmpty, "confirmed two days ago")
   }
 
   @Test func shouldKeepQuestRemindersWhenTheSettingsAndASubscriptionCannotBeRead() async throws {

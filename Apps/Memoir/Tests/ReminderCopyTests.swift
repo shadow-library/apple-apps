@@ -57,6 +57,17 @@ struct ReminderCopyTests {
     #expect(ReminderCopy.subscriptionBody(dueOn: due, lead: .threeDays, amount: music, locale: Self.us) == "Renews on Monday, March 9 for €12.99.")
   }
 
+  @Test("should read back the occurrence a request names, and nothing from a request it did not write")
+  func readsTheOccurrenceBack() {
+    let occurrence = ReminderOccurrence(kind: .subscription, record: UUID(), date: TestClock.day(3))
+    #expect(ReminderCopy.occurrence(in: ReminderCopy.userInfo(occurrence)) == occurrence)
+    var unknownKind = ReminderCopy.userInfo(occurrence)
+    unknownKind["kind"] = "habit"
+    for userInfo in [[:], unknownKind, ["kind": "quest", "record": "walk", "date": TestClock.day0.isoString]] {
+      #expect(ReminderCopy.occurrence(in: userInfo) == nil)
+    }
+  }
+
   @Test("should pin a request's instant to a zone, so a later change of the device's zone does not move it")
   func pinsTheTrigger() throws {
     let fireAt = Date(timeIntervalSince1970: (Date().timeIntervalSince1970 / 60).rounded(.down) * 60 + 10 * 86_400)

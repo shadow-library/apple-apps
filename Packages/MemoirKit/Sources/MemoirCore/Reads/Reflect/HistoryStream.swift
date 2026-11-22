@@ -23,7 +23,8 @@ public enum HistoryItem: Sendable, Equatable {
   case meal(MealRecord)
   case weight(WeightRecord)
   case metric(MetricDescriptor, MetricDayReading)
-  case sideQuest(SideQuestRecord, rewarded: Bool)
+  /// The reward is what replay credited for the log, nil when it earned nothing.
+  case sideQuest(SideQuestRecord, reward: RewardAmount?)
   case unlock(UnlockRow)
 }
 
@@ -37,7 +38,7 @@ public struct HistoryRecord: Sendable, Equatable {
   /// The class of the store it came from.
   public let syncClass: SyncClass
   public let item: HistoryItem
-  /// Only text safe to match a typed query against: names, merchants and category labels. Journal text, notes and reason notes are never matched, as
+  /// Only text safe to match a typed query against: names, merchants and category names. Journal text, notes and reason notes are never matched, as
   /// memoir-web's `haystack` leaves them out (`reflect.derive.ts:213-214`); an unlock, whose name is the app's copy, matches nothing.
   let haystack: String
 }
@@ -49,16 +50,23 @@ public struct HistoryQuery: Sendable, Hashable {
   /// `nil` lists every kind.
   public var kinds: Set<HistoryKind>?
   public var search: String
+  /// The names the app shows for categories (the built-in ones, in the owner's language); the search matches a category by its name here, else by its
+  /// stored label, else by its key.
+  public var categoryNames: [CategoryKey: String]
   public var page: PageRequest
 
-  public init(kinds: Set<HistoryKind>? = nil, search: String = "", page: PageRequest) {
+  public init(kinds: Set<HistoryKind>? = nil, search: String = "", categoryNames: [CategoryKey: String] = [:], page: PageRequest) {
     self.kinds = kinds
     self.search = search
+    self.categoryNames = categoryNames
     self.page = page
   }
 
-  public static func page(_ number: Int, kinds: Set<HistoryKind>? = nil, search: String = "") throws(MemoirReadError) -> HistoryQuery {
-    HistoryQuery(kinds: kinds, search: search, page: try PageRequest(offset: max(0, number - 1) * pageSize, limit: pageSize))
+  public static func page(_ number: Int, kinds: Set<HistoryKind>? = nil, search: String = "", categoryNames: [CategoryKey: String] = [:])
+    throws(MemoirReadError) -> HistoryQuery
+  {
+    HistoryQuery(
+      kinds: kinds, search: search, categoryNames: categoryNames, page: try PageRequest(offset: max(0, number - 1) * pageSize, limit: pageSize))
   }
 }
 
@@ -85,7 +93,7 @@ public struct HistoryPage: Sendable, Equatable {
   public let totalRecords: Int
 
   static func make(_ general: ReflectGeneral, body: ReflectBodySource, query: HistoryQuery) throws(FinanceError) -> HistoryPage {
-    let all = records(general, body: body)
+    let all = records(general, body: body, categoryNames: query.categoryNames)
     let needle = query.search.jsTrim().jsToLowerCase()
     let matched = all.filter { record in
       (query.kinds?.contains(record.kind) ?? true) && (needle.isEmpty || record.haystack.jsToLowerCase().jsIncludes(needle))
@@ -94,7 +102,7 @@ public struct HistoryPage: Sendable, Equatable {
       classes: body.classes.union([.general]), records: ReadPage(matched, page: query.page), totals: try totals(matched, book: general.book), totalRecords: all.count)
   }
 
-  static func records(_ general: ReflectGeneral, body: ReflectBodySource) -> [HistoryRecord] {
+  static func records(_ general: ReflectGeneral, body: ReflectBodySource, categoryNames: [CategoryKey: String]) -> [HistoryRecord] {
     var records = [HistoryRecord]()
     for log in general.logs {
       let name = general.questNames[log.occurrence.quest]
@@ -112,7 +120,7 @@ public struct HistoryPage: Sendable, Equatable {
         HistoryRecord(
           id: "expense:\(expense.id.lowercasedString)", kind: .expense, date: expense.occurredOn, atMillis: expense.loggedAtMillis, syncClass: .general,
           item: .expense(expense, inHome: converter?.homeAmount(of: expense) ?? .awaitingRate, category: category),
-          haystack: "\(labels[category] ?? category.key) \(expense.merchant ?? "")"))
+          haystack: "\(categoryNames[category] ?? labels[category] ?? category.key) \(expense.merchant ?? "")"))
     }
     for entry in general.journal {
       records.append(
@@ -130,7 +138,7 @@ public struct HistoryPage: Sendable, Equatable {
       records.append(
         HistoryRecord(
           id: "side-quest:\(sideQuest.id.lowercasedString)", kind: .sideQuest, date: sideQuest.date, atMillis: sideQuest.loggedAtMillis, syncClass: .general,
-          item: .sideQuest(sideQuest, rewarded: general.sideQuestOutcomes.isRewarded(sideQuest.id)), haystack: sideQuest.name))
+          item: .sideQuest(sideQuest, reward: general.sideQuestOutcomes.reward(of: sideQuest.id)), haystack: sideQuest.name))
     }
     for unlock in general.unlocks {
       guard let date = unlock.unlockedOn else { continue }

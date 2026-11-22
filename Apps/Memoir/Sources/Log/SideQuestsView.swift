@@ -74,7 +74,6 @@ struct SideQuestsView: View {
     let items = model.items(in: overview)
     let visible = items.prefix(model.visibleCount)
     let query = model.search.trimmingCharacters(in: .whitespacesAndNewlines)
-    let xp = Ruleset.current.quickLogs[.sideQuest].xp
     return ShadowCard {
       VStack(alignment: .leading, spacing: Spacing.space3) {
         Group {
@@ -102,8 +101,8 @@ struct SideQuestsView: View {
               Text(verbatim: LogFormat.shortDate(item.sideQuest.date)).shadowFont(.footnote).foregroundStyle(ShadowColor.textSecondary)
             }
             Spacer()
-            Text(verbatim: item.rewarded ? "+\(xp)" : "—").shadowFont(.body).monospacedDigit().foregroundStyle(ShadowColor.textSecondary)
-              .accessibilityLabel(item.rewarded ? Text("\(xp) XP", tableName: "Log") : Text("No reward", tableName: "Log"))
+            Text(verbatim: item.reward.map { "+\($0.xp)" } ?? "—").shadowFont(.body).monospacedDigit().foregroundStyle(ShadowColor.textSecondary)
+              .accessibilityLabel(item.reward.map { Text("\($0.xp) XP", tableName: "Log") } ?? Text("No reward", tableName: "Log"))
           }
           .accessibilityElement(children: .combine)
         }

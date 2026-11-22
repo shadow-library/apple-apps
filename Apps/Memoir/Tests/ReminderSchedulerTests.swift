@@ -60,6 +60,38 @@ struct ReminderSchedulerTests {
     #expect(world.fake.questRequests(walk).count == 6)
   }
 
+  @Test("should remove a shown reminder once its occurrence is settled, and leave the others shown")
+  func removesSettledShownReminders() async throws {
+    let world = try await ReminderWorld()
+    let walk = try await world.quest("Walk")
+    let read = try await world.quest("Read", start: 1_200)
+    let music = try await world.subscription("Music")
+    let shown = { (name: String) in Reminder.identifierPrefix + name }
+    let info = { (kind: ReminderKind, record: UUID, day: Int) in ReminderCopy.userInfo(ReminderOccurrence(kind: kind, record: record, date: TestClock.day(day))) }
+    world.fake.delivered = [
+      shown("walk-today"): info(.quest, walk, 0), shown("walk-tomorrow"): info(.quest, walk, 1), shown("read-today"): info(.quest, read, 0),
+      shown("music"): info(.subscription, music, 3), shown("unreadable"): ["kind": "quest", "record": walk.uuidString, "date": "today"],
+      Self.otherApp: info(.quest, walk, 0),
+    ]
+    world.start()
+    defer { world.stop() }
+    try await world.until("the reminders") { $0.questRequests(walk).count == 7 && $0.questRequests(read).count == 7 }
+    #expect(world.fake.delivered.count == 6, "nothing is settled yet")
+
+    try await world.context.writer.issue(.questComplete(Occurrence(quest: walk, date: TestClock.day0)))
+    try await world.until("today's shown walk to be removed") { $0.delivered[shown("walk-today")] == nil }
+    #expect(Set(world.fake.delivered.keys) == [shown("walk-tomorrow"), shown("read-today"), shown("music"), shown("unreadable"), Self.otherApp])
+
+    try await world.context.writer.issue(.questDelete(QuestReference(questId: read)))
+    try await world.until("the deleted quest's shown reminder to be removed") { $0.delivered[shown("read-today")] == nil }
+
+    try await world.context.writer.write { issuer, transaction in
+      _ = try issuer.confirmCycle(CycleConfirmation(subscription: music, billingDate: TestClock.day(3)), in: &transaction)
+    }
+    try await world.until("the confirmed cycle's shown reminder to be removed") { $0.delivered[shown("music")] == nil }
+    #expect(Set(world.fake.delivered.keys) == [shown("walk-tomorrow"), shown("unreadable"), Self.otherApp], "another request of the app stays shown")
+  }
+
   @Test("should withdraw every request when the device setting is turned off, and schedule again when it is turned on")
   func followsTheDeviceSetting() async throws {
     let world = try await ReminderWorld()
@@ -219,14 +251,14 @@ struct ReminderSchedulerTests {
     let walk = try await world.quest("Walk")
     let shown = Reminder.identifierPrefix + "shown"
     world.fake.foreign = [Self.otherApp]
-    world.fake.delivered = [shown, Self.otherApp]
+    world.fake.delivered = [shown: [:], Self.otherApp: [:]]
     world.start()
     try await world.until("the reminders") { $0.questRequests(walk).count == 3 }
     #expect(world.scheduler.omitted == 4 && world.scheduler.upcoming == 3)
 
     world.scheduler.withdrawAll()
 
-    try await world.until("every reminder to be withdrawn") { $0.pending.isEmpty && $0.delivered == [Self.otherApp] }
+    try await world.until("every reminder to be withdrawn") { $0.pending.isEmpty && Set($0.delivered.keys) == [Self.otherApp] }
     #expect(world.fake.foreign == [Self.otherApp])
     #expect(world.scheduler.omitted == 0 && world.scheduler.upcoming == 0 && !world.scheduler.questsPaused)
     world.center.post(name: ReminderWorld.activated, object: nil)
@@ -279,11 +311,13 @@ final class ReminderWorld {
     return id
   }
 
-  func subscription(_ name: String) async throws {
+  @discardableResult
+  func subscription(_ name: String) async throws -> UUID {
     let record = SubscriptionRecord(
       id: UUID(), name: name, amountMinor: Self.musicAmount.amountMinor, currency: Self.musicAmount.currency, frequency: .known(.monthly), billingDay: 5,
       anchorOn: TestClock.day(3), category: try #require(CategoryKey("subscriptions")), reminderEnabled: true, reminderLead: .known(.oneDay))
     _ = try await context.stores.main.write { transaction in try record.create(in: &transaction) }
+    return record.id
   }
 
   func append(_ command: MemoirCommand) async throws {
@@ -315,7 +349,8 @@ final class FakeReminderNotifications: ReminderNotifications {
   var pending: [String: ReminderRequest] = [:]
   var foreign: Set<String> = []
   var status = ReminderAuthorization.allowed
-  var delivered: Set<String> = []
+  /// Shown notifications by identifier, with their requests' `userInfo`.
+  var delivered: [String: [String: String]] = [:]
   var grants = true
   var parksNextAdd = false
   private(set) var authorizationRequests = 0
@@ -356,12 +391,12 @@ final class FakeReminderNotifications: ReminderNotifications {
     }
   }
 
-  func deliveredIdentifiers() async -> Set<String> {
-    delivered
+  func delivered() async -> [DeliveredReminder] {
+    delivered.map { DeliveredReminder(identifier: $0.key, userInfo: $0.value) }
   }
 
   func removeDelivered(_ identifiers: [String]) {
-    delivered.subtract(identifiers)
+    for identifier in identifiers { delivered[identifier] = nil }
   }
 
   func authorization() async -> ReminderAuthorization {

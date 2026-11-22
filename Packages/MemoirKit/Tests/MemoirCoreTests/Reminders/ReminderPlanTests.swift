@@ -40,10 +40,21 @@ struct ReminderPlanTests {
   }
 
   private static func sources(
-    zone: AccountZone, quests: [ReminderSources.Quest] = [], logs: [Occurrence: ReminderSources.Logged] = [:],
-    subscriptions: [ReminderSources.Subscription] = [], wake: ScheduleWindow = .standard, halt: ReplayHalt? = nil
+    zone: AccountZone, quests: [ReminderSources.Quest] = [], inactiveQuests: [ReminderSources.Quest] = [], logs: [Occurrence: ReminderSources.Logged] = [:],
+    subscriptions: [ReminderSources.Subscription] = [], confirmations: [ReminderSources.Confirmed] = [], wake: ScheduleWindow = .standard,
+    halt: ReplayHalt? = nil
   ) -> ReminderSources {
-    ReminderSources(zone: zone, wakeWindow: wake, quests: quests, logs: logs, subscriptions: subscriptions, halt: halt)
+    ReminderSources(
+      zone: zone, wakeWindow: wake, quests: quests, inactiveQuests: inactiveQuests, logs: logs, subscriptions: subscriptions, confirmations: confirmations,
+      halt: halt)
+  }
+
+  private static func settledQuest(_ quest: UUID = quest, on date: String) -> ReminderOccurrence {
+    ReminderOccurrence(kind: .quest, record: quest, date: Self.date(date))
+  }
+
+  private static func logged(_ state: QuestLogState) -> ReminderSources.Logged {
+    ReminderSources.Logged(state: state, rescheduledToMinute: state == .rescheduled ? 720 : nil)
   }
 
   private static func query(days: Int = 7, limit: Int = ReminderQuery.systemPendingLimit, device: TimeZone = berlin) throws -> ReminderQuery {
@@ -238,6 +249,62 @@ struct ReminderPlanTests {
     #expect(reminder.occurrenceID == Reminder.occurrenceID(kind: .subscription, record: Self.subscription, date: due.nextDue))
     let late = ReminderPlan.make(sources, query: try Self.query(), now: Self.instant("2026-11-18T05:00:00Z"))
     #expect(late.reminders.isEmpty, "the reminder day has passed though the charge has not")
+  }
+
+  @Test(arguments: QuestLogState.allCases)
+  func shouldSettleAnOccurrenceTheOwnerLoggedButNotOneMissedOrMoved(_ state: QuestLogState) throws {
+    let occurrence = Occurrence(quest: Self.quest, date: Self.date("2026-11-16"))
+    let sources = Self.sources(
+      zone: Self.zone("Europe/Berlin", openDay: "2026-11-16"), quests: [try Self.quest(start: 600, from: "2026-11-01")], logs: [occurrence: Self.logged(state)])
+    let plan = ReminderPlan.make(sources, query: try Self.query(days: 1), now: Self.instant("2026-11-16T12:00:00Z"))
+    let settles = ![QuestLogState.missed, .rescheduled].contains(state)
+    #expect(plan.settled == (settles ? [Self.settledQuest(on: "2026-11-16")] : []))
+  }
+
+  @Test func shouldSettleOnlyTodayAndYesterdayInTheZoneInForce() throws {
+    let logs = Dictionary(
+      uniqueKeysWithValues: ["2026-11-14", "2026-11-15", "2026-11-16", "2026-11-17"].map { (Occurrence(quest: Self.quest, date: Self.date($0)), Self.logged(.completed)) })
+    let sources = Self.sources(zone: Self.zone("Europe/Berlin", openDay: "2026-11-16"), quests: [try Self.quest(start: 600, from: "2026-11-01")], logs: logs)
+    let berlin = ReminderPlan.make(sources, query: try Self.query(days: 1), now: Self.instant("2026-11-15T23:30:00Z"))
+    #expect(berlin.settled == [Self.settledQuest(on: "2026-11-15"), Self.settledQuest(on: "2026-11-16")], "00:30 on the 16th in Berlin, still the 15th in UTC")
+    let later = ReminderPlan.make(sources, query: try Self.query(days: 1), now: Self.instant("2026-11-17T09:00:00Z"))
+    #expect(later.settled == [Self.settledQuest(on: "2026-11-16"), Self.settledQuest(on: "2026-11-17")])
+    #expect(ReminderPlan.make(Self.sources(zone: .unset), query: try Self.query(), now: Self.instant("2026-11-16T12:00:00Z")).settled.isEmpty)
+  }
+
+  @Test func shouldSettleTheRecentOccurrencesOfAnInactiveQuestOnTheDaysItOccurs() throws {
+    let everyOther = ReminderSources.Quest(
+      id: Self.other, name: "Swim", leadMinutes: 0,
+      schedule: try QuestSchedule(
+        strictness: .routine, startTimeMinutes: 600, durationMinutes: 30, statAffinity: .body,
+        recurrence: try RecurrenceRule(frequency: .daily, interval: 2, startDate: Self.date("2026-11-01"))))
+    let sources = Self.sources(
+      zone: Self.zone("Europe/Berlin", openDay: "2026-11-16"), inactiveQuests: [try Self.quest(start: 600, from: "2026-11-01"), everyOther])
+    let plan = ReminderPlan.make(sources, query: try Self.query(days: 2), now: Self.instant("2026-11-16T12:00:00Z"))
+    #expect(plan.reminders.isEmpty, "an inactive quest is never reminded")
+    #expect(plan.settled == [Self.settledQuest(on: "2026-11-15"), Self.settledQuest(on: "2026-11-16"), Self.settledQuest(Self.other, on: "2026-11-15")])
+  }
+
+  @Test func shouldSettleASubscriptionCycleConfirmedTodayOrYesterday() throws {
+    let confirmed = { (billing: String, issued: String) in
+      ReminderSources.Confirmed(cycle: CycleConfirmation(subscription: Self.subscription, billingDate: Self.date(billing)), issuedOn: Self.date(issued))
+    }
+    let sources = Self.sources(
+      zone: Self.zone("Europe/Berlin", openDay: "2026-11-16"),
+      confirmations: [confirmed("2026-10-05", "2026-10-05"), confirmed("2026-11-05", "2026-11-15"), confirmed("2026-12-05", "2026-11-16")])
+    let plan = ReminderPlan.make(sources, query: try Self.query(), now: Self.instant("2026-11-16T12:00:00Z"))
+    #expect(
+      plan.settled == [
+        ReminderOccurrence(kind: .subscription, record: Self.subscription, date: Self.date("2026-11-05")),
+        ReminderOccurrence(kind: .subscription, record: Self.subscription, date: Self.date("2026-12-05")),
+      ], "the cycle confirmed late yesterday and the one confirmed early today, by their due dates")
+  }
+
+  @Test func shouldNameAReminderByTheOccurrenceItsIdentifierBinds() throws {
+    let sources = Self.sources(zone: Self.zone("Europe/Berlin", openDay: "2026-11-16"), quests: [try Self.quest(start: 600, from: "2026-11-01")])
+    let reminder = try #require(ReminderPlan.make(sources, query: try Self.query(days: 1), now: Self.instant("2026-11-16T05:00:00Z")).reminders.first)
+    #expect(reminder.occurrence == Self.settledQuest(on: "2026-11-16"))
+    #expect(reminder.occurrence.id == reminder.occurrenceID)
   }
 
   @Test func shouldRefuseAnEmptyWindowOrANegativeLimit() {

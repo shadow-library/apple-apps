@@ -140,6 +140,66 @@ struct HistoryModelTests {
     }
   }
 
+  @Test("should find a built-in category by the name it shows, in the stream and in a record's details")
+  func searchesCategoryNames() async throws {
+    let (context, _) = try ReflectTesting.world()
+    try await ReflectTesting.logExpenses([ReflectTesting.expense(999, day: 0, merchant: nil, category: "subs")], in: context)
+    let model = HistoryModel(context: context)
+    let subs = try #require(CategoryKey("subs"))
+    let name = try #require(ReflectCopy.builtInCategory(subs))
+    model.setSearch(name.uppercased())
+    var id: String?
+
+    try await ReflectTesting.following(model.day) {
+      try await QuestsObservation { await model.observe() }.during {
+        try await TestClock.until("the search finds the expense") { model.history.state.value?.records.total == 1 }
+        #expect(model.rows.first?.text == name)
+        id = model.rows.first?.id
+      }
+    }
+    let record = HistoryRecordModel(context: context, id: try #require(id), search: name)
+    try await ReflectTesting.following(record.day) {
+      try await QuestsObservation { await record.observe() }.during {
+        try await TestClock.until("the record is found under the same search") {
+          if case .found = record.presentation { true } else { false }
+        }
+      }
+    }
+  }
+
+  @Test("should show the reward replay credited each side quest, and none past the day's slots")
+  func presentsSideQuestRewards() async throws {
+    let (context, _) = try ReflectTesting.world()
+    let sideQuests = SideQuestsModel(context: context)
+    for index in 1...4 {
+      sideQuests.name = "Act \(index)"
+      #expect(await sideQuests.save())
+    }
+    let model = HistoryModel(context: context)
+    model.filter(.sideQuest)
+
+    try await ReflectTesting.following(model.day) {
+      try await QuestsObservation { await model.observe() }.during {
+        try await TestClock.until("the side quests load") { model.rows.count == 4 }
+        var credited = [RewardAmount?]()
+        for record in try #require(model.history.state.value).records.items {
+          guard case .sideQuest(let sideQuest, let reward) = record.item else { continue }
+          #expect((reward == nil) == (sideQuest.name == "Act 4"), "the fourth of the day takes no slot")
+          credited.append(reward)
+        }
+        #expect(credited.count == 4)
+        for (row, reward) in zip(model.rows, credited) {
+          guard let reward else {
+            #expect(row.value == ReflectFormat.count(0))
+            continue
+          }
+          #expect(row.value == String(localized: "+\(reward.xp) XP", table: "Reflect"))
+          #expect(row.fields.first?.value == String(localized: "\(reward.xp) XP · \(reward.coins) coins", table: "Reflect"))
+        }
+      }
+    }
+  }
+
   @Test("should find a record by id, say when the filter hides it, and when it was deleted")
   func looksUpARecord() async throws {
     let (context, _) = try ReflectTesting.world()

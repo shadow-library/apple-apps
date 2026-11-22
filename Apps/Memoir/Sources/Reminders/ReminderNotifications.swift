@@ -8,6 +8,12 @@ nonisolated enum ReminderAuthorization: Sendable, Hashable {
   case allowed
 }
 
+/// A notification the system has shown and still lists, with the string values of its request's `userInfo`.
+nonisolated struct DeliveredReminder: Sendable, Hashable {
+  let identifier: String
+  let userInfo: [String: String]
+}
+
 /// One local notification as the scheduler asks for it, already in the owner's words.
 nonisolated struct ReminderRequest: Sendable, Hashable {
   let identifier: String
@@ -50,13 +56,13 @@ nonisolated struct ReminderNotificationError: ShadowError, Equatable {
   }
 }
 
-/// The app's pending local notifications and its permission to show them.
+/// The app's pending and delivered local notifications and its permission to show them.
 @MainActor
 protocol ReminderNotifications: AnyObject {
   func pendingIdentifiers() async -> Set<String>
   func add(_ request: ReminderRequest) async throws(ReminderNotificationError)
   func remove(_ identifiers: [String])
-  func deliveredIdentifiers() async -> Set<String>
+  func delivered() async -> [DeliveredReminder]
   func removeDelivered(_ identifiers: [String])
   func authorization() async -> ReminderAuthorization
   func requestAuthorization() async throws(ReminderNotificationError) -> Bool
@@ -93,8 +99,15 @@ final class SystemReminderNotifications: ReminderNotifications {
     center.removePendingNotificationRequests(withIdentifiers: identifiers)
   }
 
-  func deliveredIdentifiers() async -> Set<String> {
-    Set(await center.deliveredNotifications().map(\.request.identifier))
+  func delivered() async -> [DeliveredReminder] {
+    await center.deliveredNotifications().map { notification in
+      let request = notification.request
+      let values = request.content.userInfo.compactMap { key, value -> (String, String)? in
+        guard let key = key as? String, let value = value as? String else { return nil }
+        return (key, value)
+      }
+      return DeliveredReminder(identifier: request.identifier, userInfo: Dictionary(values) { first, _ in first })
+    }
   }
 
   func removeDelivered(_ identifiers: [String]) {
@@ -145,7 +158,7 @@ final class InertReminderNotifications: ReminderNotifications {
 
   func remove(_ identifiers: [String]) {}
 
-  func deliveredIdentifiers() async -> Set<String> { [] }
+  func delivered() async -> [DeliveredReminder] { [] }
 
   func removeDelivered(_ identifiers: [String]) {}
 

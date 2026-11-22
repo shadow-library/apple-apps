@@ -14,7 +14,7 @@ import Synchronization
 /// cannot read halts replay, and the hero row says the app needs an update.
 public struct MemoirReconciler: StoreReconciler {
   /// Raise it when replay's meaning changes, so every checkpoint and derived row is rebuilt.
-  public static let replayVersion = 4
+  public static let replayVersion = 5
   public static let recentCheckpoints = 7
   static let layoutTable = "mm_derived_layout"
   static let fingerprintDomain = "com.shadow.library.memoircore.projection"

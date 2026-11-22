@@ -121,6 +121,34 @@ struct ReflectReadsTests {
     #expect(last.totalRecords == first.totalRecords)
   }
 
+  @Test func shouldSearchCategoriesByTheNamesTheCallerShows() async throws {
+    let stores = try await Self.lived()
+    try await MoneyReadsFixture.seed(
+      stores.main,
+      [
+        MoneyReadsFixture.settings(), MoneyReadsFixture.expense(1, 990, "EUR", on: "2026-11-20", category: "subs"),
+        MoneyReadsFixture.expense(2, 500, "EUR", on: "2026-11-20", category: "home"), MoneyReadsFixture.expense(3, 300, "EUR", on: "2026-11-20", category: "pets"),
+        ExpenseCategoryRecord(key: MoneyReadsFixture.category("home"), label: "Home", archived: true),
+        ExpenseCategoryRecord(key: MoneyReadsFixture.category("pets"), label: "Pets"),
+      ])
+    let names = [MoneyReadsFixture.category("subs"): "Abonnements", MoneyReadsFixture.category("home"): "Zuhause"]
+    let found = { (search: String, names: [CategoryKey: String]) async throws -> [String] in
+      let page = try await ReflectReads.history(
+        in: stores, matching: HistoryQuery(kinds: [.expense], search: search, categoryNames: names, page: .all), bodyClasses: [], today: Self.today)
+      return page.records.items.map(\.id)
+    }
+    let subs = "expense:\(MoneyReadsFixture.id(1).lowercasedString)"
+    let home = "expense:\(MoneyReadsFixture.id(2).lowercasedString)"
+    let pets = "expense:\(MoneyReadsFixture.id(3).lowercasedString)"
+    #expect(try await found("abonne", names) == [subs])
+    #expect(try await found("zuHAUSE", names) == [home])
+    #expect(try await found("pets", names) == [pets], "a category the caller does not name keeps its stored label")
+    #expect(try await found("subs", names).isEmpty, "a named category matches only its name")
+    #expect(try await found("home", names).isEmpty)
+    #expect(try await found("subs", [:]) == [subs], "without names, the key of a built-in without a record")
+    #expect(try await found("home", [:]) == [home], "without names, the stored label")
+  }
+
   @Test func shouldReadTheWeeklyReviewOfLastWeek() async throws {
     let stores = try await Self.lived()
     let review = try await ReflectReads.review(in: stores, bodyClasses: [], today: Self.today)

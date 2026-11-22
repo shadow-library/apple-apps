@@ -4,7 +4,7 @@ import Foundation
 /// to the same canonical JSON; the recurrence cursors are a cache and are never encoded. Decoding refuses another `codingVersion` and a state whose parts
 /// contradict each other.
 extension ReplayState: Codable {
-  public static let codingVersion = 2
+  public static let codingVersion = 3
 
   private enum CodingKeys: String, CodingKey {
     case version

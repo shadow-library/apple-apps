@@ -5,7 +5,10 @@ import ShadowStore
 public struct QuickLogOutcome: Sendable, Hashable, Codable {
   public let source: QuickLogSource
   public let date: LocalDate
-  public let rewarded: Bool
+  /// What replay credited for it under the ruleset its command was issued with; nil when it earned nothing.
+  public let reward: RewardAmount?
+
+  public var rewarded: Bool { reward != nil }
 }
 
 /// A metric a command created; deletion only deactivates it, as the reference's does, so later commands still find it.

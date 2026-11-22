@@ -82,6 +82,9 @@ nonisolated enum ReflectCopy {
     }
   }
 
+  /// The built-in categories by the names History shows, so its search finds them by those names.
+  static let builtInCategoryNames = Dictionary(uniqueKeysWithValues: MoneyBook.builtInCategories.compactMap { key in builtInCategory(key).map { (key, $0) } })
+
   /// `BUILT_IN_CATEGORIES` (`finance.types.ts:64-74`): a built-in category is always named in the app's words.
   static func builtInCategory(_ key: CategoryKey) -> String? {
     switch key.key {

@@ -58,16 +58,16 @@ struct QuickLogOutcomeTests {
   private static func expectAgreement(_ vault: Vault, today: LocalDate, sourceLocation: SourceLocation = #_sourceLocation) async throws -> SideQuestsOverview {
     let state = try await vault.replayed()
     let overview = try await LogReads.sideQuests(in: vault.stores, today: today)
-    let replayed = { (id: UUID) in state.records.quickLogs[id]?.rewarded ?? false }
-    #expect(overview.items.map(\.rewarded) == overview.items.map { replayed($0.sideQuest.id) }, "each log's reward", sourceLocation: sourceLocation)
+    let replayed = { (id: UUID) in state.records.quickLogs[id]?.reward }
+    #expect(overview.items.map(\.reward) == overview.items.map { replayed($0.sideQuest.id) }, "each log's reward", sourceLocation: sourceLocation)
     #expect(overview.rewardedToday == state.records.sideQuestsRewarded[today] ?? 0, "the day's reward slots", sourceLocation: sourceLocation)
     let month = try #require(DateSpan.month(of: today))
     #expect(overview.xpThisMonth == sideQuestXP(state, in: month), "the month's side-quest XP", sourceLocation: sourceLocation)
 
     let history = try await ReflectReads.history(in: vault.stores, matching: try HistoryQuery.page(1, kinds: [.sideQuest]), bodyClasses: [], today: today)
     let flags = history.records.items.compactMap { record -> Bool? in
-      guard case .sideQuest(let sideQuest, let rewarded) = record.item else { return nil }
-      return rewarded == replayed(sideQuest.id)
+      guard case .sideQuest(let sideQuest, let reward) = record.item else { return nil }
+      return reward == replayed(sideQuest.id)
     }
     #expect(flags.count == overview.items.count && flags.allSatisfy { $0 }, "the history's rewards", sourceLocation: sourceLocation)
     let insights = try await ReflectReads.insights(in: vault.stores, period: .thirtyDays, bodyClasses: [], today: today)
@@ -182,7 +182,9 @@ struct QuickLogOutcomeTests {
     #expect(read.unknown == nil)
     #expect(read.meals.count == 2 && read.meals.count(where: \.rewarded) == 1, "the first meal of the day takes the reward")
     #expect(read.sideQuests.map(\.date) == [yesterday, Self.today])
-    #expect(read.sideQuests.map(\.rewarded) == [false, true])
+    #expect(read.sideQuests.map(\.reward) == [nil, RewardAmount(xp: reward[.sideQuest].xp, coins: reward[.sideQuest].coins)], "what replay credited")
+    #expect(read.journal?.reward == RewardAmount(xp: reward[.journal].xp, coins: reward[.journal].coins))
+    #expect(read.meals.map(\.reward).compactMap(\.self) == [RewardAmount(xp: reward[.meal].xp, coins: reward[.meal].coins)])
     #expect(read.todaysSideQuests.map(\.id) == [ids[4]])
     #expect(try await vault.replayed().hero.events.contains { $0.type == .weight })
     #expect(read.weights.isEmpty && read.weightDays.isEmpty, "a weight is health class; only the hero trail credits it")

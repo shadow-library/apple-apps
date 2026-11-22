@@ -119,17 +119,15 @@ struct HistoryPresentation: Equatable {
         HistoryField(label: String(localized: "Source", table: "Reflect"), value: source),
       ]
       link = HistoryLink(route: .destination(.bodyAndHealth), section: String(localized: "Body & health", table: "Reflect"))
-    case .sideQuest(let sideQuest, let rewarded):
-      let reward = Ruleset.current.quickLogs[.sideQuest]
+    case .sideQuest(let sideQuest, let reward):
       text = sideQuest.name
-      value = rewarded ? String(localized: "+\(reward.xp) XP", table: "Reflect") : ReflectFormat.count(0)
+      value = reward.map { String(localized: "+\($0.xp) XP", table: "Reflect") } ?? ReflectFormat.count(0)
       title = String(localized: "Side quest — \(sideQuest.name)", table: "Reflect")
       fields = [
         HistoryField(
           label: String(localized: "Reward", table: "Reflect"),
-          value: rewarded
-            ? String(localized: "\(reward.xp) XP · \(reward.coins) coins", table: "Reflect")
-            : String(localized: "None — only the first \(reward.maxRewardedPerDay) a day are rewarded", table: "Reflect")),
+          value: reward.map { String(localized: "\($0.xp) XP · \($0.coins) coins", table: "Reflect") }
+            ?? String(localized: "None — only the first \(Ruleset.current.quickLogs[.sideQuest].maxRewardedPerDay) a day are rewarded", table: "Reflect")),
         HistoryField(label: String(localized: "Streak", table: "Reflect"), value: String(localized: "Side quests never carry one", table: "Reflect")),
       ]
       link = HistoryLink(route: .destination(.sideQuests), section: String(localized: "Side quests", table: "Reflect"))

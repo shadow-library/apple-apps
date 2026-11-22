@@ -12,8 +12,9 @@ import ShadowCore
 #endif
 
 /// Keeps this device's pending notification requests equal to the open vault's `ReminderPlan` while "Remind me on this device" is on, and withdraws
-/// them all when it is turned off. A completion or deletion synced from another device changes the plan, which withdraws its request; one that has
-/// already fired stays delivered. Only requests under `Reminder.identifierPrefix` are ever removed.
+/// them all when it is turned off. A completion or deletion, here or synced from another device, changes the plan, which withdraws its request, and
+/// one that has already fired is removed from those shown while its occurrence is among the plan's `settled`. Only requests under
+/// `Reminder.identifierPrefix` are ever removed.
 @Observable
 final class ReminderScheduler {
   /// Headroom under the system's 64 pending requests, which drops the rest silently.
@@ -166,12 +167,20 @@ final class ReminderScheduler {
     let pending = Self.ours(await notifications.pendingIdentifiers())
     if !pending.isEmpty { notifications.remove(pending) }
     guard delivered else { return }
-    let shown = Self.ours(await notifications.deliveredIdentifiers())
+    let shown = Self.ours(Set(await notifications.delivered().map(\.identifier)))
     if !shown.isEmpty { notifications.removeDelivered(shown) }
   }
 
   private static func ours(_ identifiers: Set<String>) -> [String] {
     identifiers.filter { $0.hasPrefix(Reminder.identifierPrefix) }.sorted()
+  }
+
+  /// Our shown reminders whose occurrence the plan names as settled.
+  static func settled(_ delivered: [DeliveredReminder], in plan: ReminderPlan) -> [String] {
+    delivered.filter { reminder in
+      guard reminder.identifier.hasPrefix(Reminder.identifierPrefix), let occurrence = ReminderCopy.occurrence(in: reminder.userInfo) else { return false }
+      return plan.settled.contains(occurrence)
+    }.map(\.identifier).sorted()
   }
 
   private func reconcile() async {
@@ -181,6 +190,10 @@ final class ReminderScheduler {
     authorization = plan.reminders.isEmpty ? await notifications.authorization() : await authorize()
     let diff = plan.diff(against: pending)
     if !diff.remove.isEmpty { notifications.remove(diff.remove) }
+    if !plan.settled.isEmpty {
+      let shown = Self.settled(await notifications.delivered(), in: plan)
+      if !shown.isEmpty { notifications.removeDelivered(shown) }
+    }
     guard authorization == .allowed else { return }
     for reminder in diff.add {
       guard isOnThisDevice, latest == plan else { return }

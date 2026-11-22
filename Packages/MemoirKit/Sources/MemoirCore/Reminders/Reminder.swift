@@ -62,6 +62,22 @@ public enum ReminderContent: Sendable, Hashable {
   }
 }
 
+/// What a reminder is about: the kind, the quest or subscription, and the occurrence's date (a subscription cycle's due date). The app keeps it beside
+/// each request, and `ReminderPlan.settled` names it.
+public struct ReminderOccurrence: Sendable, Hashable {
+  public let kind: ReminderKind
+  public let record: UUID
+  public let date: LocalDate
+
+  public init(kind: ReminderKind, record: UUID, date: LocalDate) {
+    self.kind = kind
+    self.record = record
+    self.date = date
+  }
+
+  public var id: UUID { Reminder.occurrenceID(kind: kind, record: record, date: date) }
+}
+
 /// One local notification to schedule. `occurrenceID` names the occurrence alone (kind, record, date); `identifier` also binds the fire instant and the
 /// content, so an edited lead, time, name or amount yields a new identifier and `ReminderPlan.diff(against:)` replaces the pending request.
 public struct Reminder: Sendable, Hashable, Identifiable {
@@ -88,6 +104,8 @@ public struct Reminder: Sendable, Hashable, Identifiable {
   }
 
   public var id: String { identifier }
+
+  public var occurrence: ReminderOccurrence { ReminderOccurrence(kind: content.kind, record: content.record, date: content.occurrenceDate) }
 
   public var fireAt: Date { Date(timeIntervalSince1970: TimeInterval(fireAtMillis) / 1000) }
 }
