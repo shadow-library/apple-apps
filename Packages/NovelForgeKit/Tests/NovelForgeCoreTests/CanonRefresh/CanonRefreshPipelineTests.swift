@@ -52,7 +52,8 @@ struct CanonRefreshPipelineTests {
     let world = try await RefreshWorld(replies: [RefreshWorld.reply([RefreshWorld.crowning])])
     let (key, _) = try await Self.refresh(world)
     let card = try #require(try await world.card(of: key))
-    let outcome = try await world.store.applyProposal(card.id, selection: .whole, context: ProposalApplyContext(novel: world.novel, now: world.engineWorld.clock.now))
+    let outcome = try await world.store.applyProposal(
+      card.id, selection: .whole, context: ProposalApplyContext(novel: world.novel, now: world.engineWorld.clock.now, ageGate: AgeGate(passed: true)))
     guard case .applied = outcome else {
       Issue.record("the refresh card did not apply: \(outcome)")
       return

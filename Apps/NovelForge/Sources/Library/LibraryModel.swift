@@ -18,11 +18,13 @@ final class LibraryModel {
   var failure: ActionFailure?
   private(set) var generation = 0
   private let service: LibraryService
+  private let ageGate: AgeGate
   private let observer = ReadObserver<LibraryList>()
   private var awaiting = Set<UUID>()
 
-  init(store: VaultStore) {
+  init(store: VaultStore, ageGate: AgeGate = AgeGate(passed: false)) {
     self.store = store
+    self.ageGate = ageGate
     service = LibraryService(store: store)
   }
 
@@ -43,7 +45,7 @@ final class LibraryModel {
   }
 
   func context(for novel: UUID) -> NovelContext {
-    NovelContext(store: store, novel: novel)
+    NovelContext(store: store, novel: novel, ageGate: ageGate)
   }
 
   var knownNovels: Set<UUID> {

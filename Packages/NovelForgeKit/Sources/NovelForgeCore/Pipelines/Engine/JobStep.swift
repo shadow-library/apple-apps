@@ -58,12 +58,17 @@ struct JobServices: Sendable {
   let store: VaultStore
   let router: JobEngine.RouterSource
   let consent: AIConsentRequirement
-  let unrestrictedAvailable: Bool
+  /// The build's flag (orchestrator decision 5), which tests replace.
+  let buildsUnrestricted: Bool
+  let ageGate: AgeGate
   let hardLines: NovelHardLines
   let packs: WriterPackBuilder
   let retrieval: NovelRetrieval
   let progress: RunProgressBoard
   let now: @Sendable () -> Date
+
+  /// Read at each decision, so a withdrawn age gate holds from the next request or step.
+  var unrestrictedAvailable: Bool { buildsUnrestricted && ageGate.isPassed }
 }
 
 struct JobStepContext: Sendable {

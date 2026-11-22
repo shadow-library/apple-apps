@@ -155,10 +155,13 @@ extension ChatComposerMode {
   }
 }
 
-/// apps/novel-forge-web/src/features/chat/ReplyOptionsMenu.tsx:13-47: hidden when the novel offers neither option.
+/// apps/novel-forge-web/src/features/chat/ReplyOptionsMenu.tsx:13-47: hidden when the novel offers neither option. Before the owner has confirmed their age on
+/// this device, turning Unrestricted on asks for that first.
 struct ChatReplyOptionsMenu: View {
   @Binding var options: ChatReplyOptions
   let offer: ChatReplyOffer
+  @Environment(AdultConfirmationModel.self) private var adult
+  @State private var confirmingAge = false
 
   var body: some View {
     if !offer.isEmpty {
@@ -169,11 +172,12 @@ struct ChatReplyOptionsMenu: View {
             Text("Takes longer and uses more of your allowance.", tableName: "ChatComposer")
           }
         }
-        if offer.unrestricted {
-          Toggle(isOn: $options.unrestricted) {
+        if offer.unrestricted != .hidden {
+          Toggle(isOn: unrestricted) {
             Text("Unrestricted", tableName: "ChatComposer")
             Text("For dark or explicit material in this reply.", tableName: "ChatComposer")
           }
+          .accessibilityHint(offer.unrestricted == .gated ? Text("Asks you to confirm your age first.", tableName: "ChatComposer") : Text(verbatim: ""))
         }
       } label: {
         label
@@ -183,14 +187,29 @@ struct ChatReplyOptionsMenu: View {
       .fixedSize()
       .accessibilityLabel(Text("Reply options", tableName: "ChatComposer"))
       .accessibilityValue(isOn ? label : Text("none", tableName: "ChatComposer"))
+      .sheet(isPresented: $confirmingAge) {
+        AdultConfirmationSheet(adult: adult) { options.unrestricted = true }
+      }
     }
   }
 
-  private var isOn: Bool { (options.thinkDeeper && offer.thinkDeeper) || (options.unrestricted && offer.unrestricted) }
+  private var unrestricted: Binding<Bool> {
+    Binding {
+      options.unrestricted && offer.unrestricted == .open
+    } set: { on in
+      guard on, offer.unrestricted == .gated else {
+        options.unrestricted = on
+        return
+      }
+      confirmingAge = true
+    }
+  }
+
+  private var isOn: Bool { (options.thinkDeeper && offer.thinkDeeper) || (options.unrestricted && offer.unrestricted == .open) }
 
   /// chat-model.ts:58-61
   private var label: Text {
-    switch (options.thinkDeeper && offer.thinkDeeper, options.unrestricted && offer.unrestricted) {
+    switch (options.thinkDeeper && offer.thinkDeeper, options.unrestricted && offer.unrestricted == .open) {
     case (true, true): Text("Think deeper · Unrestricted", tableName: "ChatComposer")
     case (true, false): Text("Think deeper", tableName: "ChatComposer")
     case (false, true): Text("Unrestricted", tableName: "ChatComposer")

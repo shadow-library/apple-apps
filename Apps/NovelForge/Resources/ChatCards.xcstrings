@@ -1724,6 +1724,17 @@
         }
       }
     },
+    "Unrestricted writing needs your age confirmed on this device.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Unrestricted writing needs your age confirmed on this device."
+          }
+        }
+      }
+    },
     "Updated your story · %lld changes": {
       "extractionState": "manual",
       "localizations": {

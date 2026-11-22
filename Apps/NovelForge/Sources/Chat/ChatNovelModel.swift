@@ -59,7 +59,10 @@ final class ChatNovelModel {
   private(set) var generation = 0
   private(set) var isStarting = false
   private let engine: ChatTurnEngine
+  private let access: UnrestrictedAccess
   private let observer = ReadObserver<ChatSessionsSnapshot>()
+  /// Whether the hard line covers the novel's language, read on its own only where unrestricted writing could be offered.
+  private let language = ReadObserver<Bool>()
   @ObservationIgnored var turnEnded: (() -> Void)? {
     didSet { for session in sessions.values { session.turnEnded = turnEnded } }
   }
@@ -67,9 +70,10 @@ final class ChatNovelModel {
   @ObservationIgnored private var created: UUID?
   @ObservationIgnored private var startRequest = 0
 
-  init(context: NovelContext, engine: ChatTurnEngine) {
+  init(context: NovelContext, engine: ChatTurnEngine, access: UnrestrictedAccess = .none) {
     self.context = context
     self.engine = engine
+    self.access = access
     waiting = ChatTrayModel(context: context, engine: engine)
     waiting.live = { [weak self] session in self?.sessions[session]?.activity }
   }
@@ -82,7 +86,16 @@ final class ChatNovelModel {
 
   var novelTitle: String? { state.value?.novel?.displayTitle }
 
-  var replyOffer: ChatReplyOffer { ChatReplyOffer(novel: state.value?.novel) }
+  var replyOffer: ChatReplyOffer {
+    ChatReplyOffer(novel: state.value?.novel, unrestricted: access.offer(languageCovered: language.state.value ?? false))
+  }
+
+  /// A withdrawal turns Unrestricted off in every composer of the novel; either way the chats and the tray read again what this device can answer.
+  func ageConfirmationChanged(confirmed: Bool) {
+    if !confirmed { composer.ageConfirmationWithdrawn() }
+    for model in sessions.values { model.ageConfirmationChanged(confirmed: confirmed) }
+    waiting.retry()
+  }
 
   func overview(of session: UUID) -> ChatSessionOverview? {
     overviews.first { $0.state.session == session }
@@ -105,7 +118,7 @@ final class ChatNovelModel {
     let model = ChatSessionModel(session: id, context: context, engine: engine)
     model.novelMode = novelMode
     model.turnEnded = turnEnded
-    model.replyOffer = replyOffer
+    model.offering = { [weak self] in self?.replyOffer ?? .none }
     sessions[id] = model
     return model
   }
@@ -117,9 +130,17 @@ final class ChatNovelModel {
 
   func observe() async {
     let (store, novel) = (context.store, context.novel)
+    async let language: Void = observeLanguage()
     await observer.run(
       { store.observeReads { transaction in try ChatSessionsSnapshot.load(novel: novel, in: transaction) } },
       onValue: { [weak self] snapshot in self?.forgetRemoved(snapshot) })
+    await language
+  }
+
+  private func observeLanguage() async {
+    guard access.available else { return }
+    let (store, novel) = (context.store, context.novel)
+    await language.run { store.observeReads { transaction in try HardLineCoverage.covers(novel: novel, in: transaction) } }
   }
 
   func retry() {
@@ -245,10 +266,7 @@ final class ChatNovelModel {
     guard let listed = snapshot.all.sessions.value.map({ Set($0.map(\.state.session)) }) else { return }
     if let created, listed.contains(created) { self.created = nil }
     sessions = sessions.filter { listed.contains($0.key) || $0.key == created }
-    for model in sessions.values {
-      model.novelMode = novelMode
-      model.replyOffer = replyOffer
-    }
+    for model in sessions.values { model.novelMode = novelMode }
   }
 
   /// chat.tsx:398-404: the chat asked for while it is still there, else the most recently updated active one; New chat asks for none.

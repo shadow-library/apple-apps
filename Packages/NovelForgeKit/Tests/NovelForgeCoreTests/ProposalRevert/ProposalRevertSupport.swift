@@ -23,7 +23,7 @@ enum RevertWorld {
 }
 
 extension ChapterBook {
-  var revertContext: ProposalRevertContext { ProposalRevertContext(novel: novel, now: clock.now) }
+  var revertContext: ProposalRevertContext { ProposalRevertContext(novel: novel, now: clock.now, ageGate: AgeGate(passed: true)) }
 
   func applyTurn(_ id: UUID, _ selection: ApplySelection = .whole, sources: [OpSource] = RevertWorld.sources) async throws {
     _ = try await applied(id, selection, context: context(automatic: true, sources: sources))

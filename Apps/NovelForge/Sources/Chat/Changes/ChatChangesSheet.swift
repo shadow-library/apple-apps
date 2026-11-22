@@ -15,7 +15,7 @@ struct ChatChangesSheet: View {
     }
     .onAppear {
       guard model == nil else { return }
-      model = ChatChangesModel(context: chats.context, writer: CoreChatProposalWriter(store: chats.context.store))
+      model = ChatChangesModel(context: chats.context, writer: CoreChatProposalWriter(context: chats.context))
     }
   }
 }

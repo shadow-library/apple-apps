@@ -80,7 +80,7 @@ private struct PendingWorld {
         TaskRouter(
           configuration: TaskRouterConfiguration(provider: .anthropic), anthropic: binding, openRouter: nil, credentials: PendingCredentials(), store: store,
           requestGuard: requestGuard)
-      }, consent: consent.requirement, clock: LeaseClock(trusted: nil))
+      }, consent: consent.requirement, clock: LeaseClock(trusted: nil), ageGate: AgeGate(passed: true))
     return PendingWorld(store: store, novel: novel, engine: engine)
   }
 

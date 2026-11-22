@@ -94,7 +94,7 @@ struct ProposalApplyTests {
 
     let missing = UUID()
     #expect(await book.applyError(missing) == .notFound(missing))
-    let other = ProposalApplyContext(novel: SchemaFixture.otherNovel, now: book.clock.now)
+    let other = ProposalApplyContext(novel: SchemaFixture.otherNovel, now: book.clock.now, ageGate: AgeGate(passed: true))
     #expect(await book.applyError(applied, context: other) == .notFound(applied))
   }
 

@@ -407,7 +407,8 @@ final class ChatTurnRun: Sendable {
     let request = TurnStagingRequest(
       novel: basis.novel, session: basis.session, reply: basis.reply, replyText: answer.reply, changeSet: answer.changeSet, authorMessage: basis.authorWords,
       mode: basis.sessionMode, justDiscussing: basis.justDiscussing, organise: basis.organise, contexts: basis.contexts, warnings: answer.warnings,
-      run: basis.turn.uuidString.lowercased(), now: engine.timing.now())
+      run: basis.turn.uuidString.lowercased(), now: engine.timing.now(),
+      unrestrictedAvailable: engine.unrestrictedAvailable)
     do {
       let result = try await store.stageTurn(request)
       return ChatTurnStaged(

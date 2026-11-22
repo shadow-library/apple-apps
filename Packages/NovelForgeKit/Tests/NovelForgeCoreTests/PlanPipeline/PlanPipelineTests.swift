@@ -117,7 +117,8 @@ struct PlanPipelineTests {
     let waiting = try #require(try await world.store.read { transaction in try ChatWaitingOnYou.load(novel, in: transaction) }.contents.value)
     #expect(waiting.cards.map(\.state.proposal) == [proposal.id] && waiting.cards.first?.session == ChatProposalSession.none)
 
-    let outcome = try await world.store.applyProposal(proposal.id, selection: .whole, context: ProposalApplyContext(novel: novel, now: world.engineWorld.clock.now))
+    let outcome = try await world.store.applyProposal(
+      proposal.id, selection: .whole, context: ProposalApplyContext(novel: novel, now: world.engineWorld.clock.now, ageGate: AgeGate(passed: true)))
     guard case .applied = outcome else {
       Issue.record("the plan card did not apply: \(outcome)")
       return

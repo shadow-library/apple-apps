@@ -5,11 +5,18 @@ import ShadowStore
 /// The cards' writes on NovelForgeCore's proposal entry points, with each refusal reduced to its code and the indexes it names.
 struct CoreChatProposalWriter: ChatProposalWriting {
   let store: VaultStore
+  let ageGate: AgeGate
   var now: @Sendable () -> Date = { Date() }
+
+  init(context: NovelContext, now: @escaping @Sendable () -> Date = { Date() }) {
+    store = context.store
+    ageGate = context.ageGate
+    self.now = now
+  }
 
   func apply(_ proposal: UUID, indexes: [Int], novel: UUID) async throws(ChatCardRefusal) -> ChatApplyResult {
     do throws(ProposalApplyError) {
-      switch try await store.applyProposal(proposal, selection: .indexes(indexes), context: ProposalApplyContext(novel: novel, now: now())) {
+      switch try await store.applyProposal(proposal, selection: .indexes(indexes), context: ProposalApplyContext(novel: novel, now: now(), ageGate: ageGate)) {
       case .conflicted(let mismatches): return .conflicted(indexes: Array(Set(mismatches.flatMap(\.indexes))).sorted())
       case .applied(let outcomes): return .applied(outcomes.map { ChatChangeResult(index: $0.index, status: $0.status, failureCode: $0.failure?.code) })
       }
@@ -58,7 +65,7 @@ struct CoreChatProposalWriter: ChatProposalWriting {
   }
 
   private func context(_ novel: UUID, _ accepting: Set<Int>) -> ProposalRevertContext {
-    ProposalRevertContext(novel: novel, now: now(), acceptingChangedDeclined: accepting)
+    ProposalRevertContext(novel: novel, now: now(), ageGate: ageGate, acceptingChangedDeclined: accepting)
   }
 
   private func reverting<T>(_ body: () async throws(ProposalRevertError) -> T) async throws(ChatCardRefusal) -> T {

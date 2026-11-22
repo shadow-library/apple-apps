@@ -38,7 +38,7 @@ struct ChatWaitingOnYouTests {
     let store = try await World.store()
     let stale = try await World.premiseCard(in: store)
     try await World.editBrief("A new brief", in: store)
-    let outcome = try await store.applyProposal(stale.id, selection: .whole, context: ProposalApplyContext(novel: World.novel, now: Date()))
+    let outcome = try await store.applyProposal(stale.id, selection: .whole, context: ProposalApplyContext(novel: World.novel, now: Date(), ageGate: AgeGate(passed: true)))
     guard case .conflicted = outcome else {
       Issue.record("the apply did not conflict")
       return

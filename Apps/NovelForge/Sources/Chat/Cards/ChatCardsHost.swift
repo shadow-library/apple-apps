@@ -52,7 +52,7 @@ private struct ChatCardsHost: ViewModifier {
   func body(content: Content) -> some View {
     @Bindable var presenter = presenter
     content
-      .environment(\.chatCards, ChatCardsContext(session: session, writer: CoreChatProposalWriter(store: session.context.store), presenter: presenter))
+      .environment(\.chatCards, ChatCardsContext(session: session, writer: CoreChatProposalWriter(context: session.context), presenter: presenter))
       .sheet(isPresented: $presenter.isRevertPresented) {
         if let flow = presenter.revert { ChatRevertSheet(flow: flow) }
       }

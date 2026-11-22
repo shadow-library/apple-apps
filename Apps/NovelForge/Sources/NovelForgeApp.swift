@@ -14,13 +14,14 @@ struct NovelForgeApp: App {
     @UIApplicationDelegateAdaptor(NovelForgeAppDelegate.self) private var delegate
   #endif
   @Environment(\.scenePhase) private var scenePhase
-  @State private var chats = ChatRuntimes()
   @State private var settingsTabs = SettingsTabs()
 
   private var vault: NovelForgeVault { delegate.vault }
   private var sync: SyncRuntimes { delegate.sync }
   private var ai: AIServices { delegate.ai }
   private var jobs: JobRuntimes { delegate.jobs }
+  private var chats: ChatRuntimes { delegate.chats }
+  private var adult: AdultConfirmationModel { delegate.adult }
   private var retrieval: RetrievalRuntimes { delegate.retrieval }
 
   var body: some Scene {
@@ -28,6 +29,7 @@ struct NovelForgeApp: App {
       RootView(vault: vault)
         .environment(ai)
         .environment(chats)
+        .environment(adult)
         .environment(jobs)
         .environment(sync)
         .environment(settingsTabs)
@@ -52,7 +54,7 @@ struct NovelForgeApp: App {
       .defaultLaunchBehavior(delegate.worker.isOn ? .suppressed : .automatic)
     #endif
     #if os(macOS)
-      Settings { NovelForgeSettingsScene(vault: vault, services: ai, sync: sync, jobs: jobs, worker: delegate.worker, tabs: settingsTabs) }
+      Settings { NovelForgeSettingsScene(vault: vault, services: ai, sync: sync, adult: adult, jobs: jobs, worker: delegate.worker, tabs: settingsTabs) }
       WorkerMenuBar(worker: delegate.worker, tabs: settingsTabs)
     #endif
   }

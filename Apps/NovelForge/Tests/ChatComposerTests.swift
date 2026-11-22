@@ -47,7 +47,7 @@ struct ChatComposerTests {
     let model = world.model(of: try await world.session())
     let observing = Task { await model.observe() }
     defer { observing.cancel() }
-    model.replyOffer = ChatReplyOffer(thinkDeeper: true, unrestricted: false)
+    model.offering = { ChatReplyOffer(thinkDeeper: true, unrestricted: .hidden) }
     model.composer.justDiscussing = true
     model.composer.proseEdits = true
     model.composer.replyOptions.thinkDeeper = true
@@ -72,7 +72,8 @@ struct ChatComposerTests {
     composer.replyOptions = ChatReplyOptions(thinkDeeper: true, unrestricted: true)
 
     #expect(composer.choices(offer: .none) == ChatTurnChoices())
-    #expect(composer.choices(offer: ChatReplyOffer(thinkDeeper: true, unrestricted: true)) == ChatTurnChoices(thinksDeeper: true, contentMode: .unrestricted))
+    #expect(composer.choices(offer: ChatReplyOffer(thinkDeeper: true, unrestricted: .open)) == ChatTurnChoices(thinksDeeper: true, contentMode: .unrestricted))
+    #expect(composer.choices(offer: ChatReplyOffer(thinkDeeper: true, unrestricted: .gated)) == ChatTurnChoices(thinksDeeper: true))
   }
 
   @Test("should hide Unrestricted while unrestricted writing is unavailable, and Think deeper on a performant novel")
@@ -81,20 +82,23 @@ struct ChatComposerTests {
     let performant = NovelRecord(id: UUID(), name: "Ashfall", costTier: .known(.performant))
     let unrestricted = NovelRecord(id: UUID(), name: "Ashfall", contentMode: .known(.unrestricted))
 
-    #expect(!UnrestrictedWriting.isAvailable)
-    #expect(ChatReplyOffer(novel: standard) == ChatReplyOffer(thinkDeeper: true, unrestricted: false))
-    #expect(ChatReplyOffer(novel: standard, unrestrictedAvailable: true) == ChatReplyOffer(thinkDeeper: true, unrestricted: true))
-    #expect(ChatReplyOffer(novel: unrestricted, unrestrictedAvailable: true) == ChatReplyOffer(thinkDeeper: true, unrestricted: false))
-    #expect(ChatReplyOffer(novel: performant, unrestrictedAvailable: true) == ChatReplyOffer(thinkDeeper: false, unrestricted: true))
-    #expect(ChatReplyOffer(novel: nil, unrestrictedAvailable: true).isEmpty)
+    #expect(ChatReplyOffer(novel: standard, unrestricted: UnrestrictedAccess.none.offer(languageCovered: true)) == ChatReplyOffer(thinkDeeper: true, unrestricted: .hidden))
+    #expect(ChatReplyOffer(novel: standard, unrestricted: .offered) == ChatReplyOffer(thinkDeeper: true, unrestricted: .open))
+    #expect(ChatReplyOffer(novel: standard, unrestricted: .needsAgeConfirmation) == ChatReplyOffer(thinkDeeper: true, unrestricted: .gated))
+    #expect(ChatReplyOffer(novel: standard, unrestricted: .needsModel) == ChatReplyOffer(thinkDeeper: true, unrestricted: .hidden))
+    #expect(ChatReplyOffer(novel: standard, unrestricted: .uncoveredLanguage) == ChatReplyOffer(thinkDeeper: true, unrestricted: .hidden))
+    #expect(ChatReplyOffer(novel: unrestricted, unrestricted: .offered) == ChatReplyOffer(thinkDeeper: true, unrestricted: .hidden))
+    #expect(ChatReplyOffer(novel: unrestricted, unrestricted: .needsAgeConfirmation) == ChatReplyOffer(thinkDeeper: true, unrestricted: .hidden))
+    #expect(ChatReplyOffer(novel: performant, unrestricted: .offered) == ChatReplyOffer(thinkDeeper: false, unrestricted: .open))
+    #expect(ChatReplyOffer(novel: nil, unrestricted: .offered).isEmpty)
   }
 
-  @Test("should keep the message and comments and turn Unrestricted off when the engine refuses it")
+  @Test("should keep the message and comments and turn Unrestricted off when the engine refuses it", .enabled(if: !UnrestrictedWriting.isAvailable))
   func shouldKeepTheMessageWhenUnrestrictedIsRefused() async throws {
     let world = try await ChatWorld.make()
     let source = try await drafted(world)
     let model = world.model(of: try await world.session())
-    model.replyOffer = ChatReplyOffer(thinkDeeper: true, unrestricted: true)
+    model.offering = { ChatReplyOffer(thinkDeeper: true, unrestricted: .open) }
     model.composer.replyOptions.unrestricted = true
     #expect(model.composer.add(try chip(source, quote: "harbour keys")) == .added)
     model.draft = "Darker?"

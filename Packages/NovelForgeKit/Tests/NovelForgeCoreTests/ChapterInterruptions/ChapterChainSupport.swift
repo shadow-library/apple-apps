@@ -316,7 +316,7 @@ struct ChainProcess: Sendable {
       try await store.write { transaction in _ = try ProposalStager.stage(StagingWorld.input(changeSet, novel: novel, session: nil), id: card, in: &transaction) }
     }
     if faults.crashes(at: .cardStaged) { return false }
-    let context = ProposalApplyContext(novel: novel, now: vault.clock.now)
+    let context = ProposalApplyContext(novel: novel, now: vault.clock.now, ageGate: AgeGate(passed: true))
     if faults.crashes(at: .cardContent) {
       _ = try await store.write { transaction in try ProposalApply.apply(proposal: card, selection: .indexes([0]), context: context, in: &transaction) }
       return false

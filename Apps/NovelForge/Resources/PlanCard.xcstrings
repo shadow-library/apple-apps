@@ -672,6 +672,39 @@
         }
       }
     },
+    "This chapter can be written on this device once a model is chosen for unrestricted writing and you confirm your age in Settings.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This chapter can be written on this device once a model is chosen for unrestricted writing and you confirm your age in Settings."
+          }
+        }
+      }
+    },
+    "This chapter can be written on this device once you confirm your age for unrestricted writing in Settings.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This chapter can be written on this device once you confirm your age for unrestricted writing in Settings."
+          }
+        }
+      }
+    },
+    "This chapter can be written once a model is chosen for unrestricted writing.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This chapter can be written once a model is chosen for unrestricted writing."
+          }
+        }
+      }
+    },
     "This chapter reaches": {
       "extractionState": "manual",
       "localizations": {

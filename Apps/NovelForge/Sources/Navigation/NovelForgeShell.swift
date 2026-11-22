@@ -10,8 +10,8 @@ struct NovelForgeShell: View {
   @State private var readers = NovelReaders()
   @Environment(\.horizontalSizeClass) private var sizeClass
 
-  init(store: VaultStore) {
-    _library = State(initialValue: LibraryModel(store: store))
+  init(store: VaultStore, ageGate: AgeGate) {
+    _library = State(initialValue: LibraryModel(store: store, ageGate: ageGate))
   }
 
   var body: some View {

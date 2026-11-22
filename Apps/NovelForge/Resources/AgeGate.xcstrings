@@ -1,0 +1,215 @@
+{
+  "sourceLanguage": "en",
+  "strings": {
+    "A model is chosen for unrestricted writing.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A model is chosen for unrestricted writing."
+          }
+        }
+      }
+    },
+    "Age": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Age"
+          }
+        }
+      }
+    },
+    "Confirm Age…": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Confirm Age…"
+          }
+        }
+      }
+    },
+    "Confirm Your Age": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Confirm Your Age"
+          }
+        }
+      }
+    },
+    "Confirm that you're 18 or older to use it on this device.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Confirm that you're 18 or older to use it on this device."
+          }
+        }
+      }
+    },
+    "I'm 18 or Older": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "I'm 18 or Older"
+          }
+        }
+      }
+    },
+    "No model is chosen for unrestricted writing yet.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No model is chosen for unrestricted writing yet."
+          }
+        }
+      }
+    },
+    "Not Now": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Not Now"
+          }
+        }
+      }
+    },
+    "Novel Forge keeps only that you confirmed, and the day, on this device. It never asks for your date of birth, and you can withdraw this at any time in Settings.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Novel Forge keeps only that you confirmed, and the day, on this device. It never asks for your date of birth, and you can withdraw this at any time in Settings."
+          }
+        }
+      }
+    },
+    "Unrestricted Writing": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Unrestricted Writing"
+          }
+        }
+      }
+    },
+    "Unrestricted appears for a novel once a model is chosen, your age is confirmed here and the novel is written in English, the language the safety screen covers.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Unrestricted appears for a novel once a model is chosen, your age is confirmed here and the novel is written in English, the language the safety screen covers."
+          }
+        }
+      }
+    },
+    "Unrestricted writing is for dark or explicit material, so it's only for adults.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Unrestricted writing is for dark or explicit material, so it's only for adults."
+          }
+        }
+      }
+    },
+    "Unrestricted writing is only for adults. Confirm your age to use it on this device.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Unrestricted writing is only for adults. Confirm your age to use it on this device."
+          }
+        }
+      }
+    },
+    "Unrestricted writing turns off on this device. Chapters and replies already written stay as they are, but this device writes no more unrestricted text until you confirm again.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Unrestricted writing turns off on this device. Chapters and replies already written stay as they are, but this device writes no more unrestricted text until you confirm again."
+          }
+        }
+      }
+    },
+    "When It's Offered": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "When It's Offered"
+          }
+        }
+      }
+    },
+    "Withdraw": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Withdraw"
+          }
+        }
+      }
+    },
+    "Withdraw Confirmation": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Withdraw Confirmation"
+          }
+        }
+      }
+    },
+    "Withdraw your age confirmation?": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Withdraw your age confirmation?"
+          }
+        }
+      }
+    },
+    "You confirmed you're 18 or older on %@.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You confirmed you're 18 or older on %@."
+          }
+        }
+      }
+    }
+  },
+  "version": "1.0"
+}

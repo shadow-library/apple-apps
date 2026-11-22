@@ -98,7 +98,7 @@ enum EngineWorld {
 
   static func engine(
     _ store: VaultStore, provider: ScriptedModelProvider, upkeep: RecordedUpkeep = RecordedUpkeep(), now: @escaping @Sendable () -> Date = { Date() },
-    faults: ChatTurnEngine.Faults = .none, unrestrictedAvailable: Bool = true, turnsWait: Signal? = nil,
+    faults: ChatTurnEngine.Faults = .none, unrestrictedAvailable: Bool = true, ageGate: AgeGate = AgeGate(passed: true), turnsWait: Signal? = nil,
     embedders: (any EmbedderProvider)? = nil
   ) async throws -> ChatTurnEngine {
     let gated: any ModelProvider = turnsWait.map { TitleSplittingProvider(titles: provider, turns: provider, turnsWait: $0) } ?? provider
@@ -106,7 +106,7 @@ enum EngineWorld {
     let timing = ChatTurnEngine.Timing(flushInterval: .seconds(3_600), monotonic: ChatTurnEngine.Timing.standard.monotonic, now: now)
     return ChatTurnEngine(
       store: store, router: { router }, consent: CompactionWorld.consent, upkeep: upkeep.seam, timing: timing, faults: faults,
-      unrestrictedAvailable: unrestrictedAvailable, embedders: embedders)
+      unrestrictedAvailable: unrestrictedAvailable, ageGate: ageGate, embedders: embedders)
   }
 
   /// `fault` at `point`, the first `times` times the run reaches it.
@@ -151,7 +151,7 @@ enum EngineWorld {
     let router = TaskRouter(
       configuration: TaskRouterConfiguration(provider: .anthropic, assignments: OpenRouterAssignments(unrestricted: CompactionWorld.unrestrictedModel)),
       anthropic: standard, openRouter: unrestricted, credentials: EngineCredentials(), store: store, requestGuard: { ModelRequestGuard.hardLine(for: $0) })
-    guard let named else { return ChatTurnEngine(store: store, router: { router }, consent: consent) }
+    guard let named else { return ChatTurnEngine(store: store, router: { router }, consent: consent, ageGate: AgeGate(passed: true)) }
     let vault = ChatSessionUpkeep.vault(store)
     let upkeep = ChatSessionUpkeep(
       nameSession: { session, novel, opening, turn, router in

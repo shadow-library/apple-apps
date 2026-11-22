@@ -31,7 +31,7 @@ struct EvalRunner: Sendable {
     do {
       return try JobEngine(
         store: store, router: { requestGuard in backend.router(store: store, requestGuard: requestGuard) }, consent: EvalBackend.consent, clock: LeaseClock(trusted: nil),
-        unrestrictedAvailable: false)
+        ageGate: AgeGate(passed: false))
     } catch {
       throw .setup("The job engine could not start: \(error.code)")
     }

@@ -72,7 +72,7 @@ struct ProposalApplyReplicaTests {
       }
       let late = await replicas.store(2)
       do {
-        _ = try await late.applyProposal(id, selection: .whole, context: ProposalApplyContext(novel: novel, now: now))
+        _ = try await late.applyProposal(id, selection: .whole, context: ProposalApplyContext(novel: novel, now: now, ageGate: AgeGate(passed: true)))
         Issue.record("an applied card applied again")
       } catch {
         #expect(error == .notPending(.known(.applied)))

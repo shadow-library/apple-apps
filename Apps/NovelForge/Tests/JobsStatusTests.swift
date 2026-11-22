@@ -232,7 +232,7 @@ private struct StatusWorld {
     let services = AIServices.novelForge(defaults: try #require(UserDefaults(suiteName: "JobsStatusTests-\(UUID().uuidString)")))
     let engine = try JobEngine(
       store: store, router: { requestGuard in await services.router(store: store, requestGuard: requestGuard) }, consent: ConsentDisclosure.novelText.requirement,
-      clock: LeaseClock(trusted: nil))
+      clock: LeaseClock(trusted: nil), ageGate: AgeGate(passed: true))
     return StatusWorld(store: store, novel: novel, engine: engine)
   }
 

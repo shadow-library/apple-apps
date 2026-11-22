@@ -24,27 +24,41 @@ struct ChatReplyOptions: Equatable {
   var unrestricted = false
 }
 
-/// Which one-shot reply options are on offer (chat-model.ts:39-43): none until the novel is known.
+/// How the composer shows Unrestricted: not at all, as a switch that first asks the owner to confirm their age, or as a plain switch.
+enum ChatUnrestrictedSwitch: Equatable {
+  case hidden
+  case gated
+  case open
+}
+
+/// Which one-shot reply options are on offer (chat-model.ts:39-43): none until the novel is known, and Unrestricted only on a standard novel it is offered for.
 struct ChatReplyOffer: Equatable {
-  static let none = ChatReplyOffer(thinkDeeper: false, unrestricted: false)
+  static let none = ChatReplyOffer(thinkDeeper: false, unrestricted: .hidden)
 
   let thinkDeeper: Bool
-  let unrestricted: Bool
+  let unrestricted: ChatUnrestrictedSwitch
 
-  init(thinkDeeper: Bool, unrestricted: Bool) {
+  init(thinkDeeper: Bool, unrestricted: ChatUnrestrictedSwitch) {
     self.thinkDeeper = thinkDeeper
     self.unrestricted = unrestricted
   }
 
-  init(novel: NovelRecord?, unrestrictedAvailable: Bool = UnrestrictedWriting.isAvailable) {
+  init(novel: NovelRecord?, unrestricted offer: UnrestrictedOffer) {
     guard let novel else {
       self = .none
       return
     }
-    self.init(thinkDeeper: novel.costTier.known != .performant, unrestricted: unrestrictedAvailable && novel.contentMode.known == .standard)
+    let unrestricted: ChatUnrestrictedSwitch =
+      switch offer {
+      case _ where novel.contentMode.known != .standard: .hidden
+      case .offered: .open
+      case .needsAgeConfirmation: .gated
+      case .notInThisBuild, .needsModel, .uncoveredLanguage: .hidden
+      }
+    self.init(thinkDeeper: novel.costTier.known != .performant, unrestricted: unrestricted)
   }
 
-  var isEmpty: Bool { !thinkDeeper && !unrestricted }
+  var isEmpty: Bool { !thinkDeeper && unrestricted == .hidden }
 }
 
 enum ChatPassageAddition: Equatable {
@@ -106,7 +120,7 @@ final class ChatComposerState {
   /// chat-model.ts:51-56: an option rides the message only while it is still on offer.
   func choices(offer: ChatReplyOffer) -> ChatTurnChoices {
     ChatTurnChoices(
-      thinksDeeper: replyOptions.thinkDeeper && offer.thinkDeeper, contentMode: replyOptions.unrestricted && offer.unrestricted ? .unrestricted : nil,
+      thinksDeeper: replyOptions.thinkDeeper && offer.thinkDeeper, contentMode: replyOptions.unrestricted && offer.unrestricted == .open ? .unrestricted : nil,
       justDiscussing: justDiscussing, proseEdits: proseEdits)
   }
 
@@ -120,6 +134,11 @@ final class ChatComposerState {
   /// ChatColumn.tsx:446: Unrestricted refused would be refused again.
   func refused(_ error: ChatTurnError) {
     guard case .unrestrictedUnavailable = error else { return }
+    replyOptions.unrestricted = false
+  }
+
+  /// A withdrawn age confirmation turns Unrestricted off, so confirming again later does not bring back a choice made before.
+  func ageConfirmationWithdrawn() {
     replyOptions.unrestricted = false
   }
 

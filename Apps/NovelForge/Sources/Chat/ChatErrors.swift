@@ -100,6 +100,8 @@ enum ChatErrors {
     case .invalidPassage, .passage(code: "CHT_009", _), .passage(code: "CHT_010", _): String(localized: "A passage you commented on changed. Select it again.", table: "Chat")
     case .passage: String(localized: "That chapter is isolated, so its passages cannot be sent to the chat. Remove the comment.", table: "Chat")
     case .hardLine: String(localized: "Novel Forge will not send this message: it crosses a hard line.", table: "Chat")
+    case .unrestrictedUnavailable where UnrestrictedWriting.isAvailable:
+      String(localized: "Unrestricted writing needs your age confirmed on this device. Confirm it in Settings, or send it as standard writing instead.", table: "Chat")
     case .unrestrictedUnavailable: String(localized: "Unrestricted writing isn't available in this version. Send it as standard writing instead.", table: "Chat")
     case .messageNotAnswerable: String(localized: "This message cannot be answered on this device.", table: "Chat")
     case .turnRunning: String(localized: "A reply is already being written in this chat.", table: "Chat")

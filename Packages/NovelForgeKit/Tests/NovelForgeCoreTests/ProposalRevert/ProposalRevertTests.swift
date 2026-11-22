@@ -205,7 +205,7 @@ struct ProposalRevertTests {
   @Test func shouldNotFindAnotherNovelsTurnAndRefuseAnIndexOutsideTheChangeSet() async throws {
     let (book, id) = try await World.turn()
     try await book.applyTurn(id)
-    let other = ProposalRevertContext(novel: SchemaFixture.otherNovel, now: book.clock.now)
+    let other = ProposalRevertContext(novel: SchemaFixture.otherNovel, now: book.clock.now, ageGate: AgeGate(passed: true))
     do {
       _ = try await book.store.undoProposalChange(id, index: 2, context: other)
       Issue.record("another novel's turn was undone")

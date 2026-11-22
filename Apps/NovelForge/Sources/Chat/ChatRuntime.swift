@@ -11,11 +11,17 @@ import ShadowStore
 @Observable
 final class ChatRuntimes {
   @ObservationIgnored private var current: (store: ObjectIdentifier, runtime: ChatRuntime)?
+  @ObservationIgnored private let adult: AdultConfirmationModel
+
+  init(adult: AdultConfirmationModel) {
+    self.adult = adult
+    adult.changed = { [weak self] confirmed in self?.current?.runtime.ageConfirmationChanged(confirmed: confirmed) }
+  }
 
   func runtime(for store: VaultStore, services: AIServices) -> ChatRuntime {
     if let current, current.store == ObjectIdentifier(store) { return current.runtime }
     current?.runtime.shutDown()
-    let created = ChatRuntime.live(store: store, services: services)
+    let created = ChatRuntime.live(store: store, services: services, adult: adult)
     current = (ObjectIdentifier(store), created)
     return created
   }
@@ -34,22 +40,25 @@ final class ChatRuntime {
   let engine: ChatTurnEngine
   private var novels: [UUID: ChatNovelModel] = [:]
   private let settler: CostSettler?
+  private let access: UnrestrictedAccess
   private var launching: Task<Void, Never>?
 
-  init(store: VaultStore, engine: ChatTurnEngine, settler: CostSettler? = nil) {
+  init(store: VaultStore, engine: ChatTurnEngine, settler: CostSettler? = nil, access: UnrestrictedAccess = .none) {
     self.store = store
     self.engine = engine
     self.settler = settler
+    self.access = access
   }
 
-  static func live(store: VaultStore, services: AIServices) -> ChatRuntime {
+  static func live(store: VaultStore, services: AIServices, adult: AdultConfirmationModel) -> ChatRuntime {
     let engine = ChatTurnEngine(
-      store: store, router: { await services.router(store: store) }, consent: ConsentDisclosure.novelText.requirement, embedders: services.embedders)
-    return ChatRuntime(store: store, engine: engine, settler: services.settler(for: store))
+      store: store, router: { await services.router(store: store) }, consent: ConsentDisclosure.novelText.requirement, ageGate: adult.gate,
+      embedders: services.embedders)
+    return ChatRuntime(store: store, engine: engine, settler: services.settler(for: store), access: .live(services: services, adult: adult))
   }
 
   func model(for context: NovelContext) -> ChatNovelModel {
-    let model = novels[context.novel] ?? ChatNovelModel(context: context, engine: engine)
+    let model = novels[context.novel] ?? ChatNovelModel(context: context, engine: engine, access: access)
     model.turnEnded = { [settler] in settler?.settle() }
     novels[context.novel] = model
     return model
@@ -57,6 +66,10 @@ final class ChatRuntime {
 
   func shutDown() {
     settler?.shutDown()
+  }
+
+  func ageConfirmationChanged(confirmed: Bool) {
+    for model in novels.values { model.ageConfirmationChanged(confirmed: confirmed) }
   }
 
   /// Once per vault open: pending card actions run, interrupted turns resume or end, and every open chat and Waiting on you then read their turns again.

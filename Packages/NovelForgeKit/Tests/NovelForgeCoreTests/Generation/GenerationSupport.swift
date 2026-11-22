@@ -38,11 +38,11 @@ struct GenerationWorld {
     ChapterPlanContent(body: "Mara climbs the lighthouse and finds the torn logbook.", contentMode: mode.map { .known($0) }, writeMode: .known(writeMode))
   }
 
-  func engine(_ faults: AttemptRunner.Faults = .none, unrestrictedAvailable: Bool = false) throws -> JobEngine {
+  func engine(_ faults: AttemptRunner.Faults = .none, unrestrictedAvailable: Bool = false, ageGate: AgeGate = AgeGate(passed: true)) throws -> JobEngine {
     let (base, rereads) = (base, base.rereads)
     return try JobEngine(
       store: store, router: { base.router($0) }, consent: CompactionWorld.consent, clock: LeaseClock(trusted: nil, device: base.clock.function), runner: base.runner(faults),
-      packs: base.packs.builder(store), timing: JobEngine.Timing { _ in try await rereads.sleep() }, unrestrictedAvailable: unrestrictedAvailable)
+      packs: base.packs.builder(store), timing: JobEngine.Timing { _ in try await rereads.sleep() }, unrestrictedAvailable: unrestrictedAvailable, ageGate: ageGate)
   }
 
   /// Requests a regenerate here and waits for its run to end.

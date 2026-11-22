@@ -1,9 +1,11 @@
+import NovelForgeCore
 import ShadowAppShell
 import ShadowDesignSystem
 import SwiftUI
 
 struct RootView: View {
   let vault: NovelForgeVault
+  @Environment(AdultConfirmationModel.self) private var adult
 
   var body: some View {
     Group {
@@ -11,7 +13,7 @@ struct RootView: View {
       case .opening:
         ProgressView()
       case .ready(let store):
-        NovelForgeShell(store: store)
+        NovelForgeShell(store: store, ageGate: adult.gate)
       case .locked:
         VaultLockedView { Task { await vault.open() } }
       case .failed(let error):

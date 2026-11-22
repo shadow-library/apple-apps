@@ -214,7 +214,7 @@ struct ChatSessionModelTests {
     try await ChatWait.until("the resumed reply lands") { model.lastReply?.content == "Resumed at launch." }
   }
 
-  @Test("should not offer Answer Here for a message that follows an unrestricted novel while the flag is off")
+  @Test("should not offer Answer Here for a message that follows an unrestricted novel while the flag is off", .enabled(if: !UnrestrictedWriting.isAvailable))
   func shouldNotOfferAnswerHereForAMessageThatFollowsAnUnrestrictedNovel() async throws {
     let world = try await ChatWorld.make(contentMode: .unrestricted)
     let session = try await world.session()
@@ -270,9 +270,8 @@ struct ChatConsentTests {
     #expect(explanation.contains("usage"))
   }
 
-  @Test("should refuse an unrestricted request while the build flag is off")
+  @Test("should refuse an unrestricted request while the build flag is off", .enabled(if: !UnrestrictedWriting.isAvailable))
   func shouldRefuseAnUnrestrictedRequestWhileTheFlagIsOff() async throws {
-    #expect(!UnrestrictedWriting.isAvailable)
     let world = try await ChatWorld.make()
     let model = world.model(of: try await world.session())
 
@@ -283,7 +282,8 @@ struct ChatConsentTests {
 
   @Test("should keep one runtime per open vault")
   func shouldKeepOneRuntimePerOpenVault() throws {
-    let runtimes = ChatRuntimes()
+    let runtimes = ChatRuntimes(
+      adult: AdultConfirmationModel(store: AdultConfirmationStore(defaults: try #require(UserDefaults(suiteName: "ChatSessionModelTests-\(UUID().uuidString)")))))
     let services = AIServices.novelForge(defaults: try #require(UserDefaults(suiteName: "ChatSessionModelTests-\(UUID().uuidString)")))
     let store = try NovelForgeStore.openInMemory()
     #expect(runtimes.runtime(for: store, services: services) === runtimes.runtime(for: store, services: services))

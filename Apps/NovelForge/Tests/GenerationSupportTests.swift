@@ -95,7 +95,7 @@ struct GenerationWorld {
           TaskRouter(
             configuration: TaskRouterConfiguration(provider: .anthropic), anthropic: binding, openRouter: nil, credentials: GenerationCredentials(), store: store,
             requestGuard: requestGuard)
-        }, consent: consent.requirement, clock: clock)
+        }, consent: consent.requirement, clock: clock, ageGate: AgeGate(passed: true))
     }
     let assertion = JobPowerAssertion(activity: power.activity)
     let calls = starter.map { JobEngineCalls(run: $0) } ?? JobEngineCalls()

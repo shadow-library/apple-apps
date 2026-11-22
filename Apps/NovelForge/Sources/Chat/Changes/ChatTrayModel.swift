@@ -102,8 +102,11 @@ nonisolated struct ChatTraySnapshot: Equatable, Sendable {
   let cards: Derived<ChatTrayCards>
   let lasts: [ChatTrayLast]
 
-  static func load(novel: UUID, in transaction: ReadTransaction) throws -> ChatTraySnapshot {
-    ChatTraySnapshot(cards: try ChatTrayCards.load(novel: novel, in: transaction), lasts: try Self.lasts(novel: novel, in: transaction))
+  /// `unrestrictedAvailable` is the engine's when the tray reads.
+  static func load(novel: UUID, unrestrictedAvailable: Bool, in transaction: ReadTransaction) throws -> ChatTraySnapshot {
+    ChatTraySnapshot(
+      cards: try ChatTrayCards.load(novel: novel, in: transaction),
+      lasts: try Self.lasts(novel: novel, unrestrictedAvailable: unrestrictedAvailable, in: transaction))
   }
 
   /// A row with no fault yet belongs to an apply running its actions now, or to a sweep that has not finished: neither waits on the author.
@@ -114,7 +117,7 @@ nonisolated struct ChatTraySnapshot: Equatable, Sendable {
   }
 
   /// Archived chats take no turn, so what waits in them is left out; their cards still wait, novel-wide.
-  private static func lasts(novel: UUID, in transaction: ReadTransaction) throws -> [ChatTrayLast] {
+  private static func lasts(novel: UUID, unrestrictedAvailable: Bool, in transaction: ReadTransaction) throws -> [ChatTrayLast] {
     let sessions = try ChatSessionList.load(ChatSessionListQuery(novel: novel, filter: .active, startedOnly: true), in: transaction).sessions.value ?? []
     let mode: ContentMode = try NovelRecord.read(id: novel, in: transaction).entry?.record.contentMode.known == .unrestricted ? .unrestricted : .standard
     var undecided: Set<ProgressItemKey>?
@@ -125,7 +128,7 @@ nonisolated struct ChatTraySnapshot: Equatable, Sendable {
       else { return nil }
       switch record.role {
       case .known(.user):
-        return ChatTrayLast(session: session, message: record.id, kind: .author(ChatAnswerBlock.of(last, novelMode: mode)))
+        return ChatTrayLast(session: session, message: record.id, kind: .author(ChatAnswerBlock.of(last, novelMode: mode, unrestrictedAvailable: unrestrictedAvailable)))
       case .known(.assistant):
         // chat-view.ts:625-629: Forge's newest reply asked a question the author has not written after
         guard let question = record.questionCard, !question.answers.isEmpty else { return nil }
@@ -262,9 +265,9 @@ final class ChatTrayModel {
   var isUnavailable: Bool { state.value?.cards.isUnavailable == true }
 
   func observe() async {
-    let (store, novel) = (context.store, context.novel)
+    let (store, novel, engine) = (context.store, context.novel, engine)
     await observer.run(
-      { store.observeReads { transaction in try ChatTraySnapshot.load(novel: novel, in: transaction) } },
+      { store.observeReads { transaction in try ChatTraySnapshot.load(novel: novel, unrestrictedAvailable: engine.unrestrictedAvailable, in: transaction) } },
       onValue: { [weak self] _ in Task { await self?.refreshActivities() } })
   }
 

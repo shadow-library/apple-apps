@@ -49,17 +49,17 @@ struct AmendSummarizeTests {
     #expect(AmendErrors.headline(code: ChapterSummaryError.conflict(chapter: 1, attempted: "").code) != nil)
   }
 
-  @Test("should return an isolated draft's summary and state unsaved")
-  func keepsAnIsolatedSummaryUnsaved() async throws {
-    let world = try await AmendWorld.make(calls: [AmendWorld.reply], unrestricted: true)
+  @Test("should refuse an isolated draft's summary and save nothing while this device cannot write unrestricted text", .enabled(if: !UnrestrictedWriting.isAvailable))
+  func refusesAnIsolatedSummaryWhileUnavailable() async throws {
+    let world = try await AmendWorld.make(calls: [AmendWorld.reply])
     try await world.draft(isolated: true)
     let model = world.summaryModel()
     await model.load()
 
     await model.summarize()
 
-    #expect(model.notice == .unsaved && model.isUnsavedIsolated && model.summary == "Mara finds the torn logbook." && model.canSave)
-    #expect(model.stateText?.contains("Mara stares at the torn page.") == true)
+    #expect(model.failure != nil && model.notice == nil)
+    #expect(world.provider.requests.isEmpty)
     #expect(try await world.source()?.summary == "")
   }
 

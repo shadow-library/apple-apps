@@ -51,6 +51,7 @@ struct ChatTurnStatusView: View {
   private func elsewhereMessage(_ block: ChatAnswerBlock?) -> Text {
     switch block {
     case nil: Text("Its reply appears here when it arrives. Answer here to write a reply on this device as well; both stay in the chat.", tableName: "Chat")
+    case .unrestricted where UnrestrictedWriting.isAvailable: Text("It asks for unrestricted writing, which needs your age confirmed on this device.", tableName: "Chat")
     case .unrestricted: Text("It asks for unrestricted writing, which this version cannot do.", tableName: "Chat")
     case .folded: ChatAnswerBlockText.folded
     case .unreadable: ChatAnswerBlockText.unreadable

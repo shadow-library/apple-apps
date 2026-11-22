@@ -13,6 +13,8 @@ struct ChatPlanCard: View {
   let model: ChatProposalCardModel
   let presenter: ChatCardsPresenter
   @State private var labels = ReadObserver<PlanCardLabels>()
+  @Environment(AdultConfirmationModel.self) private var adult
+  @Environment(AIServices.self) private var services
 
   var body: some View {
     Group {
@@ -150,9 +152,19 @@ struct ChatPlanCard: View {
     case .standard?: field(Text("Content for this chapter", tableName: "PlanCard"), String(localized: "Standard", table: "PlanCard"))
     case .unrestricted?:
       field(Text("Content for this chapter", tableName: "PlanCard"), String(localized: "Unrestricted", table: "PlanCard"))
-      hint(UnrestrictedWriting.isAvailable ? PlanCardContent.unrestrictedNote : PlanCardContent.unrestrictedUnavailableNote)
+      hint(unrestrictedNote)
     case .novel?: field(Text("Content for this chapter", tableName: "PlanCard"), String(localized: "Follows the novel's setting", table: "PlanCard"))
     case nil: EmptyView()
+    }
+  }
+
+  private var unrestrictedNote: Text {
+    guard UnrestrictedWriting.isAvailable else { return PlanCardContent.unrestrictedUnavailableNote }
+    switch (services.settings.assignments.hasUnrestrictedModel, adult.isConfirmed) {
+    case (true, true): return PlanCardContent.unrestrictedNote
+    case (true, false): return PlanCardContent.unrestrictedAgeNote
+    case (false, true): return PlanCardContent.unrestrictedModelNote
+    case (false, false): return PlanCardContent.unrestrictedModelAndAgeNote
     }
   }
 
@@ -402,6 +414,11 @@ nonisolated struct PlanCardContent: Equatable, Sendable {
     tableName: "PlanCard")
   static let unrestrictedUnavailableNote = Text(
     "Unrestricted writing isn't available right now, so this chapter can't be written until it is.", tableName: "PlanCard")
+  static let unrestrictedAgeNote = Text(
+    "This chapter can be written on this device once you confirm your age for unrestricted writing in Settings.", tableName: "PlanCard")
+  static let unrestrictedModelNote = Text("This chapter can be written once a model is chosen for unrestricted writing.", tableName: "PlanCard")
+  static let unrestrictedModelAndAgeNote = Text(
+    "This chapter can be written on this device once a model is chosen for unrestricted writing and you confirm your age in Settings.", tableName: "PlanCard")
 
   // apps/novel-forge-web/src/lib/chapter-brief.ts:140-148, 160-162: a hook this version does not know reads as none
   static func hookLabel(_ hook: String) -> String? {

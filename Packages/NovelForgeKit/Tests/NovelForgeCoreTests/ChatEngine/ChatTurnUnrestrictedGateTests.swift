@@ -110,6 +110,33 @@ struct ChatTurnUnrestrictedGateTests {
     #expect(try await World.messages(book.session, in: book.store).isEmpty)
   }
 
+  @Test func shouldRefuseANewUnrestrictedMessageWhileTheAgeGateIsWithheld() async throws {
+    let book = try await unrestrictedNovel()
+    let provider = ScriptedModelProvider()
+    let engine = try await World.engine(book.store, provider: provider, ageGate: AgeGate(passed: false))
+
+    await #expect {
+      _ = try await engine.send("Describe it.", session: book.session, novel: book.novel, choices: ChatTurnChoices(contentMode: .unrestricted))
+    } throws: { error in
+      (error as? ChatTurnError)?.code == "AI_024"
+    }
+    #expect(try await World.messages(book.session, in: book.store).isEmpty)
+    #expect(provider.requests.isEmpty)
+  }
+
+  @Test func shouldReadTheAgeGateAtEachTurn() async throws {
+    let book = try await unrestrictedNovel()
+    let gate = AgeGate(passed: true)
+    let engine = try await World.engine(book.store, provider: ScriptedModelProvider(), ageGate: gate)
+    #expect(engine.unrestrictedAvailable)
+    gate.update(passed: false)
+    #expect(!engine.unrestrictedAvailable)
+    gate.update(passed: true)
+    #expect(engine.unrestrictedAvailable)
+    let flagOff = try await World.engine(try NovelForgeStore.openInMemory(), provider: ScriptedModelProvider(), unrestrictedAvailable: false, ageGate: gate)
+    #expect(!flagOff.unrestrictedAvailable)
+  }
+
   @Test func shouldWriteANewMessageThatFollowsAnUnrestrictedNovelStandard() async throws {
     let book = try await unrestrictedNovel()
     let provider = ScriptedModelProvider(calls: [World.reply(("reply", World.text("Plainly.")))])

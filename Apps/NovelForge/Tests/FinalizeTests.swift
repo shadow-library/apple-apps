@@ -74,7 +74,7 @@ private struct FinalizeWorld {
         TaskRouter(
           configuration: TaskRouterConfiguration(provider: .anthropic), anthropic: binding, openRouter: nil, credentials: FinalizeCredentials(), store: store,
           requestGuard: requestGuard)
-      }, consent: consent.requirement, clock: LeaseClock(trusted: nil))
+      }, consent: consent.requirement, clock: LeaseClock(trusted: nil), ageGate: AgeGate(passed: true))
     return FinalizeWorld(store: store, novel: novel, engine: engine, model: FinalizeModel(store: store, novel: novel, chapter: 1))
   }
 

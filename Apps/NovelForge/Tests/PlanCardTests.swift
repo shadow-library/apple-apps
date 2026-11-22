@@ -56,7 +56,7 @@ private struct PlanWorld {
           TaskRouter(
             configuration: TaskRouterConfiguration(provider: .anthropic), anthropic: binding, openRouter: nil, credentials: PlanCredentials(), store: store,
             requestGuard: requestGuard)
-        }, consent: consent.requirement, clock: clock)
+        }, consent: consent.requirement, clock: clock, ageGate: AgeGate(passed: true))
     }
     if granted {
       try await store.write { transaction in
@@ -87,7 +87,7 @@ private struct PlanWorld {
   }
 
   func card(_ proposal: UUID) async throws -> (ChatProposalCardModel, Task<Void, Never>) {
-    let model = ChatProposalCardModel(proposal: proposal, context: context, writer: CoreChatProposalWriter(store: store))
+    let model = ChatProposalCardModel(proposal: proposal, context: context, writer: CoreChatProposalWriter(context: context))
     let task = observing { await model.observe() }
     try await ChatWait.until("the plan card loads") { model.status == .pending }
     return (model, task)
@@ -278,7 +278,7 @@ struct PlanCardTests {
     let prompt = try #require(world.provider.requests.first?.messages.first { $0.role == .user }?.text)
     #expect(prompt.contains("THE AUTHOR'S INTENT:\n\(PlanWorld.intent)"))
 
-    let tray = try await world.store.read { transaction in try ChatTraySnapshot.load(novel: world.novel, in: transaction) }
+    let tray = try await world.store.read { transaction in try ChatTraySnapshot.load(novel: world.novel, unrestrictedAvailable: false, in: transaction) }
     let waiting = ChatTrayItem.items(tray, activities: [:]).first { $0.target == .proposal(proposal) }
     #expect(waiting?.session == ChatProposalSession.none && waiting?.title == "Plan for chapter 1" && waiting?.isPlan == true)
 

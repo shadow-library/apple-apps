@@ -87,8 +87,9 @@ public final class ChatTurnEngine: Sendable {
   let grace: any ChatTurnGrace
   let timing: Timing
   let faults: Faults
-  /// Whether a turn may be written unrestricted; the app takes the build's flag (orchestrator decision 5).
-  let unrestrictedAvailable: Bool
+  /// The build's flag (orchestrator decision 5), which tests replace.
+  let buildsUnrestricted: Bool
+  let ageGate: AgeGate
   let embedders: (any EmbedderProvider)?
   private let running = Mutex<[UUID: Control]>([:])
   private let namings = Mutex<[UUID: (token: UUID, answer: Task<[UUID]?, Never>, settled: Task<Void, Never>)]>([:])
@@ -96,7 +97,7 @@ public final class ChatTurnEngine: Sendable {
   init(
     store: VaultStore, router: @escaping @Sendable () async -> TaskRouter, consent: AIConsentRequirement, upkeep: ChatSessionUpkeep,
     grace: any ChatTurnGrace = NoChatTurnGrace(), timing: Timing = .standard, faults: Faults = .none, unrestrictedAvailable: Bool = UnrestrictedWriting.isAvailable,
-    embedders: (any EmbedderProvider)? = nil
+    ageGate: AgeGate = AgeGate(passed: true), embedders: (any EmbedderProvider)? = nil
   ) {
     self.store = store
     self.router = router
@@ -105,18 +106,22 @@ public final class ChatTurnEngine: Sendable {
     self.grace = grace
     self.timing = timing
     self.faults = faults
-    self.unrestrictedAvailable = unrestrictedAvailable
+    self.buildsUnrestricted = unrestrictedAvailable
+    self.ageGate = ageGate
     self.embedders = embedders
   }
 
-  /// `router` builds the router for each turn, so a change to the AI settings holds from the next turn; `consent` is what a chat turn sends. `embedders` embeds a
-  /// lookup's query once the novel's vectors exist; nil searches by words alone.
+  /// `router` builds the router for each turn, so a change to the AI settings holds from the next turn; `consent` is what a chat turn sends. `ageGate` is this
+  /// device's, read at each turn. `embedders` embeds a lookup's query once the novel's vectors exist; nil searches by words alone.
   public convenience init(
-    store: VaultStore, router: @escaping @Sendable () async -> TaskRouter, consent: AIConsentRequirement, grace: any ChatTurnGrace = NoChatTurnGrace(),
-    embedders: (any EmbedderProvider)? = nil
+    store: VaultStore, router: @escaping @Sendable () async -> TaskRouter, consent: AIConsentRequirement, ageGate: AgeGate,
+    grace: any ChatTurnGrace = NoChatTurnGrace(), embedders: (any EmbedderProvider)? = nil
   ) {
-    self.init(store: store, router: router, consent: consent, upkeep: .vault(store), grace: grace, embedders: embedders)
+    self.init(store: store, router: router, consent: consent, upkeep: .vault(store), grace: grace, ageGate: ageGate, embedders: embedders)
   }
+
+  /// Whether a turn may be written unrestricted now: the build's flag, withheld while this device's age gate is not passed.
+  public var unrestrictedAvailable: Bool { buildsUnrestricted && ageGate.isPassed }
 
   /// Sends the author's message: refuses it with nothing written, or saves it with its local turn and returns the running turn.
   @concurrent

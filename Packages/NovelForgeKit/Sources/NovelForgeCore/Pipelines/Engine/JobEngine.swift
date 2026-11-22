@@ -89,20 +89,20 @@ public final class JobEngine: Sendable {
   private let starting = Mutex<[EntityRef: Task<Result<JobRunHandle, JobEngineError>, Never>]>([:])
   private let claim: JobEngineClaim
 
-  /// `embedders` ranks the plan's retrieval by vectors too once a novel is fully embedded; without it the plan's retrieval is full-text alone.
+  /// `embedders` ranks the plan's retrieval by vectors too once a novel is fully embedded; without it the plan's retrieval is full-text alone. `ageGate` is this
+  /// device's, read at each decision.
   public convenience init(
-    store: VaultStore, router: @escaping RouterSource, consent: AIConsentRequirement, clock: LeaseClock, embedders: (any EmbedderProvider)? = nil,
-    unrestrictedAvailable: Bool = UnrestrictedWriting.isAvailable
+    store: VaultStore, router: @escaping RouterSource, consent: AIConsentRequirement, clock: LeaseClock, ageGate: AgeGate, embedders: (any EmbedderProvider)? = nil
   ) throws(JobEngineError) {
     try self.init(
-      store: store, router: router, consent: consent, clock: clock, runner: AttemptRunner(store: store, clock: clock), embedders: embedders,
-      unrestrictedAvailable: unrestrictedAvailable)
+      store: store, router: router, consent: consent, clock: clock, runner: AttemptRunner(store: store, clock: clock), embedders: embedders, ageGate: ageGate)
   }
 
   init(
     store: VaultStore, router: @escaping RouterSource, consent: AIConsentRequirement, clock: LeaseClock, runner: AttemptRunner,
     catalog: @escaping @Sendable (NovelJobKind) -> NovelPipelineDefinition = PipelineCatalog.definition(for:), packs: WriterPackBuilder? = nil,
-    embedders: (any EmbedderProvider)? = nil, timing: Timing = .standard, faults: Faults = .none, unrestrictedAvailable: Bool = UnrestrictedWriting.isAvailable
+    embedders: (any EmbedderProvider)? = nil, timing: Timing = .standard, faults: Faults = .none, unrestrictedAvailable: Bool = UnrestrictedWriting.isAvailable,
+    ageGate: AgeGate = AgeGate(passed: true)
   ) throws(JobEngineError) {
     claim = try JobEngineClaim(store)
     self.store = store
@@ -113,7 +113,7 @@ public final class JobEngine: Sendable {
     self.faults = faults
     let packs = packs ?? vaultWriterPack(store)
     services = JobServices(
-      store: store, router: router, consent: consent, unrestrictedAvailable: unrestrictedAvailable, hardLines: NovelHardLines(), packs: packs,
+      store: store, router: router, consent: consent, buildsUnrestricted: unrestrictedAvailable, ageGate: ageGate, hardLines: NovelHardLines(), packs: packs,
       retrieval: NovelRetrieval(store: store, embedders: embedders), progress: RunProgressBoard(), now: { clock.now().date })
   }
 

@@ -53,7 +53,7 @@ struct ChatCardsWorld {
     let chat = try await ChatWorld.make(calls)
     let session = try await chat.store.createChatSession(novel: chat.novel, mode: mode).id
     try await chat.store.renameChatSession(session, novel: chat.novel, title: "Cards")
-    return ChatCardsWorld(chat: chat, session: session, writer: CoreChatProposalWriter(store: chat.store))
+    return ChatCardsWorld(chat: chat, session: session, writer: CoreChatProposalWriter(context: chat.context))
   }
 
   func reply(to message: String) async throws -> ChatMessageRecord {
@@ -135,7 +135,7 @@ struct ChatCardsReplicas {
 
   func context(_ device: Int) -> NovelContext { NovelContext(store: stores[device], novel: novel) }
 
-  func writer(_ device: Int) -> CoreChatProposalWriter { CoreChatProposalWriter(store: stores[device]) }
+  func writer(_ device: Int) -> CoreChatProposalWriter { CoreChatProposalWriter(context: context(device)) }
 
   private static func engine(store: VaultStore, provider: ScriptedModelProvider) async throws -> ChatTurnEngine {
     guard let origin = URL(string: "https://api.anthropic.com"), let binding = ProviderBinding(origin: origin, provider: provider) else { throw ChatFixtureError.noBinding }
@@ -146,7 +146,7 @@ struct ChatCardsReplicas {
     try await store.write { transaction in
       try AIConsent.decide(.granted, provider: binding.host, dataClass: consent.dataClass, summary: consent.id, atMillis: 1, in: &transaction)
     }
-    return ChatTurnEngine(store: store, router: { router }, consent: consent.requirement)
+    return ChatTurnEngine(store: store, router: { router }, consent: consent.requirement, ageGate: AgeGate(passed: true))
   }
 }
 

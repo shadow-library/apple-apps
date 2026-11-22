@@ -1,3 +1,4 @@
+import NovelForgeCore
 import ShadowAppShell
 import ShadowDesignSystem
 import SwiftUI
@@ -6,6 +7,7 @@ struct NovelForgeSettingsScene: View {
   let vault: NovelForgeVault
   let services: AIServices
   let sync: SyncRuntimes
+  let adult: AdultConfirmationModel
   #if os(macOS)
     let jobs: JobRuntimes
     let worker: WorkerModel
@@ -34,6 +36,19 @@ struct NovelForgeSettingsScene: View {
           Text("Sync", tableName: "SyncSettings")
         } icon: {
           Image(systemName: "arrow.triangle.2.circlepath")
+        }
+      }
+      if UnrestrictedWriting.isAvailable {
+        Tab(value: SettingsTabs.Tab.unrestricted) {
+          UnrestrictedWritingSettings(adult: adult, services: services)
+            .shadowTheme()
+            .frame(minWidth: 520, idealWidth: 600, minHeight: 480, idealHeight: 640)
+        } label: {
+          Label {
+            Text("Unrestricted Writing", tableName: "AgeGate")
+          } icon: {
+            Image(systemName: "exclamationmark.shield")
+          }
         }
       }
       #if os(macOS)

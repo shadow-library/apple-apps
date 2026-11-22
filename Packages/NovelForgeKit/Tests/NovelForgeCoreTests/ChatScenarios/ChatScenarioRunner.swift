@@ -146,7 +146,7 @@ final class ChatScenarioRunner {
     let selection: ApplySelection = apply["selection"]?.arrayValue.map { .indexes($0.compactMap(\.intValue).map { Int($0) }) } ?? .whole
     let outcome: ProposalApplyOutcome
     do {
-      outcome = try await store.applyProposal(proposal, selection: selection, context: ProposalApplyContext(novel: novel, now: book.clock.now))
+      outcome = try await store.applyProposal(proposal, selection: selection, context: ProposalApplyContext(novel: novel, now: book.clock.now, ageGate: AgeGate(passed: true)))
     } catch {
       return ["outcome": .string("error:\(error.code)")]
     }

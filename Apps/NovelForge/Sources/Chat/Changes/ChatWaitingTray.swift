@@ -250,6 +250,8 @@ enum ChatTrayText {
     case .actions(let indexes, .faulted(_, true)):
       String(localized: "\(indexes.count) actions stopped before they ran, and Novel Forge has stopped retrying them.", table: "ChatChanges")
     case .elsewhere(.folded?): String(localized: "It was folded into the chat's summary, so it can't be answered now.", table: "ChatChanges")
+    case .elsewhere(.unrestricted?) where UnrestrictedWriting.isAvailable:
+      String(localized: "It asks for unrestricted writing, which needs your age confirmed on this device.", table: "ChatChanges")
     case .elsewhere(.unrestricted?): String(localized: "It asks for unrestricted writing, which this version cannot do.", table: "ChatChanges")
     case .elsewhere(.unreadable?): String(localized: "This device can't read it, or a passage it points at.", table: "ChatChanges")
     case .card(nil), .unreadableCard, .question, .elsewhere(nil), .interrupted, .failed: nil

@@ -30,7 +30,7 @@ struct AmendWorld {
 
   var context: NovelContext { NovelContext(store: store, novel: novel) }
 
-  static func make(calls: [[ScriptedModelProvider.Step]] = [], unrestricted: Bool = false) async throws -> AmendWorld {
+  static func make(calls: [[ScriptedModelProvider.Step]] = []) async throws -> AmendWorld {
     let store = try NovelForgeStore.openInMemory()
     let novel = try await store.writeDomain { transaction throws(DomainError) in try Library.create(NewNovel(title: "Ashfall"), in: &transaction) }
     let provider = ScriptedModelProvider(calls: calls)
@@ -49,7 +49,7 @@ struct AmendWorld {
         TaskRouter(
           configuration: TaskRouterConfiguration(provider: .anthropic, assignments: OpenRouterAssignments(unrestricted: "or/unrestricted")), anthropic: standard,
           openRouter: unrestrictedBinding, credentials: AmendCredentials(), store: store, requestGuard: requestGuard)
-      }, consent: consent.requirement, clock: LeaseClock(trusted: nil), unrestrictedAvailable: unrestricted)
+      }, consent: consent.requirement, clock: LeaseClock(trusted: nil), ageGate: AgeGate(passed: true))
     return AmendWorld(store: store, novel: novel, engine: engine, provider: provider)
   }
 

@@ -90,7 +90,10 @@ public enum NovelEvaluation {
   }
 
   public static func applyPlanCard(of job: EntityRef, novel: UUID, in store: VaultStore, now: Date) async throws(ProposalApplyError) -> Bool {
-    guard case .applied = try await store.applyProposal(PlanCards.id(of: job), selection: .whole, context: ProposalApplyContext(novel: novel, now: now)) else { return false }
+    guard
+      case .applied = try await store.applyProposal(
+        PlanCards.id(of: job), selection: .whole, context: ProposalApplyContext(novel: novel, now: now, ageGate: AgeGate(passed: false)))
+    else { return false }
     return true
   }
 

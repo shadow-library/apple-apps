@@ -110,7 +110,7 @@ private struct PlacementWorld {
     let runtime = JobRuntime(store: store, clock: clock, platform: platform, takeOverDelay: .milliseconds(20), calls: fake.calls) { () throws(JobEngineError) in
       try JobEngine(
         store: store, router: { requestGuard in await services.router(store: store, requestGuard: requestGuard) }, consent: ConsentDisclosure.novelText.requirement,
-        clock: clock)
+        clock: clock, ageGate: AgeGate(passed: true))
     }
     return PlacementWorld(store: store, novel: novel, fake: fake, runtime: runtime)
   }

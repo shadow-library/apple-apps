@@ -70,7 +70,7 @@ struct ChatWorld {
         try AIConsent.decide(.granted, provider: binding.host, dataClass: consent.dataClass, summary: consent.id, atMillis: 1, in: &transaction)
       }
     }
-    return ChatTurnEngine(store: store, router: { router }, consent: ConsentDisclosure.novelText.requirement)
+    return ChatTurnEngine(store: store, router: { router }, consent: ConsentDisclosure.novelText.requirement, ageGate: AgeGate(passed: true))
   }
 }
 

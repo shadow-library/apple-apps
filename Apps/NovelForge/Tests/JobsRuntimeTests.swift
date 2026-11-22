@@ -151,7 +151,7 @@ private struct JobsWorld {
           TaskRouter(
             configuration: TaskRouterConfiguration(provider: .anthropic), anthropic: binding, openRouter: nil, credentials: JobsCredentials(), store: store,
             requestGuard: requestGuard)
-        }, consent: consent.requirement, clock: clock)
+        }, consent: consent.requirement, clock: clock, ageGate: AgeGate(passed: true))
     }
     let assertion = JobPowerAssertion(activity: power.activity)
     let settler = settler?(store)

@@ -18,7 +18,9 @@ final class NovelForgeAppDelegate: NSObject {
   let vault = NovelForgeVault { wallClock throws(VaultOpenError) in try await VaultOpener.open(try VaultOpener.appLocation(), wallClock: wallClock) }
   let sync = SyncRuntimes.live(identity: .novelForge)
   let ai = AIServices.novelForge()
-  let jobs = JobRuntimes(host: JobRunHosts.system())
+  let adult = AdultConfirmationModel.live()
+  private(set) lazy var chats = ChatRuntimes(adult: adult)
+  private(set) lazy var jobs = JobRuntimes(host: JobRunHosts.system(), ageGate: adult.gate)
   let retrieval = RetrievalRuntimes()
   #if os(macOS)
     private(set) lazy var worker = WorkerModel.live(sync: sync)

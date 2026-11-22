@@ -287,7 +287,7 @@ private struct PlanStartCard: View {
 
   init(proposal: UUID, context: NovelContext, presenter: ChatCardsPresenter) {
     self.presenter = presenter
-    _model = State(initialValue: ChatProposalCardModel(proposal: proposal, context: context, writer: CoreChatProposalWriter(store: context.store)))
+    _model = State(initialValue: ChatProposalCardModel(proposal: proposal, context: context, writer: CoreChatProposalWriter(context: context)))
   }
 
   var body: some View {

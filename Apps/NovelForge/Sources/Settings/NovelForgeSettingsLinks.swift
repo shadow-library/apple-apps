@@ -5,6 +5,7 @@ import SwiftUI
 
 extension SettingsTabs.Tab {
   static let worker = SettingsTabs.Tab("worker")
+  static let unrestricted = SettingsTabs.Tab("unrestricted")
 }
 
 extension AISettingsButton where Links == NovelForgeSettingsLinks {
@@ -20,6 +21,7 @@ struct NovelForgeSettingsLinks: View {
   var body: some View {
     #if !os(macOS)
       HStack(spacing: Spacing.space3) {
+        UnrestrictedWritingLink()
         DevicesAndWorkerLink(store: store)
         NavigationLink {
           AboutView(identity: .novelForge, disclosures: AboutDisclosure.novelForge)

@@ -15,9 +15,11 @@ import SwiftUI
 final class JobRuntimes {
   private var current: (store: ObjectIdentifier, runtime: JobRuntime)?
   @ObservationIgnored private let host: any JobRunHost
+  @ObservationIgnored private let ageGate: AgeGate
 
-  init(host: any JobRunHost = ForegroundRunHost()) {
+  init(host: any JobRunHost = ForegroundRunHost(), ageGate: AgeGate = AgeGate(passed: false)) {
     self.host = host
+    self.ageGate = ageGate
   }
 
   /// The open vault's runtime, whichever vault that is.
@@ -32,7 +34,7 @@ final class JobRuntimes {
   func runtime(for store: VaultStore, services: AIServices, trustedClock: TrustedClock) -> JobRuntime {
     if let existing = existing(for: store) { return existing }
     current?.runtime.shutDown()
-    let created = JobRuntime.live(store: store, services: services, trustedClock: trustedClock, host: host)
+    let created = JobRuntime.live(store: store, services: services, trustedClock: trustedClock, ageGate: ageGate, host: host)
     current = (ObjectIdentifier(store), created)
     return created
   }
@@ -163,12 +165,15 @@ final class JobRuntime {
   }
 
   /// `trustedClock` is the vault's, which sync feeds from the storage's time, so leases are stamped and read against it.
-  static func live(store: VaultStore, services: AIServices, trustedClock: TrustedClock, host: any JobRunHost = ForegroundRunHost()) -> JobRuntime {
+  static func live(
+    store: VaultStore, services: AIServices, trustedClock: TrustedClock, ageGate: AgeGate, host: any JobRunHost = ForegroundRunHost()
+  ) -> JobRuntime {
     let clock = LeaseClock(trusted: trustedClock)
     let (consent, embedders) = (ConsentDisclosure.novelText.requirement, services.embedders)
     return JobRuntime(store: store, clock: clock, settler: services.settler(for: store), host: host) { () throws(JobEngineError) -> JobEngine in
       try JobEngine(
-        store: store, router: { requestGuard in await services.router(store: store, requestGuard: requestGuard) }, consent: consent, clock: clock, embedders: embedders)
+        store: store, router: { requestGuard in await services.router(store: store, requestGuard: requestGuard) }, consent: consent, clock: clock, ageGate: ageGate,
+        embedders: embedders)
     }
   }
 

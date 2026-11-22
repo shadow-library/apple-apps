@@ -48,7 +48,8 @@ final class ChatSessionModel {
   var notice: ChatNotice?
   /// What a message with no recorded mode follows: the novel's, standard unless known unrestricted (chat-selection.ts:22).
   var novelMode = ContentMode.standard
-  var replyOffer = ChatReplyOffer.none
+  /// The novel's offer, read when it is shown or a message is sent, so a change of AI settings or of the age confirmation holds at once.
+  @ObservationIgnored var offering: () -> ChatReplyOffer = { .none }
   @ObservationIgnored var turnEnded: (() -> Void)?
   let composer = ChatComposerState()
   private(set) var activity = ChatTurnActivity.idle
@@ -57,6 +58,8 @@ final class ChatSessionModel {
   private(set) var window = ChatTranscript.pageSize
   private(set) var generation = 0
   private(set) var focus: ChatFocusTarget?
+  /// The engine's answer, kept here so the transcript's notes follow a change of the age confirmation.
+  private(set) var unrestrictedAvailable: Bool
   private let engine: ChatTurnEngine
   private let observer = ReadObserver<ChatTranscriptSnapshot>()
   @ObservationIgnored private var following: Task<Void, Never>?
@@ -67,9 +70,12 @@ final class ChatSessionModel {
     self.session = session
     self.context = context
     self.engine = engine
+    unrestrictedAvailable = engine.unrestrictedAvailable
   }
 
   var state: Loadable<ChatTranscriptSnapshot> { observer.state }
+
+  var replyOffer: ChatReplyOffer { offering() }
 
   var page: ChatTranscriptPage? { state.value?.transcript.page.value }
 
@@ -115,7 +121,9 @@ final class ChatSessionModel {
 
   /// Nil while the message is not in the window yet: the engine still refuses what it cannot answer.
   func answerBlock(_ message: UUID) -> ChatAnswerBlock? {
-    messages.first { $0.record?.id == message }.flatMap { ChatAnswerBlock.of($0, novelMode: novelMode) }
+    messages.first { $0.record?.id == message }.flatMap {
+      ChatAnswerBlock.of($0, novelMode: novelMode, unrestrictedAvailable: unrestrictedAvailable)
+    }
   }
 
   var focusedRow: EntityKey? {
@@ -133,7 +141,7 @@ final class ChatSessionModel {
     focus = nil
   }
 
-  /// Retry asks again with the message as it was sent; one that asked for unrestricted writing waits for the flag.
+  /// Retry asks again with the message as it was sent; one that asked for unrestricted writing waits until this device can write it.
   func canRetry(_ turn: LocalTurn) -> Bool {
     !asksForUnrestricted(turn.userMessage)
   }
@@ -164,6 +172,11 @@ final class ChatSessionModel {
   @discardableResult
   func send(_ content: String, passages: [ChatTurnPassage] = [], choices: ChatTurnChoices = ChatTurnChoices()) async -> Bool {
     await perform(.send(content: content, passages: passages, choices: choices))
+  }
+
+  func ageConfirmationChanged(confirmed: Bool) {
+    if !confirmed { composer.ageConfirmationWithdrawn() }
+    unrestrictedAvailable = engine.unrestrictedAvailable
   }
 
   func stop() {
@@ -298,7 +311,7 @@ final class ChatSessionModel {
   }
 
   private func asksForUnrestricted(_ message: UUID) -> Bool {
-    guard !UnrestrictedWriting.isAvailable else { return false }
+    guard !unrestrictedAvailable else { return false }
     guard let record = messages.first(where: { $0.record?.id == message })?.record else { return false }
     return (record.contentMode?.known ?? novelMode) == .unrestricted
   }

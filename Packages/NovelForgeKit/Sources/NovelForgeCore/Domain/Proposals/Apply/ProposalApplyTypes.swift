@@ -4,7 +4,11 @@ import ShadowStore
 
 /// Whether this build can write unrestricted text: store builds ship without it until App Review accepts it, so no apply raises a plan to unrestricted.
 public enum UnrestrictedWriting {
-  public static let isAvailable = false
+  #if SHADOW_UNRESTRICTED
+    public static let isAvailable = true
+  #else
+    public static let isAvailable = false
+  #endif
 }
 
 // apps/novel-forge-server/src/modules/refinement/proposal-apply.service.ts:36-44
@@ -18,9 +22,9 @@ public struct ProposalApplyContext: Sendable {
   /// apply/unrestricted-raise.ts:18: whether unrestricted writing is available to this caller, asked only when a selected op raises a plan to it.
   var unrestrictedAvailable = UnrestrictedWriting.isAvailable
 
-  /// The author's own apply: never automatic, and unrestricted only as far as this build allows.
-  public init(novel: UUID, now: Date) {
-    self.init(novel: novel, now: now, automatic: false, sources: nil, unrestrictedAvailable: UnrestrictedWriting.isAvailable)
+  /// The author's own apply: never automatic, and unrestricted only as far as this build allows and `ageGate` lets it on this device.
+  public init(novel: UUID, now: Date, ageGate: AgeGate) {
+    self.init(novel: novel, now: now, automatic: false, sources: nil, unrestrictedAvailable: UnrestrictedWriting.isAvailable && ageGate.isPassed)
   }
 
   init(novel: UUID, now: Date, automatic: Bool = false, sources: [OpSource]? = nil, unrestrictedAvailable: Bool) {

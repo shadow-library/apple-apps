@@ -7,13 +7,14 @@ public struct ProposalRevertContext: Sendable {
   let novel: UUID
   var now: Date
   /// apply/unrestricted-raise.ts:18: asked only when a redone op raises a plan to unrestricted.
-  var unrestrictedAvailable = UnrestrictedWriting.isAvailable
+  var unrestrictedAvailable: Bool
   /// Indexes this card's apply left out whose records changed since, which the author confirmed to treat as never applied (`declinedChanged`).
   var acceptingChangedDeclined: Set<Int> = []
 
-  public init(novel: UUID, now: Date, acceptingChangedDeclined: Set<Int> = []) {
+  public init(novel: UUID, now: Date, ageGate: AgeGate, acceptingChangedDeclined: Set<Int> = []) {
     self.novel = novel
     self.now = now
+    self.unrestrictedAvailable = UnrestrictedWriting.isAvailable && ageGate.isPassed
     self.acceptingChangedDeclined = acceptingChangedDeclined
   }
 }

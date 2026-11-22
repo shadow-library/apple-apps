@@ -23,6 +23,8 @@ struct TurnStagingRequest: Sendable {
   let warnings: [String]
   let run: String?
   let now: Date
+  /// Whether the turn's automatic apply may raise a plan to unrestricted: the engine's answer for this device.
+  var unrestrictedAvailable = false
 }
 
 extension VaultStore {
@@ -181,7 +183,7 @@ struct TurnStoreSteps: TurnStagingSteps {
           throw DirectAbort(outcome: .failed(note: Self.failureNote(error)))
         }
         guard staged.proposal.card.warnings.isEmpty else { throw DirectAbort(outcome: .warned) }
-        let context = ProposalApplyContext(novel: request.novel, now: request.now, automatic: true, sources: sources, unrestrictedAvailable: UnrestrictedWriting.isAvailable)
+        let context = ProposalApplyContext(novel: request.novel, now: request.now, automatic: true, sources: sources, unrestrictedAvailable: request.unrestrictedAvailable)
         let outcome: ProposalApplyOutcome
         do throws(ProposalApplyError) {
           outcome = try ProposalApply.apply(proposal: staged.proposal.id, selection: .whole, context: context, in: &transaction)

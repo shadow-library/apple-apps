@@ -43,7 +43,7 @@ private struct ChecksWorld {
         TaskRouter(
           configuration: TaskRouterConfiguration(provider: .anthropic), anthropic: binding, openRouter: nil, credentials: ChecksCredentials(), store: store,
           requestGuard: requestGuard)
-      }, consent: consent.requirement, clock: LeaseClock(trusted: nil))
+      }, consent: consent.requirement, clock: LeaseClock(trusted: nil), ageGate: AgeGate(passed: true))
     return ChecksWorld(store: store, novel: novel, engine: engine, model: ChecksModel(context: NovelContext(store: store, novel: novel), chapter: 1))
   }
 

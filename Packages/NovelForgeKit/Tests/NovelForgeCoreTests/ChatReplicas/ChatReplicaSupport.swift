@@ -138,8 +138,8 @@ enum ChatReplicaWorld {
   static let novel = SchemaFixture.novel
   static let session = ChatWorld.session
   static let now = Date(timeIntervalSince1970: 1_700_000_000)
-  static var applyContext: ProposalApplyContext { ProposalApplyContext(novel: novel, now: now) }
-  static var revertContext: ProposalRevertContext { ProposalRevertContext(novel: novel, now: now) }
+  static var applyContext: ProposalApplyContext { ProposalApplyContext(novel: novel, now: now, ageGate: AgeGate(passed: true)) }
+  static var revertContext: ProposalRevertContext { ProposalRevertContext(novel: novel, now: now, ageGate: AgeGate(passed: true)) }
 
   /// The novel (`mara`, milestone `rise`) and an active chat in `auto` mode on every replica, each with its consent granted, its model, router and engine.
   static func devices(count: Int, order: CausalReplicaOrder = .causal, seed: UInt64) async throws -> (NovelForgeReconciler, CausalReplicas, [ChatDevice]) {

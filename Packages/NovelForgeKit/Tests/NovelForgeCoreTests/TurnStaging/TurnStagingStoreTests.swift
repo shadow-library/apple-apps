@@ -106,6 +106,30 @@ struct TurnStagingStoreTests {
     #expect(try await book.proposal(try #require(result.cardProposal)).card.warnings.contains("echo"))
   }
 
+  // A plan is always a card, so a turn's automatic apply never raises one; the author's apply decides, through this device's age gate.
+  @Test func shouldCardARaiseToUnrestrictedAndApplyItOnlyThroughTheAgeGate() async throws {
+    let book = try await StagingWorld.workspace()
+    let raise = #"{"op":"brief.update","chapter":4,"body":"Mara leaves.","contentMode":"unrestricted"}"#
+    var request = try Turn.request(raise, novel: book.novel, now: book.clock.now)
+    request.unrestrictedAvailable = true
+    let result = try await book.turn(request)
+
+    #expect(result.appliedProposal == nil)
+    let card = try #require(result.cardProposal)
+    #expect(types(try await book.ops(of: card)) == [.briefUpdate])
+    #expect(try await book.livePlan(4) == nil)
+
+    let gate = AgeGate(passed: false)
+    let withheld = ProposalApplyContext(novel: book.novel, now: book.clock.now, ageGate: gate)
+    #expect(await book.applyError(card, context: withheld) == .changeRefused(indexes: [0], .refused(.unrestrictedUnavailable)))
+    #expect(try await book.livePlan(4) == nil)
+    gate.update(passed: true)
+    #expect(ProposalApplyContext(novel: book.novel, now: book.clock.now, ageGate: gate).unrestrictedAvailable == UnrestrictedWriting.isAvailable)
+    let flagged = ProposalApplyContext(novel: book.novel, now: book.clock.now, unrestrictedAvailable: gate.isPassed)
+    #expect(try await book.applied(card, context: flagged).map(\.status) == [.applied])
+    #expect(try await book.livePlan(4)?.contentMode == .known(.unrestricted))
+  }
+
   // turn-proposals.ts:154-156: the direct card is rolled back with its transaction, so only the cards stand and nothing was applied
   @Test func shouldTurnEveryOpIntoACardWhenTheAutomaticApplyIsRefusedLeavingNoOtherProposal() async throws {
     let book = try await StagingWorld.book()

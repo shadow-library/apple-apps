@@ -612,6 +612,17 @@
         }
       }
     },
+    "It asks for unrestricted writing, which needs your age confirmed on this device.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "It asks for unrestricted writing, which needs your age confirmed on this device."
+          }
+        }
+      }
+    },
     "It asks for unrestricted writing, which this version cannot do.": {
       "extractionState": "manual",
       "localizations": {
@@ -1557,6 +1568,17 @@
           "stringUnit": {
             "state": "translated",
             "value": "Unrestricted writing isn't available right now"
+          }
+        }
+      }
+    },
+    "Unrestricted writing needs your age confirmed on this device. Confirm it in Settings, or send it as standard writing instead.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Unrestricted writing needs your age confirmed on this device. Confirm it in Settings, or send it as standard writing instead."
           }
         }
       }

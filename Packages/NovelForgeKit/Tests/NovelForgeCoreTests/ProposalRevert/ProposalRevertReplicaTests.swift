@@ -9,7 +9,7 @@ import Testing
 
 private let novel = SchemaFixture.novel
 private let now = Date(timeIntervalSince1970: 1_700_000_000)
-private let context = ProposalRevertContext(novel: novel, now: now)
+private let context = ProposalRevertContext(novel: novel, now: now, ageGate: AgeGate(passed: true))
 
 private func makeReplicas(seed: UInt64) async throws -> (NovelForgeReconciler, CausalReplicas) {
   let reconciler = try Projection.reconciler()
@@ -132,7 +132,7 @@ struct ProposalRevertReplicaTests {
     let before = try await states(["draft:1"], on: 0, in: replicas)
     try await applyTurn(id, .indexes([0]), sources: [.quoted, .quoted, .quoted], on: 0, in: replicas)
     await replicas.advanceClock(of: 1, by: .seconds(60))
-    let author = ProposalApplyContext(novel: novel, now: now)
+    let author = ProposalApplyContext(novel: novel, now: now, ageGate: AgeGate(passed: true))
     _ = try await replicas.write(1) { transaction in try ProposalApply.apply(proposal: id, selection: .indexes([1, 2]), context: author, in: &transaction) }
     try await replicas.settle()
     let after = try await states(["draft:1"], on: 2, in: replicas)
@@ -181,7 +181,7 @@ struct ProposalRevertReplicaTests {
     try await replicas.settle()
     try await applyTurn(id, .indexes([1]), sources: [.quoted, .quoted], on: 0, in: replicas)
     await replicas.advanceClock(of: 1, by: .seconds(60))
-    let author = ProposalApplyContext(novel: novel, now: now)
+    let author = ProposalApplyContext(novel: novel, now: now, ageGate: AgeGate(passed: true))
     _ = try await replicas.write(1) { transaction in try ProposalApply.apply(proposal: id, selection: .indexes([0]), context: author, in: &transaction) }
 
     try await replicas.deliver(from: 0, to: 2)

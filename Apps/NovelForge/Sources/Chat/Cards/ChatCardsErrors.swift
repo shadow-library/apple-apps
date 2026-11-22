@@ -75,6 +75,7 @@ enum ChatCardsErrors {
       String(localized: "Something this change needs is stored in a form this version cannot read.", table: "ChatCards")
     case "refinement.partial_write", "refinement.rewrite_beside_whole_draft":
       String(localized: "These changes could not be applied together, so nothing was changed.", table: "ChatCards")
+    case "AI_024" where UnrestrictedWriting.isAvailable: String(localized: "Unrestricted writing needs your age confirmed on this device.", table: "ChatCards")
     case "AI_024": String(localized: "Unrestricted writing isn't available in this version.", table: "ChatCards")
     case "DRF_001": String(localized: "That chapter has no draft to act on.", table: "ChatCards")
     case "DRF_004": String(localized: "Approve the chapter's draft before finalizing it.", table: "ChatCards")

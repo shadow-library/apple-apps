@@ -315,6 +315,17 @@
         }
       }
     },
+    "It asks for unrestricted writing, which needs your age confirmed on this device.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "It asks for unrestricted writing, which needs your age confirmed on this device."
+          }
+        }
+      }
+    },
     "It asks for unrestricted writing, which this version cannot do.": {
       "extractionState": "manual",
       "localizations": {
