@@ -56,6 +56,8 @@ public actor SyncRuntime {
   private var lastMaintenance: Duration?
   private var lastFailureWasUnreachable = false
   private(set) var completedRuns = 0
+  private var record = SyncRunRecord()
+  private var runFailureCode: String?
 
   /// `store` must have been opened with `SyncEngine.migrations` and `SyncEngine.wallClock(preferring: trustedClock)`. `refresh` runs first on
   /// every foreground, as when the app asks CloudKit's sync engine to fetch.
@@ -96,6 +98,14 @@ public actor SyncRuntime {
   }
 
   public var currentPhase: SyncPhase? { phase }
+
+  public var runRecord: SyncRunRecord {
+    var record = record
+    record.runs = completedRuns
+    record.consecutiveFailures = scheduler.consecutiveFailures
+    record.unsentWrites = max(0, writes - uploadedWrites)
+    return record
+  }
 
   /// Where the runtime syncs in a vault phase, awaiting a key included; nil in every other phase.
   public var attachedLocation: SyncAttachedLocation? {
@@ -420,6 +430,7 @@ public actor SyncRuntime {
 
   private func run(_ work: SyncWork) async {
     lastFailureWasUnreachable = false
+    runFailureCode = nil
     let result = await perform(work)
     isCatchingUp = false
     completedRuns += 1
@@ -427,7 +438,11 @@ public actor SyncRuntime {
     switch result {
     case .completed:
       attention.transient = nil
+      record.lastSucceeded = wallClock()
     case .failed, .rateLimited:
+      record.failedRuns += 1
+      record.lastFailed = wallClock()
+      record.lastFailureCode = runFailureCode
       let failures = scheduler.consecutiveFailures
       if lastFailureWasUnreachable, failures >= scheduler.policy.unreachableAfterFailures { attention.transient = .storageUnreachable }
       Self.logger.info("Sync run will retry failures=\(failures, privacy: .public)")
@@ -642,6 +657,7 @@ public actor SyncRuntime {
 
   private func failure(of error: SyncStartupError) async -> SyncRunResult {
     Self.logger.warning("Sync evaluation failed code=\(error.code, privacy: .public)")
+    runFailureCode = error.code
     if let result = await conditionFailure() { return result }
     switch error {
     case .deviceLocked, .setup(.deviceLocked): return apply(.deviceLocked) ?? .completed
@@ -661,6 +677,7 @@ public actor SyncRuntime {
 
   private func failure(of error: SyncError, retry: SyncWork) async -> SyncRunResult {
     Self.logger.warning("Sync call failed code=\(error.code, privacy: .public)")
+    runFailureCode = error.code
     if let result = await conditionFailure() { return result }
     if let phase = SyncPhase(failure: error) { return apply(phase) ?? .completed }
     switch error {

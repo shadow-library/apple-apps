@@ -1,0 +1,226 @@
+{
+  "sourceLanguage": "en",
+  "strings": {
+    "A file of technical details to send with a support request. It never holds your %@'s content, your keys or anything that names you.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A file of technical details to send with a support request. It never holds your %@'s content, your keys or anything that names you."
+          }
+        }
+      }
+    },
+    "Clear": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Clear"
+          }
+        }
+      }
+    },
+    "Collecting the details.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Collecting the details."
+          }
+        }
+      }
+    },
+    "Counts %@ keeps about its own work": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Counts %@ keeps about its own work"
+          }
+        }
+      }
+    },
+    "Did not finish": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Did not finish"
+          }
+        }
+      }
+    },
+    "If something goes wrong, this file helps work out why. %@ builds it on this device, and it goes only where you save or share it.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "If something goes wrong, this file helps work out why. %@ builds it on this device, and it goes only where you save or share it."
+          }
+        }
+      }
+    },
+    "Never your %@'s content, names you gave, file or folder names, keys, passwords, tokens or your email address.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Never your %@'s content, names you gave, file or folder names, keys, passwords, tokens or your email address."
+          }
+        }
+      }
+    },
+    "Prepare the File": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Prepare the File"
+          }
+        }
+      }
+    },
+    "Ready": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ready"
+          }
+        }
+      }
+    },
+    "Save…": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Save…"
+          }
+        }
+      }
+    },
+    "Share Diagnostics": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Share Diagnostics"
+          }
+        }
+      }
+    },
+    "Share…": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Share…"
+          }
+        }
+      }
+    },
+    "Show the Summary": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Show the Summary"
+          }
+        }
+      }
+    },
+    "Technical log lines since %@ last opened, at most the last 24 hours, with personal values hidden": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Technical log lines since %@ last opened, at most the last 24 hours, with personal values hidden"
+          }
+        }
+      }
+    },
+    "The AI provider you chose, whether a key is saved, and which kinds of data you allowed": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The AI provider you chose, whether a key is saved, and which kinds of data you allowed"
+          }
+        }
+      }
+    },
+    "The app's version, the system's version and the kind of device": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The app's version, the system's version and the kind of device"
+          }
+        }
+      }
+    },
+    "The copy waiting here is removed when you clear it, leave this screen or next open %@.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The copy waiting here is removed when you clear it, leave this screen or next open %@."
+          }
+        }
+      }
+    },
+    "The file": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The file"
+          }
+        }
+      }
+    },
+    "The size of your %@ on this device and its format versions": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The size of your %@ on this device and its format versions"
+          }
+        }
+      }
+    },
+    "Try Again": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Try Again"
+          }
+        }
+      }
+    },
+    "What the file holds": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "What the file holds"
+          }
+        }
+      }
+    },
+    "Whether sync is on, the kind of storage, and each store's sync state, counts and error codes": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Whether sync is on, the kind of storage, and each store's sync state, counts and error codes"
+          }
+        }
+      }
+    }
+  },
+  "version": "1.0"
+}

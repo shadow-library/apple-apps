@@ -5,13 +5,15 @@ extension SettingsTabs.Tab {
   public static let about = SettingsTabs.Tab("about")
 }
 
-/// The app's name and version, what leaves the device, its privacy policy, support and contact when the identity sets them, and the third-party notices.
+/// The app's name and version, what leaves the device, its privacy policy, support and contact when the identity sets them, Share Diagnostics when the app
+/// passed its sources with `diagnostics(_:)`, and the third-party notices.
 /// Shown inside the app's own navigation stack, which the acknowledgements are pushed onto.
 public struct AboutView: View {
   private let identity: AppIdentity
   private let disclosures: [AboutDisclosure]
   private let version: AppVersion
   private let links: [AboutLink]
+  @Environment(\.diagnosticsSources) private var diagnostics
 
   public init(identity: AppIdentity, disclosures: [AboutDisclosure], version: AppVersion = AppVersion()) {
     self.identity = identity
@@ -26,6 +28,7 @@ public struct AboutView: View {
         header
         if !disclosures.isEmpty { disclosuresSection }
         if !links.isEmpty { linksSection }
+        if let diagnostics { DiagnosticsAboutSection(identity: identity, version: version, sources: diagnostics) }
         if let acknowledgements = Acknowledgements.bundled { acknowledgementsSection(acknowledgements) }
       }
       .padding(Spacing.space4)

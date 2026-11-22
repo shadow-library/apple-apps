@@ -51,6 +51,7 @@ final class NovelForgeAppDelegate: NSObject {
 #if os(macOS)
   extension NovelForgeAppDelegate: NSApplicationDelegate {
     func applicationDidFinishLaunching(_ notification: Notification) {
+      DiagnosticsArchives.clearLeftovers(identity: .novelForge)
       observe(NSWindow.willCloseNotification) { await UnsavedWork.shared.flushAll(within: .seconds(3)) }
       observe(NSApplication.didBecomeActiveNotification) { [sync, worker] in
         worker.refreshLoginItem()
@@ -105,6 +106,7 @@ final class NovelForgeAppDelegate: NSObject {
 #else
   extension NovelForgeAppDelegate: UIApplicationDelegate {
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil) -> Bool {
+      DiagnosticsArchives.clearLeftovers(identity: .novelForge)
       observe(UIApplication.protectedDataDidBecomeAvailableNotification) { [weak self] in
         guard let self else { return }
         await vault.protectedDataBecameAvailable()

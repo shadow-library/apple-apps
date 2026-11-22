@@ -33,6 +33,7 @@ struct NovelForgeApp: App {
         .environment(jobs)
         .environment(sync)
         .environment(settingsTabs)
+        .diagnostics(.novelForge(store: vault.store, sync: sync, ai: ai))
         .task { await ai.loadOpenRouterModelsIfKeyed() }
         .task(id: vault.store.map(ObjectIdentifier.init)) { await chats.launch(vault.store, services: ai) }
         .task(id: vault.store.map(ObjectIdentifier.init)) { await jobs.launch(vault.store, services: ai, trustedClock: vault.trustedClock) }
@@ -54,7 +55,10 @@ struct NovelForgeApp: App {
       .defaultLaunchBehavior(delegate.worker.isOn ? .suppressed : .automatic)
     #endif
     #if os(macOS)
-      Settings { NovelForgeSettingsScene(vault: vault, services: ai, sync: sync, adult: adult, jobs: jobs, worker: delegate.worker, tabs: settingsTabs) }
+      Settings {
+        NovelForgeSettingsScene(vault: vault, services: ai, sync: sync, adult: adult, jobs: jobs, worker: delegate.worker, tabs: settingsTabs)
+          .diagnostics(.novelForge(store: vault.store, sync: sync, ai: ai))
+      }
       WorkerMenuBar(worker: delegate.worker, tabs: settingsTabs)
     #endif
   }

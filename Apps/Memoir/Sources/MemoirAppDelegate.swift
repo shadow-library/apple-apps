@@ -59,6 +59,7 @@ final class MemoirAppDelegate: NSObject {
   extension MemoirAppDelegate: NSApplicationDelegate {
     func applicationDidFinishLaunching(_ notification: Notification) {
       MemoirExports.clearLeftovers()
+      DiagnosticsArchives.clearLeftovers(identity: .memoir)
       observe(NSApplication.didBecomeActiveNotification) { [sync] in await sync.activated() }
       observe(NSWindow.didBecomeMainNotification) { [sync] in await sync.activated() }
       if SyncCapabilities.current.receivesPushes { NSApplication.shared.registerForRemoteNotifications() }
@@ -81,6 +82,7 @@ final class MemoirAppDelegate: NSObject {
   extension MemoirAppDelegate: UIApplicationDelegate {
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil) -> Bool {
       MemoirExports.clearLeftovers()
+      DiagnosticsArchives.clearLeftovers(identity: .memoir)
       observe(UIApplication.protectedDataDidBecomeAvailableNotification) { [weak self] in
         guard let self else { return }
         await vault.protectedDataBecameAvailable()
