@@ -2,9 +2,11 @@ import MemoirCore
 import ShadowAppShell
 import SwiftUI
 
-/// The Settings screen's ways to Sync and AI settings: pushed pages on iPhone and iPad, the Settings window's tabs on the Mac.
+/// The Settings screen's ways to Sync and AI settings: pushed pages on iPhone and iPad, the Settings window's tabs on the Mac. Reminders are pushed on
+/// every device, since the choice belongs to the device in hand.
 struct MemoirSettingsLinks: View {
   let stores: MemoirStores
+  @Environment(ReminderScheduler.self) private var reminders: ReminderScheduler?
   #if os(macOS)
     @Environment(SettingsTabs.self) private var tabs
     @Environment(\.openSettings) private var openSettings
@@ -37,6 +39,13 @@ struct MemoirSettingsLinks: View {
         aiLabel
       }
     #endif
+    if let reminders {
+      NavigationLink {
+        RemindersSettingsView(scheduler: reminders)
+      } label: {
+        remindersLabel
+      }
+    }
   }
 
   #if os(macOS)
@@ -52,6 +61,14 @@ struct MemoirSettingsLinks: View {
       Text("Sync", tableName: "Sync")
     } icon: {
       Image(systemName: "arrow.triangle.2.circlepath")
+    }
+  }
+
+  private var remindersLabel: some View {
+    Label {
+      Text("Reminders", tableName: "Reminders")
+    } icon: {
+      Image(systemName: "bell")
     }
   }
 

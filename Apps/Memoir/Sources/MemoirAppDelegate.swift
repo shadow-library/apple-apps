@@ -9,7 +9,7 @@ import SwiftUI
   import UIKit
 #endif
 
-/// Owns the vault, its day turns, its sync and the AI services for the life of the process rather than of a window: a silent push may wake the app with no window to
+/// Owns the vault, its day turns, its reminders, its sync and the AI services for the life of the process rather than of a window: a silent push may wake the app with no window to
 /// open them, and on the Mac quitting must reach them after every window has closed.
 final class MemoirAppDelegate: NSObject {
   static let pushDeadline = Duration.seconds(25)
@@ -19,6 +19,7 @@ final class MemoirAppDelegate: NSObject {
   let sync = SyncRuntimes.live(identity: .memoir)
   let ai = AIServices.memoir()
   let dayTurns = MemoirDayTurns()
+  let reminders = ReminderScheduler.live()
   private var observers: [any NSObjectProtocol] = []
 
   /// Opens the vault if no window has yet, then follows its day and starts its sync; both wait for a call already in flight.
@@ -29,6 +30,7 @@ final class MemoirAppDelegate: NSObject {
 
   func vaultChanged() async {
     dayTurns.follow(vault.opened)
+    reminders.follow(vault.opened)
     guard let opened = vault.opened else { return }
     await sync.launch(MemoirSyncRoutes.vault(opened.stores), trustedClock: vault.trustedClock)
   }

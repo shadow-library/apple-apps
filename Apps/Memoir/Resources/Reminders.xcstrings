@@ -1,0 +1,338 @@
+{
+  "sourceLanguage": "en",
+  "strings": {
+    "%lld more reminders this week don’t fit yet. Memoir schedules them the next time it’s open after earlier ones have arrived.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld more reminder this week doesn’t fit yet. Memoir schedules it the next time it’s open after earlier ones have arrived."
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld more reminders this week don’t fit yet. Memoir schedules them the next time it’s open after earlier ones have arrived."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld reminders are set on this device for the coming week.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld reminder is set on this device for the coming week."
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld reminders are set on this device for the coming week."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "A quest you complete on another device stops reminding here once the change syncs; a reminder due before then may still arrive.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A quest you complete on another device stops reminding here once the change syncs; a reminder due before then may still arrive."
+          }
+        }
+      }
+    },
+    "Allow notifications in Settings to get reminders on this device.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Allow notifications in Settings to get reminders on this device."
+          }
+        }
+      }
+    },
+    "Another device recorded something this version can’t read. Quest reminders resume once Memoir is updated; subscription reminders still arrive.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Another device recorded something this version can’t read. Quest reminders resume once Memoir is updated; subscription reminders still arrive."
+          }
+        }
+      }
+    },
+    "Memoir asks first": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Memoir asks first"
+          }
+        }
+      }
+    },
+    "Memoir asks to send notifications once it has a reminder to schedule.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Memoir asks to send notifications once it has a reminder to schedule."
+          }
+        }
+      }
+    },
+    "Notifications are off for Memoir": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Notifications are off for Memoir"
+          }
+        }
+      }
+    },
+    "On your plan for today.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "On your plan for today."
+          }
+        }
+      }
+    },
+    "Open Settings": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Open Settings"
+          }
+        }
+      }
+    },
+    "Quest reminder": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Quest reminder"
+          }
+        }
+      }
+    },
+    "Quest reminders are paused": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Quest reminders are paused"
+          }
+        }
+      }
+    },
+    "Quests and subscriptions with a reminder turned on notify you on the devices where this is on. Each device keeps its own choice.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Quests and subscriptions with a reminder turned on notify you on the devices where this is on. Each device keeps its own choice."
+          }
+        }
+      }
+    },
+    "Remind me on this device": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Remind me on this device"
+          }
+        }
+      }
+    },
+    "Reminders": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reminders"
+          }
+        }
+      }
+    },
+    "Reminders are only for what you planned. Memoir never notifies you about a missed quest or about time away from the app.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reminders are only for what you planned. Memoir never notifies you about a missed quest or about time away from the app."
+          }
+        }
+      }
+    },
+    "Renews on %@ for %@.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Renews on %@ for %@."
+          }
+        }
+      }
+    },
+    "Renews on %@.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Renews on %@."
+          }
+        }
+      }
+    },
+    "Renews today for %@.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Renews today for %@."
+          }
+        }
+      }
+    },
+    "Renews today.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Renews today."
+          }
+        }
+      }
+    },
+    "Renews tomorrow for %@.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Renews tomorrow for %@."
+          }
+        }
+      }
+    },
+    "Renews tomorrow.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Renews tomorrow."
+          }
+        }
+      }
+    },
+    "Some reminders are waiting": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Some reminders are waiting"
+          }
+        }
+      }
+    },
+    "Starts in %@, at %@, the time you moved it to.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Starts in %@, at %@, the time you moved it to."
+          }
+        }
+      }
+    },
+    "Starts in %@, at %@.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Starts in %@, at %@."
+          }
+        }
+      }
+    },
+    "Starts now, at %@, the time you moved it to.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Starts now, at %@, the time you moved it to."
+          }
+        }
+      }
+    },
+    "Starts now, at %@.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Starts now, at %@."
+          }
+        }
+      }
+    },
+    "Subscription reminder": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Subscription reminder"
+          }
+        }
+      }
+    }
+  },
+  "version": "1.0"
+}
