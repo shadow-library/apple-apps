@@ -96,7 +96,9 @@ struct AskProviderCallout: View {
   var body: some View {
     ShadowCallout(
       Text("Connect an AI provider first", tableName: "Ask"),
-      message: Text("Memoir answers with your own Anthropic or OpenRouter key. Add one in AI settings; nothing is sent until you allow it.", tableName: "Ask"),
+      message: Text(
+        "Memoir answers with your own Anthropic or OpenRouter key. Add one in AI settings, or choose a model there for OpenRouter; nothing is sent until you allow it.",
+        tableName: "Ask"),
       intent: .info, systemImage: "key"
     ) {
       ShadowFlowLayout(spacing: Spacing.space3) {

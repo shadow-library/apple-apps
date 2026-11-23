@@ -4,6 +4,7 @@ extension Project {
   /// Every app in the monorepo is built through this so build settings, signing and test layout stay uniform.
   public static func app(
     name: String,
+    displayName: String? = nil,
     platform: AppPlatform,
     bundleIdSuffix: String? = nil,
     category: AppCategory? = nil,
@@ -17,7 +18,8 @@ extension Project {
     let bundleId = "\(Organization.appBundleIdPrefix).\(bundleIdSuffix ?? name.lowercased())"
     let resolved = AppCapabilities(capabilities, bundleId: bundleId, platform: platform)
     var defaultInfoPlist: [String: Plist.Value] = [
-      "CFBundleDisplayName": .string(name),
+      "CFBundleDisplayName": .string(displayName ?? name),
+      "CFBundleName": .string(displayName ?? name),
       "CFBundleShortVersionString": "$(MARKETING_VERSION)",
       "CFBundleVersion": "$(CURRENT_PROJECT_VERSION)",
       "UILaunchScreen": [:],

@@ -342,13 +342,13 @@
         }
       }
     },
-    "Memoir answers with your own Anthropic or OpenRouter key. Add one in AI settings; nothing is sent until you allow it.": {
+    "Memoir answers with your own Anthropic or OpenRouter key. Add one in AI settings, or choose a model there for OpenRouter; nothing is sent until you allow it.": {
       "extractionState": "manual",
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Memoir answers with your own Anthropic or OpenRouter key. Add one in AI settings; nothing is sent until you allow it."
+            "value": "Memoir answers with your own Anthropic or OpenRouter key. Add one in AI settings, or choose a model there for OpenRouter; nothing is sent until you allow it."
           }
         }
       }

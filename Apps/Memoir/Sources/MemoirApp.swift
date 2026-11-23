@@ -30,7 +30,7 @@ struct MemoirApp: App {
         .vaultDeletionNotice(delegate.deletion)
         .syncSettingsSection { MemoirSyncSettingsSection(vault: active.vault) }
         .demoSession(delegate.demo, identity: .memoir)
-        .task(id: ObjectIdentifier(active.ai)) { await active.ai.loadOpenRouterModelsIfKeyed() }
+        .loadsOpenRouterModels(active.ai)
         .task(id: active.vault.opened.map { ObjectIdentifier($0.stores.main) }) { await windows.activeVaultChanged() }
         .shadowTheme()
         #if os(macOS)

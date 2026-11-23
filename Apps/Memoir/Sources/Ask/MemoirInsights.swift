@@ -9,12 +9,12 @@ import ShadowJobs
 import ShadowStore
 
 /// What the Ask screen and the foreground hook run insights through: the vault's one `InsightEngine` (one runner per vault keeps a second attempt of a
-/// job from starting on this device), its router, whether a provider is there to call (a stored key, or the demo), and the settler that prices calls
+/// job from starting on this device), its router, whether a standard call has somewhere to go (`AIServices.isReadyForStandardCalls`), and the settler that prices calls
 /// left pending (a cancelled call, or an OpenRouter figure that had not arrived), which otherwise stay out of the spend and its caps.
 nonisolated struct InsightAccess: Sendable {
   let engine: InsightEngine
   let router: InsightEngine.RouterSource
-  let hasKey: @Sendable () async -> Bool
+  let isProviderReady: @Sendable () async -> Bool
   let leases: LeaseClock
   let settler: CostSettler?
 
@@ -95,7 +95,7 @@ final class MemoirInsights {
     let router: InsightEngine.RouterSource = { await ai.router(store: main) }
     let engine = InsightEngine(
       stores: stores, replay: ProjectionInsightReplay(main: main, now: clock.now, deviceZone: clock.deviceZone), router: router, clock: leases)
-    return InsightAccess(engine: engine, router: router, hasKey: { await ai.hasUsableProvider }, leases: leases, settler: ai.settler(for: main))
+    return InsightAccess(engine: engine, router: router, isProviderReady: { await ai.isReadyForStandardCalls }, leases: leases, settler: ai.settler(for: main))
   }
 
   /// Waits for what it started, then prices the calls those attempts left pending.
@@ -109,7 +109,7 @@ final class MemoirInsights {
       }
     }
     do {
-      if await access.hasKey() {
+      if await access.isProviderReady() {
         let zone = try await AccountZone.load(from: vault.stores.main)
         let local = try vault.clock.localNow(in: zone)
         if case .started(let handle) = try await access.engine.runDue(at: local) { started.append(handle) }

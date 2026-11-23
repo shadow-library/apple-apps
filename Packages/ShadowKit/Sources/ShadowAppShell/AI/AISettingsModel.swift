@@ -102,7 +102,6 @@ final class AISettingsModel {
   func load() async {
     refreshStoredKeys()
     await refreshConsents()
-    await loadModels()
   }
 
   func select(_ provider: ModelProviderKind) {
@@ -197,6 +196,14 @@ final class AISettingsModel {
     services.update { $0.limits = SpendLimits(daily: daily, monthly: monthly) }
     dailyText = SpendCapInput.text(for: daily)
     monthlyText = SpendCapInput.text(for: monthly)
+  }
+
+  /// The models section lists only while OpenRouter is the chosen provider, since the request carries its key; saving a key lists at once.
+  var listsModels: Bool { provider == .openRouter && storedKeys.contains(.openRouter) }
+
+  func loadModelsIfChosen() async {
+    guard listsModels else { return }
+    await loadModels()
   }
 
   func loadModels() async {

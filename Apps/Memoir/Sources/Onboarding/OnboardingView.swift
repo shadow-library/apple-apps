@@ -18,6 +18,7 @@ struct OnboardingView: View {
       ScrollView {
         VStack(alignment: .leading, spacing: Spacing.space5) {
           header
+          if model.offersDemo { OnboardingDemoOffer() }
           ShadowCard {
             step.frame(maxWidth: .infinity, alignment: .leading)
           }
@@ -114,6 +115,25 @@ struct OnboardingSyncHoldNotice: View {
         Text("This device is waiting for your data’s key", tableName: "Onboarding"),
         message: Text("Your other device’s data is still arriving. Finish adding this device in Sync, and Memoir opens with your data instead.", tableName: "Onboarding"),
         intent: .warning, systemImage: "key")
+    }
+  }
+}
+
+/// The demo instead of setting up; leaving it shows onboarding again from its first step, since the owner's vault is still empty.
+struct OnboardingDemoOffer: View {
+  @Environment(\.demoEntry) private var entry
+
+  var body: some View {
+    if entry != nil {
+      ShadowCallout(
+        Text("Just looking?", tableName: "Onboarding"),
+        message: Text(
+          "Try the demo: a sample week with answers scripted on this device. Nothing is set up here, and leaving the demo brings you back to this step.",
+          tableName: "Onboarding"),
+        intent: .info, systemImage: "play.circle"
+      ) {
+        TryDemoButton()
+      }
     }
   }
 }

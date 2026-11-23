@@ -76,3 +76,11 @@ enum SettingsFixtures {
     return SettingsWorld(services: services, secure: secure, defaults: defaults, suite: suite, store: try ShellStore.open())
   }
 }
+
+final class CallCount: Sendable {
+  private let count = Mutex(0)
+
+  var value: Int { count.withLock { $0 } }
+
+  func increment() { count.withLock { $0 += 1 } }
+}

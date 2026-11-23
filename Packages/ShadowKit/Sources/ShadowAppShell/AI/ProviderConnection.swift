@@ -162,8 +162,8 @@ struct ProviderConnectionSheet: View {
 }
 
 extension View {
-  /// Asks for a provider before an AI action that has none; `onConnected` runs once the sheet is gone and only if a provider is connected with a model for
-  /// every pace, so a consent sheet the action then needs is presented after it.
+  /// Asks for a provider before an AI action that has none; `onConnected` runs once the sheet is gone and only if standard calls are ready
+  /// (`isReadyForStandardCalls`: for OpenRouter, a model for at least one pace), so a consent sheet the action then needs is presented after it.
   /// Choosing the demo there instead closes it without the action.
   public func aiProviderSheet(isPresented: Binding<Bool>, services: AIServices, onConnected: @escaping () -> Void) -> some View {
     modifier(ProviderSheet(isPresented: isPresented, services: services, onConnected: onConnected))

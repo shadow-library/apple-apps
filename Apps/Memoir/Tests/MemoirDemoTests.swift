@@ -108,7 +108,7 @@ struct MemoirDemoTests {
     try await grant(InsightConsent.call, in: opened.stores.main)
     let access = try #require(demo.insights.access(for: MemoirScreenContext(opened)))
 
-    #expect(await access.hasKey())
+    #expect(await access.isProviderReady())
     guard case .started(let handle) = try await access.engine.ask("How did my week go?", id: UUID()) else {
       Issue.record("the question did not start")
       return
@@ -234,6 +234,42 @@ struct MemoirWindowRuntimesTests {
     #expect(windows.active.vault === owner.vault)
     #expect(windows.active.insights === owner.insights)
     #expect(followed.synced == [ObjectIdentifier(ownerVault.stores.main)])
+  }
+
+  @Test("should offer the demo on onboarding's first step, enter it without writing the owner's settings or first quest, and return to onboarding on leaving")
+  func shouldEnterTheDemoFromOnboarding() async throws {
+    defer { try? FileManager.default.removeItem(at: root) }
+    let windows = try windows(Followed())
+    let owner = windows.owner
+    await owner.vault.open()
+    await windows.activeVaultChanged()
+    let ownerVault = try #require(owner.vault.opened)
+    let gate = OnboardingGate()
+    let watching = Task { await gate.run(stores: ownerVault.stores) }
+    defer { watching.cancel() }
+    try await until("onboarding") { gate.state == .needed }
+    let onboarding = OnboardingModel(context: MemoirScreenContext(ownerVault))
+    #expect(onboarding.offersDemo)
+    onboarding.advance()
+    onboarding.setName("Morning walk")
+    #expect(onboarding.step == .quest && !onboarding.offersDemo)
+    onboarding.back()
+    #expect(onboarding.offersDemo)
+
+    await windows.demo.enter()
+    #expect(windows.active.vault !== owner.vault)
+    await windows.activeVaultChanged()
+    await windows.demo.leave()
+
+    #expect(windows.active.vault === owner.vault)
+    #expect(gate.state == .needed)
+    #expect(try await ownerVault.stores.main.read { transaction in try OnboardingStanding.isNeeded(in: transaction) })
+    #expect(try await ownerVault.stores.main.read { transaction in try QuestRecord.listing(in: transaction).entries.isEmpty })
+    let returning = OnboardingGate()
+    let rewatching = Task { await returning.run(stores: ownerVault.stores) }
+    defer { rewatching.cancel() }
+    try await until("onboarding again") { returning.state == .needed }
+    #expect(OnboardingModel(context: MemoirScreenContext(ownerVault)).offersDemo)
   }
 
   @Test("should keep the demo's device choices in the demo's own defaults, never the owner's, and empty them on leaving")

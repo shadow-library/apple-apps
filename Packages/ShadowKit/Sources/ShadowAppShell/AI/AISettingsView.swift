@@ -161,6 +161,7 @@ struct ModelsSection: View {
         "Type the OpenRouter model identifier for each pace, for example vendor/model-name. Leave a pace empty to leave it unavailable. Authoring screens show only the pace, never the model.",
         tableName: "AISettings", bundle: .module)
     }
+    .task(id: model.listsModels) { await model.loadModelsIfChosen() }
   }
 
   private func paceRow(_ pace: Pace) -> some View {

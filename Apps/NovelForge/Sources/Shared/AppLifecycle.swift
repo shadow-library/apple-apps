@@ -89,7 +89,7 @@ final class NovelForgeAppDelegate: NSObject {
     private func runWithoutWindow() async {
       await openAndSync()
       guard let store = vault.store else { return }
-      await ai.loadOpenRouterModelsIfKeyed()
+      await ai.loadOpenRouterModelsIfChosen()
       await jobs.launch(store, services: ai, trustedClock: vault.trustedClock)
       await retrieval.launch(store, embedders: ai.embedders)
     }

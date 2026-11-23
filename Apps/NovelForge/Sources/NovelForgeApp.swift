@@ -30,7 +30,7 @@ struct NovelForgeApp: App {
         .environment(active.sync)
         .environment(settingsTabs)
         .diagnostics(.novelForge(store: active.vault.store, sync: active.sync, ai: active.ai))
-        .task(id: ObjectIdentifier(active.ai)) { await active.ai.loadOpenRouterModelsIfKeyed() }
+        .loadsOpenRouterModels(active.ai)
         .task(id: active.vault.store.map(ObjectIdentifier.init)) { await delegate.windows.launchActive() }
         .demoSession(delegate.demo, identity: .novelForge)
         .shadowTheme()

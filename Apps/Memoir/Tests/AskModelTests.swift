@@ -28,10 +28,10 @@ struct AskWorld {
   let context: MemoirScreenContext
   let provider = ScriptedModelProvider()
   let access: InsightAccess
-  let hasKey: Flag
+  let providerReady: Flag
   let settlements = Recorded<Int>()
 
-  init(limits: SpendLimits = SpendLimits(), keyed: Bool = true) async throws {
+  init(limits: SpendLimits = SpendLimits(), providerReady ready: Bool = true) async throws {
     let clock = TestClock(day: 0, minute: 360)
     let waitUntil: @Sendable (Date) async throws -> Void = { deadline in
       while clock.now() < deadline { try await Task.sleep(for: .milliseconds(10)) }
@@ -40,21 +40,21 @@ struct AskWorld {
       .inMemory, appVersion: "1", clock: MemoirClock(now: clock.now, deviceZone: { TestClock.utc }, waitUntil: waitUntil))
     let context = MemoirScreenContext(opened)
     try await context.writer.issue(try TestQuests.zone("UTC"))
-    let hasKey = Flag()
-    if keyed { hasKey.set() }
+    let providerReady = Flag()
+    if ready { providerReady.set() }
     self.clock = clock
     self.opened = opened
     self.context = context
-    self.hasKey = hasKey
+    self.providerReady = providerReady
     let settlements = settlements
     let settler = CostSettler(cooldown: .zero) { () async throws(StoreError) -> ReconciliationReport in
       settlements.append(1)
       throw StoreError.database("the test settles nothing")
     }
-    access = Self.access(opened: opened, provider: provider, limits: limits, hasKey: hasKey, settler: settler)
+    access = Self.access(opened: opened, provider: provider, limits: limits, providerReady: providerReady, settler: settler)
   }
 
-  static func access(opened: MemoirOpenedVault, provider: ScriptedModelProvider, limits: SpendLimits, hasKey: Flag, settler: CostSettler?) -> InsightAccess {
+  static func access(opened: MemoirOpenedVault, provider: ScriptedModelProvider, limits: SpendLimits, providerReady: Flag, settler: CostSettler?) -> InsightAccess {
     let main = opened.stores.main
     let leases = LeaseClock(trusted: nil, device: opened.clock.now)
     let router: InsightEngine.RouterSource = {
@@ -64,7 +64,7 @@ struct AskWorld {
     }
     let engine = InsightEngine(
       stores: opened.stores, replay: ProjectionInsightReplay(main: main, now: opened.clock.now, deviceZone: opened.clock.deviceZone), router: router, clock: leases)
-    return InsightAccess(engine: engine, router: router, hasKey: { hasKey.isSet }, leases: leases, settler: settler)
+    return InsightAccess(engine: engine, router: router, isProviderReady: { providerReady.isSet }, leases: leases, settler: settler)
   }
 
   var consents: InsightConsents {
@@ -295,7 +295,7 @@ struct AskModelTests {
 
   @Test("should offer the provider connection and ask nothing without a key")
   func needsAProvider() async throws {
-    let world = try await AskWorld(keyed: false)
+    let world = try await AskWorld(providerReady: false)
     let (model, task) = try await running(world)
     defer { task.cancel() }
     #expect(model.setup == .noProvider)
@@ -304,10 +304,48 @@ struct AskModelTests {
     await model.submit()
     #expect(world.provider.requests.isEmpty && model.consentPrompt == nil)
 
-    world.hasKey.set()
+    world.providerReady.set()
     await model.refreshSetup()
     #expect(model.setup == .ready(granted: []))
     #expect(model.canSubmit)
+  }
+
+  @Test("should hold the Ask screen and the nightly question while OpenRouter has a key but no model for any pace, and go on once one pace has a model")
+  func shouldWaitForAnOpenRouterModel() async throws {
+    let suite = "com.shadow.apps.memoir.tests.ask-\(UUID().uuidString)"
+    let defaults = try #require(UserDefaults(suiteName: suite))
+    defer { defaults.removePersistentDomain(forName: suite) }
+    let ai = AIServices(
+      identity: .memoir, keys: .standard(store: InMemorySecureStore()), settingsStore: AISettingsStore(identity: .memoir, defaults: defaults),
+      transport: StubHTTPExchangeTransport(), disclosures: ConsentDisclosure.memoir, requestGuard: { _ in nil })
+    try ai.saveKey(try #require(ai.keys.makeCredential("sk-or-test", for: .openRouter)), for: .openRouter)
+    ai.update { $0.provider = .openRouter }
+    let world = try await AskWorld()
+    try await world.grant([.call])
+    let live = MemoirInsights.access(stores: world.opened.stores, clock: world.opened.clock, ai: ai, trustedClock: nil)
+    let access = InsightAccess(
+      engine: world.access.engine, router: world.access.router, isProviderReady: live.isProviderReady, leases: world.access.leases, settler: world.access.settler)
+    let model = AskModel(context: world.context, access: access, consents: world.consents)
+    let task = Task { await model.run() }
+    defer { task.cancel() }
+    try await until("the board") { model.board.value != nil && model.setup != .checking }
+    #expect(ai.hasUsableProvider)
+    #expect(model.setup == .noProvider)
+    await model.setSchedule(question: "How did this week go?", minuteOfDay: 120)
+    try await until("the schedule") { model.board.value?.schedule != nil }
+    world.clock.set(day: 1, minute: 130)
+
+    await MemoirInsights.runForeground(access: access, vault: world.opened, resume: false)
+    #expect(world.provider.requests.isEmpty)
+    #expect(model.board.value?.requests.isEmpty == true)
+
+    ai.update { $0.assignments.models[Pace.allCases[0]] = "vendor/model" }
+    await model.refreshSetup()
+    #expect(model.setup == .ready(granted: [.call]))
+    world.provider.enqueueReply(AskWorld.reply())
+    await MemoirInsights.runForeground(access: access, vault: world.opened, resume: false)
+    try await answered(model, 1, "the night's answer")
+    #expect(model.board.value?.requests.first?.kind == .scheduled)
   }
 
   @Test("should accept a question of 1 to 2,000 characters counted as the reference counts them")

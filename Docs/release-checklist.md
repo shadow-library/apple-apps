@@ -63,8 +63,9 @@ apps, and a variable left out on the next generation goes back to its developmen
   environment until the `VaultObject` record type exists with its `path`, `size`, `bytes` and `parts` fields, then deploy the schema to Production
   in CloudKit Console for both containers. Its layout is frozen once deployed (`CloudKitRecordLayout`).
 - [ ] App Store Connect records: one per app, with the bundle id above, the name, the primary language, the SKU and both platforms.
-- [ ] Display names. The home-screen name is `CFBundleDisplayName`, which `Project.app` sets to the project name, so Novel Forge currently installs
-  as "NovelForge" while its screens say "Novel Forge". Decide the name and change it in `Project.app` if it should differ.
+- [ ] Display names. Set: "Novel Forge" and "Memoir", from `Project.app(displayName:)` (Novel Forge passes it in `Apps/NovelForge/Project.swift`,
+  Memoir keeps its project name), written as `CFBundleDisplayName` (home screen) and `CFBundleName` (the Mac's menu bar) and checked by
+  `mise run check:build-options`. Check that the App Store Connect names match. The Mac's bundle file stays `NovelForge.app`.
 - [ ] TestFlight groups per app: an internal group for the team (no review), and an external group whose first build goes through Beta App Review.
   Both apps reach Mac testers through TestFlight for Mac.
 
@@ -127,11 +128,11 @@ anywhere, and the owner's own data untouched. Draft for the review notes, to adj
 > sent. Answers come from a script on the device: no account or key is needed and nothing leaves the device. **Leave Demo** at the top deletes
 > everything made in the demo and returns to the empty library.
 >
-> **Memoir.** On first launch Memoir asks five setup questions (day, first quest, schedule, strictness, ready); answer them with any values. Then
-> open Settings from Today's toolbar on iPhone (the sidebar on iPad and Mac) and tap **Try the demo**, or open Ask, which offers it while no
-> provider is connected. On the Mac, the Settings window's AI tab offers it at any time. The demo opens a sample week of quests, expenses,
-> journal entries and meals; Ask and receipt reading answer from a script on the device, and Health, reminders and sync are off in it. Nothing
-> is sent anywhere. **Leave Demo** deletes the demo's data and returns to your own.
+> **Memoir.** On first launch Memoir shows its setup. Tap **Try the Demo** on the first step, under "Just looking?"; nothing needs to be set up
+> first. (Settings and Ask offer it too once set up, and on the Mac the Settings window's AI tab at any time.) A "Demo" badge appears at the top.
+> The demo opens a sample week of quests, expenses, journal entries and meals; Ask and receipt reading answer from a script on the device, and
+> Health, reminders and sync are off in it. Nothing is sent anywhere. **Leave Demo** deletes the demo's data and returns to setup, since no data
+> of your own was made.
 
 The `-ShadowDemo` launch argument enters the demo too, but only for UI tests and local runs; App Review launches the app from the home screen.
 
@@ -162,16 +163,10 @@ The `-ShadowDemo` launch argument enters the demo too, but only for UI tests and
 
 None blocks a TestFlight build; each changes what a reviewer or a first owner may meet.
 
-- Memoir's onboarding offers no demo: on iPhone and iPad App Review must finish the five setup steps before Settings or Ask can offer it (the
-  notes above say so). Offering it on the first onboarding step would remove the detour.
-- Both apps ask OpenRouter for its model list at launch whenever an OpenRouter key is stored, also while Anthropic is the chosen provider. The
-  request carries the key and no content.
 - The About screen's keychain line names "storage credentials" among what iCloud Keychain keeps; once a storage provider that signs in with
   OAuth ships (its tokens stay on the device), that line must narrow to S3 keys.
 - The Novel Forge app tests cover an isolated draft's summary only while unrestricted writing is unavailable (`AmendSummarizeTests`); add the
   counterpart under `.enabled(if: UnrestrictedWriting.isAvailable)` before an unrestricted build.
-- Memoir's Ask screen and nightly question ask only whether a provider's key is stored (`hasUsableProvider`), not whether OpenRouter has a model
-  for any pace, so OpenRouter connected without models shows Ask as ready and fails at the call.
 - The known follow-ups of [`hardware-checklist-phase8.md`](hardware-checklist-phase8.md) and
   [`hardware-checklist-memoir.md`](hardware-checklist-memoir.md), of which these touch a first owner most: a synced Undo of a quest log can delete
   another device's newer log and grant XP twice; the home currency can be replaced by a later write from another device; tapping a reminder does

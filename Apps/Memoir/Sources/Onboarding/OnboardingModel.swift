@@ -63,6 +63,9 @@ final class OnboardingModel {
 
   var syncHold: OnboardingSyncHold? { OnboardingSyncHold(syncStatus) }
 
+  /// Offered before anything is chosen, so App Review and a first look reach the demo without setting up a vault; entering it writes nothing here.
+  var offersDemo: Bool { step == .day }
+
   func setName(_ name: String) {
     draft.name = String(name.prefix(OnboardingDraft.nameLimit))
     nameTouched = true

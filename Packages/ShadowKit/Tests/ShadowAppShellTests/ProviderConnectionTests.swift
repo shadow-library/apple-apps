@@ -185,7 +185,7 @@ struct ProviderConnectionTests {
 
   @Test("should keep OpenRouter connecting until every pace has a model, listing OpenRouter's models once the key is saved")
   func shouldAskForPaceModelsBeforeOpenRouterIsReady() async throws {
-    let listed = Counter()
+    let listed = CallCount()
     let world = try SettingsFixtures.world(listing: {
       listed.increment()
       return [RemoteModel(id: "vendor/model", name: "Model", contextLength: nil)]
@@ -286,14 +286,6 @@ private final class Flag: Sendable {
     get { state.withLock { $0 } }
     set { state.withLock { $0 = newValue } }
   }
-}
-
-private final class Counter: Sendable {
-  private let count = Mutex(0)
-
-  var value: Int { count.withLock { $0 } }
-
-  func increment() { count.withLock { $0 += 1 } }
 }
 
 @MainActor

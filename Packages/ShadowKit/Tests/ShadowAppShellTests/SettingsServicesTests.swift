@@ -97,22 +97,64 @@ struct SettingsServicesTests {
     #expect(routed.host == "api.anthropic.com")
   }
 
-  @Test("should load the OpenRouter model list at launch only when a key is stored, and swallow a failure")
-  func shouldLoadOpenRouterModelsAtLaunchOnlyWhenAKeyIsStored() async throws {
-    let listed = try SettingsFixtures.world(listing: { [RemoteModel(id: "vendor/model")] })
+  @Test("should list OpenRouter's models only while OpenRouter is the chosen provider and keyed, once per list, and swallow a failure")
+  func shouldListOpenRouterModelsOnlyWhenChosen() async throws {
+    let requests = CallCount()
+    let listed = try SettingsFixtures.world(listing: {
+      requests.increment()
+      return [RemoteModel(id: "vendor/model")]
+    })
     defer { listed.tearDown() }
-    await listed.services.loadOpenRouterModelsIfKeyed()
+    listed.services.update { $0.provider = .openRouter }
+    await listed.services.loadOpenRouterModelsIfChosen()
+    #expect(requests.value == 0)
+
+    try listed.services.saveKey(try #require(listed.services.keys.makeCredential(SettingsFixtures.secret, for: .openRouter)), for: .openRouter)
+    listed.services.update { $0.provider = .anthropic }
+    await listed.services.loadOpenRouterModelsIfChosen()
+    #expect(requests.value == 0, "no listing request goes out while Anthropic is chosen")
     #expect(listed.services.openRouterModels.isEmpty)
 
-    try listed.services.keys.save(try #require(listed.services.keys.makeCredential(SettingsFixtures.secret, for: .openRouter)), for: .openRouter)
-    await listed.services.loadOpenRouterModelsIfKeyed()
+    listed.services.update { $0.provider = .openRouter }
+    await listed.services.loadOpenRouterModelsIfChosen()
+    await listed.services.loadOpenRouterModelsIfChosen()
+    #expect(requests.value == 1)
     #expect(listed.services.openRouterModels.map(\.id) == ["vendor/model"])
 
     let failing = try SettingsFixtures.world(listing: SettingsFixtures.failingListing(.server(status: 500)))
     defer { failing.tearDown() }
-    try failing.services.keys.save(try #require(failing.services.keys.makeCredential(SettingsFixtures.secret, for: .openRouter)), for: .openRouter)
-    await failing.services.loadOpenRouterModelsIfKeyed()
+    try failing.services.saveKey(try #require(failing.services.keys.makeCredential(SettingsFixtures.secret, for: .openRouter)), for: .openRouter)
+    failing.services.update { $0.provider = .openRouter }
+    await failing.services.loadOpenRouterModelsIfChosen()
     #expect(failing.services.openRouterModels.isEmpty)
+  }
+
+  @Test("should list in the models section only while OpenRouter is chosen, sending nothing as AI settings or the provider sheet open with Anthropic chosen")
+  func shouldListInTheModelsSectionOnlyWhenOpenRouterIsChosen() async throws {
+    let requests = CallCount()
+    let world = try SettingsFixtures.world(listing: {
+      requests.increment()
+      return [RemoteModel(id: "vendor/model")]
+    })
+    defer { world.tearDown() }
+    try world.services.saveKey(try #require(world.services.keys.makeCredential(SettingsFixtures.secret, for: .openRouter)), for: .openRouter)
+    let settings = AISettingsModel(services: world.services, store: world.store)
+    await settings.load()
+    await settings.loadModelsIfChosen()
+    let connection = ProviderConnectionModel(services: world.services)
+    await connection.load()
+    await connection.settings.loadModelsIfChosen()
+
+    #expect(settings.storedKeys == [.openRouter] && !settings.listsModels)
+    #expect(connection.choice == .anthropic && !connection.isConnected)
+    #expect(requests.value == 0)
+    #expect(world.services.openRouterModels.isEmpty)
+
+    settings.select(.openRouter)
+    #expect(settings.listsModels)
+    await settings.loadModelsIfChosen()
+    #expect(requests.value == 1)
+    #expect(settings.listedModels.map(\.id) == ["vendor/model"])
   }
 
   private func refusal(_ router: () -> TaskRouter, _ call: TaskCall) async -> TaskRouterError? {

@@ -388,6 +388,17 @@
         }
       }
     },
+    "Just looking?": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Just looking?"
+          }
+        }
+      }
+    },
     "Light enough to keep on a bad week.": {
       "extractionState": "manual",
       "localizations": {
@@ -824,6 +835,17 @@
           "stringUnit": {
             "state": "translated",
             "value": "Try again"
+          }
+        }
+      }
+    },
+    "Try the demo: a sample week with answers scripted on this device. Nothing is set up here, and leaving the demo brings you back to this step.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Try the demo: a sample week with answers scripted on this device. Nothing is set up here, and leaving the demo brings you back to this step."
           }
         }
       }

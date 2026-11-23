@@ -273,8 +273,9 @@ public final class AIServices {
     openRouterModels = try await listing()
   }
 
-  public func loadOpenRouterModelsIfKeyed() async {
-    guard (try? keys.contains(.openRouter)) == true else { return }
+  /// The listing request carries the OpenRouter key, so it goes out only while OpenRouter is the chosen provider, and once per list.
+  public func loadOpenRouterModelsIfChosen() async {
+    guard settings.provider == .openRouter, openRouterModels.isEmpty, (try? keys.contains(.openRouter)) == true else { return }
     try? await refreshOpenRouterModels()
   }
 

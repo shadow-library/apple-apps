@@ -2,7 +2,7 @@ import ProjectDescription
 import ProjectDescriptionHelpers
 
 let project = Project.app(
-  name: "NovelForge",
+  name: "NovelForge", displayName: "Novel Forge",
   platform: .phoneAndMac,
   category: .productivity,
   dependencies: [

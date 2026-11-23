@@ -45,7 +45,7 @@ nonisolated enum AskConsentKind: CaseIterable, Hashable, Sendable {
 
 nonisolated enum AskSetup: Equatable, Sendable {
   case checking
-  /// No key for the configured provider: the screen offers the shell's AI settings.
+  /// No provider ready for a standard call (no key, or OpenRouter without a model for any pace): the screen offers the shell's AI settings.
   case noProvider
   case ready(granted: Set<AskConsentKind>)
 
@@ -170,9 +170,9 @@ final class AskModel {
     }
   }
 
-  /// Reads the key and the consents again, as after the AI settings or the consent sheet closed.
+  /// Reads the provider's readiness and the consents again, as after the AI settings or the consent sheet closed.
   func refreshSetup() async {
-    guard await access.hasKey() else {
+    guard await access.isProviderReady() else {
       setup = .noProvider
       return
     }

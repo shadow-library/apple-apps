@@ -98,15 +98,16 @@ final class Checker {
 
 struct App {
   let name: String
+  let displayName: String
   let category: String?
   let pushes: Bool
   let accentColor: Bool
 }
 
 let apps = [
-  App(name: "NovelForge", category: "public.app-category.productivity", pushes: true, accentColor: false),
-  App(name: "Memoir", category: "public.app-category.lifestyle", pushes: true, accentColor: false),
-  App(name: "Catalog", category: nil, pushes: false, accentColor: true),
+  App(name: "NovelForge", displayName: "Novel Forge", category: "public.app-category.productivity", pushes: true, accentColor: false),
+  App(name: "Memoir", displayName: "Memoir", category: "public.app-category.lifestyle", pushes: true, accentColor: false),
+  App(name: "Catalog", displayName: "Catalog", category: nil, pushes: false, accentColor: true),
 ]
 
 let storeBuild = ["TUIST_DEVELOPMENT_TEAM": "ABCDE12345", "TUIST_USES_NON_EXEMPT_ENCRYPTION": "false", "TUIST_MARKETING_VERSION": "1.2.3", "TUIST_BUILD_NUMBER": "42"]
@@ -122,6 +123,8 @@ for app in apps {
     let signed = label == "store"
     let context = "\(app.name) (\(label))"
 
+    checker.expectEqual(info["CFBundleDisplayName"].value, app.displayName, "\(context) CFBundleDisplayName")
+    checker.expectEqual(info["CFBundleName"].value, app.displayName, "\(context) CFBundleName")
     checker.expectEqual(info["LSApplicationCategoryType"].value, app.category, "\(context) LSApplicationCategoryType")
     checker.expectEqual(info["ITSAppUsesNonExemptEncryption"].value, signed ? false : nil, "\(context) ITSAppUsesNonExemptEncryption")
     checker.expectEqual(base["MARKETING_VERSION"].value, signed ? "1.2.3" : "1.0.0", "\(context) MARKETING_VERSION")

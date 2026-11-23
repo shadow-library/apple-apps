@@ -83,7 +83,7 @@ struct DemoServicesTests {
       try await world.services.validate(try #require(ProviderKeys.standard(store: FakeSecureStore()).makeCredential("sk-x", for: .anthropic)), for: .anthropic)
     }
     try await world.services.refreshOpenRouterModels()
-    await world.services.loadOpenRouterModelsIfKeyed()
+    await world.services.loadOpenRouterModelsIfChosen()
     world.services.settler(for: world.store).settle()
     try await ShellWait.until("the settler is idle") { !world.services.settler(for: world.store).isSettling }
 
