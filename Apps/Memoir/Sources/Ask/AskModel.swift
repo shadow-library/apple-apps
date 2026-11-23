@@ -139,11 +139,12 @@ final class AskModel {
     }
   }
 
+  /// The board and its lapse wait are set with no suspension between, so overlapping applies never pair one read's board with another read's wait.
   private func apply(_ read: AskMainRead) async throws {
     let results = try await InsightResults.listing(in: context.stores)
     board = .loaded(AskBoard(requests: read.listing.requests, results: results, schedule: read.schedule))
-    await refreshSpend()
     rereadWhenALeaseLapses(read.listing.changesAt)
+    await refreshSpend()
   }
 
   /// A lease lapsing writes nothing, so the store's observation never shows a dead attempt turning queued; the listing is read again a second after the

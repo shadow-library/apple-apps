@@ -241,7 +241,7 @@ struct AskModelTests {
     world.provider.enqueue([.delay(.seconds(60))] + ScriptedModelProvider.reply(AskWorld.reply()))
 
     await ask(model)
-    try await until("the running question") { model.board.value?.active?.status == .running }
+    try await until("the running question with its call begun") { model.board.value?.active.map { $0.status == .running && $0.cost.pendingCalls == 1 } == true }
     model.question = "Another question"
     #expect(!model.canSubmit, "one question runs at a time")
 
