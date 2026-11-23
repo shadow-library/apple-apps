@@ -141,7 +141,7 @@ public struct WriteTransaction: ~Copyable {
     ChangeRecord(id: ids.next(), clock: clock.now(), schema: registry.version, entity: ref.kind, key: ref.key, kind: kind, fields: fields)
   }
 
-  private mutating func commit(_ record: ChangeRecord) throws(StoreError) -> ChangeRecord {
+  mutating func commit(_ record: ChangeRecord) throws(StoreError) -> ChangeRecord {
     guard record.kind != .set || !record.fields.isEmpty else { throw .invalidChange("a set must carry at least one field") }
     guard registry.isInterpretable(record) else { throw .invalidChange("the \(record.kind.rawValue) on \(record.entity) names a field, mark or value the registry does not admit") }
     let line = record.canonicalBytes()

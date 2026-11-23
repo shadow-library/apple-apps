@@ -1,6 +1,17 @@
 {
   "sourceLanguage": "en",
   "strings": {
+    "A receipt image in this export is missing or damaged, so nothing was restored.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A receipt image in this export is missing or damaged, so nothing was restored."
+          }
+        }
+      }
+    },
     "A zip archive: your records as JSON, with your receipt images as files.": {
       "extractionState": "manual",
       "localizations": {
@@ -8,6 +19,17 @@
           "stringUnit": {
             "state": "translated",
             "value": "A zip archive: your records as JSON, with your receipt images as files."
+          }
+        }
+      }
+    },
+    "Activity records": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Activity records"
           }
         }
       }
@@ -56,6 +78,28 @@
         }
       }
     },
+    "By Memoir": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "By Memoir"
+          }
+        }
+      }
+    },
+    "Cancel": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cancel"
+          }
+        }
+      }
+    },
     "Clear": {
       "extractionState": "manual",
       "localizations": {
@@ -63,6 +107,17 @@
           "stringUnit": {
             "state": "translated",
             "value": "Clear"
+          }
+        }
+      }
+    },
+    "Close": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Close"
           }
         }
       }
@@ -199,6 +254,17 @@
         }
       }
     },
+    "Don’t join the old storage afterwards": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Don’t join the old storage afterwards"
+          }
+        }
+      }
+    },
     "Entries": {
       "extractionState": "manual",
       "localizations": {
@@ -221,6 +287,17 @@
         }
       }
     },
+    "Everyday records": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Everyday records"
+          }
+        }
+      }
+    },
     "Everything Memoir kept on this device is gone. What sync already sent stays at its location until you remove it there.": {
       "extractionState": "manual",
       "localizations": {
@@ -232,6 +309,17 @@
         }
       }
     },
+    "Everything in this export comes back on this device exactly as it was exported, and sync sends it on like anything you write here. The export’s own file is not changed.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Everything in this export comes back on this device exactly as it was exported, and sync sends it on like anything you write here. The export’s own file is not changed."
+          }
+        }
+      }
+    },
     "Everything is still included; only the counts are missing.": {
       "extractionState": "manual",
       "localizations": {
@@ -239,6 +327,17 @@
           "stringUnit": {
             "state": "translated",
             "value": "Everything is still included; only the counts are missing."
+          }
+        }
+      }
+    },
+    "Everything restored is written now. If you later turn sync on to storage that still holds this vault from another device, what you restore here wins over anything changed there after the export was made. Turn sync on to new storage instead.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Everything restored is written now. If you later turn sync on to storage that still holds this vault from another device, what you restore here wins over anything changed there after the export was made. Turn sync on to new storage instead."
           }
         }
       }
@@ -305,6 +404,28 @@
           "stringUnit": {
             "state": "translated",
             "value": "Export your data"
+          }
+        }
+      }
+    },
+    "Exported": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Exported"
+          }
+        }
+      }
+    },
+    "Health records": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Health records"
           }
         }
       }
@@ -441,6 +562,17 @@
         }
       }
     },
+    "Memoir already holds data on this device, so nothing was restored. A restore only goes into an empty vault.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Memoir already holds data on this device, so nothing was restored. A restore only goes into an empty vault."
+          }
+        }
+      }
+    },
     "Memoir builds the archive on this device and hands it to you; nothing is uploaded. The copy waiting here is removed when you clear it, leave this screen or next open Memoir, so save or share it first. There is no library of past archives to keep — prepare a fresh one whenever you want.": {
       "extractionState": "manual",
       "localizations": {
@@ -529,6 +661,17 @@
         }
       }
     },
+    "Nothing was restored": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nothing was restored"
+          }
+        }
+      }
+    },
     "OK": {
       "extractionState": "manual",
       "localizations": {
@@ -606,6 +749,17 @@
         }
       }
     },
+    "Receipt images": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Receipt images"
+          }
+        }
+      }
+    },
     "Receipt images not on this device": {
       "extractionState": "manual",
       "localizations": {
@@ -624,6 +778,50 @@
           "stringUnit": {
             "state": "translated",
             "value": "Receipts"
+          }
+        }
+      }
+    },
+    "Receipts without their image": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Receipts without their image"
+          }
+        }
+      }
+    },
+    "Restore": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Restore"
+          }
+        }
+      }
+    },
+    "Restore from an export": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Restore from an export"
+          }
+        }
+      }
+    },
+    "Restoring your records.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Restoring your records."
           }
         }
       }
@@ -705,6 +903,17 @@
         }
       }
     },
+    "Something went wrong on this device. Nothing was restored.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Something went wrong on this device. Nothing was restored."
+          }
+        }
+      }
+    },
     "Stop deleting your data?": {
       "extractionState": "manual",
       "localizations": {
@@ -745,6 +954,17 @@
           "stringUnit": {
             "state": "translated",
             "value": "Subscriptions"
+          }
+        }
+      }
+    },
+    "Sync hasn’t settled, so nothing was restored. Wait until sync is up to date, or turn it off, then try again.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sync hasn’t settled, so nothing was restored. Wait until sync is up to date, or turn it off, then try again."
           }
         }
       }
@@ -826,6 +1046,39 @@
         }
       }
     },
+    "The device that exported them did not hold these images, so they stay missing.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The device that exported them did not hold these images, so they stay missing."
+          }
+        }
+      }
+    },
+    "The restore didn’t finish, and nothing was kept. Try again.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The restore didn’t finish, and nothing was kept. Try again."
+          }
+        }
+      }
+    },
+    "The restore stopped partway, so part of the export is on this device. Erase it, then restore again.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The restore stopped partway, so part of the export is on this device. Erase it, then restore again."
+          }
+        }
+      }
+    },
     "The vault’s keys stay in your keychain, since your other devices may still need them, and so do your AI provider key and sync sign-ins. Remove the provider key in AI Settings.": {
       "extractionState": "manual",
       "localizations": {
@@ -848,6 +1101,28 @@
         }
       }
     },
+    "This archive is larger than a restore can take. Nothing was restored.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This archive is larger than a restore can take. Nothing was restored."
+          }
+        }
+      }
+    },
+    "This archive isn’t a Memoir export. Nothing was restored.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This archive isn’t a Memoir export. Nothing was restored."
+          }
+        }
+      }
+    },
     "This erases everything Memoir keeps on this device and turns sync off.": {
       "extractionState": "manual",
       "localizations": {
@@ -866,6 +1141,50 @@
           "stringUnit": {
             "state": "translated",
             "value": "This erases your quests and history, your money, your journal, your body and health records and your coaching results from this device, and turns sync off. It starts the moment you confirm, and it cannot be stopped or undone."
+          }
+        }
+      }
+    },
+    "This export": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This export"
+          }
+        }
+      }
+    },
+    "This export is damaged or was changed after it was made, so nothing was restored.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This export is damaged or was changed after it was made, so nothing was restored."
+          }
+        }
+      }
+    },
+    "This export was made by a newer version of Memoir. Update Memoir on this device, then restore it. Nothing was restored.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This export was made by a newer version of Memoir. Update Memoir on this device, then restore it. Nothing was restored."
+          }
+        }
+      }
+    },
+    "This file couldn’t be opened as a zip archive. Nothing was restored.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This file couldn’t be opened as a zip archive. Nothing was restored."
           }
         }
       }
@@ -903,6 +1222,17 @@
         }
       }
     },
+    "Unknown": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Unknown"
+          }
+        }
+      }
+    },
     "Usually under a minute.": {
       "extractionState": "manual",
       "localizations": {
@@ -910,6 +1240,17 @@
           "stringUnit": {
             "state": "translated",
             "value": "Usually under a minute."
+          }
+        }
+      }
+    },
+    "Weekly reviews": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Weekly reviews"
           }
         }
       }
@@ -932,6 +1273,17 @@
           "stringUnit": {
             "state": "translated",
             "value": "What is left is your own confirmation."
+          }
+        }
+      }
+    },
+    "What it holds": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "What it holds"
           }
         }
       }

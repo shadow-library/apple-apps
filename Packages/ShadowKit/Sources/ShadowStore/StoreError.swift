@@ -24,6 +24,7 @@ public enum StoreError: ShadowError {
   case backupExclusionPinned
   case syncClassNotAdmitted(kind: EntityKind, syncClass: SyncClass)
   case processLock(path: String, reason: String)
+  case importRefused(String)
 
   public var code: String {
     switch self {
@@ -47,6 +48,7 @@ public enum StoreError: ShadowError {
     case .backupExclusionPinned: "store.backup_exclusion_pinned"
     case .syncClassNotAdmitted: "store.sync_class_not_admitted"
     case .processLock: "store.process_lock"
+    case .importRefused: "store.import_refused"
     }
   }
 
@@ -72,6 +74,7 @@ public enum StoreError: ShadowError {
     case .backupExclusionPinned: "The store is always excluded from device backups; the exclusion cannot be cleared."
     case .syncClassNotAdmitted(let kind, let syncClass): "Kind \(kind) is in sync class \(syncClass.rawValue), which this store does not admit."
     case .processLock(let path, let reason): "The process lock \(path) could not be taken: \(reason)."
+    case .importRefused(let reason): "The import was refused: \(reason)."
     }
   }
 }

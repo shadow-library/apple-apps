@@ -151,9 +151,16 @@ out of iCloud first or disconnect iCloud in Sync Settings before writing anythin
 | 8.1 | On the iPhone, open Settings, Data and privacy, Export, and build the archive. | The screen says the archive is not encrypted; the archive is offered once built. | |
 | 8.2 | Tap Save, choose Files, and save it. | The save sheet saves the zip; returning from the sheet keeps the archive (Save and Share still work). | |
 | 8.3 | Tap Share and send it to another app (AirDrop to the Mac). | The share sheet receives the zip whole; after it closes the screen still offers the archive. | |
-| 8.4 | Unzip it on the Mac. | `memoir-export.json` (format `com.shadow.apps.memoir.export`, version 1, all three stores, this device's weekly review answers) and `receipts/<blob id>.<ext>` for each receipt image this device holds. | |
+| 8.4 | Unzip it on the Mac. | `memoir-export.json` (format `com.shadow.apps.memoir.export`, version 2, all three stores, this device's weekly review answers) and `receipts/<blob id>.<ext>` for each receipt image this device holds. | |
 | 8.5 | Leave the screen, then check the app's temporary folder (Xcode, Devices, download the container). | No archive remains under `tmp/com.shadow.apps.memoir.exports/`. | |
 | 8.6 | Build an archive, force-quit the app, restart the phone, and launch Memoir before unlocking (from a notification), then after unlocking. | The leftover archive is removed at the next launch that can reach it; nothing crashes before unlock. | |
+| 8.7 | Save an archive with receipts, Health and Activity data to Files, delete the vault (section 9) with sync off, and on onboarding's first step choose "Restore from an export…" and pick the archive. | The sheet shows the export's date and version, each store's entries, the receipt images and the counts; nothing changes until Restore. | |
+| 8.8 | Restore. | Today shows with the same quests, hero level, coins and streaks as before; Money shows the expenses with their receipt images; Body & health shows the weights and metrics; the journal entry shows its last text; last week's review answers are back. | |
+| 8.9 | Turn sync on to new storage (a new folder or S3 prefix), then add this device's data on a second device. | Everything restored arrives on the second device, receipt images included. | |
+| 8.10 | On a vault with data, and on a fresh install while sync is bringing another device's data or waiting for the key, look for the restore. | It is not offered; with sync up to date and nothing at the storage it is. | |
+| 8.11 | Pick a zip that is not a Memoir export, and an export whose `memoir-export.json` was edited by hand. | Each is refused with a message and a code; the vault stays empty and onboarding stays. | |
+| 8.12 | On a fresh install with iCloud signed in, open onboarding at once. | The restore is not offered until sync has looked at iCloud; with nothing there it is offered. | |
+| 8.13 | Start a restore of a large export and force-quit the app while it runs; launch again. | Either nothing was restored and the offer is back, or onboarding says the restore didn't finish, holds Create and offers only the erase; after the erase the export restores. | |
 
 ## 9. Vault deletion
 
@@ -219,6 +226,12 @@ Open behaviour that these checks may run into; none blocks these checks.
 - Key floors are recorded per store directory; key rotation will need to revisit them with routes.
 - Coming back's choices push in place on iPhone rather than switching to the tab that owns them.
 - The vault noun ("vault", "library") is passed to the shell untranslated.
+- A restore is offered only on onboarding's first step: Settings shows once the vault holds data, which a restore refuses. A vault that took AI
+  consent or the Activity sync setting through the Mac's Settings window before onboarding is not empty, so it cannot restore.
+- A restored vault keeps the exporting device as its Health reader and job worker, as exported, until this device claims the role.
+- With sync files unavailable (no runtime at all), sync never counts as settled, so the restore is not offered.
+- A version 1 export kept no clocks, so restoring one replays its commands in key order and gives its journal revisions new ids; where devices'
+  commands interleaved, the hero can differ from the original. Version 2 keeps both.
 - Subscription writes and category archiving live in the app rather than in `MemoirCore`; a deleted subscription is removed, not deleted outright as
   the reference does.
 

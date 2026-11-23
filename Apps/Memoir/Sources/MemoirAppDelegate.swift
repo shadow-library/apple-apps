@@ -69,6 +69,7 @@ final class MemoirAppDelegate: NSObject {
   extension MemoirAppDelegate: NSApplicationDelegate {
     func applicationDidFinishLaunching(_ notification: Notification) {
       MemoirExports.clearLeftovers()
+      MemoirRestores.clearLeftovers()
       DiagnosticsArchives.clearLeftovers(identity: .memoir)
       Task { await demo.launched() }
       observe(NSApplication.didBecomeActiveNotification) { [sync] in await sync.activated() }
@@ -93,6 +94,7 @@ final class MemoirAppDelegate: NSObject {
   extension MemoirAppDelegate: UIApplicationDelegate {
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil) -> Bool {
       MemoirExports.clearLeftovers()
+      MemoirRestores.clearLeftovers()
       DiagnosticsArchives.clearLeftovers(identity: .memoir)
       Task { await demo.launched() }
       observe(UIApplication.protectedDataDidBecomeAvailableNotification) { [weak self] in

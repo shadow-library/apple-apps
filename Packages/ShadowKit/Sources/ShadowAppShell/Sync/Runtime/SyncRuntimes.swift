@@ -30,6 +30,8 @@ public final class SyncRuntimes {
   public private(set) var attentionScope: String?
   /// The primary store's runtime, which the sync settings and key screens drive.
   public private(set) var runtime: SyncRuntime?
+  /// Whether `runtime` has finished its launch run, so its phase and `status` say what it found rather than that it has not looked yet.
+  public private(set) var hasStarted = false
   private(set) var routed: [SyncStoreRoute: RoutedRuntime] = [:]
   /// The routes whose stores sync now beside the primary.
   public var syncingRoutes: Set<SyncStoreRoute> { Set(routed.keys) }
@@ -202,6 +204,7 @@ public final class SyncRuntimes {
     watchers = []
     let replaced = runtime
     runtime = nil
+    hasStarted = false
     self.vault = nil
     primaryStatus = .off
     primaryNames = [:]
@@ -217,6 +220,7 @@ public final class SyncRuntimes {
     watchers = [follow(made, of: vault.primary), forwardWrites(of: vault.primary, to: made)]
     if inFront { await made.foreground() }
     await made.start()
+    if runtime === made { hasStarted = true }
     await applyRoutes()
   }
 

@@ -48,20 +48,29 @@ public struct VaultBlobs: Sendable {
     let size = try BlobFiles.size(of: source)
     guard size <= maximumBytes else { throw .tooLarge(size: size, limit: maximumBytes) }
     let id = BlobID.random()
-    let files = BlobFiles(directory: directory)
-    var digest = ""
-    try files.place(id) { (temporary: URL) throws(BlobError) in
-      do {
-        try FileManager.default.copyItem(at: source, to: temporary)
-      } catch {
-        throw .file(error.localizedDescription)
-      }
-      try BlobFiles.protect(temporary)
-      guard try BlobFiles.size(of: temporary) == size else { throw .file("the source changed while it was copied") }
-      digest = try BlobFiles.digest(of: temporary)
-    }
+    let digest = try place(copyOf: source, size: size, as: id)
     try await record(id, size: size, digest: digest)
     return id
+  }
+
+  /// Restoring an export: the file goes in under the id the export recorded, which this store must not hold yet. Until the import that writes the record
+  /// naming it calls `StagedBlob.record(in:)` in its own transaction nothing knows the file, and `discard(_:)` removes it if that import fails. A file
+  /// with no row is what a restore stopped before its import committed leaves, so it is replaced.
+  public func stage(contentsOf source: URL, as id: BlobID) async throws(BlobError) -> StagedBlob {
+    let size = try BlobFiles.size(of: source)
+    guard size <= maximumBytes else { throw .tooLarge(size: size, limit: maximumBytes) }
+    guard try await row(of: id) == nil else { throw .alreadyHeld(id) }
+    let files = BlobFiles(directory: directory)
+    if files.exists(id) {
+      files.remove(id)
+      guard !files.exists(id) else { throw .file("a file an unfinished restore left cannot be removed") }
+    }
+    let digest = try place(copyOf: source, size: size, as: id)
+    return StagedBlob(id: id, size: size, digest: digest, syncClass: syncClass, added: BlobFiles.millis(store.wallClock()))
+  }
+
+  public func discard(_ staged: StagedBlob) {
+    BlobFiles(directory: directory).remove(staged.id)
   }
 
   /// The local file, when this device holds the blob; otherwise fetch it through the sync runtime.
@@ -89,6 +98,21 @@ public struct VaultBlobs: Sendable {
     }
   }
 
+  private func place(copyOf source: URL, size: Int, as id: BlobID) throws(BlobError) -> String {
+    var digest = ""
+    try BlobFiles(directory: directory).place(id) { (temporary: URL) throws(BlobError) in
+      do {
+        try FileManager.default.copyItem(at: source, to: temporary)
+      } catch {
+        throw .file(error.localizedDescription)
+      }
+      try BlobFiles.protect(temporary)
+      guard try BlobFiles.size(of: temporary) == size else { throw .file("the source changed while it was copied") }
+      digest = try BlobFiles.digest(of: temporary)
+    }
+    return digest
+  }
+
   private func row(of id: BlobID) async throws(BlobError) -> SyncBlobRow? {
     do {
       return try await store.read { try SyncBlobTable.load(id, in: $0.database) }
@@ -108,6 +132,25 @@ public struct VaultBlobs: Sendable {
       BlobFiles(directory: directory).remove(id)
       throw .store(error)
     }
+  }
+}
+
+/// A restored blob's file in place, waiting for the import that names it; see ``VaultBlobs/stage(contentsOf:as:)``.
+public struct StagedBlob: Sendable, Equatable {
+  public let id: BlobID
+  let size: Int
+  let digest: String
+  let syncClass: SyncClass
+  let added: Int64
+
+  /// Records the blob for upload in the caller's transaction, refusing an id the store came to hold meanwhile.
+  public func record(in database: Database) throws {
+    guard try SyncBlobTable.load(id, in: database) == nil else { throw BlobError.alreadyHeld(id) }
+    try SyncBlobTable.insert(
+      SyncBlobRow(
+        id: id, state: .pending, syncClass: syncClass, size: size, digest: digest, parts: nil, added: added, uploaded: nil, released: nil, releasePoints: nil,
+        releaseRetired: [], deleted: nil),
+      in: database)
   }
 }
 

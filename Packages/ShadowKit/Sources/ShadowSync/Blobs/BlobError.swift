@@ -18,6 +18,8 @@ public enum BlobError: ShadowError {
   case storage(StorageError)
   case store(StoreError)
   case file(String)
+  /// A restore names an id this store already holds.
+  case alreadyHeld(BlobID)
 
   public var code: String {
     switch self {
@@ -31,6 +33,7 @@ public enum BlobError: ShadowError {
     case .storage(let error): error.code
     case .store(let error): error.code
     case .file: "blob.file"
+    case .alreadyHeld: "blob.already-held"
     }
   }
 
@@ -46,6 +49,7 @@ public enum BlobError: ShadowError {
     case .storage(let error): error.errorDescription
     case .store(let error): error.errorDescription
     case .file(let reason): "A blob file could not be written or read: \(reason)."
+    case .alreadyHeld(let id): "Blob \(id) is already held by this store."
     }
   }
 }

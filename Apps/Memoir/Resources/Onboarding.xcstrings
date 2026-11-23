@@ -91,6 +91,17 @@
         }
       }
     },
+    "A restore didn’t finish": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A restore didn’t finish"
+          }
+        }
+      }
+    },
     "Already use Memoir on another device? Turn on sync with the same storage, and Memoir opens with your data instead of setting up again.": {
       "extractionState": "manual",
       "localizations": {
@@ -212,6 +223,17 @@
         }
       }
     },
+    "Coming back with an export?": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Coming back with an export?"
+          }
+        }
+      }
+    },
     "Concrete beats ambitious: read ten pages keeps better than read more.": {
       "extractionState": "manual",
       "localizations": {
@@ -263,6 +285,17 @@
           "stringUnit": {
             "state": "translated",
             "value": "Detected from this device. Travel will not move your day unless you change it."
+          }
+        }
+      }
+    },
+    "Erase the unfinished restore and try again": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Erase the unfinished restore and try again"
           }
         }
       }
@@ -553,6 +586,17 @@
         }
       }
     },
+    "Part of an export reached this device before the restore stopped. Erase it to start again empty, then restore the export again or set up from the start.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Part of an export reached this device before the restore stopped. Erase it to start again empty, then restore the export again or set up from the start."
+          }
+        }
+      }
+    },
     "Quests scheduled before this are not counted late.": {
       "extractionState": "manual",
       "localizations": {
@@ -593,6 +637,39 @@
           "stringUnit": {
             "state": "translated",
             "value": "Ready"
+          }
+        }
+      }
+    },
+    "Restore from an export…": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Restore from an export…"
+          }
+        }
+      }
+    },
+    "Restore the archive you exported from Memoir: everything in it comes back on this device, instead of setting up from the start.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Restore the archive you exported from Memoir: everything in it comes back on this device, instead of setting up from the start."
+          }
+        }
+      }
+    },
+    "Restoring an export becomes possible once sync has finished checking your storage and found nothing there, or while sync is off.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Restoring an export becomes possible once sync has finished checking your storage and found nothing there, or while sync is off."
           }
         }
       }

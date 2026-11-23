@@ -138,14 +138,16 @@ public final class VaultStore: Sendable {
   }
 
   public func write<T: Sendable>(_ body: @Sendable (inout WriteTransaction) throws -> T) async throws(StoreError) -> T {
-    try await writing { db in
-      let row = try KernelRow.load(db)
-      var transaction = WriteTransaction(database: db, registry: self.registry, clock: self.clock(for: row), ids: self.ids)
-      let result = try body(&transaction)
-      _ = try self.settlement.settle(transaction.touched, origin: .local, in: db)
-      if let latest = transaction.clock.latest, latest != row.clock { try KernelRow.saveClock(latest, in: db) }
-      return result
-    }
+    try await writing { db in try self.transacting(in: db, body) }
+  }
+
+  func transacting<T>(in db: Database, _ body: (inout WriteTransaction) throws -> T) throws -> T {
+    let row = try KernelRow.load(db)
+    var transaction = WriteTransaction(database: db, registry: registry, clock: clock(for: row), ids: ids)
+    let result = try body(&transaction)
+    _ = try settlement.settle(transaction.touched, origin: .local, in: db)
+    if let latest = transaction.clock.latest, latest != row.clock { try KernelRow.saveClock(latest, in: db) }
+    return result
   }
 
   public func loadState(_ scope: StateScope) async throws(StoreError) -> VaultState {
@@ -284,19 +286,26 @@ public final class VaultStore: Sendable {
 
   func writing<T: Sendable>(_ body: @Sendable (Database) throws -> T) async throws(StoreError) -> T {
     do {
-      return try await writer.writeWithoutTransaction { database in
-        try Self.leaveStrandedReadOnlyMode(database)
-        var result: T?
-        try database.inTransaction {
-          result = try body(database)
-          return .commit
-        }
-        guard let result else { preconditionFailure("a committed transaction ran its body") }
-        return result
-      }
+      return try await writer.writeWithoutTransaction { database in try Self.committing(database, body) }
     } catch {
       throw StoreError(converting: error)
     }
+  }
+
+  /// Blocks until the writer is free, so it is called only from inside another store's write, never from a task.
+  func writingNested<T>(_ body: (Database) throws -> T) throws -> T {
+    try writer.writeWithoutTransaction { database in try Self.committing(database, body) }
+  }
+
+  private static func committing<T>(_ database: Database, _ body: (Database) throws -> T) throws -> T {
+    try leaveStrandedReadOnlyMode(database)
+    var result: T?
+    try database.inTransaction {
+      result = try body(database)
+      return .commit
+    }
+    guard let result else { preconditionFailure("a committed transaction ran its body") }
+    return result
   }
 
   /// Under load a cancelled access has been seen to leave the connection in `PRAGMA query_only` with no read-only access open, so the next write's

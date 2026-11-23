@@ -15,6 +15,11 @@ public struct ReviewAnswers: Sendable, Hashable {
   public let answers: [ReviewPrompt: String]
   public let completedAtMillis: Int64?
 
+  public init(answers: [ReviewPrompt: String], completedAtMillis: Int64?) {
+    self.answers = answers
+    self.completedAtMillis = completedAtMillis
+  }
+
   public var isComplete: Bool { completedAtMillis != nil }
 }
 
@@ -87,6 +92,22 @@ public enum WeeklyReviewAnswers {
       weeks[week] = try answers(week: week, in: transaction)
     }
     return weeks
+  }
+
+  /// Puts back the weeks an export held, in the restore's main-store transaction, replacing whatever this device held; an empty answer is left out.
+  public static func restore(_ weeks: [LocalDate: ReviewAnswers], in database: Database) throws {
+    for definition in definitions { try database.execute(sql: definition) }
+    try database.execute(sql: "DELETE FROM \(answerTable)")
+    try database.execute(sql: "DELETE FROM \(completionTable)")
+    for (week, review) in weeks {
+      for (prompt, answer) in review.answers where !answer.isEmpty {
+        try database.execute(
+          sql: "INSERT INTO \(answerTable) (week_start, prompt, answer) VALUES (?, ?, ?)", arguments: [week.isoString, prompt.rawValue, answer])
+      }
+      if let completed = review.completedAtMillis {
+        try database.execute(sql: "INSERT INTO \(completionTable) (week_start, completed_at_millis) VALUES (?, ?)", arguments: [week.isoString, completed])
+      }
+    }
   }
 
   /// Drops both tables, every week's answers and completion with them. A vault reset must call it.

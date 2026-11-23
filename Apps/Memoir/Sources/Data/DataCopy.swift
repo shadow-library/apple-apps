@@ -1,4 +1,5 @@
 import Foundation
+import MemoirCore
 import ShadowAppShell
 import ShadowCore
 
@@ -64,6 +65,44 @@ enum DataCopy {
   static func exportFailure(_ error: MemoirExportError) -> PresentedError {
     PresentedError(
       headline: String(localized: "The archive could not be assembled. Nothing was deleted or changed, and retrying is safe.", table: "Data"), detail: error.code)
+  }
+
+  static func store(_ store: MemoirStoreKind) -> String {
+    switch store {
+    case .main: String(localized: "Everyday records", table: "Data")
+    case .activity: String(localized: "Activity records", table: "Data")
+    case .restricted: String(localized: "Health records", table: "Data")
+    }
+  }
+
+  static func importFailure(_ error: MemoirImportError) -> PresentedError {
+    let headline =
+      switch error {
+      case .unreadable: String(localized: "This file couldn’t be opened as a zip archive. Nothing was restored.", table: "Data")
+      case .notAnExport: String(localized: "This archive isn’t a Memoir export. Nothing was restored.", table: "Data")
+      case .newerVersion, .newerRecords:
+        String(localized: "This export was made by a newer version of Memoir. Update Memoir on this device, then restore it. Nothing was restored.", table: "Data")
+      case .malformed: String(localized: "This export is damaged or was changed after it was made, so nothing was restored.", table: "Data")
+      case .tooLarge: String(localized: "This archive is larger than a restore can take. Nothing was restored.", table: "Data")
+      case .receipt: String(localized: "A receipt image in this export is missing or damaged, so nothing was restored.", table: "Data")
+      case .file: String(localized: "Something went wrong on this device. Nothing was restored.", table: "Data")
+      case .syncUnsettled:
+        String(
+          localized: "Sync hasn’t settled, so nothing was restored. Wait until sync is up to date, or turn it off, then try again.", table: "Data")
+      }
+    return PresentedError(headline: headline, detail: error.code)
+  }
+
+  static func restoreFailure(_ error: MemoirRestoreError) -> PresentedError {
+    let headline =
+      switch error {
+      case .vaultNotEmpty:
+        String(localized: "Memoir already holds data on this device, so nothing was restored. A restore only goes into an empty vault.", table: "Data")
+      case .unfinished:
+        String(localized: "The restore stopped partway, so part of the export is on this device. Erase it, then restore again.", table: "Data")
+      default: String(localized: "The restore didn’t finish, and nothing was kept. Try again.", table: "Data")
+      }
+    return PresentedError(headline: headline, detail: error.code)
   }
 
   static func saveFailure(_ error: any Error) -> PresentedError {

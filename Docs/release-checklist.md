@@ -160,7 +160,7 @@ The `-ShadowDemo` launch argument enters the demo too, but only for UI tests and
   disclosure versions, so owners are asked again.
 - [ ] [`hardware-checklist-phase8.md`](hardware-checklist-phase8.md): continued processing, the Mac worker and hand-off on real devices.
 - [ ] [`hardware-checklist-memoir.md`](hardware-checklist-memoir.md): onboarding with sync, store routes, Health, reminders, receipts, insights,
-  export and deletion. Its "Needs a decision" section holds Memoir's other owner decisions (HealthKit for the team,
+  export, restore and deletion. Its "Needs a decision" section holds Memoir's other owner decisions (HealthKit for the team,
   Health background delivery and more).
 
 ## 4. Known follow-ups that matter for a release

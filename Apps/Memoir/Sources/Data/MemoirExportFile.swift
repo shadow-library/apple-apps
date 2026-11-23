@@ -1,12 +1,12 @@
 import Foundation
 import ShadowCore
 
-/// `memoir-export.json`, version 1: every entity of the three stores as stored, so amounts stay integer minor units and measurements stay decimal
+/// `memoir-export.json`, version 2: every entity of the three stores as stored, so amounts stay integer minor units and measurements stay decimal
 /// strings, beside the receipt images this device holds. Modelled on memoir-server's export manifest (`export-assembler.service.ts`), whose
 /// `tables` become one section per store and kind; the command log is included, since here it is the history the hero is worked out from.
 nonisolated struct MemoirExportFile: Codable, Equatable, Sendable {
   static let format = "com.shadow.apps.memoir.export"
-  static let currentVersion = 1
+  static let currentVersion = 2
   static let fileName = "memoir-export.json"
   static let receiptsFolder = "receipts"
 
@@ -42,19 +42,23 @@ nonisolated struct MemoirExportFile: Codable, Equatable, Sendable {
   }
 
   /// A record's merged fields, an appended item, or a revisioned entity's fields with its kept revisions; a removed record keeps `removed: true`.
+  /// `clock` is an appended item's kernel clock, whose order replay follows; version 1 left it out.
   struct Entry: Codable, Equatable, Sendable {
     let key: String
     var fields: [String: JSONValue]?
     var item: [String: JSONValue]?
+    var clock: String?
     var head: String?
     var revisions: [Revision]?
   }
 
+  /// `created` is the clock the revision's id hashes; version 1 left it out.
   struct Revision: Codable, Equatable, Sendable {
     let id: String
     let parent: String?
     let generation: Int64
     let body: JSONValue
+    var created: String?
   }
 
   /// `file` is the image's path inside the archive, or nil when its blob is not on this device.

@@ -23,7 +23,7 @@ struct MemoirExporterTests {
     let decoded = try JSONDecoder().decode(MemoirExportFile.self, from: try MemoirExporter.encode(file))
 
     #expect(decoded == file)
-    #expect(file.format == "com.shadow.apps.memoir.export" && file.version == 1)
+    #expect(file.format == "com.shadow.apps.memoir.export" && file.version == 2)
     #expect(file.generatedAt == "1970-01-01T00:00:00.000Z")
     #expect(file.stores.map(\.name) == ["main", "activity", "health"])
     let expense = try #require(entries(of: "mm_expense", in: decoded).first { $0.key == fill.expense.uuidString.lowercased() })

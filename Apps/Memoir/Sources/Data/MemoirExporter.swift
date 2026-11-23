@@ -164,11 +164,12 @@ nonisolated enum MemoirExporter {
       entry.fields = fields(record.fields)
     case .appended(let appended):
       entry.item = appended.item
+      entry.clock = appended.clock.description
     case .revisioned(let document):
       entry.fields = fields(document.fields)
       entry.head = document.headRevision
       entry.revisions = document.revisions.map { id, item in
-        MemoirExportFile.Revision(id: id.value, parent: item.parent, generation: item.generation, body: item.body)
+        MemoirExportFile.Revision(id: id.value, parent: item.parent, generation: item.generation, body: item.body, created: item.created.description)
       }
       .sorted { ($0.generation, $0.id) < ($1.generation, $1.id) }
     }
