@@ -24,6 +24,7 @@ struct MemoirApp: App {
         .environment(active.sync)
         .environment(settingsTabs)
         .environment(windows.isDemo ? nil : delegate.reminders)
+        .environment(windows.isDemo ? nil : delegate.rates)
         .environment(active.insights)
         .environment(windows.isDemo ? nil : delegate.deletion)
         .diagnostics(.memoir(active.vault.opened, sync: active.sync, ai: active.ai))

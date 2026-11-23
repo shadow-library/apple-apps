@@ -62,6 +62,33 @@ public struct ExpenseRate: Hashable, Sendable, StoredValue {
   }
 }
 
+/// A rate the owner typed for one expense, into the currency it names. It converts that expense ahead of any recorded or locked rate, applies to no other
+/// expense, and can be changed or cleared, so it is kept apart from the locked rate, which is written once.
+public struct ManualRate: Hashable, Sendable, StoredValue {
+  public let rate: DecimalText
+  public let quote: CurrencyCode
+
+  public init(rate: DecimalText, quote: CurrencyCode) {
+    self.rate = rate
+    self.quote = quote
+  }
+
+  public init?(stored: JSONValue) {
+    guard
+      let rate = MemberReader<ManualRateMember>.nested(
+        stored, { reader throws(MemoirUnreadable) in ManualRate(rate: try reader.required(.rate), quote: try reader.required(.quote)) })
+    else { return nil }
+    self = rate
+  }
+
+  public var stored: JSONValue {
+    var members = RecordMembers<ManualRateMember>()
+    members.put(.rate, rate)
+    members.put(.quote, quote)
+    return members.json
+  }
+}
+
 public struct ExpenseRecord: IdentifiedRecord, RemovableMemoirRecord {
   public static let kind = MemoirKind.expense
 
@@ -74,11 +101,12 @@ public struct ExpenseRecord: IdentifiedRecord, RemovableMemoirRecord {
   public var note: String?
   public var receipt: UUID?
   public var rate: ExpenseRate?
+  public var manualRate: ManualRate?
   public var loggedAtMillis: Int64
 
   public init(
     id: UUID, amountMinor: Int64, currency: CurrencyCode, occurredOn: LocalDate, category: CategoryKey, merchant: String? = nil, note: String? = nil, receipt: UUID? = nil,
-    rate: ExpenseRate? = nil, loggedAtMillis: Int64
+    rate: ExpenseRate? = nil, manualRate: ManualRate? = nil, loggedAtMillis: Int64
   ) {
     self.id = id
     self.amountMinor = amountMinor
@@ -89,6 +117,7 @@ public struct ExpenseRecord: IdentifiedRecord, RemovableMemoirRecord {
     self.note = note
     self.receipt = receipt
     self.rate = rate
+    self.manualRate = manualRate
     self.loggedAtMillis = loggedAtMillis
   }
 
@@ -96,7 +125,7 @@ public struct ExpenseRecord: IdentifiedRecord, RemovableMemoirRecord {
     self.init(
       id: id, amountMinor: try reader.required(.amountMinor), currency: try reader.required(.currency), occurredOn: try reader.required(.occurredOn),
       category: try reader.required(.category), merchant: try reader.optional(.merchant), note: try reader.optional(.note), receipt: try reader.optional(.receipt),
-      rate: try reader.optional(.rate), loggedAtMillis: try reader.required(.loggedAtMillis))
+      rate: try reader.optional(.rate), manualRate: try reader.optional(.manualRate), loggedAtMillis: try reader.required(.loggedAtMillis))
   }
 
   public var members: RecordMembers<ExpenseField> {
@@ -109,6 +138,7 @@ public struct ExpenseRecord: IdentifiedRecord, RemovableMemoirRecord {
     members.put(.note, note)
     members.put(.receipt, receipt)
     members.put(.rate, rate)
+    members.put(.manualRate, manualRate)
     members.put(.loggedAtMillis, loggedAtMillis)
     return members
   }

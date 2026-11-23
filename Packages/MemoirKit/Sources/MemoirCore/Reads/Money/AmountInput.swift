@@ -81,6 +81,26 @@ public enum AmountInput {
     } catch {
       throw .unknownCurrency(currency)
     }
+    let typed = try digits(text, format: format)
+    guard typed.fraction.dropFirst(exponent).allSatisfy({ $0 == 0 }) else { throw .tooPrecise(allowedPlaces: exponent) }
+    let kept = Array(typed.fraction.prefix(exponent)) + Array(repeating: 0, count: max(0, exponent - typed.fraction.count))
+    var minor: Int64 = 0
+    for digit in typed.whole + kept {
+      let (shifted, overflow) = minor.multipliedReportingOverflow(by: 10)
+      let (sum, carry) = shifted.addingReportingOverflow(Int64(digit))
+      guard !overflow, !carry else { throw .outOfRange }
+      minor = sum
+    }
+    return minor
+  }
+
+  struct TypedDigits {
+    let whole: [Int]
+    let fraction: [Int]
+  }
+
+  /// The digits before and after the locale's decimal separator, with the grouping checked and removed.
+  static func digits(_ text: String, format: AmountFormat) throws(AmountInputRefusal) -> TypedDigits {
     let characters = Array(text.trimmingCharacters(in: .whitespacesAndNewlines))
     var groups: [[Int]] = [[]]
     var fraction: [Int]?
@@ -104,17 +124,7 @@ public enum AmountInput {
     }
     guard groups.contains(where: { !$0.isEmpty }) || !(fraction ?? []).isEmpty else { throw .empty }
     try checkGrouping(groups)
-    let fractionDigits = fraction ?? []
-    guard fractionDigits.dropFirst(exponent).allSatisfy({ $0 == 0 }) else { throw .tooPrecise(allowedPlaces: exponent) }
-    let kept = Array(fractionDigits.prefix(exponent)) + Array(repeating: 0, count: max(0, exponent - fractionDigits.count))
-    var minor: Int64 = 0
-    for digit in groups.joined() + kept {
-      let (shifted, overflow) = minor.multipliedReportingOverflow(by: 10)
-      let (sum, carry) = shifted.addingReportingOverflow(Int64(digit))
-      guard !overflow, !carry else { throw .outOfRange }
-      minor = sum
-    }
-    return minor
+    return TypedDigits(whole: Array(groups.joined()), fraction: fraction ?? [])
   }
 
   private static func checkGrouping(_ groups: [[Int]]) throws(AmountInputRefusal) {

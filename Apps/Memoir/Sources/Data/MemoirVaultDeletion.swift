@@ -33,7 +33,7 @@ nonisolated enum VaultDeletionError: ShadowError, Equatable {
 
 /// Deletes the vault on this device and starts it again empty, so the app returns to onboarding. Sync is turned off first (`SyncRuntime.detach()`,
 /// which keeps a later launch from attaching the old location on its own) and every runtime stops; a failure there erases nothing. Then the day turns,
-/// reminders (pending and delivered) and insights stop, the vault closes while its three store directories (blobs included), the waiting export
+/// reminders (pending and delivered), insights and exchange rates stop, the vault closes while its three store directories (blobs included), the waiting export
 /// archives and this device's Memoir defaults are removed, and it opens again. What sync already sent stays at its location and on the other devices,
 /// since nothing in the sync kernel deletes a vault there, and the keychain keeps the vault's synced keys, which those devices still use.
 @MainActor
@@ -54,6 +54,7 @@ final class MemoirVaultDeletion {
   @ObservationIgnored private let dayTurns: MemoirDayTurns
   @ObservationIgnored private let reminders: ReminderScheduler
   @ObservationIgnored private let insights: MemoirInsights
+  @ObservationIgnored private let rates: MemoirRates?
   @ObservationIgnored private let location: @Sendable () throws(MemoirVaultOpenError) -> MemoirVaultLocation
   @ObservationIgnored private let defaults: MemoirDeviceDefaults
   @ObservationIgnored private let exports: MemoirExports
@@ -62,7 +63,7 @@ final class MemoirVaultDeletion {
 
   init(
     vault: MemoirVaultModel, sync: SyncRuntimes, dayTurns: MemoirDayTurns, reminders: ReminderScheduler, insights: MemoirInsights,
-    location: @escaping @Sendable () throws(MemoirVaultOpenError) -> MemoirVaultLocation = MemoirVaultOpener.appLocation,
+    rates: MemoirRates? = nil, location: @escaping @Sendable () throws(MemoirVaultOpenError) -> MemoirVaultLocation = MemoirVaultOpener.appLocation,
     defaults: UserDefaults = .standard, exports: MemoirExports = .live, vaultChanged: @escaping @MainActor () async -> Void
   ) {
     self.vault = vault
@@ -70,6 +71,7 @@ final class MemoirVaultDeletion {
     self.dayTurns = dayTurns
     self.reminders = reminders
     self.insights = insights
+    self.rates = rates
     self.location = location
     self.defaults = MemoirDeviceDefaults(defaults: defaults)
     self.exports = exports
@@ -104,6 +106,7 @@ final class MemoirVaultDeletion {
     dayTurns.stop()
     reminders.withdrawAll()
     await insights.follow(nil)
+    rates?.follow(nil)
     await Self.clearLocalTables(in: stores)
     do {
       let exports = exports
@@ -118,6 +121,7 @@ final class MemoirVaultDeletion {
       notice = .incomplete(code: error.code)
     }
     reminders.deviceSettingCleared()
+    rates?.deviceSettingCleared()
     await vaultChanged()
     return .success(())
   }

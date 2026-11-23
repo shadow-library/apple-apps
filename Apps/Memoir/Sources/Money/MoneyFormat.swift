@@ -49,6 +49,11 @@ nonisolated enum MoneyText {
     return value.formatted(.number.locale(locale).grouping(.never).precision(.fractionLength(0...ExchangeRate.maximumScale)))
   }
 
+  /// A rate as the rate field shows it: its exact digits and the locale's decimal separator, no grouping, so `RateInput` reads it back exactly.
+  static func editableRate(_ rate: DecimalText, format: AmountFormat) -> String {
+    String(rate.text.map { $0 == "." ? format.decimalSeparator : $0 })
+  }
+
   /// The change against the previous stretch as a whole percentage, halves up, without its sign.
   static func percent(_ fraction: Fraction) -> Int {
     let magnitude = Int128(fraction.numerator.magnitude)

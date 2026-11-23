@@ -11,11 +11,12 @@ struct MemoirAboutTests {
   func shouldSayWhatLeavesTheDeviceWithMemoirsOwnLinesBetweenTheShells() {
     let lines = AboutDisclosure.memoir
 
-    #expect(lines.map(\.id) == ["model-provider", "receipts", "sync", "keychain", "health", "nothing-else"])
+    #expect(lines.map(\.id) == ["model-provider", "receipts", "exchange-rates", "sync", "keychain", "health", "nothing-else"])
     for line in lines { #expect(line.text.isInCatalog, "\(line.id)") }
     #expect(String(localized: lines[1].text).hasPrefix("The text of a receipt goes to your AI provider only after you allow it"))
-    #expect(String(localized: lines[2].text).contains("your vault is encrypted on this device"))
-    #expect(String(localized: lines[4].text).hasPrefix("Health data never syncs through iCloud"))
+    #expect(String(localized: lines[2].text).contains("Only the currency codes and a date are sent"))
+    #expect(String(localized: lines[3].text).contains("your vault is encrypted on this device"))
+    #expect(String(localized: lines[5].text).hasPrefix("Health data never syncs through iCloud"))
   }
 
   @Test("should find the About row's words in the Settings catalog")

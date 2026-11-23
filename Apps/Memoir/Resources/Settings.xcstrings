@@ -56,6 +56,17 @@
         }
       }
     },
+    "Asks Frankfurter for the European Central Bank’s daily rate of each currency you spend in, sending only the currencies and the date. A rate you enter on an expense is never replaced. This choice is kept on this device.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Asks Frankfurter for the European Central Bank’s daily rate of each currency you spend in, sending only the currencies and the date. A rate you enter on an expense is never replaced. This choice is kept on this device."
+          }
+        }
+      }
+    },
     "Choose it once to set your day and budget. It stays fixed afterwards.": {
       "extractionState": "manual",
       "localizations": {
@@ -151,6 +162,17 @@
           "stringUnit": {
             "state": "translated",
             "value": "Enter an amount of zero or more, for example 1500."
+          }
+        }
+      }
+    },
+    "Fetch exchange rates": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fetch exchange rates"
           }
         }
       }
@@ -459,6 +481,17 @@
           "stringUnit": {
             "state": "translated",
             "value": "What leaves this device, and the notices of the third-party work Memoir includes."
+          }
+        }
+      }
+    },
+    "While “Fetch exchange rates” is on in Settings, Memoir asks Frankfurter (api.frankfurter.dev) for the European Central Bank’s daily rates of the currencies you spend in. Only the currency codes and a date are sent, never an amount or a note; like any website, Frankfurter sees the request’s network address.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "While “Fetch exchange rates” is on in Settings, Memoir asks Frankfurter (api.frankfurter.dev) for the European Central Bank’s daily rates of the currencies you spend in. Only the currency codes and a date are sent, never an amount or a note; like any website, Frankfurter sees the request’s network address."
           }
         }
       }

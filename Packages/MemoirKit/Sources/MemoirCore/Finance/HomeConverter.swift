@@ -14,7 +14,8 @@ public enum HomeAmount: Hashable, Sendable {
 /// Converts expenses into one home currency through the `mm_fx_rate` of the expense's currency, the home currency and the day its rate is for: the
 /// day of its locked rate when that quotes the home currency, otherwise its own date. That record is first writer wins, so every expense of a pair and
 /// day converts at one rate on every device, even when a device locked an expense from a record that later lost the merge. The locked rate is the
-/// fallback until the record arrives, and it keeps the day the rate is for when the expense's date is edited later.
+/// fallback until the record arrives, and it keeps the day the rate is for when the expense's date is edited later. A rate the owner typed for the
+/// expense (`manualRate`) into the home currency comes before both.
 public struct HomeConverter: Sendable {
   public let home: CurrencyCode
 
@@ -28,6 +29,17 @@ public struct HomeConverter: Sendable {
   }
 
   public func rate(for expense: ExpenseRecord) -> DecimalText? {
+    manualRate(of: expense) ?? referenceRate(for: expense)
+  }
+
+  /// The owner's own rate for the expense, when it converts into the home currency.
+  public func manualRate(of expense: ExpenseRecord) -> DecimalText? {
+    guard let manual = expense.manualRate, manual.quote == home else { return nil }
+    return manual.rate
+  }
+
+  /// The recorded or locked rate, leaving out any rate the owner typed.
+  public func referenceRate(for expense: ExpenseRecord) -> DecimalText? {
     guard let locked = expense.rate, locked.quote == home else { return rates[RateKey(base: expense.currency, date: expense.occurredOn)] }
     return rates[RateKey(base: expense.currency, date: locked.date)] ?? locked.rate
   }

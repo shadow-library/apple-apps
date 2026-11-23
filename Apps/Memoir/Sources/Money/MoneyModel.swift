@@ -30,7 +30,7 @@ final class ExpenseListModel {
   }
   private(set) var limit: Int
   private(set) var today: LocalDate?
-  @ObservationIgnored private let context: MemoirScreenContext
+  @ObservationIgnored let context: MemoirScreenContext
   @ObservationIgnored private let pageSize: Int
   @ObservationIgnored private var typing: Task<Void, Never>?
 

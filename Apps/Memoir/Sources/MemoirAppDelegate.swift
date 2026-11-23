@@ -21,13 +21,14 @@ final class MemoirAppDelegate: NSObject {
   let dayTurns = MemoirDayTurns()
   let reminders = ReminderScheduler.live()
   let health = MemoirHealthImports()
+  let rates = MemoirRates.live()
   lazy var insights = MemoirInsights(ai: ai, trustedClock: vault.trustedClock)
-  lazy var deletion = MemoirVaultDeletion(vault: vault, sync: sync, dayTurns: dayTurns, reminders: reminders, insights: insights) { [weak self] in
+  lazy var deletion = MemoirVaultDeletion(vault: vault, sync: sync, dayTurns: dayTurns, reminders: reminders, insights: insights, rates: rates) { [weak self] in
     await self?.vaultChanged()
   }
   let demo = MemoirDemoEnvironment.session()
   private(set) lazy var windows = MemoirWindowRuntimes(
-    owner: MemoirRuntimeSet(vault: vault, ai: ai, sync: sync, insights: insights, dayTurns: dayTurns), demo: demo,
+    owner: MemoirRuntimeSet(vault: vault, ai: ai, sync: sync, insights: insights, dayTurns: dayTurns, rates: rates), demo: demo,
     ownerVaultChanged: { [weak self] in await self?.vaultChanged() },
     ownerForegrounded: { [weak self] in
       guard let self else { return }
@@ -44,6 +45,7 @@ final class MemoirAppDelegate: NSObject {
   func vaultChanged() async {
     dayTurns.follow(vault.opened)
     reminders.follow(vault.opened)
+    rates.follow(vault.opened.map(MemoirScreenContext.init))
     guard let opened = vault.opened else { return await insights.follow(nil) }
     await sync.launch(MemoirSyncRoutes.vault(opened.stores), trustedClock: vault.trustedClock)
     await insights.follow(opened)

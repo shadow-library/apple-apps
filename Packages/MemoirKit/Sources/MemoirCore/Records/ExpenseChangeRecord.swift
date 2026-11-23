@@ -3,13 +3,14 @@ import ShadowCore
 import ShadowStore
 
 /// One field an expense edit moved, from and to; memoir-web `ExpenseAuditChange` (`lib/data/finance.types.ts:120-126`) without the currency, which an
-/// expense keeps from its first write.
+/// expense keeps from its first write, and with the rate the owner typed, which the reference does not have.
 public enum ExpenseFieldChange: Sendable, Hashable {
   case amount(from: Int64, to: Int64)
   case occurredOn(from: LocalDate, to: LocalDate)
   case category(from: CategoryKey, to: CategoryKey)
   case merchant(from: String?, to: String?)
   case note(from: String?, to: String?)
+  case manualRate(from: ManualRate?, to: ManualRate?)
 
   /// memoir-web `expenseChanges` (`lib/data/finance.rules.ts:357-367`): the owner-visible fields that moved, in its order; an empty text is no text.
   public static func changes(from before: ExpenseRecord, to after: ExpenseRecord) -> [ExpenseFieldChange] {
@@ -19,6 +20,7 @@ public enum ExpenseFieldChange: Sendable, Hashable {
     if before.category != after.category { changes.append(.category(from: before.category, to: after.category)) }
     if text(before.note) != text(after.note) { changes.append(.note(from: text(before.note), to: text(after.note))) }
     if text(before.merchant) != text(after.merchant) { changes.append(.merchant(from: text(before.merchant), to: text(after.merchant))) }
+    if before.manualRate != after.manualRate { changes.append(.manualRate(from: before.manualRate, to: after.manualRate)) }
     return changes
   }
 
@@ -35,6 +37,7 @@ extension ExpenseFieldChange: StoredValue {
     case category
     case merchant
     case note
+    case manualRate = "manual_rate"
   }
 
   public init?(stored: JSONValue) {
@@ -49,6 +52,7 @@ extension ExpenseFieldChange: StoredValue {
           case .category: return .category(from: try reader.required(.from), to: try reader.required(.to))
           case .merchant: return .merchant(from: try reader.optional(.from), to: try reader.optional(.to))
           case .note: return .note(from: try reader.optional(.from), to: try reader.optional(.to))
+          case .manualRate: return .manualRate(from: try reader.optional(.from), to: try reader.optional(.to))
           case nil: throw .invalid(field: ExpenseFieldChangeMember.field.rawValue)
           }
         })
@@ -64,6 +68,7 @@ extension ExpenseFieldChange: StoredValue {
     case .category(let from, let to): Self.put(&members, .category, from, to)
     case .merchant(let from, let to): Self.put(&members, .merchant, from, to)
     case .note(let from, let to): Self.put(&members, .note, from, to)
+    case .manualRate(let from, let to): Self.put(&members, .manualRate, from, to)
     }
     return members.json
   }

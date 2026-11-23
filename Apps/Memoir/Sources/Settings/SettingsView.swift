@@ -214,6 +214,7 @@ private struct SettingsMoneySection: View {
         }
         SettingsFailureRow(error: model.failure(for: .currencies))
       }
+      SettingsRatesRow()
     } header: {
       Text("Money", tableName: "Settings")
     } footer: {
@@ -303,6 +304,27 @@ private struct SettingsMoneySection: View {
       if model.isBudgetDirty { return Text("Unsaved — press Return or move out of the field to save.", tableName: "Settings") }
     #endif
     return Text("A soft ceiling for the calendar month — nothing here is blocked when you go over it.", tableName: "Settings")
+  }
+}
+
+/// "Fetch exchange rates", for the owner's vault only: the demo has no `MemoirRates`.
+private struct SettingsRatesRow: View {
+  @Environment(MemoirRates.self) private var rates: MemoirRates?
+
+  var body: some View {
+    if let rates {
+      Toggle(isOn: Binding(get: { rates.isFetching }, set: { rates.setFetching($0) })) {
+        VStack(alignment: .leading, spacing: Spacing.space1) {
+          Text("Fetch exchange rates", tableName: "Settings")
+          Text(
+            "Asks Frankfurter for the European Central Bank’s daily rate of each currency you spend in, sending only the currencies and the date. A rate you enter on an expense is never replaced. This choice is kept on this device.",
+            tableName: "Settings"
+          )
+          .shadowFont(.footnote)
+          .foregroundStyle(ShadowColor.textSecondary)
+        }
+      }
+    }
   }
 }
 

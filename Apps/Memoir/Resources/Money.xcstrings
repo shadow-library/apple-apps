@@ -78,6 +78,17 @@
         }
       }
     },
+    "%@ at %@ — the rate you entered": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ at %@ — the rate you entered"
+          }
+        }
+      }
+    },
     "%@ can’t be used for an amount.": {
       "extractionState": "manual",
       "localizations": {
@@ -107,6 +118,17 @@
           "stringUnit": {
             "state": "translated",
             "value": "%@ confirmed for %@."
+          }
+        }
+      }
+    },
+    "%@ for 1 %@": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ for 1 %@"
           }
         }
       }
@@ -298,6 +320,17 @@
         }
       }
     },
+    "%@ · at the rate you entered": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ · at the rate you entered"
+          }
+        }
+      }
+    },
     "%@ · locked to the transaction date": {
       "extractionState": "manual",
       "localizations": {
@@ -338,6 +371,17 @@
           "stringUnit": {
             "state": "translated",
             "value": "%@ ≈ %@ at %@, the rate this expense is locked to."
+          }
+        }
+      }
+    },
+    "%@ ≈ %@ at %@, the rate you entered.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ ≈ %@ at %@, the rate you entered."
           }
         }
       }
@@ -637,6 +681,28 @@
           "stringUnit": {
             "state": "translated",
             "value": "A foreign expense keeps the amount you entered and the rate it converts at. Reports convert with that rate for good — a past month never re-prices itself."
+          }
+        }
+      }
+    },
+    "A rate has at most %lld decimal places.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A rate has at most %lld decimal places."
+          }
+        }
+      }
+    },
+    "A rate has only one decimal separator.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A rate has only one decimal separator."
           }
         }
       }
@@ -1257,6 +1323,28 @@
         }
       }
     },
+    "Enter a rate above zero.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Enter a rate above zero."
+          }
+        }
+      }
+    },
+    "Enter a rate such as %@.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Enter a rate such as %@."
+          }
+        }
+      }
+    },
     "Enter an amount of zero or more.": {
       "extractionState": "manual",
       "localizations": {
@@ -1275,6 +1363,17 @@
           "stringUnit": {
             "state": "translated",
             "value": "Enter an amount, for example %@"
+          }
+        }
+      }
+    },
+    "Enter the rate": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Enter the rate"
           }
         }
       }
@@ -1320,6 +1419,17 @@
           "stringUnit": {
             "state": "translated",
             "value": "Every category"
+          }
+        }
+      }
+    },
+    "Exchange rate": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Exchange rate"
           }
         }
       }
@@ -1463,6 +1573,17 @@
           "stringUnit": {
             "state": "translated",
             "value": "Keep editing"
+          }
+        }
+      }
+    },
+    "Leave it empty to use the European Central Bank’s rate for the expense’s date. A rate you enter converts this expense only.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Leave it empty to use the European Central Bank’s rate for the expense’s date. A rate you enter converts this expense only."
           }
         }
       }
@@ -1885,6 +2006,17 @@
         }
       }
     },
+    "Rate you entered": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Rate you entered"
+          }
+        }
+      }
+    },
     "Receipt attached": {
       "extractionState": "manual",
       "localizations": {
@@ -1914,6 +2046,17 @@
           "stringUnit": {
             "state": "translated",
             "value": "Recurring charges"
+          }
+        }
+      }
+    },
+    "Reference rate": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reference rate"
           }
         }
       }
@@ -2651,6 +2794,17 @@
           "stringUnit": {
             "state": "translated",
             "value": "“%@”"
+          }
+        }
+      }
+    },
+    "“%@” can’t be part of a rate.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "“%@” can’t be part of a rate."
           }
         }
       }

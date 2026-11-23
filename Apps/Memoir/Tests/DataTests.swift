@@ -186,6 +186,7 @@ struct MemoirVaultDeletionTests {
       world.defaults.set("x", forKey: "com.shadow.apps.memoir.\(key)")
     }
     world.defaults.set("x", forKey: "other.app.key")
+    world.rates.setFetching(false)
     _ = try await MemoirExporter.archive(of: opened.stores, at: Date(), appVersion: "1", into: world.exports)
     let uploaded = try await world.storage.listAll(prefix: "").count
 
@@ -211,6 +212,7 @@ struct MemoirVaultDeletionTests {
     }
     let kept = world.defaults.dictionaryRepresentation().keys.filter { $0.hasPrefix("com.shadow.apps.memoir.") || $0 == "other.app.key" }.sorted()
     #expect(kept == ["com.shadow.apps.memoir.ai.settings.v1", "com.shadow.apps.memoir.sync.recovery-recipient.v", "other.app.key"])
+    #expect(world.rates.isFetching, "\"Fetch exchange rates\" is back to its default with the cleared defaults")
 
     let gate = OnboardingGate()
     let task = Task { await gate.run(stores: reopened.stores) }

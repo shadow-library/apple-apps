@@ -102,6 +102,33 @@ struct FinanceConvergenceTests {
     }
   }
 
+  @Test func shouldKeepTheOwnersRateWhenAnotherDeviceFillsTheSameExpenseMeanwhile() async throws {
+    let eur = try MemoirStoreFixture.currency("EUR")
+    let usd = try MemoirStoreFixture.currency("USD")
+    let day = try MemoirStoreFixture.date("2026-11-10")
+    let id = FinanceFixture.expenseID(1)
+    let replicas = try await CausalReplicas(CausalReplicaSetup(count: 2, registry: MemoirSchema.mainRegistry))
+    _ = try await replicas.write(0) { transaction in
+      try FinanceFixture.settings(home: eur).create(in: &transaction)
+      try FinanceFixture.expense(1, amountMinor: 10_000, currency: usd, on: day).create(in: &transaction)
+    }
+    try await replicas.settle()
+    let typed = ManualRate(rate: try MemoirStoreFixture.decimal("0.8"), quote: eur)
+    _ = try await replicas.write(0) { transaction in try ExpenseRecord.edit(id: id, in: &transaction) { $0.manualRate = typed } }
+    await replicas.advanceClock(of: 1, by: .seconds(1))
+    let pair = CurrencyPair(base: usd, quote: eur)
+    let report = try await RateFiller(client: ScriptedRatesClient([day: [pair: try MemoirStoreFixture.decimal("0.9")]])).fill(replicas.store(1), today: FinanceFixture.today)
+    #expect(report.filledExpenses == 1, "the second device has not seen the owner's rate yet")
+    try await Self.flush(replicas, 1)
+    try await replicas.settle()
+    let first = try await Self.snapshot(replicas.store(0))
+    #expect(try await Self.snapshot(replicas.store(1)) == first)
+    let expense = try #require(first.expenses.first)
+    #expect(expense.manualRate?.rate == (try MemoirStoreFixture.decimal("0.8")))
+    #expect(expense.rate?.rate == (try MemoirStoreFixture.decimal("0.9")))
+    #expect(HomeConverter(home: eur, rates: first.rates).homeAmount(of: expense) == .converted(8_000), "every device converts at the owner's rate")
+  }
+
   @Test func shouldLetALaterConfirmationElsewhereRestoreAndRevertTheCycleExpense() async throws {
     let eur = try MemoirStoreFixture.currency("EUR")
     let anchor = try MemoirStoreFixture.date("2026-01-31")

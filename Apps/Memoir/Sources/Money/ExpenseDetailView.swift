@@ -106,6 +106,14 @@ struct ExpenseDetailView: View {
     return ShadowCard {
       Text(verbatim: shown).shadowFont(.largeTitle).monospacedDigit().foregroundStyle(ShadowColor.textPrimary)
       MoneyProse(Text(verbatim: rateLine(expense, typed: typed)))
+      if model.isAwaitingRate {
+        Button {
+          isEditing = true
+        } label: {
+          Label(title: { Text("Enter the rate", tableName: "Money") }, icon: { Image(systemName: "arrow.left.arrow.right") })
+        }
+        .buttonStyle(.bordered)
+      }
       ShadowFlowLayout {
         ShadowTag(Text(verbatim: model.categoryName(expense.category)), systemImage: MoneyLabels.categorySymbol(expense.category))
         if expense.receipt != nil { ShadowBadge(Text("Receipt attached", tableName: "Money"), systemImage: "doc.text.image") }
@@ -194,6 +202,7 @@ struct ExpenseDetailView: View {
     guard let rate = model.rate, model.inHome?.minor != nil else {
       return String(localized: "\(typed) — the rate isn’t known yet, so this converts later. Nothing was blocked.", table: "Money")
     }
+    if model.isManualRate { return String(localized: "\(typed) at \(MoneyText.rate(rate, locale: locale)) — the rate you entered", table: "Money") }
     let day = MoneyDates.text(expense.rate?.date ?? expense.occurredOn, locale: locale)
     return String(localized: "\(typed) at \(MoneyText.rate(rate, locale: locale)) — the rate on \(day)", table: "Money")
   }
@@ -203,6 +212,8 @@ struct ExpenseDetailView: View {
     switch model.inHome {
     case .converted(let minor) where expense.currency == home:
       return String(localized: "\(MoneyText.formatted(minor, home, locale: locale)) · your base currency", table: "Money")
+    case .converted(let minor) where model.isManualRate:
+      return String(localized: "\(MoneyText.formatted(minor, home, locale: locale)) · at the rate you entered", table: "Money")
     case .converted(let minor): return String(localized: "\(MoneyText.formatted(minor, home, locale: locale)) · locked to the transaction date", table: "Money")
     case .awaitingRate, nil: return String(localized: "Waiting for a rate — the entry saved without one.", table: "Money")
     case .unconvertible: return String(localized: "Can’t be converted to \(home.code).", table: "Money")

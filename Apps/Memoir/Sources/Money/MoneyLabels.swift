@@ -149,4 +149,15 @@ nonisolated enum MoneyLabels {
     case .unknownCurrency: String(localized: "\(currency.code) can’t be used for an amount.", table: "Money")
     }
   }
+
+  static func rateIssue(_ refusal: RateInputRefusal, format: AmountFormat) -> String {
+    let example = "0\(format.decimalSeparator)0934"
+    return switch refusal {
+    case .unreadable(.negative), .notPositive: String(localized: "Enter a rate above zero.", table: "Money")
+    case .unreadable(.unexpectedCharacter(let character)): String(localized: "“\(String(character))” can’t be part of a rate.", table: "Money")
+    case .unreadable(.repeatedDecimalSeparator): String(localized: "A rate has only one decimal separator.", table: "Money")
+    case .tooPrecise(let places): String(localized: "A rate has at most \(places) decimal places.", table: "Money")
+    case .unreadable, .outOfRange: String(localized: "Enter a rate such as \(example).", table: "Money")
+    }
+  }
 }

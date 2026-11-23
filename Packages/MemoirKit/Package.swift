@@ -29,6 +29,7 @@ let package = Package(
         .product(name: "ShadowText", package: "ShadowKit"),
         .product(name: "ShadowAI", package: "ShadowKit"),
         .product(name: "ShadowJobs", package: "ShadowKit"),
+        .product(name: "ShadowNetworking", package: "ShadowKit"),
         .product(name: "GRDB", package: "GRDB.swift"),
       ],
       swiftSettings: swiftSettings

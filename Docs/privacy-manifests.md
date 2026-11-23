@@ -6,7 +6,10 @@ Catalog uses no listed API and ships none.
 
 Both manifests set `NSPrivacyTracking` to false with no tracking domains and leave `NSPrivacyCollectedDataTypes` empty: the developer collects
 nothing. Writing and model requests go only to the provider the owner configured, under the owner's key, and the vault syncs only to a location the
-owner chose. The App Privacy answers in App Store Connect are the owner's to give and must agree with these files.
+owner chose. Memoir also asks Frankfurter (`api.frankfurter.dev`) for the European Central Bank's daily exchange rates while "Fetch exchange
+rates" is on, sending only currency codes and a date under a generic user agent; that is neither tracking nor a tracking domain, so it adds no `NSPrivacyTrackingDomains`
+entry, and `URLSession` is not a required-reason API. The App Privacy answers in App Store Connect are the owner's to give and must agree with
+these files.
 
 ## What links into each app
 
@@ -37,7 +40,7 @@ record's metadata, not a file's). The reason codes are the ones Xcode's own `.xc
 | --- | --- | --- |
 | FileTimestamp | `Packages/ShadowKit/Sources/ShadowSync/Storage/LocalFolderProvider.swift` | Memoir, Novel Forge |
 | UserDefaults | `Packages/ShadowKit/Sources/ShadowAppShell/AI/AIServices.swift`, `Packages/ShadowKit/Sources/ShadowAppShell/Sync/Keys/RecoveryPhraseRecord.swift` | Memoir, Novel Forge |
-| UserDefaults | `Apps/Memoir/Sources/`: `AI/MemoirConsent.swift`, `Ask/AskView.swift`, `Data/MemoirDeviceDefaults.swift`, `Data/MemoirVaultDeletion.swift`, `Health/HealthEnvironment.swift`, `Hero/WithdrawalAcknowledgements.swift`, `Log/WeightModel.swift`, `Reminders/ReminderDeviceSetting.swift`, `Reminders/RemindersSettingsView.swift`, `Shared/ComingBackDismissal.swift` | Memoir |
+| UserDefaults | `Apps/Memoir/Sources/`: `AI/MemoirConsent.swift`, `Ask/AskView.swift`, `Data/MemoirDeviceDefaults.swift`, `Data/MemoirVaultDeletion.swift`, `Health/HealthEnvironment.swift`, `Hero/WithdrawalAcknowledgements.swift`, `Log/WeightModel.swift`, `Money/MemoirRates.swift`, `Reminders/ReminderDeviceSetting.swift`, `Reminders/RemindersSettingsView.swift`, `Shared/ComingBackDismissal.swift` | Memoir |
 | UserDefaults | `Apps/NovelForge/Sources/`: `Chapters/Finalize/FinalizeButton.swift`, `Shared/AIServices+NovelForge.swift`, `Worker/WorkerModel.swift`, `Worker/WorkerRecordAccess.swift` | Novel Forge |
 
 ## The guard

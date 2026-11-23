@@ -30,6 +30,7 @@ final class DataWorld {
   let runtimes: SyncRuntimes
   let notifications = FakeReminderNotifications()
   let reminders: ReminderScheduler
+  let rates: MemoirRates
   let dayTurns = MemoirDayTurns(center: NotificationCenter(), clockChanges: [])
   let insights: MemoirInsights
   let suite: String
@@ -69,6 +70,7 @@ final class DataWorld {
     suite = "MemoirDataTests-\(UUID().uuidString)"
     defaults = try #require(UserDefaults(suiteName: suite))
     reminders = ReminderScheduler(notifications: notifications, setting: ReminderDeviceSetting(defaults: defaults, remindsByDefault: true), restartOn: [])
+    rates = MemoirRates(client: RecordingRatesClient(), setting: RatesDeviceSetting(defaults: defaults))
     insights = MemoirInsights(ai: AIServices.memoir(defaults: defaults), trustedClock: nil)
     exports = MemoirExports(directory: directory.appending(path: "Exports", directoryHint: .isDirectory))
   }
@@ -76,7 +78,7 @@ final class DataWorld {
   func deletion(location: (@Sendable () throws(MemoirVaultOpenError) -> MemoirVaultLocation)? = nil) -> MemoirVaultDeletion {
     let fixed = self.location
     return MemoirVaultDeletion(
-      vault: vault, sync: runtimes, dayTurns: dayTurns, reminders: reminders, insights: insights, location: location ?? { fixed }, defaults: defaults,
+      vault: vault, sync: runtimes, dayTurns: dayTurns, reminders: reminders, insights: insights, rates: rates, location: location ?? { fixed }, defaults: defaults,
       exports: exports
     ) { [weak self] in await self?.vaultChanged() }
   }

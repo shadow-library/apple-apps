@@ -1,7 +1,7 @@
 import ShadowAppShell
 import SwiftUI
 
-/// One vault and what serves its screens: its AI services, sync, insights and day turns.
+/// One vault and what serves its screens: its AI services, sync, insights, day turns and, for the owner's vault only, exchange rates.
 @MainActor
 struct MemoirRuntimeSet {
   let vault: MemoirVaultModel
@@ -9,9 +9,11 @@ struct MemoirRuntimeSet {
   let sync: SyncRuntimes
   let insights: MemoirInsights
   let dayTurns: MemoirDayTurns
+  var rates: MemoirRates?
 
   func phaseChanged(_ phase: ScenePhase) async {
     if phase == .active { dayTurns.restart() }
+    rates?.phaseChanged(isActive: phase == .active)
     async let syncing: Void = sync.phaseChanged(phase)
     async let asking: Void = insights.phaseChanged(isActive: phase == .active)
     _ = await (syncing, asking)

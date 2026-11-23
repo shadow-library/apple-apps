@@ -38,7 +38,7 @@ public enum MemoirStoreKind: String, CaseIterable, Sendable {
 }
 
 public enum MemoirSchema {
-  public static let mainVersion = 4
+  public static let mainVersion = 5
   public static let activityVersion = 3
   public static let restrictedVersion = 3
 

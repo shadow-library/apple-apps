@@ -65,6 +65,16 @@ private struct ExpenseFormFields: View {
           Text(verbatim: preview)
         }
       }
+      if form.offersRate, let home = form.options.home {
+        Section {
+          MoneyRateField(text: $form.rateText, currency: form.currency, home: home, issue: form.rateIssue)
+        } header: {
+          Text("Exchange rate", tableName: "Money")
+        } footer: {
+          Text(
+            "Leave it empty to use the European Central Bank’s rate for the expense’s date. A rate you enter converts this expense only.", tableName: "Money")
+        }
+      }
       Section {
         Picker(selection: $form.category) {
           ForEach(form.categories, id: \.key) { entry in Text(verbatim: form.options.name(of: entry.key)).tag(entry.key) }
@@ -109,6 +119,7 @@ private struct ExpenseFormFields: View {
     .onChange(of: form.hasChanges, initial: true) { dismissGuard.hasUnsavedChanges = form.hasChanges }
     .onChange(of: form.isSaving) { dismissGuard.isBusy = form.isSaving }
     .onChange(of: form.amountText) { form.edited() }
+    .onChange(of: form.rateText) { form.edited() }
   }
 
   private func requestDismiss() {

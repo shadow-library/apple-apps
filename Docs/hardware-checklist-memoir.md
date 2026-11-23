@@ -1,8 +1,8 @@
 # Hardware checklist: Memoir on iPhone, iPad and Mac
 
 Checks that need a signed build on real devices and cannot be simulated: onboarding with sync, the store routes on iCloud and on an unrestricted
-provider, Apple Health, local notifications, the document camera and Vision, insights against a real provider, the export sheets and deleting the
-vault. The package suites (`MemoirKit`, `ShadowKit`) and the Memoir app tests cover the logic with fakes and in-memory stores; this list covers what
+provider, Apple Health, local notifications, the document camera and Vision, insights against a real provider, the export sheets, deleting the
+vault and the exchange-rates service. The package suites (`MemoirKit`, `ShadowKit`) and the Memoir app tests cover the logic with fakes and in-memory stores; this list covers what
 only the system does.
 
 Run the sections in order; each one leaves the devices ready for the next. Write the result of each check in its last column (pass, fail, or what
@@ -173,6 +173,23 @@ out of iCloud first or disconnect iCloud in Sync Settings before writing anythin
 | 10.2 | Launch the Mac app and complete onboarding. | The vault opens and works on its own; the sync indicator says "Sync needs a signed build". | |
 | 10.3 | Open Body & health in the iOS Simulator. | "This build of Memoir can’t read Apple Health. Type your metrics by hand." | |
 
+## 11. Exchange rates
+
+Needs a network and a home currency other than the expenses' (a euro vault spending in kroner, say). Compare each rate with the European Central
+Bank's reference rates for that day (`https://api.frankfurter.dev/v2/providers/ecb/rates?date=<day>&base=NOK&quotes=EUR`).
+
+| # | Step | Expected | Result |
+| - | ---- | -------- | ------ |
+| 11.1 | With Settings, Money, "Fetch exchange rates" on, add an expense in kroner dated a past weekday. | Within seconds it shows its euro amount at that day's rate (rounded to eight places) and joins the month's total; "Rate pending" goes. | |
+| 11.2 | Add one dated a Saturday, and one dated today before 16:00 in Frankfurt. | Saturday's converts at Friday's rate at once; today's stays "Rate pending" until the day's rate is published (asked again within the hour while the app is open). | |
+| 11.3 | Watch the traffic with a proxy (Proxyman or Charles) while adding one. | Only `GET api.frankfurter.dev/v2/providers/ecb/rates` with `date`, `base` and `quotes` leaves; no amount, note, merchant or vault id. | |
+| 11.4 | Turn "Fetch exchange rates" off on the iPhone; add another expense in kroner. | No request leaves; the expense stays "Rate pending". The setting is per device: the Mac still fills it if it is open with the setting on. | |
+| 11.5 | Long-press the pending row (or open it and tap Enter the rate), type `0,0875` in a German locale and save. | It converts at the rate you entered, the detail says so and its history shows "Rate you entered added"; turning fetching on again never replaces it. | |
+| 11.6 | Enter a rate on one device while the other, offline, has the same expense pending; bring the other online with fetching on. | Both converge on the rate you entered; the fetched rate is recorded for the day but not used for that expense. | |
+| 11.7 | Add a subscription in kroner with no krone expense yet. | Its monthly cost shows "≈ … a month" within seconds, at yesterday's rate. | |
+| 11.8 | Turn on airplane mode, add a krone expense, then turn it off with the app open. | Nothing blocks the form; the expense converts within a few minutes (the retry waits 1, 2, 4… minutes, at most an hour). | |
+| 11.9 | Open the demo. | No request leaves (11.3's proxy stays quiet); the demo's Settings show no "Fetch exchange rates". | |
+
 ## Known follow-ups
 
 Open behaviour that these checks may run into; none blocks these checks.
@@ -212,7 +229,6 @@ These need the owner before release; the build works without them.
 - HealthKit entitlement for the team and App ID, and on-device runs with a signing team.
 - Purpose strings: the HealthKit and camera wording in `Apps/Memoir/Project.swift` is a draft.
 - A privacy policy URL, which Health requires for distribution.
-- An exchange-rates service: without one, a foreign-currency expense with no captured rate stays "Rate pending" and out of the home totals.
 - Health background delivery: off now, so Health is read only when the app opens.
 - The monthly entry-cap note (100 a month, shown from 80%), kept from the reference's plan tiers that Memoir does not have.
 - Onboarding stands in front of an empty vault; the plan opened on Today. Keep the gate, or make it a dismissable sheet.

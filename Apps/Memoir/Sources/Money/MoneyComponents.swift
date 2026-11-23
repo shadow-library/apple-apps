@@ -172,3 +172,31 @@ struct MoneyAmountField: View {
     }
   }
 }
+
+/// The home currency per one unit of `currency`, as the owner types it.
+struct MoneyRateField: View {
+  @Binding var text: String
+  let currency: CurrencyCode
+  let home: CurrencyCode
+  let issue: String?
+
+  var body: some View {
+    VStack(alignment: .leading, spacing: Spacing.space1) {
+      LabeledContent {
+        TextField(text: $text, prompt: Text("Reference rate", tableName: "Money")) { label }
+          .labelsHidden()
+          .multilineTextAlignment(.trailing)
+          .monospacedDigit()
+          .autocorrectionDisabled()
+          #if os(iOS)
+            .keyboardType(.decimalPad)
+          #endif
+      } label: {
+        label
+      }
+      if let issue { ShadowValidationMessage(Text(verbatim: issue)) }
+    }
+  }
+
+  private var label: Text { Text("\(home.code) for 1 \(currency.code)", tableName: "Money") }
+}

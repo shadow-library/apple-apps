@@ -83,6 +83,10 @@ what the apps do:
   include journal text, activity and health data, under their own consents. Whether a provider the owner signs up with themselves counts as the
   developer's third-party partner is the question the labels turn on.
 - Sync goes, encrypted on the device, to the storage the owner chose (their iCloud private database, an S3 bucket or a local folder).
+- Memoir asks Frankfurter (`api.frankfurter.dev`, which serves the European Central Bank's reference rates and needs no key) for the daily rate of
+  each foreign currency the owner spends in, while the per-device setting "Fetch exchange rates" is on (the default). A request carries only
+  currency codes and a date, with a generic user agent and language; Frankfurter sees the device's network address, as any website does. It is not tracking and no data is linked to the
+  owner, but the dates and currencies can hint at travel; decide whether the labels mention it.
 - Share Diagnostics hands a zip to the share sheet only when the owner taps it; it holds counts, flags, codes and scrubbed log lines, never content
   or keys. If the owner asks people to send it to a support address, decide whether that is collection.
 
@@ -156,7 +160,7 @@ The `-ShadowDemo` launch argument enters the demo too, but only for UI tests and
   disclosure versions, so owners are asked again.
 - [ ] [`hardware-checklist-phase8.md`](hardware-checklist-phase8.md): continued processing, the Mac worker and hand-off on real devices.
 - [ ] [`hardware-checklist-memoir.md`](hardware-checklist-memoir.md): onboarding with sync, store routes, Health, reminders, receipts, insights,
-  export and deletion. Its "Needs a decision" section holds Memoir's other owner decisions (HealthKit for the team, the exchange-rates service,
+  export and deletion. Its "Needs a decision" section holds Memoir's other owner decisions (HealthKit for the team,
   Health background delivery and more).
 
 ## 4. Known follow-ups that matter for a release

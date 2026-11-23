@@ -75,11 +75,17 @@ public enum ExpenseField: String, MemoirField {
   case receipt
   case rate
   case loggedAtMillis = "logged_at_millis"
+  case manualRate = "manual_rate"
 }
 
 public enum ExpenseRateMember: String, MemoirField {
   case rate
   case date
+  case quote
+}
+
+public enum ManualRateMember: String, MemoirField {
+  case rate
   case quote
 }
 

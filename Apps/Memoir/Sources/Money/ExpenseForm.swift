@@ -6,7 +6,8 @@ import ShadowCore
 import ShadowStore
 
 /// memoir-web `ExpenseEntryPanel` (`features/finance/expense-entry-panel.tsx`): the amount typed in the owner's locale and read exactly, the currency
-/// (fixed once saved), the category, the date, the note and the merchant. Writes go only through `ExpenseEdits`.
+/// (fixed once saved), the category, the date, the note and the merchant, and, for a foreign currency, a rate the owner types for this expense alone,
+/// read exactly in their locale (`RateInput`). Writes go only through `ExpenseEdits`.
 @MainActor
 @Observable
 final class ExpenseForm {
@@ -19,6 +20,8 @@ final class ExpenseForm {
   let options: MoneyOptions
   let format: AmountFormat
   var amountText: String
+  /// Empty for the reference rate; the home currency per one unit of the expense's currency otherwise.
+  var rateText: String
   private(set) var currency: CurrencyCode
   var category: CategoryKey
   var occurredOn: LocalDate
@@ -30,6 +33,7 @@ final class ExpenseForm {
   let receipt: ReceiptDraft?
   @ObservationIgnored private let writer: MemoirWriter
   @ObservationIgnored private let original: ExpenseRecord?
+  @ObservationIgnored private let originalRateText: String
 
   init(mode: Mode, options: MoneyOptions, context: MemoirScreenContext, locale: Locale, receipt: ReceiptDraft? = nil) {
     self.mode = mode
@@ -41,6 +45,8 @@ final class ExpenseForm {
       original = nil
       self.receipt = receipt
       amountText = ""
+      rateText = ""
+      originalRateText = ""
       currency = options.home ?? options.currencies(including: nil).first ?? MoneyOptions.referenceCurrencies[0]
       category = MoneyBook.uncategorised ?? MoneyBook.builtInCategories[0]
       occurredOn = options.today
@@ -50,6 +56,10 @@ final class ExpenseForm {
       original = expense
       self.receipt = nil
       amountText = MoneyText.editable(expense.amountMinor, expense.currency, format: format)
+      let manual = expense.manualRate.flatMap { $0.quote == options.home ? $0.rate : nil }
+      let shownRate = manual.map { MoneyText.editableRate($0, format: AmountFormat(locale: locale)) } ?? ""
+      rateText = shownRate
+      originalRateText = shownRate
       currency = expense.currency
       category = expense.category
       occurredOn = expense.occurredOn
@@ -66,8 +76,9 @@ final class ExpenseForm {
   var currencies: [CurrencyCode] { options.currencies(including: currency) }
 
   func select(_ currency: CurrencyCode) {
-    guard canChangeCurrency else { return }
+    guard canChangeCurrency, currency != self.currency else { return }
     self.currency = currency
+    rateText = ""
   }
 
   var categories: [CategoryEntry] { options.categories(including: category) }
@@ -83,6 +94,29 @@ final class ExpenseForm {
     }
   }
 
+  /// The expense converts into another currency, so the owner may give its rate.
+  var offersRate: Bool {
+    guard let home = options.home else { return false }
+    return currency != home
+  }
+
+  /// No rate typed is the reference rate; a typed one converts this expense alone. Until the field is edited, a saved expense keeps its own, even one
+  /// into another currency than home, which the field cannot show.
+  var manualRate: Result<ManualRate?, RateInputRefusal> {
+    guard rateText != originalRateText, offersRate, let home = options.home else { return .success(original?.manualRate) }
+    guard !rateText.trimmingCharacters(in: .whitespaces).isEmpty else { return .success(nil) }
+    do throws(RateInputRefusal) {
+      return .success(ManualRate(rate: try RateInput.rate(rateText, format: format).text, quote: home))
+    } catch {
+      return .failure(error)
+    }
+  }
+
+  var rateIssue: String? {
+    guard case .failure(let refusal) = manualRate else { return nil }
+    return MoneyLabels.rateIssue(refusal, format: format)
+  }
+
   /// Shown once something is typed, as memoir-web marks the field only when it holds text.
   var amountIssue: String? {
     guard !amountText.trimmingCharacters(in: .whitespaces).isEmpty, case .failure(let refusal) = amount else { return nil }
@@ -90,12 +124,12 @@ final class ExpenseForm {
   }
 
   var hasChanges: Bool {
-    guard let original else { return !amountText.isEmpty || !note.isEmpty || !merchant.isEmpty || receipt?.hasPhoto == true }
+    guard let original else { return !amountText.isEmpty || !rateText.isEmpty || !note.isEmpty || !merchant.isEmpty || receipt?.hasPhoto == true }
     return edited(original).map { $0 != original } ?? true
   }
 
   var canSave: Bool {
-    guard !isSaving, case .success = amount, occurredOn <= latestDate, receipt?.blocksSave != true else { return false }
+    guard !isSaving, case .success = amount, case .success = manualRate, occurredOn <= latestDate, receipt?.blocksSave != true else { return false }
     return original == nil || hasChanges
   }
 
@@ -104,6 +138,12 @@ final class ExpenseForm {
     guard case .success(let minor) = amount else { return nil }
     let typed = MoneyText.formatted(minor, currency, locale: locale)
     guard let home = options.home, currency != home else { return String(localized: "\(typed) will be saved.", table: "Money") }
+    if case .success(let manual?) = manualRate, let exchange = try? ExchangeRate(manual.rate),
+      let converted = try? HomeConversion.convert(MoneyAmount(amountMinor: minor, currency: currency), to: home, at: exchange)
+    {
+      let estimate = MoneyText.formatted(converted, locale: locale)
+      return String(localized: "\(typed) ≈ \(estimate) at \(MoneyText.rate(manual.rate, locale: locale)), the rate you entered.", table: "Money")
+    }
     if let rate = original?.rate, rate.quote == home, let exchange = try? ExchangeRate(rate.rate),
       let converted = try? HomeConversion.convert(MoneyAmount(amountMinor: minor, currency: currency), to: home, at: exchange)
     {
@@ -122,14 +162,14 @@ final class ExpenseForm {
 
   /// The expense's id once written; `nil` when the amount does not read or the write failed, with the failure shown.
   func save() async -> UUID? {
-    guard canSave, case .success(let minor) = amount else { return nil }
+    guard canSave, case .success(let minor) = amount, case .success(let manualRate) = manualRate else { return nil }
     isSaving = true
     failure = nil
     defer { isSaving = false }
     do {
       if let original {
         let id = original.id
-        let fields = Fields(minor: minor, category: category, occurredOn: occurredOn, note: Self.text(note), merchant: Self.text(merchant))
+        let fields = Fields(minor: minor, category: category, occurredOn: occurredOn, note: Self.text(note), merchant: Self.text(merchant), manualRate: manualRate)
         _ = try await writer.write { issuer, transaction in
           try ExpenseEdits.update(id, issuer: issuer, in: &transaction) { expense in fields.apply(to: &expense) }
         }
@@ -138,7 +178,7 @@ final class ExpenseForm {
       let now = writer.clock.now()
       let expense = ExpenseRecord(
         id: UUID.v7(at: now), amountMinor: minor, currency: currency, occurredOn: occurredOn, category: category, merchant: Self.text(merchant), note: Self.text(note),
-        loggedAtMillis: MemoirClock.millis(now))
+        manualRate: manualRate, loggedAtMillis: MemoirClock.millis(now))
       guard let receipt else {
         return try await writer.write { issuer, transaction in try ExpenseEdits.create(expense, issuer: issuer, in: &transaction).expense.id }
       }
@@ -155,9 +195,9 @@ final class ExpenseForm {
   }
 
   private func edited(_ expense: ExpenseRecord) -> ExpenseRecord? {
-    guard case .success(let minor) = amount else { return nil }
+    guard case .success(let minor) = amount, case .success(let manualRate) = manualRate else { return nil }
     var edited = expense
-    Fields(minor: minor, category: category, occurredOn: occurredOn, note: Self.text(note), merchant: Self.text(merchant)).apply(to: &edited)
+    Fields(minor: minor, category: category, occurredOn: occurredOn, note: Self.text(note), merchant: Self.text(merchant), manualRate: manualRate).apply(to: &edited)
     return edited
   }
 
@@ -172,6 +212,7 @@ final class ExpenseForm {
     let occurredOn: LocalDate
     let note: String?
     let merchant: String?
+    let manualRate: ManualRate?
 
     func apply(to expense: inout ExpenseRecord) {
       expense.amountMinor = minor
@@ -179,6 +220,7 @@ final class ExpenseForm {
       expense.occurredOn = occurredOn
       expense.note = note
       expense.merchant = merchant
+      expense.manualRate = manualRate
     }
   }
 }

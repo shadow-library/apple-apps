@@ -169,6 +169,7 @@ struct ExpenseRows: View {
   let listing: ExpenseListing
   let list: ExpenseListModel
   let locale: Locale
+  @State private var rateEntry: ExpenseRecord?
 
   var body: some View {
     if listing.rows.items.isEmpty {
@@ -180,10 +181,24 @@ struct ExpenseRows: View {
     } else {
       VStack(spacing: 0) {
         ForEach(listing.rows.items, id: \.expense.id) { row in
-          NavigationLink(value: MemoirRoute.money(.expense(row.expense.id))) {
-            ExpenseRowView(content: ExpenseRowContent(row, home: listing.home, categoryName: { MoneyLabels.categoryName($0) }, locale: locale))
+          let content = ExpenseRowContent(row, home: listing.home, categoryName: { MoneyLabels.categoryName($0) }, locale: locale)
+          let link = NavigationLink(value: MemoirRoute.money(.expense(row.expense.id))) { ExpenseRowView(content: content) }.buttonStyle(.plain)
+          if content.isRatePending {
+            link.contextMenu {
+              Button {
+                rateEntry = row.expense
+              } label: {
+                Label(title: { Text("Enter the rate", tableName: "Money") }, icon: { Image(systemName: "arrow.left.arrow.right") })
+              }
+            }
+          } else {
+            link
           }
-          .buttonStyle(.plain)
+        }
+      }
+      .sheet(isPresented: Binding(get: { rateEntry != nil }, set: { if !$0 { rateEntry = nil } })) {
+        if let rateEntry {
+          NavigationStack { ExpenseFormScreen(editing: rateEntry, context: list.context) }.shadowSheetStyle(.form)
         }
       }
       HStack {

@@ -1,6 +1,7 @@
 import Foundation
 import MemoirCore
 import ShadowAppShell
+import ShadowCore
 import ShadowStore
 import Testing
 
@@ -194,5 +195,91 @@ struct ExpenseFormTests {
     #expect(!detail.canUndoDelete)
     await detail.delete()
     #expect(try await MoneyFixture.bodies(context).isEmpty)
+  }
+
+  @Test("should let the owner enter, correct and clear a pending expense's rate, refusing one that does not read")
+  func entersARateByHand() async throws {
+    let context = try await MoneyFixture.context()
+    let expense = try await MoneyFixture.expense(context, 10_000, MoneyFixture.krone, note: "Ferry")
+    let detail = ExpenseDetailModel(id: expense.id, context: context)
+    let running = Task { await detail.run() }
+    defer { running.cancel() }
+    try await TestClock.until("the pending detail") { detail.expense != nil && detail.book.state.value != nil }
+    #expect(detail.isAwaitingRate)
+
+    let form = ExpenseForm(mode: .edit(expense), options: try await MoneyFixture.options(context), context: context, locale: MoneyFixture.german)
+    #expect(form.offersRate)
+    #expect(form.rateText.isEmpty)
+    form.rateText = "0"
+    #expect(form.rateIssue == MoneyLabels.rateIssue(.notPositive, format: form.format))
+    #expect(!form.canSave)
+    form.rateText = "0,123456789"
+    #expect(form.manualRate == .failure(.tooPrecise(allowedPlaces: 8)))
+    form.rateText = "0,09"
+    #expect(form.rateIssue == nil)
+    #expect(await form.save() == expense.id)
+    try await TestClock.until("the entered rate") { detail.inHome == .converted(900) }
+    #expect(detail.isManualRate)
+    #expect(!detail.isAwaitingRate)
+    #expect(detail.rate?.text == "0.09")
+
+    let edited = try #require(detail.expense)
+    let correction = ExpenseForm(mode: .edit(edited), options: try await MoneyFixture.options(context), context: context, locale: MoneyFixture.german)
+    #expect(correction.rateText == "0,09")
+    correction.rateText = ""
+    #expect(await correction.save() == expense.id)
+    try await TestClock.until("the cleared rate") { detail.isAwaitingRate }
+    let lines = detail.historyLines(locale: MoneyFixture.english).map(\.text)
+    #expect(lines.contains("Rate you entered added: 0.09"))
+    #expect(lines.contains("Rate you entered removed (was 0.09)"))
+  }
+
+  @Test("should offer no rate for an expense in the home currency")
+  func offersNoRateAtHome() async throws {
+    let context = try await MoneyFixture.context()
+    let form = ExpenseForm(mode: .create, options: try await MoneyFixture.options(context), context: context, locale: MoneyFixture.english)
+    #expect(!form.offersRate)
+    form.rateText = "nonsense"
+    form.amountText = "5"
+    #expect(form.manualRate == .success(nil))
+    let id = try #require(await form.save())
+    #expect(try await MoneyFixture.expenseEntries(context).first { $0.record.id == id }?.record.manualRate == nil)
+  }
+
+  @Test("should keep a saved rate the field cannot show unless the owner edits the field")
+  func keepsARateIntoAnotherHome() async throws {
+    let context = try await MoneyFixture.context(home: MoneyFixture.krone, enabled: [MoneyFixture.krone, MoneyFixture.yen])
+    let manual = ManualRate(rate: DecimalText("0.0062")!, quote: MoneyFixture.euro)
+    let expense = ExpenseRecord(
+      id: UUID.v7(at: context.clock.now()), amountMinor: 1_000, currency: MoneyFixture.yen, occurredOn: TestClock.day0, category: MoneyFixture.food, note: "Tea",
+      manualRate: manual, loggedAtMillis: MemoirClock.millis(context.clock.now()))
+    _ = try await context.writer.write { issuer, transaction in try ExpenseEdits.create(expense, issuer: issuer, in: &transaction) }
+    let options = try await MoneyFixture.options(context)
+
+    let form = ExpenseForm(mode: .edit(expense), options: options, context: context, locale: MoneyFixture.english)
+    #expect(form.rateText.isEmpty, "a rate into the euro is not this vault's krone")
+    #expect(!form.hasChanges)
+    #expect(form.manualRate == .success(manual))
+    form.note = "Green tea"
+    #expect(await form.save() == expense.id)
+    let saved = try #require(try await MoneyFixture.expenseEntries(context).first?.record)
+    #expect(saved.note == "Green tea")
+    #expect(saved.manualRate == manual, "editing the note keeps the rate")
+  }
+
+  @Test("should clear a typed rate when the currency changes")
+  func clearsTheRateWithTheCurrency() async throws {
+    let context = try await MoneyFixture.context(enabled: [MoneyFixture.euro, MoneyFixture.krone, MoneyFixture.yen])
+    let form = ExpenseForm(mode: .create, options: try await MoneyFixture.options(context), context: context, locale: MoneyFixture.english)
+    form.select(MoneyFixture.krone)
+    form.rateText = "0.0875"
+    form.select(MoneyFixture.krone)
+    #expect(form.rateText == "0.0875", "choosing the same currency keeps it")
+    form.select(MoneyFixture.yen)
+    #expect(form.rateText.isEmpty)
+    form.rateText = "0.0062"
+    form.select(MoneyFixture.euro)
+    #expect(form.rateText.isEmpty)
+    #expect(form.manualRate == .success(nil))
   }
 }

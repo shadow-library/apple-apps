@@ -71,6 +71,15 @@ final class ExpenseDetailModel {
     return HomeConverter(home: home, rates: book.rates).rate(for: expense)
   }
 
+  /// The expense converts at a rate the owner entered for it.
+  var isManualRate: Bool {
+    guard let expense, let home else { return false }
+    return expense.currency != home && expense.manualRate?.quote == home
+  }
+
+  /// Still waiting for a rate, which the owner can enter by hand.
+  var isAwaitingRate: Bool { inHome == .awaitingRate }
+
   var source: ExpenseSource {
     for entry in history.state.value?.entries ?? [] {
       if case .created(let source) = entry.action { return source }
@@ -165,6 +174,9 @@ final class ExpenseDetailModel {
     case .category(let from, let to): return Self.moved(String(localized: "Category", table: "Money"), categoryName(from), categoryName(to))
     case .note(let from, let to): return Self.moved(String(localized: "Note", table: "Money"), from.map(quoted), to.map(quoted))
     case .merchant(let from, let to): return Self.moved(String(localized: "Merchant", table: "Money"), from.map(quoted), to.map(quoted))
+    case .manualRate(let from, let to):
+      let rate = { (manual: ManualRate) in MoneyText.rate(manual.rate, locale: locale) }
+      return Self.moved(String(localized: "Rate you entered", table: "Money"), from.map(rate), to.map(rate))
     }
   }
 
