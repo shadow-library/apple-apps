@@ -244,8 +244,6 @@ struct SyncBlobTests {
     let folder = try #require(reopened.blobDirectory)
     #expect(folder.deletingLastPathComponent() == url.deletingLastPathComponent())
     #expect(try await VaultBlobs(store: reopened).localURL(of: id) == folder.appending(path: id.description))
-    var parent = url.deletingLastPathComponent()
-    parent.removeAllCachedResourceValues()
-    #expect(try parent.resourceValues(forKeys: [.isExcludedFromBackupKey]).isExcludedFromBackup == true)
+    #expect(BackupExclusion.isExcluded(url.deletingLastPathComponent()))
   }
 }

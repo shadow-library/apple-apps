@@ -456,7 +456,7 @@ struct SyncRuntimeTests {
 
     try await harness.runtime.detach()
 
-    #expect(try RuntimeHarness.isExcludedFromBackup(RuntimeHarness.vaultDirectory(of: directory)))
+    #expect(BackupExclusion.isExcluded(RuntimeHarness.vaultDirectory(of: directory)))
     #expect(harness.runtime.status == .off)
     #expect(try harness.directory.locationStore().load() == .turnedOff(.disconnected))
   }

@@ -264,16 +264,10 @@ struct RuntimeHarness {
     return false
   }
 
-  static func isExcludedFromBackup(_ url: URL) throws -> Bool {
-    var fresh = url
-    fresh.removeAllCachedResourceValues()
-    return try fresh.resourceValues(forKeys: [.isExcludedFromBackupKey]).isExcludedFromBackup ?? false
-  }
-
   /// The flag settles eventually on macOS.
   static func backupFlagSettles(on expected: Bool, _ url: URL) async throws -> Bool {
     for _ in 0..<6_000 {
-      if try isExcludedFromBackup(url) == expected { return true }
+      if BackupExclusion.isExcluded(url) == expected { return true }
       try await Task.sleep(for: .milliseconds(20))
     }
     return false

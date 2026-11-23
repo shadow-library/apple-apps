@@ -112,8 +112,7 @@ struct CloudKitIndexTests {
     #expect(loaded.entries.map(\.size) == [1, 3])
     #expect(loaded.userRecordName == "user-1")
     #expect(loaded.belongs(to: fake.configuration))
-    let excluded = try store.fileURL.resourceValues(forKeys: [.isExcludedFromBackupKey]).isExcludedFromBackup
-    #expect(excluded == true)
+    #expect(BackupExclusion.isExcluded(store.fileURL))
     try await store.save(loaded)
     #expect(try await store.load() == .state(loaded))
     let reopened = CloudKitFixture.provider(fake, store: CloudKitFileStateStore(fileURL: store.fileURL))

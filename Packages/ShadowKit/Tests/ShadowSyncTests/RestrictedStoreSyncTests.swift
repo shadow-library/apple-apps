@@ -21,15 +21,9 @@ struct RestrictedStoreSyncTests {
     }
   }
 
-  private func isExcluded(_ url: URL) throws -> Bool {
-    var fresh = url
-    fresh.removeAllCachedResourceValues()
-    return try fresh.resourceValues(forKeys: [.isExcludedFromBackupKey]).isExcludedFromBackup ?? false
-  }
-
   private func settles(on expected: Bool, _ url: URL) async throws -> Bool {
     for _ in 0..<6_000 {
-      if try isExcluded(url) == expected { return true }
+      if BackupExclusion.isExcluded(url) == expected { return true }
       try await Task.sleep(for: .milliseconds(20))
     }
     return false
@@ -111,6 +105,6 @@ struct RestrictedStoreSyncTests {
       return
     }
     try await Task.sleep(for: .milliseconds(200))
-    #expect(try isExcluded(directory.url))
+    #expect(BackupExclusion.isExcluded(directory.url))
   }
 }

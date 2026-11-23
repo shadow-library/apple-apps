@@ -1,20 +1,15 @@
 import Foundation
 import ShadowStore
+import ShadowTestSupport
 import Testing
 
 @testable import ShadowSync
 
 @Suite("StorageAttachment")
 struct StorageAttachmentTests {
-  private func isExcluded(_ url: URL) throws -> Bool {
-    var fresh = url
-    fresh.removeAllCachedResourceValues()
-    return try fresh.resourceValues(forKeys: [.isExcludedFromBackupKey]).isExcludedFromBackup ?? false
-  }
-
   private func settles(on expected: Bool, _ url: URL) async throws -> Bool {
     for _ in 0..<6_000 {
-      if try isExcluded(url) == expected { return true }
+      if BackupExclusion.isExcluded(url) == expected { return true }
       try await Task.sleep(for: .milliseconds(20))
     }
     return false

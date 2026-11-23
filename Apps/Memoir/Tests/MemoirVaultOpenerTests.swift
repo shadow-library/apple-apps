@@ -1,6 +1,7 @@
 import Foundation
 import MemoirCore
 import ShadowStore
+import ShadowTestSupport
 import Testing
 
 @testable import Memoir
@@ -11,11 +12,6 @@ struct MemoirVaultOpenerTests {
     let url = FileManager.default.temporaryDirectory.appending(path: "MemoirTests-\(UUID().uuidString)", directoryHint: .isDirectory)
     try FileManager.default.createDirectory(at: url, withIntermediateDirectories: true)
     return url
-  }
-
-  private func isExcludedFromBackup(_ directory: URL) throws -> Bool {
-    let fresh = URL(filePath: directory.path(percentEncoded: false), directoryHint: .isDirectory)
-    return try fresh.resourceValues(forKeys: [.isExcludedFromBackupKey]).isExcludedFromBackup ?? false
   }
 
   private func exists(_ url: URL) -> Bool {
@@ -33,9 +29,9 @@ struct MemoirVaultOpenerTests {
     #expect(exists(vaults.appending(path: "Default/vault.sqlite")))
     #expect(exists(vaults.appending(path: "Default-activity/activity.sqlite")))
     #expect(exists(vaults.appending(path: "Default-health/health.sqlite")))
-    #expect(try !isExcludedFromBackup(vaults.appending(path: "Default", directoryHint: .isDirectory)))
-    #expect(try isExcludedFromBackup(vaults.appending(path: "Default-activity", directoryHint: .isDirectory)))
-    #expect(try isExcludedFromBackup(vaults.appending(path: "Default-health", directoryHint: .isDirectory)))
+    #expect(!BackupExclusion.isExcluded(vaults.appending(path: "Default", directoryHint: .isDirectory)))
+    #expect(BackupExclusion.isExcluded(vaults.appending(path: "Default-activity", directoryHint: .isDirectory)))
+    #expect(BackupExclusion.isExcluded(vaults.appending(path: "Default-health", directoryHint: .isDirectory)))
   }
 
   @Test("should reopen the same vault with the same replicas")

@@ -1,21 +1,16 @@
 import Foundation
 import ShadowCore
 import ShadowStore
+import ShadowTestSupport
 import Testing
 
 @testable import MemoirCore
 
 @Suite("MemoirStore", TestTimeLimit.standard)
 struct MemoirStoreTests {
-  private func isExcluded(_ url: URL) throws -> Bool {
-    var fresh = url
-    fresh.removeAllCachedResourceValues()
-    return try fresh.resourceValues(forKeys: [.isExcludedFromBackupKey]).isExcludedFromBackup ?? false
-  }
-
   private func settles(on expected: Bool, _ url: URL) async throws -> Bool {
     for _ in 0..<500 {
-      if try isExcluded(url) == expected { return true }
+      if BackupExclusion.isExcluded(url) == expected { return true }
       try await Task.sleep(for: .milliseconds(20))
     }
     return false
@@ -52,11 +47,11 @@ struct MemoirStoreTests {
       } catch {
         guard case .backupExclusionPinned = error else { throw MemoirFixtureError(description: "unexpected \(error)") }
       }
-      #expect(try isExcluded(directory))
+      #expect(BackupExclusion.isExcluded(directory))
     }
     let main = try MemoirStore.open(.main, in: vault)
     let mainDirectory = vault.databaseURL(.main).deletingLastPathComponent()
-    #expect(try !isExcluded(mainDirectory))
+    #expect(!BackupExclusion.isExcluded(mainDirectory))
     try main.setExcludedFromBackup(true)
     #expect(try await settles(on: true, mainDirectory))
     try main.setExcludedFromBackup(false)

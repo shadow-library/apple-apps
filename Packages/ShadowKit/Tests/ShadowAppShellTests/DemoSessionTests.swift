@@ -1,4 +1,5 @@
 import Foundation
+import ShadowTestSupport
 import Testing
 
 @testable import ShadowAppShell
@@ -105,8 +106,7 @@ struct DemoSessionTests {
 
     await session.enter()
     #expect(defaults.object(forKey: "choice") == nil)
-    let excluded = try demoDirectory.resourceValues(forKeys: [.isExcludedFromBackupKey]).isExcludedFromBackup
-    #expect(excluded == true)
+    #expect(BackupExclusion.isExcluded(demoDirectory))
     defaults.set("demo", forKey: "choice")
     await session.leave()
 
