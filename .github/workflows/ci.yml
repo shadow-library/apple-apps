@@ -49,6 +49,7 @@ jobs:
       - run: mise run test:packages
         env:
           NOVELFORGE_PROPERTY_SCALE: 1
+          SWT_EXPERIMENTAL_MAXIMUM_PARALLELIZATION_WIDTH: 3
 
   apps:
     name: Apps (${{ matrix.platform }})

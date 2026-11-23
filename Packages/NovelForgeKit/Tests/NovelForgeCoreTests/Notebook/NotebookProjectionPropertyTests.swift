@@ -3,7 +3,6 @@ import GRDB
 import ShadowCore
 import ShadowStore
 import ShadowTestSupport
-import Synchronization
 import Testing
 
 @testable import NovelForgeCore
@@ -114,9 +113,7 @@ private struct Item {
   func precedes(_ other: Item) -> Bool { clock == other.clock ? ref < other.ref : clock < other.clock }
 }
 
-private let reached = Mutex(Set<String>())
-
-private func oracle(_ reconciler: NovelForgeReconciler, _ store: VaultStore, _ universe: ProjectionUniverse) async throws {
+private func oracle(_ store: VaultStore, _ universe: ProjectionUniverse, reaching reached: Reached) async throws {
   let (entries, withdrawals) = try await store.read { transaction in
     let entries = try NotebookEntryRecord.listing(in: transaction).entries.map {
       Item(id: $0.record.id, novel: $0.record.novel, supersedes: $0.record.supersedes, clock: $0.clock, ref: $0.record.ref)
@@ -158,7 +155,7 @@ private func oracle(_ reconciler: NovelForgeReconciler, _ store: VaultStore, _ u
     if let next = state.successor, let successor = entries.first(where: { $0.id == next }), successor.supersedes != id { facts.insert("superseded by a sibling") }
     if entries.filter({ target(of: $0) == id }).count >= 2 { facts.insert("concurrent supersedes") }
   }
-  reached.withLock { $0.formUnion(facts) }
+  reached.record(facts)
   guard actual == expected else { throw ProjectionPropertyFailure.oracle("Notebook states \(actual) differ from \(expected)") }
 }
 
@@ -166,8 +163,11 @@ private func oracle(_ reconciler: NovelForgeReconciler, _ store: VaultStore, _ u
 struct NotebookProjectionPropertyTests {
   @Test(arguments: [CausalReplicaOrder.causal, .writerOrderOnly])
   func shouldMatchARebuildAtEveryStepAndAgreeWithTheOracleOnEveryReplica(order: CausalReplicaOrder) async throws {
-    let property = ProjectionProperty(operations: ProjectionOperations.novels + NotebookOperations.all, iterations: 12, steps: 40, gated: true, settled: oracle)
+    let reached = Reached()
+    let property = ProjectionProperty(
+      operations: ProjectionOperations.novels + NotebookOperations.all, iterations: 12, steps: 40, gated: true,
+      settled: { _, store, universe in try await oracle(store, universe, reaching: reached) })
     try await property.check(order: order, seed: order == .causal ? 0xD17C0 : 0xD17C1)
-    #expect(reached.withLock { $0 } == ["superseded", "withdrawn", "withdrawn and superseded", "superseded by a sibling", "concurrent supersedes"])
+    #expect(reached.all == ["superseded", "withdrawn", "withdrawn and superseded", "superseded by a sibling", "concurrent supersedes"])
   }
 }

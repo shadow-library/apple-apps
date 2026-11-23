@@ -32,7 +32,9 @@ public struct URLSessionTransport: HTTPTransport, HTTPStreamingTransport {
     let delegate = StreamingTaskDelegate(redirects: owner.redirects, body: continuation)
     task.delegate = delegate
     continuation.onTermination = { termination in
-      if case .cancelled = termination { task.cancel() }
+      guard case .cancelled = termination else { return }
+      delegate.abandon()
+      task.cancel()
     }
 
     let response = try await withTaskCancellationHandler {
@@ -82,6 +84,7 @@ private final class StreamingTaskDelegate: NSObject, URLSessionDataDelegate, Sen
     var waiter: CheckedContinuation<HTTPURLResponse, any Error>?
     var outcome: Result<HTTPURLResponse, any Error>?
     var chunker = LineChunker()
+    var isAbandoned = false
   }
 
   private let redirects: RedirectPolicy
@@ -107,6 +110,11 @@ private final class StreamingTaskDelegate: NSObject, URLSessionDataDelegate, Sen
 
   func fail(_ error: any Error) {
     settle(.failure(error))
+  }
+
+  /// `AsyncThrowingStream` runs `onTermination` before it ends a cancelled iteration, so the task's cancellation racing in between must not end it with an error.
+  func abandon() {
+    state.withLock { $0.isAbandoned = true }
   }
 
   func urlSession(
@@ -141,9 +149,9 @@ private final class StreamingTaskDelegate: NSObject, URLSessionDataDelegate, Sen
 
   func urlSession(_ session: URLSession, task: URLSessionTask, didCompleteWithError error: (any Error)?) {
     settle(.failure(error ?? URLError(.badServerResponse)))
-    let remainder = state.withLock { $0.chunker.drain() }
+    let (remainder, isAbandoned) = state.withLock { ($0.chunker.drain(), $0.isAbandoned) }
     if !remainder.isEmpty { body.yield(remainder) }
-    guard let error else { return body.finish() }
+    guard let error, !isAbandoned else { return body.finish() }
     body.finish(throwing: error)
   }
 

@@ -319,11 +319,7 @@ enum ProjectionOperations {
   /// Chat sessions, messages, summaries, proposals and their changes (Reconcile/Chat), raw shapes and purges included.
   static let chat = ChatOperations.all
 
-  static let jobs = JobOperations.all
-
   static let canon = CanonOperations.all
-
-  static let lifecycle = LifecycleOperations.all
 
   static func pick(from operations: [ProjectionOperation], _ generator: inout SeededGenerator) -> ProjectionOperation? {
     var remaining = generator.int(in: 0...max(operations.map(\.weight).reduce(0, +) - 1, 0))

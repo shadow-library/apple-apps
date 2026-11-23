@@ -62,6 +62,8 @@ public struct ShadowSheetCancel {
 }
 
 public struct ShadowSheetConfirm {
+  public static let accessibilityIdentifier = "shadow-sheet-confirm"
+
   let title: Text
   let systemImage: String
   let isDisabled: Bool
@@ -277,11 +279,13 @@ private struct ShadowSheetHeaderModifier: ViewModifier {
           Button(action: confirm.perform) { ShadowSheetActionLabel(title: confirm.title, systemImage: confirm.systemImage) }
             .keyboardShortcut(.defaultAction)
             .disabled(confirm.isDisabled)
+            .accessibilityIdentifier(ShadowSheetConfirm.accessibilityIdentifier)
         #else
           Button(action: confirm.perform) { ShadowSheetActionLabel(title: confirm.title, systemImage: confirm.systemImage) }
             .shadowToolbarProminent()
             .keyboardShortcut(.defaultAction)
             .disabled(confirm.isDisabled)
+            .accessibilityIdentifier(ShadowSheetConfirm.accessibilityIdentifier)
         #endif
       }
     }

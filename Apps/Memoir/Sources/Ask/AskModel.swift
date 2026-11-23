@@ -108,6 +108,7 @@ final class AskModel {
   /// A question held for the call's consent, asked again under the same id once the owner allows it.
   private var held: (id: UUID, text: String)?
   private var lapse: Task<Void, Never>?
+  private var observedReads = 0
 
   init(context: MemoirScreenContext, access: InsightAccess, consents: InsightConsents) {
     self.context = context
@@ -125,13 +126,17 @@ final class AskModel {
   func run() async {
     await refreshSetup()
     defer {
+      observedReads += 1
       lapse?.cancel()
       lapse = nil
     }
     let leases = access.leases
     let stream = context.stores.main.observeReads { transaction in try AskMainRead.read(transaction, at: leases.now()) }
     do {
-      for try await read in stream { try await apply(read) }
+      for try await read in stream {
+        observedReads += 1
+        try await apply(read)
+      }
     } catch is CancellationError {
       return
     } catch {
@@ -140,8 +145,9 @@ final class AskModel {
   }
 
   /// The board and its lapse wait are set with no suspension between, so overlapping applies never pair one read's board with another read's wait.
-  private func apply(_ read: AskMainRead) async throws {
+  private func apply(_ read: AskMainRead, isCurrent: () -> Bool = { true }) async throws {
     let results = try await InsightResults.listing(in: context.stores)
+    guard isCurrent() else { return }
     board = .loaded(AskBoard(requests: read.listing.requests, results: results, schedule: read.schedule))
     rereadWhenALeaseLapses(read.listing.changesAt)
     await refreshSpend()
@@ -161,11 +167,17 @@ final class AskModel {
     }
   }
 
+  /// The wait that fired is let go first, so arming the next one cannot cancel this read's own spend refresh. A re-read that `run` ended under, or that the
+  /// observation overtook while it was reading, is dropped rather than shown over the newer board, which arms its own lapse wait.
   private func reread() async {
+    lapse = nil
     let leases = access.leases
+    let observedBefore = observedReads
     do {
-      try await apply(try await context.stores.main.read { transaction in try AskMainRead.read(transaction, at: leases.now()) })
+      let read = try await context.stores.main.read { transaction in try AskMainRead.read(transaction, at: leases.now()) }
+      try await apply(read) { self.observedReads == observedBefore }
     } catch {
+      guard observedReads == observedBefore else { return }
       board = .failed(PresentedError(error))
     }
   }

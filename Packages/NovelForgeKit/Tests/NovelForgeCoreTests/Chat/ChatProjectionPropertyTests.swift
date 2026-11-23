@@ -4,7 +4,6 @@ import ShadowCore
 import ShadowStore
 import ShadowTestSupport
 import ShadowText
-import Synchronization
 import Testing
 
 @testable import NovelForgeCore
@@ -49,8 +48,6 @@ private struct ExpectedProposal: Equatable {
   let decision: StoredEnum<ProposalDecision>?
   let entries: [ProposalChangeEntryState]
 }
-
-private let reached = Mutex(Set<String>())
 
 private func rawMember(_ state: EntityState?, _ name: String) -> JSONValue? {
   guard case .appended(let appended)? = state else { return nil }
@@ -109,7 +106,7 @@ private func items(in transaction: ReadTransaction) throws -> [OracleItem] {
   return found
 }
 
-private func expectedSessions(in transaction: ReadTransaction) throws -> [UUID: ExpectedSession] {
+private func expectedSessions(in transaction: ReadTransaction, reaching reached: Reached) throws -> [UUID: ExpectedSession] {
   let all = try items(in: transaction)
   var ids = Set(all.map(\.session))
   for (ref, _) in try transaction.states(ofKind: NovelForgeKind.chatSession.entityKind, scope: .vault) {
@@ -162,7 +159,7 @@ private func expectedSessions(in transaction: ReadTransaction) throws -> [UUID: 
       unreadableSummaries: summaries.count { !$0.isReadable || $0.novel != novel }, lock: lock,
       transcript: shown.map { "\($0.ref.key.rawValue)\($0.id.map(covered.contains) == true ? "+" : "")" })
   }
-  reached.withLock { $0.formUnion(facts) }
+  reached.record(facts)
   return expected
 }
 
@@ -183,7 +180,7 @@ private func entryState(_ entry: ProposalChangeEntry, isAction: Bool) -> Proposa
   }
 }
 
-private func expectedProposals(in transaction: ReadTransaction) throws -> [UUID: ExpectedProposal] {
+private func expectedProposals(in transaction: ReadTransaction, reaching reached: Reached) throws -> [UUID: ExpectedProposal] {
   var expected = [UUID: ExpectedProposal]()
   var facts = Set<String>()
   for (ref, state) in try transaction.states(ofKind: NovelForgeKind.proposal.entityKind, scope: .vault) {
@@ -224,12 +221,14 @@ private func expectedProposals(in transaction: ReadTransaction) throws -> [UUID:
     guard let key = try? NovelForgeKey(reading: state, of: ref), case .proposalChange(let proposal, _) = key.components else { continue }
     if let owner = expected[proposal]?.novel, owner != key.novel { facts.insert("change under another novel") }
   }
-  reached.withLock { $0.formUnion(facts) }
+  reached.record(facts)
   return expected
 }
 
-private func oracle(_ reconciler: NovelForgeReconciler, _ store: VaultStore, _ universe: ProjectionUniverse) async throws {
-  let (sessions, proposals) = try await store.read { transaction in (try expectedSessions(in: transaction), try expectedProposals(in: transaction)) }
+private func oracle(_ store: VaultStore, reaching reached: Reached) async throws {
+  let (sessions, proposals) = try await store.read { transaction in
+    (try expectedSessions(in: transaction, reaching: reached), try expectedProposals(in: transaction, reaching: reached))
+  }
   let states = try await Projection.fetch(ChatSessionState.all(), in: store)
   var actualSessions = [UUID: ExpectedSession]()
   for state in states {
@@ -251,17 +250,20 @@ private func oracle(_ reconciler: NovelForgeReconciler, _ store: VaultStore, _ u
 
 @Suite("Chat projection property", TestTimeLimit.property)
 struct ChatProjectionPropertyTests {
-  @Test(arguments: [CausalReplicaOrder.causal, .writerOrderOnly])
-  func shouldMatchARebuildAtEveryStepAndAgreeWithTheOracleOnEveryReplica(order: CausalReplicaOrder) async throws {
-    let property = ProjectionProperty(
-      derivations: ChatDerivations.all, operations: ProjectionOperations.novels + ProjectionOperations.chat, iterations: 10, steps: 48, gated: true,
-      settled: oracle)
-    try await property.check(order: order, seed: order == .causal ? 0xF23A0 : 0xF23A1)
+  /// Both delivery orders in one test, gated on what they reach together; neither order alone reaches every case.
+  @Test func shouldMatchARebuildAtEveryStepAndAgreeWithTheOracleOnEveryReplica() async throws {
+    let reached = Reached()
+    for (order, seed) in [(CausalReplicaOrder.causal, UInt64(0xF23A0)), (.writerOrderOnly, 0xF23A1)] {
+      let property = ProjectionProperty(
+        derivations: ChatDerivations.all, operations: ProjectionOperations.novels + ProjectionOperations.chat, iterations: 10, steps: 48, gated: true,
+        settled: { _, store, _ in try await oracle(store, reaching: reached) })
+      try await property.check(order: order, seed: seed)
+    }
     let gate: Set<String> = [
       "locked session", "standing summary", "competing summaries", "covered message", "unreadable message", "message of another novel", "card unreadable",
       "application unreadable", "entry applied", "entry pending", "entry reverted", "entry declined", "entry not_applied", "entry failed", "entry awaiting",
       "entry unreadable", "entry unrecognised", "messages before their session", "wider summary of another novel", "change under another novel",
     ]
-    #expect(gate.subtracting(reached.withLock { $0 }).isEmpty, "reached: \(reached.withLock { $0 }.sorted())")
+    #expect(gate.subtracting(reached.all).isEmpty, "reached: \(reached.all.sorted())")
   }
 }

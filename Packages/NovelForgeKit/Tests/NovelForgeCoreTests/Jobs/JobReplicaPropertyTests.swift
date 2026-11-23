@@ -4,7 +4,6 @@ import ShadowCore
 import ShadowJobs
 import ShadowStore
 import ShadowTestSupport
-import Synchronization
 import Testing
 
 @testable import NovelForgeCore
@@ -14,14 +13,6 @@ private struct JobOracleFailure: LocalizedError {
   let errorDescription: String?
 
   init(_ message: String) { errorDescription = message }
-}
-
-private final class Reached: Sendable {
-  private let seen = Mutex<Set<String>>([])
-
-  func insert(_ state: String) { seen.withLock { _ = $0.insert(state) } }
-
-  var all: Set<String> { seen.withLock { $0 } }
 }
 
 /// Moments around every stored lease's window, plus a sweep, so read-time liveness is compared on both sides of each boundary.
@@ -123,7 +114,7 @@ struct JobReplicaPropertyTests {
   func shouldDeriveJobStatusActivityAndCostEqualAcrossReplicasAndToTheSnapshotsAtEveryMoment(order: CausalReplicaOrder) async throws {
     let reached = Reached()
     let property = ProjectionProperty(
-      derivations: JobDerivations.all, operations: ProjectionOperations.jobs, iterations: 12, steps: 140, gated: true,
+      derivations: JobDerivations.all, operations: JobOperations.all(reaching: reached), iterations: 12, steps: 140, gated: true,
       settled: { _, store, universe in try await jobOracle(store, universe, reached) })
     try await property.check(order: order, seed: order == .causal ? 0x617A : 0x617B)
     let seen = reached.all
@@ -131,7 +122,7 @@ struct JobReplicaPropertyTests {
       #expect(seen.contains(state), "no settled replica reached \(state)")
     }
     for event in ["abandoned attempt priced after its call is named", "ledger edge forged"] {
-      #expect(JobOperations.events.contains(event), "no operation reached \(event)")
+      #expect(seen.contains(event), "no operation reached \(event)")
     }
   }
 }

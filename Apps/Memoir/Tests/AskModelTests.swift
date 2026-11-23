@@ -6,6 +6,7 @@ import ShadowCore
 import ShadowJobs
 import ShadowStore
 import ShadowTestSupport
+import Synchronization
 import Testing
 
 @testable import Memoir
@@ -13,6 +14,20 @@ import Testing
 nonisolated private struct AskCredentials: ModelCredentialSource {
   func credential(for provider: ModelProviderKind) async -> ProviderCredential? {
     ProviderCredential(origin: AskWorld.origin, secret: "sk-test")
+  }
+}
+
+/// The spend limits the router reads on each call, changed by a test while the model runs.
+nonisolated final class AskLimits: Sendable {
+  private let current: Mutex<SpendLimits>
+
+  init(_ limits: SpendLimits) {
+    current = Mutex(limits)
+  }
+
+  var value: SpendLimits {
+    get { current.withLock { $0 } }
+    set { current.withLock { $0 = newValue } }
   }
 }
 
@@ -30,6 +45,7 @@ struct AskWorld {
   let access: InsightAccess
   let providerReady: Flag
   let settlements = Recorded<Int>()
+  let limits: AskLimits
 
   init(limits: SpendLimits = SpendLimits(), providerReady ready: Bool = true) async throws {
     let clock = TestClock(day: 0, minute: 360)
@@ -46,6 +62,8 @@ struct AskWorld {
     self.opened = opened
     self.context = context
     self.providerReady = providerReady
+    let limits = AskLimits(limits)
+    self.limits = limits
     let settlements = settlements
     let settler = CostSettler(cooldown: .zero) { () async throws(StoreError) -> ReconciliationReport in
       settlements.append(1)
@@ -54,12 +72,12 @@ struct AskWorld {
     access = Self.access(opened: opened, provider: provider, limits: limits, providerReady: providerReady, settler: settler)
   }
 
-  static func access(opened: MemoirOpenedVault, provider: ScriptedModelProvider, limits: SpendLimits, providerReady: Flag, settler: CostSettler?) -> InsightAccess {
+  static func access(opened: MemoirOpenedVault, provider: ScriptedModelProvider, limits: AskLimits, providerReady: Flag, settler: CostSettler?) -> InsightAccess {
     let main = opened.stores.main
     let leases = LeaseClock(trusted: nil, device: opened.clock.now)
     let router: InsightEngine.RouterSource = {
       TaskRouter(
-        configuration: TaskRouterConfiguration(provider: .anthropic, spendLimits: limits), anthropic: ProviderBinding(origin: origin, provider: provider),
+        configuration: TaskRouterConfiguration(provider: .anthropic, spendLimits: limits.value), anthropic: ProviderBinding(origin: origin, provider: provider),
         credentials: AskCredentials(), store: main, requestGuard: { _ in nil }, now: opened.clock.now)
     }
     let engine = InsightEngine(
@@ -217,7 +235,9 @@ struct AskModelTests {
     world.provider.enqueue([.delay(.seconds(60))] + ScriptedModelProvider.reply(AskWorld.reply()))
 
     await ask(model)
-    try await until("the running question") { model.board.value?.active?.status == .running }
+    try await until("the running question with its call taken by the provider") {
+      model.board.value?.active?.status == .running && world.provider.requests.count == 1
+    }
     let running = try #require(model.board.value?.active)
 
     await model.cancel(running)
@@ -230,6 +250,7 @@ struct AskModelTests {
     try await answered(model, 1, "the answer")
     #expect(model.board.value?.requests.map(\.run) == [2])
     #expect(model.board.value?.active == nil)
+    #expect(world.provider.requests.count == 2)
   }
 
   @Test("should read again when the running question's lease lapses, then let a new question be asked and ask the lapsed one again")
@@ -245,8 +266,12 @@ struct AskModelTests {
     model.question = "Another question"
     #expect(!model.canSubmit, "one question runs at a time")
 
+    let raised = SpendLimits(daily: Cost(nanoUSD: 7_000_000_000))
+    world.limits.value = raised
     world.clock.set(day: 0, minute: 400)
-    try await until("the lapsed lease, read again with no write") { model.board.value?.active?.status == .queued }
+    try await until("the lapsed lease, read again with no write and priced under the raised limit") {
+      model.board.value?.active?.status == .queued && model.spend?.limits == raised
+    }
     #expect(model.canSubmit, "a queued request whose lease lapsed does not block asking")
 
     let lapsed = try #require(model.board.value?.active)

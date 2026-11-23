@@ -4,7 +4,6 @@ import ShadowCore
 import ShadowJobs
 import ShadowStore
 import ShadowTestSupport
-import Synchronization
 
 @testable import NovelForgeCore
 
@@ -17,32 +16,14 @@ enum LifecycleOperations {
   ]
   private static let categories: [StoredEnum<ReviewFindingCategory>] = ReviewFindingCategory.allCases.map(StoredEnum.known) + [StoredEnum(rawValue: "tone")]
   private static let actions: [ReviewRemedyAction?] = [.dismissed, .fixingMyself, .overridden, nil]
-  private static let seen = Mutex<Set<DraftReviewState>>([])
+  static let answerToAHold = "answer to the review holding its chapter"
+  static let leakHold = "chapter held by its rewrite's leak alone"
 
-  private static let answered = Mutex(0)
-  private static let leaks = Mutex(0)
-
-  /// The statuses the operations found reconciled when they ran, for a property to gate on.
-  static var reached: Set<DraftReviewState> { seen.withLock { $0 } }
-
-  /// How many answers went to the review holding its chapter as a contradiction.
-  static var answersToAHold: Int { answered.withLock { $0 } }
-
-  /// How many times a chapter was found held by its rewrite's leak alone.
-  static var leakHolds: Int { leaks.withLock { $0 } }
-
-  /// Clears the gates; the operations are shared, so one property runs at a time.
-  static func resetGates() {
-    seen.withLock { $0 = [] }
-    answered.withLock { $0 = 0 }
-    leaks.withLock { $0 = 0 }
-  }
-
-  private static func observe(_ novel: UUID, in transaction: borrowing WriteTransaction) throws {
+  /// Records the review statuses reconciled when the operations ran, and a hold by a leak alone.
+  private static func observe(_ novel: UUID, in transaction: borrowing WriteTransaction, reaching reached: Reached) throws {
     let entries = try ChapterLifecycleDerivation.request(for: novel).fetchAll(transaction.database)
-    seen.withLock { $0.formUnion(entries.compactMap(\.review)) }
-    let leaking = entries.filter { $0.review == .contradiction && $0.judge == nil }.count
-    leaks.withLock { $0 += leaking }
+    reached.record(Set(entries.compactMap(\.review?.rawValue)))
+    if entries.contains(where: { $0.review == .contradiction && $0.judge == nil }) { reached.insert(leakHold) }
   }
 
   static func findings(_ generator: inout SeededGenerator) -> [ReviewFinding] {
@@ -61,100 +42,102 @@ enum LifecycleOperations {
     (1...2).compactMap { run in try? ReviewWrites.generateKey(novel: novel, chapter: chapter, run: run) }
   }
 
-  static let all: [ProjectionOperation] = [
-    ProjectionOperation(name: "save a draft recording its upstream", weight: 4) { generator, universe in
-      let (novel, chapter, body) = (universe.novel(&generator), universe.chapter(&generator), universe.text(&generator))
-      return { transaction in
-        try observe(novel, in: transaction)
-        try ChapterWrites.draft(novel: novel, chapter: chapter, body: body, in: &transaction)
-      }
-    },
-    ProjectionOperation(name: "approve a draft head", weight: 6) { generator, universe in
-      let (novel, chapter, id) = (universe.novel(&generator), universe.chapter(&generator), generator.uuid())
-      return { transaction in
-        try observe(novel, in: transaction)
-        try ChapterWrites.approve(novel: novel, chapter: chapter, id: id, in: &transaction)
-      }
-    },
-    ProjectionOperation(name: "append a judge review", weight: 5) { generator, universe in
-      let (novel, chapter, findings) = (universe.novel(&generator), universe.chapter(&generator), findings(&generator))
-      let (verdict, pass, stale, id) = (
-        generator.pick(from: ["consistent", "contradiction", "evaluation_failed"]), generator.chance(0.5), generator.chance(0.15), generator.uuid()
-      )
-      return { transaction in
-        try observe(novel, in: transaction)
-        guard try ChapterWrites.head(novel: novel, chapter: chapter, in: transaction) != nil else { return }
-        try ReviewWrites.judge(
-          novel: novel, chapter: chapter, findings: findings, verdict: verdict, generationPass: pass, body: stale ? "Other text." : nil, id: id, in: &transaction)
-      }
-    },
-    ProjectionOperation(name: "append an unreadable judge review", weight: 1) { generator, universe in
-      let (novel, chapter, id) = (universe.novel(&generator), universe.chapter(&generator), generator.uuid())
-      return { transaction in
-        try observe(novel, in: transaction)
-        let review = try ChapterReviewRecord(
-          id: id, novel: novel, chapter: chapter, reviewKind: .known(.judge), draftRevision: nil, bodyHash: "h", disposition: .known(.blocking))
-        var item = review.item
-        item[ChapterReviewMember.findings.rawValue] = .array([.null])
-        _ = try transaction.append(review.ref, item: item)
-      }
-    },
-    ProjectionOperation(name: "answer a judge finding", weight: 8) { generator, universe in
-      let (novel, any, aimed, pick, finding, action) = (
-        universe.novel(&generator), universe.chapter(&generator), generator.chance(0.7), generator.chance(0.8) ? nil : generator.int(in: 0...9),
-        generator.pick(from: ["f1", "f2"]), generator.pick(from: actions)
-      )
-      return { transaction in
-        try observe(novel, in: transaction)
-        let held = try ChapterLifecycleDerivation.request(for: novel).fetchAll(transaction.database).filter { $0.review == .contradiction && $0.judge != nil }.map(\.chapter)
-        let chapter = aimed && !held.isEmpty ? held[any % held.count] : any
-        let reviews = try reviews(novel: novel, chapter: chapter, in: transaction)
-        guard let latest = reviews.last else { return }
-        let review = pick.map { reviews[$0 % reviews.count] } ?? latest
-        let entry = try ChapterLifecycleEntry.read(novel: novel, chapter: chapter, in: transaction.database)
-        if entry?.review == .contradiction, entry?.judge == review.id { answered.withLock { $0 += 1 } }
-        try ReviewWrites.remedy(novel: novel, review: review.id, finding: finding, action, in: &transaction)
-      }
-    },
-    ProjectionOperation(name: "purge a judge review", weight: 1) { generator, universe in
-      let (novel, chapter, pick) = (universe.novel(&generator), universe.chapter(&generator), generator.int(in: 0...9))
-      return { transaction in
-        try observe(novel, in: transaction)
-        let reviews = try reviews(novel: novel, chapter: chapter, in: transaction)
-        guard !reviews.isEmpty else { return }
-        _ = try transaction.purge(reviews[pick % reviews.count].ref)
-      }
-    },
-    ProjectionOperation(name: "request a generate job", weight: 2) { generator, universe in
-      let (novel, chapter, run) = (universe.novel(&generator), universe.chapter(&generator), generator.int(in: 1...2))
-      return { transaction in
-        try observe(novel, in: transaction)
-        try ReviewWrites.requestGeneration(novel: novel, chapter: chapter, run: run, in: &transaction)
-      }
-    },
-    ProjectionOperation(name: "cancel a generate job", weight: 2) { generator, universe in
-      let key = generator.pick(from: jobs(novel: universe.novel(&generator), chapter: universe.chapter(&generator)))
-      return { transaction in
-        guard try transaction.state(of: key.ref) != nil else { return }
-        try ReviewWrites.cancel(key.ref, in: &transaction)
-      }
-    },
-    ProjectionOperation(name: "finish a generate job", weight: 3) { generator, universe in
-      let key = generator.pick(from: jobs(novel: universe.novel(&generator), chapter: universe.chapter(&generator)))
-      let attempt = try? JobWorld.attemptID(at: Int64(generator.int(in: 0...900)), &generator)
-      return { transaction in
-        guard let attempt, try transaction.state(of: key.ref) != nil, try transaction.state(of: attempt.ref) == nil else { return }
-        try ReviewWrites.succeed(key.ref, attempt: attempt, in: &transaction)
-      }
-    },
-    ProjectionOperation(name: "rewrite a passage of a draft head", weight: 2) { generator, universe in
-      let (novel, any, holding, stale) = (universe.novel(&generator), universe.chapter(&generator), generator.chance(0.7), generator.chance(0.2))
-      return { transaction in
-        try observe(novel, in: transaction)
-        let drafted = try ChapterLifecycleDerivation.request(for: novel).fetchAll(transaction.database).filter { $0.draft != nil && !$0.isFinal }.map(\.chapter)
-        let chapter = drafted.isEmpty ? any : drafted[any % drafted.count]
-        try ChapterWrites.rewrite(novel: novel, chapter: chapter, body: "The ledger is forged.", holding: holding, over: stale ? "v:stale" : nil, in: &transaction)
-      }
-    },
-  ]
+  static func all(reaching reached: Reached) -> [ProjectionOperation] {
+    [
+      ProjectionOperation(name: "save a draft recording its upstream", weight: 4) { generator, universe in
+        let (novel, chapter, body) = (universe.novel(&generator), universe.chapter(&generator), universe.text(&generator))
+        return { transaction in
+          try observe(novel, in: transaction, reaching: reached)
+          try ChapterWrites.draft(novel: novel, chapter: chapter, body: body, in: &transaction)
+        }
+      },
+      ProjectionOperation(name: "approve a draft head", weight: 6) { generator, universe in
+        let (novel, chapter, id) = (universe.novel(&generator), universe.chapter(&generator), generator.uuid())
+        return { transaction in
+          try observe(novel, in: transaction, reaching: reached)
+          try ChapterWrites.approve(novel: novel, chapter: chapter, id: id, in: &transaction)
+        }
+      },
+      ProjectionOperation(name: "append a judge review", weight: 5) { generator, universe in
+        let (novel, chapter, findings) = (universe.novel(&generator), universe.chapter(&generator), findings(&generator))
+        let (verdict, pass, stale, id) = (
+          generator.pick(from: ["consistent", "contradiction", "evaluation_failed"]), generator.chance(0.5), generator.chance(0.15), generator.uuid()
+        )
+        return { transaction in
+          try observe(novel, in: transaction, reaching: reached)
+          guard try ChapterWrites.head(novel: novel, chapter: chapter, in: transaction) != nil else { return }
+          try ReviewWrites.judge(
+            novel: novel, chapter: chapter, findings: findings, verdict: verdict, generationPass: pass, body: stale ? "Other text." : nil, id: id, in: &transaction)
+        }
+      },
+      ProjectionOperation(name: "append an unreadable judge review", weight: 1) { generator, universe in
+        let (novel, chapter, id) = (universe.novel(&generator), universe.chapter(&generator), generator.uuid())
+        return { transaction in
+          try observe(novel, in: transaction, reaching: reached)
+          let review = try ChapterReviewRecord(
+            id: id, novel: novel, chapter: chapter, reviewKind: .known(.judge), draftRevision: nil, bodyHash: "h", disposition: .known(.blocking))
+          var item = review.item
+          item[ChapterReviewMember.findings.rawValue] = .array([.null])
+          _ = try transaction.append(review.ref, item: item)
+        }
+      },
+      ProjectionOperation(name: "answer a judge finding", weight: 8) { generator, universe in
+        let (novel, any, aimed, pick, finding, action) = (
+          universe.novel(&generator), universe.chapter(&generator), generator.chance(0.7), generator.chance(0.8) ? nil : generator.int(in: 0...9),
+          generator.pick(from: ["f1", "f2"]), generator.pick(from: actions)
+        )
+        return { transaction in
+          try observe(novel, in: transaction, reaching: reached)
+          let held = try ChapterLifecycleDerivation.request(for: novel).fetchAll(transaction.database).filter { $0.review == .contradiction && $0.judge != nil }.map(\.chapter)
+          let chapter = aimed && !held.isEmpty ? held[any % held.count] : any
+          let reviews = try reviews(novel: novel, chapter: chapter, in: transaction)
+          guard let latest = reviews.last else { return }
+          let review = pick.map { reviews[$0 % reviews.count] } ?? latest
+          let entry = try ChapterLifecycleEntry.read(novel: novel, chapter: chapter, in: transaction.database)
+          if entry?.review == .contradiction, entry?.judge == review.id { reached.insert(answerToAHold) }
+          try ReviewWrites.remedy(novel: novel, review: review.id, finding: finding, action, in: &transaction)
+        }
+      },
+      ProjectionOperation(name: "purge a judge review", weight: 1) { generator, universe in
+        let (novel, chapter, pick) = (universe.novel(&generator), universe.chapter(&generator), generator.int(in: 0...9))
+        return { transaction in
+          try observe(novel, in: transaction, reaching: reached)
+          let reviews = try reviews(novel: novel, chapter: chapter, in: transaction)
+          guard !reviews.isEmpty else { return }
+          _ = try transaction.purge(reviews[pick % reviews.count].ref)
+        }
+      },
+      ProjectionOperation(name: "request a generate job", weight: 2) { generator, universe in
+        let (novel, chapter, run) = (universe.novel(&generator), universe.chapter(&generator), generator.int(in: 1...2))
+        return { transaction in
+          try observe(novel, in: transaction, reaching: reached)
+          try ReviewWrites.requestGeneration(novel: novel, chapter: chapter, run: run, in: &transaction)
+        }
+      },
+      ProjectionOperation(name: "cancel a generate job", weight: 2) { generator, universe in
+        let key = generator.pick(from: jobs(novel: universe.novel(&generator), chapter: universe.chapter(&generator)))
+        return { transaction in
+          guard try transaction.state(of: key.ref) != nil else { return }
+          try ReviewWrites.cancel(key.ref, in: &transaction)
+        }
+      },
+      ProjectionOperation(name: "finish a generate job", weight: 3) { generator, universe in
+        let key = generator.pick(from: jobs(novel: universe.novel(&generator), chapter: universe.chapter(&generator)))
+        let attempt = try? JobWorld.attemptID(at: Int64(generator.int(in: 0...900)), &generator)
+        return { transaction in
+          guard let attempt, try transaction.state(of: key.ref) != nil, try transaction.state(of: attempt.ref) == nil else { return }
+          try ReviewWrites.succeed(key.ref, attempt: attempt, in: &transaction)
+        }
+      },
+      ProjectionOperation(name: "rewrite a passage of a draft head", weight: 2) { generator, universe in
+        let (novel, any, holding, stale) = (universe.novel(&generator), universe.chapter(&generator), generator.chance(0.7), generator.chance(0.2))
+        return { transaction in
+          try observe(novel, in: transaction, reaching: reached)
+          let drafted = try ChapterLifecycleDerivation.request(for: novel).fetchAll(transaction.database).filter { $0.draft != nil && !$0.isFinal }.map(\.chapter)
+          let chapter = drafted.isEmpty ? any : drafted[any % drafted.count]
+          try ChapterWrites.rewrite(novel: novel, chapter: chapter, body: "The ledger is forged.", holding: holding, over: stale ? "v:stale" : nil, in: &transaction)
+        }
+      },
+    ]
+  }
 }

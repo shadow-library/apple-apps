@@ -5,7 +5,6 @@ import ShadowJobs
 import ShadowStore
 import ShadowTestSupport
 import ShadowText
-import Synchronization
 
 @testable import NovelForgeCore
 @testable import ShadowAI
@@ -99,12 +98,6 @@ enum JobWorld {
 /// Random job requests, cancels, attempts, lease renewals, steps, calls, outcomes and ledger entries, with raw shapes and purges. Writes name the
 /// attempt's own replica as writer whichever store runs them, so the states reached are a superset of the single-writer ones.
 enum JobOperations {
-  private static let seen = Mutex<Set<String>>([])
-
-  /// Orderings the operations reached, for a property to gate on.
-  static var events: Set<String> { seen.withLock { $0 } }
-
-  private static func reached(_ event: String) { seen.withLock { _ = $0.insert(event) } }
   private static func keys(_ universe: ProjectionUniverse) -> [JobKey] {
     let busy: [(Int, NovelJobKind, Int)] = [(1, .generate, 1), (1, .generate, 2), (2, .generate, 1), (1, .review, 1), (2, .plan, 1)]
     var keys = zip(universe.novels, [busy, [(1, .generate, 1)]]).flatMap { novel, jobs in
@@ -134,171 +127,174 @@ enum JobOperations {
     return running.isEmpty ? nil : running[pick % running.count]
   }
 
-  static let all: [ProjectionOperation] = [
-    ProjectionOperation(name: "request job", weight: 4) { generator, universe in
-      let request = JobRequest(key: job(&generator, universe), payload: .null, replica: generator.pick(from: JobWorld.replicas))
-      return { transaction in _ = try JobRecords.request(request, in: &transaction) }
-    },
-    ProjectionOperation(name: "cancel job", weight: 1) { generator, universe in
-      let ref = job(&generator, universe).ref
-      return { transaction in _ = try JobRecords.cancel(ref, in: &transaction) }
-    },
-    ProjectionOperation(name: "cancel a job whose request has not arrived", weight: 1) { generator, universe in
-      let ref = job(&generator, universe).ref
-      return { transaction in
-        guard try transaction.state(of: ref) == nil else { return }
-        _ = try transaction.set(ref, [JobField.cancel.rawValue: .string(JobCancel.requested.rawValue)])
-      }
-    },
-    ProjectionOperation(name: "start attempt", weight: 5) { generator, _ in
-      let (pick, at) = (generator.int(in: 0...99), seconds(&generator))
-      let id = try? JobWorld.attemptID(at: at, &generator)
-      let source: AttemptClockSource = generator.chance(0.2) ? .device : .trusted
-      let (replica, byHand) = (generator.pick(from: JobWorld.replicas), generator.chance(0.2))
-      let step = generator.chance(0.5) ? AttemptStep(name: "draft", index: 0) : nil
-      return { transaction in
-        guard let id, let job = try known(in: transaction, pick: pick) else { return }
-        let start = AttemptStart(job: job, replica: replica, started: JobWorld.instant(at, source), byHand: byHand, pinned: .null)
-        _ = try AttemptRecords.start(id, start, step: step, in: &transaction)
-      }
-    },
-    ProjectionOperation(name: "renew lease", weight: 4) { generator, _ in
-      let pick = generator.int(in: 0...99)
-      let at = generator.chance(0.15) ? Int64(generator.int(in: 1_800...2_600)) : seconds(&generator)
-      let lease = AttemptLease.granted(at: JobWorld.instant(at))
-      return { transaction in
-        guard let attempt = try running(in: transaction, pick: pick) else { return }
-        _ = try AttemptRecords.update(attempt.id, AttemptUpdate(lease: lease), by: attempt.start.replica, in: &transaction)
-      }
-    },
-    ProjectionOperation(name: "advance step", weight: 1) { generator, _ in
-      let pick = generator.int(in: 0...99)
-      let step = AttemptStep(name: generator.pick(from: ["draft", "expand", "judge"]), index: generator.int(in: 0...3))
-      return { transaction in
-        guard let attempt = try running(in: transaction, pick: pick) else { return }
-        _ = try AttemptRecords.update(attempt.id, AttemptUpdate(step: step), by: attempt.start.replica, in: &transaction)
-      }
-    },
-    ProjectionOperation(name: "record call", weight: 4) { generator, _ in
-      let (pick, call) = (generator.int(in: 0...99), generator.pick(from: JobWorld.calls))
-      return { transaction in
-        guard let attempt = try running(in: transaction, pick: pick) else { return }
-        _ = try AttemptRecords.recordCall(call, attempt: attempt.id, by: attempt.start.replica, in: &transaction)
-      }
-    },
-    ProjectionOperation(name: "record one call on two jobs of a chapter", weight: 5) { generator, _ in
-      let (pick, fresh) = (generator.int(in: 0...99), generator.pick(from: JobWorld.calls))
-      return { transaction in
-        guard let attempt = try running(in: transaction, pick: pick), let key = try JobRecords.read(attempt.start.job, in: transaction).record?.request.key else { return }
-        let others = try attempts(in: transaction).filter { other in
-          guard other.start.job != attempt.start.job, let otherKey = try JobRecords.read(other.start.job, in: transaction).record?.request.key else { return false }
-          return otherKey.scope == key.scope && otherKey.target == key.target
+  /// The operations, recording in `reached` the orderings they reach for a property to gate on.
+  static func all(reaching reached: Reached) -> [ProjectionOperation] {
+    [
+      ProjectionOperation(name: "request job", weight: 4) { generator, universe in
+        let request = JobRequest(key: job(&generator, universe), payload: .null, replica: generator.pick(from: JobWorld.replicas))
+        return { transaction in _ = try JobRecords.request(request, in: &transaction) }
+      },
+      ProjectionOperation(name: "cancel job", weight: 1) { generator, universe in
+        let ref = job(&generator, universe).ref
+        return { transaction in _ = try JobRecords.cancel(ref, in: &transaction) }
+      },
+      ProjectionOperation(name: "cancel a job whose request has not arrived", weight: 1) { generator, universe in
+        let ref = job(&generator, universe).ref
+        return { transaction in
+          guard try transaction.state(of: ref) == nil else { return }
+          _ = try transaction.set(ref, [JobField.cancel.rawValue: .string(JobCancel.requested.rawValue)])
         }
-        if let named = others.flatMap(\.calls).first(where: { !attempt.calls.contains($0) }) {
-          _ = try AttemptRecords.recordCall(named, attempt: attempt.id, by: attempt.start.replica, in: &transaction)
-        } else {
-          for both in [attempt] + others.filter({ $0.outcome == .running }).prefix(1) {
-            _ = try AttemptRecords.recordCall(fresh, attempt: both.id, by: both.start.replica, in: &transaction)
+      },
+      ProjectionOperation(name: "start attempt", weight: 5) { generator, _ in
+        let (pick, at) = (generator.int(in: 0...99), seconds(&generator))
+        let id = try? JobWorld.attemptID(at: at, &generator)
+        let source: AttemptClockSource = generator.chance(0.2) ? .device : .trusted
+        let (replica, byHand) = (generator.pick(from: JobWorld.replicas), generator.chance(0.2))
+        let step = generator.chance(0.5) ? AttemptStep(name: "draft", index: 0) : nil
+        return { transaction in
+          guard let id, let job = try known(in: transaction, pick: pick) else { return }
+          let start = AttemptStart(job: job, replica: replica, started: JobWorld.instant(at, source), byHand: byHand, pinned: .null)
+          _ = try AttemptRecords.start(id, start, step: step, in: &transaction)
+        }
+      },
+      ProjectionOperation(name: "renew lease", weight: 4) { generator, _ in
+        let pick = generator.int(in: 0...99)
+        let at = generator.chance(0.15) ? Int64(generator.int(in: 1_800...2_600)) : seconds(&generator)
+        let lease = AttemptLease.granted(at: JobWorld.instant(at))
+        return { transaction in
+          guard let attempt = try running(in: transaction, pick: pick) else { return }
+          _ = try AttemptRecords.update(attempt.id, AttemptUpdate(lease: lease), by: attempt.start.replica, in: &transaction)
+        }
+      },
+      ProjectionOperation(name: "advance step", weight: 1) { generator, _ in
+        let pick = generator.int(in: 0...99)
+        let step = AttemptStep(name: generator.pick(from: ["draft", "expand", "judge"]), index: generator.int(in: 0...3))
+        return { transaction in
+          guard let attempt = try running(in: transaction, pick: pick) else { return }
+          _ = try AttemptRecords.update(attempt.id, AttemptUpdate(step: step), by: attempt.start.replica, in: &transaction)
+        }
+      },
+      ProjectionOperation(name: "record call", weight: 4) { generator, _ in
+        let (pick, call) = (generator.int(in: 0...99), generator.pick(from: JobWorld.calls))
+        return { transaction in
+          guard let attempt = try running(in: transaction, pick: pick) else { return }
+          _ = try AttemptRecords.recordCall(call, attempt: attempt.id, by: attempt.start.replica, in: &transaction)
+        }
+      },
+      ProjectionOperation(name: "record one call on two jobs of a chapter", weight: 5) { generator, _ in
+        let (pick, fresh) = (generator.int(in: 0...99), generator.pick(from: JobWorld.calls))
+        return { transaction in
+          guard let attempt = try running(in: transaction, pick: pick), let key = try JobRecords.read(attempt.start.job, in: transaction).record?.request.key else { return }
+          let others = try attempts(in: transaction).filter { other in
+            guard other.start.job != attempt.start.job, let otherKey = try JobRecords.read(other.start.job, in: transaction).record?.request.key else { return false }
+            return otherKey.scope == key.scope && otherKey.target == key.target
+          }
+          if let named = others.flatMap(\.calls).first(where: { !attempt.calls.contains($0) }) {
+            _ = try AttemptRecords.recordCall(named, attempt: attempt.id, by: attempt.start.replica, in: &transaction)
+          } else {
+            for both in [attempt] + others.filter({ $0.outcome == .running }).prefix(1) {
+              _ = try AttemptRecords.recordCall(fresh, attempt: both.id, by: both.start.replica, in: &transaction)
+            }
           }
         }
-      }
-    },
-    ProjectionOperation(name: "settle attempt", weight: 4) { generator, _ in
-      let pick = generator.int(in: 0...99)
-      let settlement = generator.pick(from: [
-        AttemptSettlement.succeeded, .failed(AttemptFailure(code: "ai.timeout", message: "The call timed out.")), .stoodDown, .cancelled,
-      ])
-      return { transaction in
-        guard let attempt = try running(in: transaction, pick: pick) else { return }
-        _ = try AttemptRecords.update(attempt.id, AttemptUpdate(settlement: settlement), by: attempt.start.replica, in: &transaction)
-      }
-    },
-    ProjectionOperation(name: "fail attempt", weight: 3) { generator, _ in
-      let pick = generator.int(in: 0...99)
-      let failure = AttemptFailure(code: generator.pick(from: ["ai.timeout", "ai.refused"]), message: "The step failed.")
-      return { transaction in
-        guard let attempt = try running(in: transaction, pick: pick) else { return }
-        _ = try AttemptRecords.update(attempt.id, AttemptUpdate(settlement: .failed(failure)), by: attempt.start.replica, in: &transaction)
-      }
-    },
-    ProjectionOperation(name: "write an unreadable attempt", weight: 1) { generator, universe in
-      let ref = job(&generator, universe).ref
-      let id = try? JobWorld.attemptID(at: seconds(&generator), &generator)
-      let start: JSONValue = ["job": .string(ref.key.rawValue), "replica": .string(JobWorld.replicas[0].description), "started": .int(JobWorld.epoch)]
-      return { transaction in
-        guard let id else { return }
-        _ = try transaction.set(id.ref, [AttemptField.start.rawValue: start, AttemptField.lease.rawValue: "lapsed"])
-      }
-    },
-    ProjectionOperation(name: "purge attempt", weight: 1) { generator, _ in
-      let pick = generator.int(in: 0...99)
-      return { transaction in
-        let all = try attempts(in: transaction)
-        guard !all.isEmpty else { return }
-        _ = try transaction.purge(all[pick % all.count].id.ref)
-      }
-    },
-    ProjectionOperation(name: "purge job", weight: 1) { generator, universe in
-      let ref = job(&generator, universe).ref
-      return { transaction in _ = try transaction.purge(ref) }
-    },
-    ProjectionOperation(name: "record a priced call", weight: 4) { generator, _ in
-      let (start, events) = (JobWorld.callStart(generator.pick(from: JobWorld.calls)), JobWorld.finishedEvents(Int64(generator.int(in: 1...900))))
-      return { transaction in
-        guard try transaction.state(of: Ledger.ref(start.id)) == nil else { return }
-        try Ledger.begin(start, in: &transaction)
-        _ = try Ledger.finish(start, events: events, endedWith: nil, catalog: nil, in: &transaction)
-      }
-    },
-    ProjectionOperation(name: "record a retried call", weight: 2) { generator, _ in
-      let (start, events) = (JobWorld.callStart(generator.pick(from: JobWorld.calls)), JobWorld.retriedEvents(Int64(generator.int(in: 1...900))))
-      return { transaction in
-        guard try transaction.state(of: Ledger.ref(start.id)) == nil else { return }
-        try Ledger.begin(start, in: &transaction)
-        _ = try Ledger.finish(start, events: events, endedWith: nil, catalog: nil, in: &transaction)
-      }
-    },
-    ProjectionOperation(name: "begin a call", weight: 1) { generator, _ in
-      let start = JobWorld.callStart(generator.pick(from: JobWorld.calls))
-      return { transaction in
-        guard try transaction.state(of: Ledger.ref(start.id)) == nil else { return }
-        try Ledger.begin(start, in: &transaction)
-      }
-    },
-    ProjectionOperation(name: "price an abandoned attempt", weight: 3) { generator, _ in
-      let (pick, nanoUSD) = (generator.int(in: 0...99), Int64(generator.int(in: 1...90)))
-      return { transaction in
-        let named = Set(try attempts(in: transaction).flatMap(\.calls))
-        let abandoned = try JobWorld.calls.compactMap { call in try abandonedAttempt(of: call, in: transaction).map { (call: call, attempt: $0) } }
-        let preferred = abandoned.filter { named.contains($0.call) }
-        let candidates = preferred.isEmpty ? abandoned : preferred
-        guard !candidates.isEmpty else { return }
-        let chosen = candidates[pick % candidates.count]
-        try Ledger.reconcile(id: chosen.attempt, cost: Cost(nanoUSD: nanoUSD), in: &transaction)
-        if named.contains(chosen.call) { reached("abandoned attempt priced after its call is named") }
-      }
-    },
-    ProjectionOperation(name: "forge a ledger edge", weight: 1) { generator, _ in
-      let call = generator.pick(from: JobWorld.calls)
-      let other = generator.pick(from: JobWorld.calls.filter { $0 != call })
-      let forged = ModelCallEntry(
-        id: Ledger.attemptID(of: call, index: 0), provider: "api.example.com", model: "model-a", task: .chat, pace: .steady, startedMillis: JobWorld.epoch,
-        parent: other, outcome: .failed, usage: JobWorld.usage, cost: Cost(nanoUSD: Int64(generator.int(in: 1...90))), costSource: .reported)
-      return { transaction in
-        guard try transaction.state(of: Ledger.ref(forged.id)) == nil else { return }
-        try Ledger.open(forged, in: &transaction)
-        reached("ledger edge forged")
-      }
-    },
-    ProjectionOperation(name: "purge a ledger entry", weight: 1) { generator, _ in
-      let (call, child) = (generator.pick(from: JobWorld.calls), generator.chance(0.5))
-      return { transaction in
-        let ref = try child ? abandonedAttempt(of: call, in: transaction).map(Ledger.ref) : Ledger.ref(call)
-        guard let ref else { return }
-        _ = try transaction.purge(ref)
-      }
-    },
-  ]
+      },
+      ProjectionOperation(name: "settle attempt", weight: 4) { generator, _ in
+        let pick = generator.int(in: 0...99)
+        let settlement = generator.pick(from: [
+          AttemptSettlement.succeeded, .failed(AttemptFailure(code: "ai.timeout", message: "The call timed out.")), .stoodDown, .cancelled,
+        ])
+        return { transaction in
+          guard let attempt = try running(in: transaction, pick: pick) else { return }
+          _ = try AttemptRecords.update(attempt.id, AttemptUpdate(settlement: settlement), by: attempt.start.replica, in: &transaction)
+        }
+      },
+      ProjectionOperation(name: "fail attempt", weight: 3) { generator, _ in
+        let pick = generator.int(in: 0...99)
+        let failure = AttemptFailure(code: generator.pick(from: ["ai.timeout", "ai.refused"]), message: "The step failed.")
+        return { transaction in
+          guard let attempt = try running(in: transaction, pick: pick) else { return }
+          _ = try AttemptRecords.update(attempt.id, AttemptUpdate(settlement: .failed(failure)), by: attempt.start.replica, in: &transaction)
+        }
+      },
+      ProjectionOperation(name: "write an unreadable attempt", weight: 1) { generator, universe in
+        let ref = job(&generator, universe).ref
+        let id = try? JobWorld.attemptID(at: seconds(&generator), &generator)
+        let start: JSONValue = ["job": .string(ref.key.rawValue), "replica": .string(JobWorld.replicas[0].description), "started": .int(JobWorld.epoch)]
+        return { transaction in
+          guard let id else { return }
+          _ = try transaction.set(id.ref, [AttemptField.start.rawValue: start, AttemptField.lease.rawValue: "lapsed"])
+        }
+      },
+      ProjectionOperation(name: "purge attempt", weight: 1) { generator, _ in
+        let pick = generator.int(in: 0...99)
+        return { transaction in
+          let all = try attempts(in: transaction)
+          guard !all.isEmpty else { return }
+          _ = try transaction.purge(all[pick % all.count].id.ref)
+        }
+      },
+      ProjectionOperation(name: "purge job", weight: 1) { generator, universe in
+        let ref = job(&generator, universe).ref
+        return { transaction in _ = try transaction.purge(ref) }
+      },
+      ProjectionOperation(name: "record a priced call", weight: 4) { generator, _ in
+        let (start, events) = (JobWorld.callStart(generator.pick(from: JobWorld.calls)), JobWorld.finishedEvents(Int64(generator.int(in: 1...900))))
+        return { transaction in
+          guard try transaction.state(of: Ledger.ref(start.id)) == nil else { return }
+          try Ledger.begin(start, in: &transaction)
+          _ = try Ledger.finish(start, events: events, endedWith: nil, catalog: nil, in: &transaction)
+        }
+      },
+      ProjectionOperation(name: "record a retried call", weight: 2) { generator, _ in
+        let (start, events) = (JobWorld.callStart(generator.pick(from: JobWorld.calls)), JobWorld.retriedEvents(Int64(generator.int(in: 1...900))))
+        return { transaction in
+          guard try transaction.state(of: Ledger.ref(start.id)) == nil else { return }
+          try Ledger.begin(start, in: &transaction)
+          _ = try Ledger.finish(start, events: events, endedWith: nil, catalog: nil, in: &transaction)
+        }
+      },
+      ProjectionOperation(name: "begin a call", weight: 1) { generator, _ in
+        let start = JobWorld.callStart(generator.pick(from: JobWorld.calls))
+        return { transaction in
+          guard try transaction.state(of: Ledger.ref(start.id)) == nil else { return }
+          try Ledger.begin(start, in: &transaction)
+        }
+      },
+      ProjectionOperation(name: "price an abandoned attempt", weight: 3) { generator, _ in
+        let (pick, nanoUSD) = (generator.int(in: 0...99), Int64(generator.int(in: 1...90)))
+        return { transaction in
+          let named = Set(try attempts(in: transaction).flatMap(\.calls))
+          let abandoned = try JobWorld.calls.compactMap { call in try abandonedAttempt(of: call, in: transaction).map { (call: call, attempt: $0) } }
+          let preferred = abandoned.filter { named.contains($0.call) }
+          let candidates = preferred.isEmpty ? abandoned : preferred
+          guard !candidates.isEmpty else { return }
+          let chosen = candidates[pick % candidates.count]
+          try Ledger.reconcile(id: chosen.attempt, cost: Cost(nanoUSD: nanoUSD), in: &transaction)
+          if named.contains(chosen.call) { reached.insert("abandoned attempt priced after its call is named") }
+        }
+      },
+      ProjectionOperation(name: "forge a ledger edge", weight: 1) { generator, _ in
+        let call = generator.pick(from: JobWorld.calls)
+        let other = generator.pick(from: JobWorld.calls.filter { $0 != call })
+        let forged = ModelCallEntry(
+          id: Ledger.attemptID(of: call, index: 0), provider: "api.example.com", model: "model-a", task: .chat, pace: .steady, startedMillis: JobWorld.epoch,
+          parent: other, outcome: .failed, usage: JobWorld.usage, cost: Cost(nanoUSD: Int64(generator.int(in: 1...90))), costSource: .reported)
+        return { transaction in
+          guard try transaction.state(of: Ledger.ref(forged.id)) == nil else { return }
+          try Ledger.open(forged, in: &transaction)
+          reached.insert("ledger edge forged")
+        }
+      },
+      ProjectionOperation(name: "purge a ledger entry", weight: 1) { generator, _ in
+        let (call, child) = (generator.pick(from: JobWorld.calls), generator.chance(0.5))
+        return { transaction in
+          let ref = try child ? abandonedAttempt(of: call, in: transaction).map(Ledger.ref) : Ledger.ref(call)
+          guard let ref else { return }
+          _ = try transaction.purge(ref)
+        }
+      },
+    ]
+  }
 
   private static func abandonedAttempt(of call: UUID, in transaction: borrowing WriteTransaction) throws -> UUID? {
     let id = Ledger.attemptID(of: call, index: 0)

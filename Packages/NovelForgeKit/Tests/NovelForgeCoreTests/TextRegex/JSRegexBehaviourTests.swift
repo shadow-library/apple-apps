@@ -160,9 +160,9 @@ struct JSRegexBehaviourTests {
             index += 1
           }
           let regex = try JSRegex(regexCase.source, flags: regexCase.flags)
-          let start = ContinuousClock.now
+          let start = clock_gettime_nsec_np(CLOCK_THREAD_CPUTIME_ID)
           _ = regex.allMatchSlots(in: units)
-          return (regexCase.description, ContinuousClock.now - start)
+          return (regexCase.description, .nanoseconds(clock_gettime_nsec_np(CLOCK_THREAD_CPUTIME_ID) - start))
         }
       }
       var timings: [(String, Duration)] = []
