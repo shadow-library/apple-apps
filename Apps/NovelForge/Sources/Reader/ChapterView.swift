@@ -112,6 +112,7 @@ struct ChapterView: View {
     ScrollView {
       VStack(spacing: Spacing.space6) {
         missingNotice(MissingChapter(row: loaded.row, chapter: chapter, listing: chapterListing))
+        if loaded.row != nil { ChapterWorkspaceStrip(context: context, chapter: chapter, row: loaded.row) }
         GenerationControls(context: context, chapter: chapter, row: loaded.row)
         keptCallout(loaded)
       }

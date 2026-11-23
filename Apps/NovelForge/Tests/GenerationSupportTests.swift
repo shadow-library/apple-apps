@@ -69,9 +69,9 @@ struct GenerationWorld {
   let makeEngine: JobRuntime.EngineFactory
   let runtime: JobRuntime
 
-  static func make(_ calls: [[ScriptedModelProvider.Step]] = [], plan: Bool = true, starter: JobEngineCalls.Start? = nil, platform: JobPlatform = .mac) async throws
-    -> GenerationWorld
-  {
+  static func make(
+    _ calls: [[ScriptedModelProvider.Step]] = [], plan: Bool = true, granted: Bool = true, starter: JobEngineCalls.Start? = nil, platform: JobPlatform = .mac
+  ) async throws -> GenerationWorld {
     let store = try NovelForgeStore.openInMemory()
     let novel = UUID()
     try await store.write { transaction in
@@ -83,9 +83,7 @@ struct GenerationWorld {
     let provider = ScriptedModelProvider(calls: calls)
     guard let origin = URL(string: "https://api.anthropic.com"), let binding = ProviderBinding(origin: origin, provider: provider) else { throw ChatFixtureError.noBinding }
     let consent = ConsentDisclosure.novelText
-    try await store.write { transaction in
-      try AIConsent.decide(.granted, provider: binding.host, dataClass: consent.dataClass, summary: consent.id, atMillis: 1, in: &transaction)
-    }
+    if granted { try await grant(consent, to: binding.host, in: store) }
     let clock = LeaseClock(trusted: nil)
     let power = GenerationPowerLog()
     let makeEngine: JobRuntime.EngineFactory = { () throws(JobEngineError) -> JobEngine in
@@ -101,6 +99,12 @@ struct GenerationWorld {
     let calls = starter.map { JobEngineCalls(run: $0) } ?? JobEngineCalls()
     let runtime = JobRuntime(store: store, clock: clock, platform: platform, power: assertion, takeOverDelay: .milliseconds(20), calls: calls, makeEngine: makeEngine)
     return GenerationWorld(store: store, novel: novel, provider: provider, power: power, makeEngine: makeEngine, runtime: runtime)
+  }
+
+  static func grant(_ consent: ConsentDisclosure, to host: String, in store: VaultStore) async throws {
+    try await store.write { transaction in
+      try AIConsent.decide(.granted, provider: host, dataClass: consent.dataClass, summary: consent.id, atMillis: 1, in: &transaction)
+    }
   }
 
   func handDraft(_ body: String) async throws -> String {

@@ -181,6 +181,26 @@
         }
       }
     },
+    "The file describes the demo's %@, not yours, but its log lines are all of %@'s since it last opened, with personal values hidden.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The file describes the demo's %@, not yours, but its log lines are all of %@'s since it last opened, with personal values hidden."
+          }
+        }
+      }
+    },
+    "The format versions of the demo's %@": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The format versions of the demo's %@"
+          }
+        }
+      }
+    },
     "The size of your %@ on this device and its format versions": {
       "localizations": {
         "en": {
@@ -217,6 +237,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Whether sync is on, the kind of storage, and each store's sync state, counts and error codes"
+          }
+        }
+      }
+    },
+    "You are in the demo": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You are in the demo"
           }
         }
       }

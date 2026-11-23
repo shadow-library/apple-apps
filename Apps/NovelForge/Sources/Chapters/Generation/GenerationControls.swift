@@ -56,6 +56,7 @@ struct GenerationControls: View {
       GenerationOptionsSheet(kind: kind, chapter: chapter) { options in Task { await model.start(kind, options: options, runtime: runtimes.existing(for: context.store)) } }
     }
     .aiProviderSheet(isPresented: $model.needsProvider, services: services) { options = model.providerConnected() }
+    .aiConsentSheet($model.consent, services: services, store: context.store) { model.consentAllowed(on: runtimes.existing(for: context.store)) }
     .alert(Text(verbatim: model.failure?.headline ?? ""), isPresented: isFailing, presenting: model.failure) { _ in
       Button {
         model.failure = nil
@@ -82,6 +83,7 @@ struct GenerationControls: View {
         icon: { Image(systemName: "sparkles") })
     }
     .disabled(busy || model.isStarting)
+    .accessibilityIdentifier("generate-chapter")
   }
 
   @ViewBuilder

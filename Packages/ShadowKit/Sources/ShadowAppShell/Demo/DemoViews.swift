@@ -63,7 +63,7 @@ public struct TryDemoSection: View {
       } header: {
         Text("Try without a key", tableName: "Demo", bundle: .module).shadowFont(.headline)
       }
-      .environment(\.appIdentity, identity)
+      .appIdentity(identity)
     }
   }
 }
@@ -110,7 +110,7 @@ public struct DemoBanner: View {
     } message: {
       Text("Everything made in the demo is deleted, and \(identity.displayName) opens your own data as you left it.", tableName: "Demo", bundle: .module)
     }
-    .environment(\.appIdentity, identity)
+    .appIdentity(identity)
   }
 
   private var badge: some View {
@@ -160,24 +160,24 @@ private struct DemoSessionChrome<Demo>: ViewModifier {
   let session: DemoSession<Demo>
   let identity: AppIdentity
 
+  /// A stack rather than a top safe-area inset: a navigation stack's bar ignores the inset on iOS 26 and draws its buttons under the banner.
   func body(content: Content) -> some View {
-    content
-      .demoOffer(session)
-      .safeAreaInset(edge: .top, spacing: 0) {
-        if session.active != nil {
-          DemoBanner(identity: identity) { Task { await session.leave() } }
-        }
+    VStack(spacing: 0) {
+      if session.active != nil {
+        DemoBanner(identity: identity) { Task { await session.leave() } }
       }
-      .alert(
-        Text("The demo could not start", tableName: "Demo", bundle: .module), isPresented: Binding(get: { session.failure != nil }, set: { if !$0 { session.failure = nil } })
-      ) {
-        Button {
-          session.failure = nil
-        } label: {
-          Text("OK", tableName: "Demo", bundle: .module)
-        }
-      } message: {
-        Text(verbatim: session.failure?.localizedDescription ?? "")
+      content.demoOffer(session)
+    }
+    .alert(
+      Text("The demo could not start", tableName: "Demo", bundle: .module), isPresented: Binding(get: { session.failure != nil }, set: { if !$0 { session.failure = nil } })
+    ) {
+      Button {
+        session.failure = nil
+      } label: {
+        Text("OK", tableName: "Demo", bundle: .module)
       }
+    } message: {
+      Text(verbatim: session.failure?.localizedDescription ?? "")
+    }
   }
 }

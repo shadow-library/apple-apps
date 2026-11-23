@@ -48,10 +48,11 @@ struct DiagnosticsBuilder {
     let ai: DiagnosticsSummary.AI? = if let services = sources?.ai { await Self.ai(services, primary: sources?.primary) } else { nil }
     var registries = sources?.stores.mapValues(\.registry.version) ?? [:]
     if let primary = sources?.primary { registries["main"] = primary.registry.version }
-    let bytes: Int? = if let vaults { await Self.size(of: vaults) } else { nil }
+    let isDemo = sources?.isDemo == true
+    let bytes: Int? = if let vaults, !isDemo { await Self.size(of: vaults) } else { nil }
     let details = await sources?.summary() ?? [:]
     return DiagnosticsSummary(
-      generatedAt: now, app: DiagnosticsSummary.App(id: identity.id, name: identity.displayName, version: version.version, build: version.build),
+      generatedAt: now, isDemo: isDemo, app: DiagnosticsSummary.App(id: identity.id, name: identity.displayName, version: version.version, build: version.build),
       system: system, capabilities: capabilities, sync: sync, ai: ai, storage: DiagnosticsSummary.Storage(vaultsBytes: bytes, registryVersions: registries),
       details: details)
   }

@@ -13,6 +13,7 @@ let project = Project.app(
     .product(.novelForgeCore), .shared(.store), .shared(.keychain), .shared(.testSupport), .shared(.text), .shared(.sync), .shared(.syncRuntime), .shared(.syncCloudKit),
     .shared(.syncS3), .shared(.appShell),
   ],
+  includesUITests: true,
   infoPlist: [
     "UTExportedTypeDeclarations": [
       [

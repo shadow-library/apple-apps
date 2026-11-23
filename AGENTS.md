@@ -14,7 +14,7 @@ Read `README.md` first; it covers layout, modules and tasks.
 - Depend on shared modules with `.shared(.<module>)`, never `.external(name:)` with a string.
 - Depend on product modules with `.product(.<module>)` (`ProductModule`), never `.external(name:)` with a string.
 - Code reused by a second app belongs in `Packages/ShadowKit`, not copied between apps; app code (vault, sync and AI screens) goes in `ShadowAppShell`, which takes the app's `AppIdentity` and never names an app, its id or its vault word. Keychain and defaults names derive from `AppIdentity` and never change formula.
-- `ShadowAppShell`'s user-facing strings live in its own catalogs (`Resources/*.xcstrings`, `bundle: .module`, app words as `%@`, no `extractionState`), which an app never edits; a public shell view puts `\.appIdentity` in its environment.
+- `ShadowAppShell`'s user-facing strings live in its own catalogs (`Resources/*.xcstrings`, `bundle: .module`, app words as `%@`, no `extractionState`), which an app never edits; a public shell view names the app with `appIdentity(_:)`, never `.environment(\.appIdentity, …)`, which asserts on the iOS 26 runtime.
 - Every app passes its own `requestGuard` to `AIServices.live` and `AIServices.demo`; the shell has no default.
 - The unrestricted model field is offered only through `AIServices.live(offersUnrestrictedModel:)`, from the app's build flag (`UnrestrictedWriting.isAvailable` in Novel Forge).
 - Every gate that holds an AI action for a provider, and `aiProviderSheet`'s continuation, ask `AIServices.isReadyForStandardCalls` (a usable provider and, for OpenRouter, a model for at least one pace); an action that is not ready presents `aiProviderSheet` before anything is sent and goes on only from its `onConnected` (never after the owner chose the demo); in Novel Forge a job asks only when it would start on this device (`isReady(toStart:on:)`, `ProviderGate` for job-line actions).
@@ -29,6 +29,7 @@ Read `README.md` first; it covers layout, modules and tasks.
 - `THIRD_PARTY_NOTICES.md` and `ShadowAppShell`'s `Resources/ThirdPartyNotices.md` change together (a test compares them); a new third-party dependency adds its notice to both.
 - Diagnostics never carry content, keys, tokens, locations, vault ids or names that identify the owner: an app's `DiagnosticsSources` summary holds only counts, flags and codes (`DiagnosticsValue`), `SyncRunRecord` only counts, instants and error codes, and a change to `summary.json`'s shape raises `DiagnosticsSummary.currentVersion`.
 - A log argument diagnostics shows (text logged `.public`, a number logged without a privacy marker) is only a code, count, kind or state, never owner content, a key, a path, a location, a vault id or a name.
+- A diagnostics bundle built from the demo's sources describes only the demo (`DiagnosticsSummary.isDemo`): the shell leaves out owner facts, and an app's summary leaves out owner-only facts when `ai.isDemo`.
 - An error a shell screen presents with its code adopts `DomainFailure` (`ShadowStore`) where it is declared, never retroactively in an app.
 - A product's core lives in `Packages/<Product>Kit` (first: `Packages/NovelForgeKit`, module `NovelForgeCore`). It imports no UI framework (SwiftUI, UIKit, AppKit) and reaches ShadowKit through the package's products.
 - Capabilities (iCloud, push, background modes, keychain group, camera, Mac sandbox, continued processing, HealthKit) are declared only through `Project.app(capabilities:)` with `AppCapability`; never write entitlements, `aps-environment`, `UIBackgroundModes` or usage strings by hand. Capabilities that need a signing team are emitted only when `TUIST_DEVELOPMENT_TEAM` is set, so team-less builds must keep working.
@@ -95,6 +96,7 @@ Read `README.md` first; it covers layout, modules and tasks.
 - Derived ids use `derivedID(_:_:)` with a `com.shadow.library.<library>.<purpose>` domain.
 - New test suites take a `TestTimeLimit` tier (`quick`, `standard`, `property`), never a literal limit.
 - Tests are named `should…`; Swift Testing tests that resolve `Color` or `Font` need `@MainActor`.
+- UI tests launch an app with `-ShadowUITest` (`VaultDirectory.uiTestLaunchArgument`, honoured only in Debug builds) beside `-ShadowDemo`, and never reach the owner's data.
 
 ## Verifying a change
 

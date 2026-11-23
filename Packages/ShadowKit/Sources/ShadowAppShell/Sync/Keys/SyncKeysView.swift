@@ -44,7 +44,7 @@ struct SyncKeysView: View {
       if phase == .active { Task { await model.checkForKey() } }
     }
     .onDisappear { model.leave() }
-    .environment(\.appIdentity, model.sync.identity)
+    .appIdentity(model.sync.identity)
   }
 }
 

@@ -21,6 +21,7 @@ struct DiagnosticsView: View {
           tableName: "Diagnostics", bundle: .module
         )
         .fixedSize(horizontal: false, vertical: true)
+        if model.describesDemo { demoNotice }
         contentsSection
         stageSection
       }
@@ -30,7 +31,7 @@ struct DiagnosticsView: View {
     }
     .shadowScreen(.pushed)
     .navigationTitle(Text("Share Diagnostics", tableName: "Diagnostics", bundle: .module))
-    .environment(\.appIdentity, identity)
+    .appIdentity(identity)
     .onAppear { model.appeared() }
     .onDisappear { model.disappeared() }
     .fileExporter(
@@ -46,7 +47,11 @@ struct DiagnosticsView: View {
           "arrow.triangle.2.circlepath",
           Text("Whether sync is on, the kind of storage, and each store's sync state, counts and error codes", tableName: "Diagnostics", bundle: .module))
         line("sparkles", Text("The AI provider you chose, whether a key is saved, and which kinds of data you allowed", tableName: "Diagnostics", bundle: .module))
-        line("internaldrive", Text("The size of your \(identity.vaultNoun) on this device and its format versions", tableName: "Diagnostics", bundle: .module))
+        if model.describesDemo {
+          line("internaldrive", Text("The format versions of the demo's \(identity.vaultNoun)", tableName: "Diagnostics", bundle: .module))
+        } else {
+          line("internaldrive", Text("The size of your \(identity.vaultNoun) on this device and its format versions", tableName: "Diagnostics", bundle: .module))
+        }
         line("number", Text("Counts \(identity.displayName) keeps about its own work", tableName: "Diagnostics", bundle: .module))
         line(
           "doc.text",
@@ -62,6 +67,15 @@ struct DiagnosticsView: View {
         "Never your \(identity.vaultNoun)'s content, names you gave, file or folder names, keys, passwords, tokens or your email address.",
         tableName: "Diagnostics", bundle: .module)
     }
+  }
+
+  private var demoNotice: some View {
+    ShadowCallout(
+      Text("You are in the demo", tableName: "Diagnostics", bundle: .module),
+      message: Text(
+        "The file describes the demo's \(identity.vaultNoun), not yours, but its log lines are all of \(identity.displayName)'s since it last opened, with personal values hidden.",
+        tableName: "Diagnostics", bundle: .module),
+      intent: .info, systemImage: "play.circle")
   }
 
   private func line(_ systemImage: String, _ text: Text) -> some View {

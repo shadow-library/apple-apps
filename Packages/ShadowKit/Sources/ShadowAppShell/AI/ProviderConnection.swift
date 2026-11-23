@@ -128,7 +128,7 @@ struct ProviderConnectionSheet: View {
       cancel: ShadowSheetCancel(Text("Not Now", tableName: "AISettings", bundle: .module)) { dismiss() }
     )
     .shadowSheetStyle(.form)
-    .environment(\.appIdentity, model.settings.services.identity)
+    .appIdentity(model.settings.services.identity)
     .task { await model.load() }
     .onChange(of: model.closes) {
       guard model.closes else { return }

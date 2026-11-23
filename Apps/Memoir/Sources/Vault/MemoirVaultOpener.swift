@@ -1,5 +1,6 @@
 import Foundation
 import MemoirCore
+import ShadowAppShell
 import ShadowStore
 
 nonisolated enum MemoirVaultLocation: Sendable, Equatable {
@@ -40,7 +41,7 @@ nonisolated enum MemoirVaultOpener {
     }
   }
 
-  static var isHostedByTests: Bool { ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] != nil }
+  static var isHostedByTests: Bool { VaultDirectory.isHostedByTests }
 
   /// The app's own vault, or in-memory stores while XCTest hosts the app.
   static func appLocation() throws(MemoirVaultOpenError) -> MemoirVaultLocation {

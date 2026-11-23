@@ -37,7 +37,7 @@ public struct AboutView: View {
     }
     .shadowScreen(.pushed)
     .navigationTitle(Text("About \(identity.displayName)", tableName: "About", bundle: .module))
-    .environment(\.appIdentity, identity)
+    .appIdentity(identity)
   }
 
   private var header: some View {

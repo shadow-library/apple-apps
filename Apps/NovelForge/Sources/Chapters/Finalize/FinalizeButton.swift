@@ -230,6 +230,7 @@ struct ChapterFinalizeBar: View {
         }
         .buttonStyle(.borderedProminent)
         .disabled(revision == nil || model.approving || !offer.canApprove)
+        .accessibilityIdentifier("approve-chapter")
       case .refused:
         note(Text("Run the AI review first: it turns the judge's conflict into findings you can fix, dismiss or override.", tableName: "Finalize"))
       }
@@ -266,16 +267,18 @@ struct ChapterFinalizeBar: View {
   }
 
   // chapter-checks.ts:274-278
-  @ViewBuilder
   private func approvedNotice(_ approved: FinalizeModel.Approved) -> some View {
-    if approved.overridden == 0 {
-      ShadowCallout(Text("Chapter \(chapter) approved", tableName: "Finalize"), intent: .success) { EmptyView() }
-    } else {
-      ShadowCallout(
-        Text("Chapter \(chapter) approved", tableName: "Finalize"),
-        message: Text("\(approved.overridden) blocking findings were recorded as overridden.", tableName: "Finalize"), intent: .warning
-      ) { EmptyView() }
+    Group {
+      if approved.overridden == 0 {
+        ShadowCallout(Text("Chapter \(chapter) approved", tableName: "Finalize"), intent: .success) { EmptyView() }
+      } else {
+        ShadowCallout(
+          Text("Chapter \(chapter) approved", tableName: "Finalize"),
+          message: Text("\(approved.overridden) blocking findings were recorded as overridden.", tableName: "Finalize"), intent: .warning
+        ) { EmptyView() }
+      }
     }
+    .accessibilityIdentifier("chapter-approved")
   }
 
   private func note(_ text: Text) -> some View {

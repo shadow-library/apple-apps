@@ -23,7 +23,7 @@ public struct SyncStatusIndicator: View {
       }
       .help(Text(verbatim: indicator.headline))
       .accessibilityLabel(Text(verbatim: indicator.accessibilityLabel))
-      .popover(isPresented: $isPresented) { SyncStatusDetail(indicator: indicator).environment(\.appIdentity, sync.identity) }
+      .popover(isPresented: $isPresented) { SyncStatusDetail(indicator: indicator).appIdentity(sync.identity) }
     }
   }
 

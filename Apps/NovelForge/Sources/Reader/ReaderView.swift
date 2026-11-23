@@ -179,6 +179,7 @@ struct ReaderView: View {
     NavigationLink(value: ReaderRoute.chapter(row.chapter)) {
       ChapterRowView(row: row, heading: heading, isCursor: isCursor, hasUnsavedWork: model.hasUnsavedWork(in: row.chapter))
     }
+    .accessibilityIdentifier("chapter-\(row.chapter)")
   }
 
   private func startRow(next: Int) -> some View {

@@ -1,6 +1,7 @@
 import Foundation
 import NovelForgeCore
 import Observation
+import ShadowAI
 import ShadowAppShell
 import ShadowJobs
 import ShadowStore
@@ -15,7 +16,7 @@ enum GenerationOutcome: Equatable {
   /// Requested for the device that runs it; its line offers Run here.
   case queued
   case runningElsewhere
-  case waitingForConsent
+  case waitingForConsent(AIConsentRequest)
   case refused(PresentedError)
 }
 
@@ -27,6 +28,7 @@ final class GenerationModel {
   private(set) var isStarting = false
   private(set) var notice: GenerationOutcome?
   var failure: PresentedError?
+  var consent: AIConsentRequest?
   var needsProvider = false
   private var awaitingProvider: GenerationKind?
 
@@ -57,9 +59,17 @@ final class GenerationModel {
     switch outcome {
     case .refused(let error): failure = error
     case .started, .queued: break
-    case .runningElsewhere, .waitingForConsent: notice = outcome
+    case .runningElsewhere: notice = outcome
+    case .waitingForConsent(let request):
+      notice = outcome
+      consent = request
     }
     return outcome
+  }
+
+  func consentAllowed(on runtime: JobRuntime?) {
+    notice = nil
+    runtime?.consentAllowed()
   }
 
   /// ChapterList.tsx:147: only a run that is queued, waiting or running blocks asking again; a failed one does not.
@@ -86,8 +96,8 @@ final class GenerationModel {
         return .started
       case .elsewhere: return .runningElsewhere
       }
-    } catch .engine(.consentRequired) {
-      return .waitingForConsent
+    } catch .engine(.consentRequired(let request)) {
+      return .waitingForConsent(request)
     } catch {
       return .refused(GenerationErrors.presented(error))
     }

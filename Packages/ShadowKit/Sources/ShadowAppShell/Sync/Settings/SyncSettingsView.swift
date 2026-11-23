@@ -48,7 +48,7 @@ public struct SyncSettingsView: View {
     }
     .navigationDestination(isPresented: isShowingKeys) { SyncKeysView(sync: model.sync, start: route.wrappedValue ?? .overview) }
     .onDisappear { if !isShowingKeys.wrappedValue { model.leave() } }
-    .environment(\.appIdentity, model.sync.identity)
+    .appIdentity(model.sync.identity)
   }
 
   private var keysSection: some View {

@@ -198,6 +198,34 @@ struct DiagnosticsArchiveTests {
     #expect(contents.contains("\"app\""))
   }
 
+  @Test("should describe only the demo when built in it, with no size of the owner's vaults")
+  func shouldDescribeOnlyTheDemo() async throws {
+    let world = try DiagnosticsWorld(storageName: "Storage")
+    defer { world.remove() }
+    try Data(repeating: 7, count: 4096).write(to: world.vaults.appending(path: "vault.sqlite"))
+    let store = try ShellStore.open()
+    let demo = AIServices.demo(
+      identity: .fixture, script: DemoScript(rules: [], fallback: "A demo answer."), disclosures: [.fixtureText], requestGuard: { _ in nil }, pace: .zero)
+    let demoBuilder = world.builder(
+      sources: DiagnosticsSources(sync: SyncRuntimes(identity: .fixture, factory: nil), ai: demo, primary: store), log: { _, _ in [] })
+
+    let owner = try await world.builder(sources: DiagnosticsSources(primary: store), log: { _, _ in [] }).build()
+    let built = try await demoBuilder.build()
+
+    let ownerSummary = try #require(try JSONSerialization.jsonObject(with: Data(owner.summary.utf8)) as? [String: Any])
+    #expect(ownerSummary["isDemo"] as? Bool == false)
+    #expect((ownerSummary["storage"] as? [String: Any])?["vaultsBytes"] as? Int == 4096)
+    let summary = try #require(try JSONSerialization.jsonObject(with: Data(built.summary.utf8)) as? [String: Any])
+    #expect(summary["isDemo"] as? Bool == true)
+    let storage = try #require(summary["storage"] as? [String: Any])
+    #expect(storage["vaultsBytes"] == nil)
+    #expect(storage["registryVersions"] as? [String: Int] == ["main": 1])
+    #expect((summary["ai"] as? [String: Any])?["isDemo"] as? Bool == true)
+    #expect(!built.summary.contains("vaultsBytes"))
+    #expect(DiagnosticsModel(builder: demoBuilder).describesDemo)
+    #expect(!DiagnosticsModel(builder: world.builder(sources: DiagnosticsSources(primary: store))).describesDemo)
+  }
+
   @Test("should report an unreadable log in the summary and still build the archive")
   func shouldReportAnUnreadableLog() async throws {
     let world = try DiagnosticsWorld(storageName: "Storage")

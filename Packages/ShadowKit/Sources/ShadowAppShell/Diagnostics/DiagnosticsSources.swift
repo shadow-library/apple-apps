@@ -20,7 +20,8 @@ public nonisolated enum DiagnosticsValue: Sendable, Equatable, Encodable {
 }
 
 /// What the app hands the diagnostics report: its sync runtimes, its AI services, its stores (`primary` holds the AI consents) and a summary of its own
-/// work. Every part is optional; a part left out is reported as absent.
+/// work. Every part is optional; a part left out is reported as absent. Sources whose AI services are the demo's describe the demo, so the report then
+/// leaves out what belongs to the owner, and the app's summary must too.
 public struct DiagnosticsSources {
   public typealias Summary = @Sendable () async -> [String: DiagnosticsValue]
 
@@ -39,6 +40,8 @@ public struct DiagnosticsSources {
     self.stores = stores
     self.summary = summary
   }
+
+  var isDemo: Bool { ai?.isDemo == true }
 }
 
 extension EnvironmentValues {

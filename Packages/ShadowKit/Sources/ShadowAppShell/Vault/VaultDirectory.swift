@@ -15,7 +15,18 @@ public nonisolated enum VaultDirectory {
     }
   }
 
-  public static var isHostedByTests: Bool { ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] != nil }
+  /// Debug builds only: runs the app as XCTest hosts it (its vault in memory, sync inert, the demo in a temporary directory), as a UI test launches it.
+  public static let uiTestLaunchArgument = "-ShadowUITest"
+
+  public static var isHostedByTests: Bool {
+    let process = ProcessInfo.processInfo
+    guard process.environment["XCTestConfigurationFilePath"] == nil else { return true }
+    #if DEBUG
+      return process.arguments.contains(uiTestLaunchArgument)
+    #else
+      return false
+    #endif
+  }
 
   /// A Mac has no protection before the first unlock, so an open failure there is always a failure.
   public static func hasUnlockedSinceBoot() async -> Bool {

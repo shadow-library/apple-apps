@@ -45,6 +45,8 @@ final class DiagnosticsModel {
     if !isShown { clear() }
   }
 
+  var describesDemo: Bool { builder.sources?.isDemo == true }
+
   var file: DiagnosticsFile? {
     guard case .ready(let archive) = stage else { return nil }
     return DiagnosticsFile(url: archive.url)

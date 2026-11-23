@@ -40,6 +40,41 @@ struct GenerationModelTests {
     try await world.waitForRun(1)
   }
 
+  @Test func shouldAskForPermissionAtOnceAndStartTheRunOnceItIsAllowed() async throws {
+    let world = try await GenerationWorld.make([GenerationScripts.draft(), GenerationScripts.judge()], granted: false)
+    await world.runtime.launch()
+    let model = GenerationModel(novel: world.novel, chapter: 1)
+
+    let outcome = await model.start(.generate, options: GenerationOptions(), runtime: world.runtime)
+
+    let request = try #require(model.consent)
+    #expect(outcome == .waitingForConsent(request) && model.notice == outcome && model.failure == nil)
+    #expect(request.host == "api.anthropic.com" && world.provider.requests.isEmpty)
+    try await JobsWait.until("the runtime waits for the same permission") { world.runtime.consentNeeded == request }
+
+    model.consentAllowed(on: world.runtime)
+
+    #expect(model.notice == nil && world.runtime.consentNeeded == nil)
+    try await GenerationWorld.grant(.novelText, to: request.host, in: world.store)
+    try await world.waitForRun(1)
+  }
+
+  @Test func shouldStillOfferAllowAndCancelOnTheLineAfterThePermissionWasDeclined() async throws {
+    let world = try await GenerationWorld.make([GenerationScripts.draft(), GenerationScripts.judge()], granted: false)
+    await world.runtime.launch()
+    let declined = GenerationModel(novel: world.novel, chapter: 1)
+    _ = await declined.start(.generate, options: GenerationOptions(), runtime: world.runtime)
+    declined.consent = nil
+    try await JobsWait.until("the runtime waits for permission") { world.runtime.consentNeeded != nil }
+
+    let reopened = GenerationModel(novel: world.novel, chapter: 1)
+    let line = try #require(try await world.status().lines.first { $0.kind == .generate })
+
+    #expect(reopened.notice == nil && reopened.consent == nil)
+    #expect(GenerationModel.isBusy(line) && line.state == .waitingForConsent && line.actions == [.allow, .cancel])
+    #expect(world.provider.requests.isEmpty)
+  }
+
   @Test func shouldShowEachRefusalWithItsHeadline() async throws {
     let world = try await GenerationWorld.make(plan: false)
     await world.runtime.launch()

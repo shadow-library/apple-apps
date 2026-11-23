@@ -78,6 +78,7 @@ nonisolated struct DiagnosticsSummary: Encodable, Sendable {
   let format = Self.format
   let version = Self.currentVersion
   let generatedAt: Date
+  let isDemo: Bool
   let app: App
   let system: System
   let capabilities: [String: Bool]
