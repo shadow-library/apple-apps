@@ -226,6 +226,17 @@
         }
       }
     },
+    "Anthropic recommended": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Anthropic recommended"
+          }
+        }
+      }
+    },
     "Approved": {
       "extractionState": "manual",
       "localizations": {
@@ -376,6 +387,17 @@
           "stringUnit": {
             "state": "translated",
             "value": "Clone…"
+          }
+        }
+      }
+    },
+    "Connect a Provider": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Connect a Provider"
           }
         }
       }
@@ -776,6 +798,17 @@
         }
       }
     },
+    "Not Now": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Not Now"
+          }
+        }
+      }
+    },
     "Not up to date on this device": {
       "extractionState": "manual",
       "localizations": {
@@ -871,6 +904,17 @@
           "stringUnit": {
             "state": "translated",
             "value": "Optional. You can rename it any time."
+          }
+        }
+      }
+    },
+    "Plan a novel chapter by chapter and write it with an AI model from a provider you connect. Your library is stored on your devices and syncs only where you choose.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Plan a novel chapter by chapter and write it with an AI model from a provider you connect. Your library is stored on your devices and syncs only where you choose."
           }
         }
       }
@@ -981,6 +1025,17 @@
           "stringUnit": {
             "state": "translated",
             "value": "Stale"
+          }
+        }
+      }
+    },
+    "Start Writing": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Start Writing"
           }
         }
       }
@@ -1161,6 +1216,17 @@
         }
       }
     },
+    "Try the Demo": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Try the Demo"
+          }
+        }
+      }
+    },
     "Unavailable": {
       "extractionState": "manual",
       "localizations": {
@@ -1201,6 +1267,17 @@
           "stringUnit": {
             "state": "translated",
             "value": "Up to %lld words"
+          }
+        }
+      }
+    },
+    "Welcome to Novel Forge": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Welcome to Novel Forge"
           }
         }
       }

@@ -21,6 +21,7 @@ public struct AISettingsView: View {
           KeySection(model: model, provider: .anthropic, removing: $removing)
           KeySection(model: model, provider: .openRouter, removing: $removing)
           if model.provider == .openRouter || model.storedKeys.contains(.openRouter) { ModelsSection(model: model) }
+          if model.showsUnrestrictedModel { UnrestrictedModelSection(model: model) }
           CapsSection(model: model)
         }
         ConsentSection(model: model)
@@ -105,7 +106,6 @@ private struct KeySection: View {
   @Binding var removing: ModelProviderKind?
 
   var body: some View {
-    @Bindable var model = model
     ShadowGroupedSection {
       VStack(alignment: .leading, spacing: Spacing.space3) {
         if model.storedKeys.contains(provider) {
@@ -123,66 +123,17 @@ private struct KeySection: View {
             }
           }
         }
-        SecureField(text: draft, prompt: keyPrompt) {
-          Text("API key", tableName: "AISettings", bundle: .module)
-        }
-        .shadowField()
-        .textContentType(.password)
-        .autocorrectionDisabled()
-        .disabled(model.entry(provider) == .checking)
-        .onSubmit { Task { await model.submitKey(for: provider) } }
-        feedback
-        HStack {
-          if model.entry(provider) == .checking { ProgressView().controlSize(.small) }
-          Spacer(minLength: Spacing.space3)
-          Button {
-            Task { await model.submitKey(for: provider) }
-          } label: {
-            Text("Check and Save", tableName: "AISettings", bundle: .module)
-          }
-          .disabled(!model.canSubmitKey(provider))
-        }
+        if provider == .openRouter { OpenRouterSignInButton(model: model) }
+        KeyEntryForm(model: model, provider: provider)
       }
       .padding(Spacing.space3)
     } header: {
       Text(verbatim: provider.displayName).shadowFont(.headline)
     }
   }
-
-  private var keyPrompt: Text {
-    model.storedKeys.contains(provider)
-      ? Text("Paste a new key to replace it", tableName: "AISettings", bundle: .module) : Text("Paste your key", tableName: "AISettings", bundle: .module)
-  }
-
-  private var draft: Binding<String> {
-    Binding(
-      get: { model.keyDrafts[provider] ?? "" },
-      set: {
-        model.keyDrafts[provider] = $0
-        model.keyDraftChanged(provider)
-      })
-  }
-
-  @ViewBuilder
-  private var feedback: some View {
-    switch model.entry(provider) {
-    case .idle, .checking: EmptyView()
-    case .rejected(let error), .failed(let error): ShadowValidationMessage(error.text)
-    case .unverified(let error):
-      ShadowCallout(
-        Text("The key could not be checked.", tableName: "AISettings", bundle: .module), message: error.text, intent: .warning, systemImage: "exclamationmark.triangle"
-      ) {
-        Button {
-          Task { await model.saveUnverified(for: provider) }
-        } label: {
-          Text("Save Anyway", tableName: "AISettings", bundle: .module)
-        }
-      }
-    }
-  }
 }
 
-private struct ModelsSection: View {
+struct ModelsSection: View {
   let model: AISettingsModel
 
   var body: some View {

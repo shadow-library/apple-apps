@@ -36,4 +36,13 @@ public nonisolated struct AppIdentity: Equatable, Sendable {
   public var aiSettingsKey: String { "\(id).ai.settings.v1" }
   public var recoveryRecipientKeyPrefix: String { "\(id).sync.recovery-recipient." }
   public var recoveryOfferDeclinedKeyPrefix: String { "\(id).sync.recovery-offer-declined." }
+
+  /// Where OpenRouter's sign-in returns, under the app's id as a URL scheme. `ASWebAuthenticationSession` catches it itself, so no app registers it.
+  public var openRouterCallback: URL {
+    var components = URLComponents()
+    components.scheme = id
+    components.host = "openrouter-sign-in"
+    guard let url = components.url else { preconditionFailure("An app id is always a valid URL scheme.") }
+    return url
+  }
 }

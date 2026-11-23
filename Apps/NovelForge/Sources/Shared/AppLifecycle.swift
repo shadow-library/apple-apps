@@ -19,6 +19,7 @@ final class NovelForgeAppDelegate: NSObject {
   let sync = SyncRuntimes.live(identity: .novelForge)
   let ai = AIServices.novelForge()
   let adult = AdultConfirmationModel.live()
+  let welcome = LibraryWelcomeModel.live()
   private(set) lazy var chats = ChatRuntimes(adult: adult)
   private(set) lazy var jobs = JobRuntimes(host: JobRunHosts.system(), ageGate: adult.gate)
   let retrieval = RetrievalRuntimes()

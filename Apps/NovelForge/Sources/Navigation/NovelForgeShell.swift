@@ -8,6 +8,7 @@ struct NovelForgeShell: View {
   @State private var library: LibraryModel
   @State private var navigators = NovelNavigators()
   @State private var readers = NovelReaders()
+  @Environment(LibraryWelcomeModel.self) private var welcome
   @Environment(\.horizontalSizeClass) private var sizeClass
 
   init(store: VaultStore, ageGate: AgeGate) {
@@ -64,6 +65,8 @@ struct NovelForgeShell: View {
   private var sections: some View {
     if let novel = library.selection {
       NovelSectionList(navigator: navigators.navigator(for: novel))
+    } else if let list = library.state.value, welcome.shows(list) {
+      Color.clear.fillingSurface()
     } else {
       ShadowContentUnavailable(Text("Choose a novel", tableName: "Navigation"), systemImage: "book.closed")
         .fillingSurface()
@@ -72,7 +75,9 @@ struct NovelForgeShell: View {
 
   @ViewBuilder
   private var detail: some View {
-    if let novel = library.selection, let section = navigators.navigator(for: novel).section {
+    if library.selection == nil, let list = library.state.value, welcome.shows(list) {
+      LibraryWelcome(welcome: welcome, library: library).fillingSurface()
+    } else if let novel = library.selection, let section = navigators.navigator(for: novel).section {
       NovelDetailView(navigator: navigators.navigator(for: novel), readers: readers, section: section, context: library.context(for: novel))
         .id(novel)
     } else {

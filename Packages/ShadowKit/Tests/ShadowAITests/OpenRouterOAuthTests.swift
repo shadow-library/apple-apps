@@ -159,6 +159,59 @@ struct OpenRouterOAuthTests {
     }
   }
 
+  @Test("should read the code OpenRouter returns to the callback, whatever the case of its scheme and host")
+  func readsCallbackCode() throws {
+    let callback = try #require(URL(string: "com.shadow.apps.example://openrouter-sign-in"))
+    let returned = try #require(URL(string: "COM.Shadow.Apps.Example://OpenRouter-Sign-In?code=auth_code_abc123&state=ignored"))
+
+    #expect(try OpenRouterOAuth.code(returnedTo: returned, callback: callback) == "auth_code_abc123")
+  }
+
+  @Test("should take a return to the callback with or without a trailing slash as the same address")
+  func readsCallbackWithEitherRootPath() throws {
+    let bare = try #require(URL(string: "com.shadow.apps.example://openrouter-sign-in"))
+    let slashed = try #require(URL(string: "com.shadow.apps.example://openrouter-sign-in/?code=a"))
+
+    #expect(try OpenRouterOAuth.code(returnedTo: slashed, callback: bare) == "a")
+    #expect(try OpenRouterOAuth.code(returnedTo: try #require(URL(string: "com.shadow.apps.example://openrouter-sign-in?code=b")), callback: slashed) == "b")
+  }
+
+  @Test("should send a fresh state and accept the code only with that state returned once")
+  func checksState() throws {
+    let callback = try #require(URL(string: "com.shadow.apps.example://openrouter-sign-in"))
+    let state = OpenRouterOAuth.makeState()
+    let page = try Self.registered.authorizationURL(callback: try #require(URL(string: "shadowlibrary://oauth")), challenge: OpenRouterOAuth.makeChallenge(), state: state)
+
+    #expect(try Self.queryItems(page)["state"] == state)
+    #expect(state.count == 43 && state != OpenRouterOAuth.makeState())
+    #expect(try OpenRouterOAuth.code(returnedTo: try #require(URL(string: "\(callback)?code=a&state=\(state)")), callback: callback, state: state) == "a")
+    for returned in ["\(callback)?code=a", "\(callback)?code=a&state=other", "\(callback)?code=a&state=\(state)&state=\(state)"] {
+      #expect(throws: ModelError.malformedResponse("The sign-in returned another state.")) {
+        try OpenRouterOAuth.code(returnedTo: try #require(URL(string: returned)), callback: callback, state: state)
+      }
+    }
+  }
+
+  @Test(
+    "should refuse a return with no code, an empty or repeated one, or to another address",
+    arguments: [
+      ("com.shadow.apps.example://openrouter-sign-in", "The sign-in returned no code."),
+      ("com.shadow.apps.example://openrouter-sign-in?code=", "The sign-in returned no code."),
+      ("com.shadow.apps.example://openrouter-sign-in?code=%20", "The sign-in returned no code."),
+      ("com.shadow.apps.example://openrouter-sign-in?code=a&code=b", "The sign-in returned no code."),
+      ("com.shadow.apps.example://openrouter-sign-in?error=access_denied", "The sign-in returned no code."),
+      ("otherapp://openrouter-sign-in?code=a", "The sign-in returned to an unexpected address."),
+      ("com.shadow.apps.example://elsewhere?code=a", "The sign-in returned to an unexpected address."),
+      ("com.shadow.apps.example://openrouter-sign-in/extra?code=a", "The sign-in returned to an unexpected address."),
+    ]
+  )
+  func refusesCallbackWithoutCode(returned: String, message: String) throws {
+    let callback = try #require(URL(string: "com.shadow.apps.example://openrouter-sign-in"))
+    let url = try #require(URL(string: returned))
+
+    #expect(throws: ModelError.malformedResponse(message)) { try OpenRouterOAuth.code(returnedTo: url, callback: callback) }
+  }
+
   @Test("should exchange the code and verifier at the documented endpoint for the user's key")
   func exchangesCode() async throws {
     let plain = StubHTTPTransport(json: #"{"key":"sk-or-v1-user","user_id":"user_1"}"#)

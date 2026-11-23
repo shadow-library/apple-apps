@@ -7,6 +7,8 @@ import ShadowStore
 
 public typealias CredentialValidation = @Sendable (ModelProviderKind, ProviderCredential) async throws(ModelError) -> CredentialStatus
 public typealias ModelListing = @Sendable () async throws(ModelError) -> [RemoteModel]
+/// Shows `url` in a web sign-in session and returns the address it ended at once it reached `callbackScheme`; a person closing it is `.cancelled`.
+public typealias WebSignIn = @MainActor (_ url: URL, _ callbackScheme: String) async throws(ModelError) -> URL
 
 public nonisolated struct AISettings: Equatable, Codable, Sendable {
   public var provider: ModelProviderKind = .anthropic
@@ -91,8 +93,11 @@ public final class AIServices {
   public let requestGuard: RequestGuard
   /// The kinds of data the app asks consent to send, as granted consents are listed and revoked.
   public let disclosures: [ConsentDisclosure]
+  public let offersUnrestrictedModel: Bool
   public private(set) var settings: AISettings
   public private(set) var openRouterModels: [RemoteModel] = []
+  /// Changes whenever a key is saved or removed here, so a screen that shows whether a provider is usable knows to ask again.
+  public private(set) var keysRevision = 0
 
   public let keys: ProviderKeys
   /// Nil in the demo, whose settings stay in memory.
@@ -104,17 +109,18 @@ public final class AIServices {
   private let listing: ModelListing
   private let now: @Sendable () -> Date
   private let costLookup: OpenRouterGenerationLookup
+  private let openRouterOAuth: OpenRouterOAuth
   private var settlers: [ObjectIdentifier: CostSettler] = [:]
 
   public convenience init(
     identity: AppIdentity, keys: ProviderKeys, settingsStore: AISettingsStore, transport: any HTTPTransport & HTTPStreamingTransport,
-    disclosures: [ConsentDisclosure], requestGuard: @escaping RequestGuard, validation: CredentialValidation? = nil,
+    disclosures: [ConsentDisclosure], requestGuard: @escaping RequestGuard, offersUnrestrictedModel: Bool = false, validation: CredentialValidation? = nil,
     listing: ModelListing? = nil, now: @escaping @Sendable () -> Date = { Date() }
   ) {
-    let openRouterConfiguration = OpenRouterConfiguration(applicationTitle: identity.displayName)
+    let openRouterConfiguration = Self.openRouterConfiguration(identity: identity)
     self.init(
       identity: identity, keys: keys, settingsStore: settingsStore, settings: settingsStore.load(), transport: transport, disclosures: disclosures,
-      requestGuard: requestGuard, now: now, demo: nil,
+      requestGuard: requestGuard, offersUnrestrictedModel: offersUnrestrictedModel, now: now, demo: nil,
       validation: validation ?? Self.liveValidation(configuration: openRouterConfiguration, transport: transport),
       listing: listing ?? { () async throws(ModelError) -> [RemoteModel] in
         try await OpenRouterProvider(configuration: openRouterConfiguration, credential: keys.credentialLoader(for: .openRouter), transport: transport).models()
@@ -123,14 +129,15 @@ public final class AIServices {
 
   private init(
     identity: AppIdentity, keys: ProviderKeys, settingsStore: AISettingsStore?, settings: AISettings, transport: any HTTPTransport & HTTPStreamingTransport,
-    disclosures: [ConsentDisclosure], requestGuard: @escaping RequestGuard, now: @escaping @Sendable () -> Date, demo: DemoModelProvider?,
-    validation: @escaping CredentialValidation, listing: @escaping ModelListing
+    disclosures: [ConsentDisclosure], requestGuard: @escaping RequestGuard, offersUnrestrictedModel: Bool, now: @escaping @Sendable () -> Date,
+    demo: DemoModelProvider?, validation: @escaping CredentialValidation, listing: @escaping ModelListing
   ) {
-    let openRouterConfiguration = OpenRouterConfiguration(applicationTitle: identity.displayName)
+    let openRouterConfiguration = Self.openRouterConfiguration(identity: identity)
     self.identity = identity
     self.openRouterConfiguration = openRouterConfiguration
     self.requestGuard = requestGuard
     self.disclosures = disclosures
+    self.offersUnrestrictedModel = offersUnrestrictedModel
     self.keys = keys
     self.settingsStore = settingsStore
     self.settings = settings
@@ -140,6 +147,7 @@ public final class AIServices {
     self.listing = listing
     costLookup = OpenRouterGenerationLookup(
       configuration: openRouterConfiguration, credential: keys.credentialLoader(for: .openRouter), transport: transport)
+    openRouterOAuth = OpenRouterOAuth(configuration: openRouterConfiguration, transport: transport)
     guard demo == nil else {
       anthropic = nil
       openRouter = nil
@@ -167,7 +175,7 @@ public final class AIServices {
     settings.provider = .demo
     return AIServices(
       identity: identity, keys: ProviderKeys(store: DemoKeyStore(), origins: [:]), settingsStore: nil, settings: settings, transport: transport,
-      disclosures: disclosures, requestGuard: requestGuard, now: now, demo: provider,
+      disclosures: disclosures, requestGuard: requestGuard, offersUnrestrictedModel: false, now: now, demo: provider,
       validation: { (_, credential) async throws(ModelError) -> CredentialStatus in try await provider.validate(credential) },
       listing: { [] })
   }
@@ -177,14 +185,43 @@ public final class AIServices {
   /// Whether a standard call has a provider to go to: always in the demo, otherwise once the chosen provider's key is stored.
   public var hasUsableProvider: Bool { isDemo || (try? keys.contains(settings.provider)) == true }
 
+  /// OpenRouter routes a pace only to the model the owner assigned it; the other providers route every pace themselves.
+  public var assignsEveryPace: Bool {
+    guard settings.provider == .openRouter else { return true }
+    return Pace.allCases.allSatisfy(assignsModel)
+  }
+
+  /// A pace left empty on purpose is unavailable, not unconnected, so a gate asks only that some pace has a model.
+  public var assignsAnyPace: Bool {
+    guard settings.provider == .openRouter else { return true }
+    return Pace.allCases.contains(where: assignsModel)
+  }
+
+  public var isReadyForStandardCalls: Bool { hasUsableProvider && assignsAnyPace }
+
+  private func assignsModel(_ pace: Pace) -> Bool {
+    !(settings.assignments.models[pace]?.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ?? true)
+  }
+
+  public func saveKey(_ credential: ProviderCredential, for provider: ModelProviderKind) throws(SecureStoreError) {
+    try keys.save(credential, for: provider)
+    keysRevision += 1
+  }
+
+  public func removeKey(_ provider: ModelProviderKind) throws(SecureStoreError) {
+    try keys.remove(provider)
+    keysRevision += 1
+  }
+
   public nonisolated static func keychain(identity: AppIdentity) -> KeychainStore { KeychainStore(service: identity.aiKeychainService, scope: .synced()) }
 
   public static func live(
-    identity: AppIdentity, disclosures: [ConsentDisclosure], requestGuard: @escaping RequestGuard, defaults: UserDefaults = .standard
+    identity: AppIdentity, disclosures: [ConsentDisclosure], requestGuard: @escaping RequestGuard, offersUnrestrictedModel: Bool = false,
+    defaults: UserDefaults = .standard
   ) -> AIServices {
     AIServices(
       identity: identity, keys: .standard(store: keychain(identity: identity)), settingsStore: AISettingsStore(identity: identity, defaults: defaults),
-      transport: URLSessionTransport(), disclosures: disclosures, requestGuard: requestGuard)
+      transport: URLSessionTransport(), disclosures: disclosures, requestGuard: requestGuard, offersUnrestrictedModel: offersUnrestrictedModel)
   }
 
   public func router(store: VaultStore) -> TaskRouter {
@@ -218,6 +255,18 @@ public final class AIServices {
 
   public func validate(_ credential: ProviderCredential, for provider: ModelProviderKind) async throws(ModelError) -> CredentialStatus {
     try await validation(provider, credential)
+  }
+
+  /// OpenRouter's PKCE sign-in; it saves nothing, so the caller stores the key as it would a pasted one.
+  public func signInWithOpenRouter(using authenticate: WebSignIn) async throws(ModelError) -> ProviderCredential {
+    let callback = identity.openRouterCallback
+    let challenge = OpenRouterOAuth.makeChallenge()
+    let state = OpenRouterOAuth.makeState()
+    let page = try openRouterOAuth.authorizationURL(callback: callback, challenge: challenge, state: state)
+    let returned = try await authenticate(page, callback.scheme ?? "")
+    let key = try await openRouterOAuth.exchange(code: try OpenRouterOAuth.code(returnedTo: returned, callback: callback, state: state), challenge: challenge)
+    guard let credential = keys.makeCredential(key, for: .openRouter) else { throw .invalidRequest("OpenRouter is not a provider of this app.") }
+    return credential
   }
 
   public func refreshOpenRouterModels() async throws(ModelError) {
@@ -265,6 +314,10 @@ public final class AIServices {
     try await store.write { transaction in
       try AIConsent.decide(state, provider: provider, dataClass: dataClass, summary: disclosure, atMillis: millis, in: &transaction)
     }
+  }
+
+  private static func openRouterConfiguration(identity: AppIdentity) -> OpenRouterConfiguration {
+    OpenRouterConfiguration(applicationTitle: identity.displayName, callbackSchemes: Set([identity.openRouterCallback.scheme].compactMap { $0 }))
   }
 
   private static func liveValidation(configuration: OpenRouterConfiguration, transport: any HTTPTransport & HTTPStreamingTransport) -> CredentialValidation {

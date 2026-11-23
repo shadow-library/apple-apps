@@ -11,6 +11,8 @@ struct LibrarySidebar: View {
   #endif
 
   @Bindable var library: LibraryModel
+  @Environment(LibraryWelcomeModel.self) private var welcome
+  @Environment(\.horizontalSizeClass) private var sizeClass
 
   var body: some View {
     content
@@ -77,8 +79,11 @@ struct LibrarySidebar: View {
       }
     }
     .listStyle(.sidebar)
+    .onChange(of: list, initial: true) { welcome.libraryChanged(list) }
     .overlay {
-      if list.novels.isEmpty && list.archived.isEmpty {
+      if welcome.shows(list) && NovelLayout(sizeClass: sizeClass) == .compact {
+        LibraryWelcome(welcome: welcome, library: library)
+      } else if list.novels.isEmpty && list.archived.isEmpty {
         ShadowContentUnavailable(
           Text("No novels yet", tableName: "Library"), systemImage: "book.closed",
           message: Text("Start a novel from a title and, if you like, your notes.", tableName: "Library")

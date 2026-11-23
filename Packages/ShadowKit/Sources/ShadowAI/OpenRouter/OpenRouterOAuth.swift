@@ -62,18 +62,45 @@ public struct OpenRouterOAuth: Sendable {
     return Challenge(validVerifier: base64URL(Data(bytes)))
   }
 
-  public func authorizationURL(callback: URL, challenge: Challenge) throws(ModelError) -> URL {
+  /// A fresh value for the documented `state` parameter, which OpenRouter returns unchanged with the code.
+  public static func makeState() -> String {
+    var generator = SystemRandomNumberGenerator()
+    return base64URL(Data((0..<verifierByteCount).map { _ in UInt8.random(in: .min ... .max, using: &generator) }))
+  }
+
+  public func authorizationURL(callback: URL, challenge: Challenge, state: String? = nil) throws(ModelError) -> URL {
     guard isAcceptableCallback(callback) else { throw .invalidRequest("The sign-in callback must be https, a loopback address or a registered app scheme.") }
     guard configuration.hasSecureOrigin, var components = URLComponents(url: configuration.authorizationURL, resolvingAgainstBaseURL: false) else {
       throw .invalidRequest("The sign-in origin must be https.")
     }
-    components.percentEncodedQueryItems = [
-      URLQueryItem(name: "callback_url", value: Self.percentEncoded(callback.absoluteString)),
-      URLQueryItem(name: "code_challenge", value: Self.percentEncoded(challenge.challenge)),
-      URLQueryItem(name: "code_challenge_method", value: Self.percentEncoded(challenge.method)),
-    ]
+    components.percentEncodedQueryItems =
+      [
+        URLQueryItem(name: "callback_url", value: Self.percentEncoded(callback.absoluteString)),
+        URLQueryItem(name: "code_challenge", value: Self.percentEncoded(challenge.challenge)),
+        URLQueryItem(name: "code_challenge_method", value: Self.percentEncoded(challenge.method)),
+      ] + [state].compactMap { $0 }.map { URLQueryItem(name: "state", value: Self.percentEncoded($0)) }
     guard let url = components.url else { throw .invalidRequest("The sign-in address could not be built.") }
     return url
+  }
+
+  /// The authorization code OpenRouter returns to `callback` as its one `code` query item, with the `state` it was sent, if any; a return to any other
+  /// address carries none.
+  public static func code(returnedTo url: URL, callback: URL, state: String? = nil) throws(ModelError) -> String {
+    guard url.scheme?.lowercased() == callback.scheme?.lowercased(), url.host()?.lowercased() == callback.host()?.lowercased(),
+      normalizedPath(url) == normalizedPath(callback)
+    else { throw .malformedResponse("The sign-in returned to an unexpected address.") }
+    let items = URLComponents(url: url, resolvingAgainstBaseURL: false)?.queryItems ?? []
+    if let state, items.filter({ $0.name == "state" }).map(\.value) != [state] { throw .malformedResponse("The sign-in returned another state.") }
+    let codes = items.filter { $0.name == "code" }
+    guard codes.count == 1, let code = codes[0].value?.trimmingCharacters(in: .whitespacesAndNewlines), !code.isEmpty else {
+      throw .malformedResponse("The sign-in returned no code.")
+    }
+    return code
+  }
+
+  private static func normalizedPath(_ url: URL) -> String {
+    let path = url.path(percentEncoded: true)
+    return path.isEmpty ? "/" : path
   }
 
   public func exchange(code: String, challenge: Challenge) async throws(ModelError) -> String {

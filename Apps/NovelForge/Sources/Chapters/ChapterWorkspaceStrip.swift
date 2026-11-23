@@ -20,6 +20,7 @@ struct ChapterWorkspaceStrip: View {
   @State private var stopping: ChapterJobLine?
   @State private var failure: PresentedError?
   @State private var consent: AIConsentRequest?
+  @State private var gate = ProviderGate()
 
   private static let fallbackClock = LeaseClock(trusted: nil)
 
@@ -73,6 +74,11 @@ struct ChapterWorkspaceStrip: View {
       if let detail = failure.detail { Text(verbatim: detail) }
     }
     .aiConsentSheet($consent, services: services, store: context.store) { runtime?.consentAllowed() }
+    .aiProviderSheet(isPresented: $gate.needsProvider, services: services) { Task { await gate.providerConnected() } }
+  }
+
+  private func startingHere(_ action: @escaping @MainActor () async -> PresentedError?) {
+    Task { await gate.perform(providerReady: services.isReadyForStandardCalls) { failure = await action() } }
   }
 
   private var isStopping: Binding<Bool> {
@@ -119,13 +125,13 @@ struct ChapterWorkspaceStrip: View {
     switch action {
     case .runHere:
       Button {
-        Task { failure = await runtime.runHere(line.job) }
+        startingHere { await runtime.runHere(line.job) }
       } label: {
         JobDisplay.runHere
       }
     case .resume:
       Button {
-        Task { failure = await runtime.resume(line.job) }
+        startingHere { await runtime.resume(line.job) }
       } label: {
         JobDisplay.resume
       }
@@ -143,13 +149,13 @@ struct ChapterWorkspaceStrip: View {
       }
     case .tryAgain:
       Button {
-        Task { failure = await runtime.tryAgain(line.job) }
+        startingHere { await runtime.tryAgain(line.job) }
       } label: {
         Text("Try Again", tableName: "Jobs")
       }
     case .retryRead:
       Button {
-        Task { failure = await runtime.retryRead(novel: context.novel, chapter: chapter, shown: line.job) }
+        startingHere { await runtime.retryRead(novel: context.novel, chapter: chapter, shown: line.job) }
       } label: {
         Text("Read Again", tableName: "Jobs")
       }

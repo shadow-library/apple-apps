@@ -257,6 +257,29 @@ struct PlanCardTests {
     #expect(model.refusal == JobsErrors.notRunningHere)
   }
 
+  @Test("should ask for a provider before planning with none, keeping the panel and the author's line, then plan once one is connected")
+  func shouldAskForAProviderBeforePlanning() async throws {
+    let world = try await PlanWorld.make(plans: 0)
+    let model = PlanStartModel(context: world.context)
+    let task = observing { await model.observe(now: world.runtime.clock.now()) }
+    defer { task.cancel() }
+    try await ChatWait.until("the next chapter is read") { model.state.value?.next == 1 }
+    let recording = RecordingRequester()
+    model.open()
+    model.direction = PlanWorld.intent
+
+    await model.plan(using: recording.requester, providerReady: false)
+
+    #expect(model.needsProvider && recording.asked.isEmpty)
+    #expect(model.isOpen && model.direction == PlanWorld.intent && model.refusal == nil)
+
+    model.needsProvider = false
+    await model.plan(using: recording.requester, providerReady: true)
+
+    #expect(recording.asked == [ChapterPlanJobRequest(novel: world.novel, chapter: 1, steer: .author(PlanWorld.intent))])
+    #expect(!model.needsProvider)
+  }
+
   @Test func shouldGiveEveryRefusalOfAPlanAHeadline() {
     let generic = String(localized: "Something went wrong.", table: "PlanCard")
     let refusals: [ChapterPlanError] = [

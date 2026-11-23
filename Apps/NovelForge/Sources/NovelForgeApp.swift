@@ -30,6 +30,7 @@ struct NovelForgeApp: App {
         .environment(ai)
         .environment(chats)
         .environment(adult)
+        .environment(delegate.welcome)
         .environment(jobs)
         .environment(sync)
         .environment(settingsTabs)

@@ -41,25 +41,32 @@ final class ChatRuntime {
   private var novels: [UUID: ChatNovelModel] = [:]
   private let settler: CostSettler?
   private let access: UnrestrictedAccess
+  private let providerReady: () -> Bool
   private var launching: Task<Void, Never>?
 
-  init(store: VaultStore, engine: ChatTurnEngine, settler: CostSettler? = nil, access: UnrestrictedAccess = .none) {
+  init(
+    store: VaultStore, engine: ChatTurnEngine, settler: CostSettler? = nil, access: UnrestrictedAccess = .none, providerReady: @escaping () -> Bool = { true }
+  ) {
     self.store = store
     self.engine = engine
     self.settler = settler
     self.access = access
+    self.providerReady = providerReady
   }
 
   static func live(store: VaultStore, services: AIServices, adult: AdultConfirmationModel) -> ChatRuntime {
     let engine = ChatTurnEngine(
       store: store, router: { await services.router(store: store) }, consent: ConsentDisclosure.novelText.requirement, ageGate: adult.gate,
       embedders: services.embedders)
-    return ChatRuntime(store: store, engine: engine, settler: services.settler(for: store), access: .live(services: services, adult: adult))
+    return ChatRuntime(
+      store: store, engine: engine, settler: services.settler(for: store), access: .live(services: services, adult: adult),
+      providerReady: { services.isReadyForStandardCalls })
   }
 
   func model(for context: NovelContext) -> ChatNovelModel {
     let model = novels[context.novel] ?? ChatNovelModel(context: context, engine: engine, access: access)
     model.turnEnded = { [settler] in settler?.settle() }
+    model.providerReady = providerReady
     novels[context.novel] = model
     return model
   }

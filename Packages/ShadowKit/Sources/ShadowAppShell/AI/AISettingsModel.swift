@@ -14,10 +14,17 @@ final class AISettingsModel {
     case failed(PresentedError)
   }
 
+  enum SignIn: Equatable {
+    case idle
+    case signingIn
+    case failed(PresentedError)
+  }
+
   let services: AIServices
   let store: VaultStore?
   var keyDrafts: [ModelProviderKind: String] = [:]
   var modelDrafts: [Pace: String] = [:]
+  var unrestrictedDraft = ""
   var dailyText = ""
   var monthlyText = ""
   var failure: PresentedError?
@@ -27,7 +34,9 @@ final class AISettingsModel {
   private(set) var consentsUnavailable = false
   private(set) var modelsFailure: PresentedError?
   private(set) var isLoadingModels = false
+  private(set) var signIn = SignIn.idle
   private var keyGenerations: [ModelProviderKind: Int] = [:]
+  @ObservationIgnored var keySaved: ((ModelProviderKind) -> Void)?
 
   init(services: AIServices, store: VaultStore?) {
     self.services = services
@@ -68,6 +77,18 @@ final class AISettingsModel {
   var monthlyIssue: SpendCapIssue? {
     guard case .failure(let issue) = SpendCapInput.parse(monthlyText) else { return nil }
     return issue
+  }
+
+  var showsUnrestrictedModel: Bool { services.offersUnrestrictedModel && !services.isDemo }
+
+  var unrestrictedIssue: ModelIdentifierIssue? {
+    guard case .failure(let issue) = ModelIdentifierInput.parse(unrestrictedDraft) else { return nil }
+    return issue
+  }
+
+  var canSaveUnrestricted: Bool {
+    guard showsUnrestrictedModel, case .success(let model) = ModelIdentifierInput.parse(unrestrictedDraft) else { return false }
+    return model != services.settings.assignments.unrestricted
   }
 
   var hasModelChanges: Bool { currentAssignments() != services.settings.assignments.models }
@@ -125,7 +146,7 @@ final class AISettingsModel {
     keyGenerations[provider, default: 0] += 1
     entries[provider] = nil
     do {
-      try services.keys.remove(provider)
+      try services.removeKey(provider)
     } catch {
       failure = AIErrors.presented(error, app: services.identity)
       return
@@ -135,6 +156,28 @@ final class AISettingsModel {
     guard provider == .openRouter else { return }
     services.forgetOpenRouterModels()
     modelsFailure = nil
+  }
+
+  func saveUnrestricted() {
+    guard canSaveUnrestricted, case .success(let model) = ModelIdentifierInput.parse(unrestrictedDraft) else { return }
+    services.update { $0.assignments.unrestricted = model }
+    unrestrictedDraft = model ?? ""
+  }
+
+  func signInWithOpenRouter(using authenticate: WebSignIn) async {
+    guard signIn != .signingIn, !services.isDemo else { return }
+    signIn = .signingIn
+    let generation = keyGenerations[.openRouter, default: 0]
+    let credential: ProviderCredential
+    do {
+      credential = try await services.signInWithOpenRouter(using: authenticate)
+    } catch {
+      signIn = error == .cancelled ? .idle : .failed(Self.signInFailure(error))
+      return
+    }
+    signIn = .idle
+    guard keyGenerations[.openRouter, default: 0] == generation else { return }
+    await persist(credential, for: .openRouter)
   }
 
   func saveModels() {
@@ -195,7 +238,7 @@ final class AISettingsModel {
 
   private func persist(_ credential: ProviderCredential, for provider: ModelProviderKind) async {
     do {
-      try services.keys.save(credential, for: provider)
+      try services.saveKey(credential, for: provider)
     } catch {
       entries[provider] = .failed(AIErrors.presented(error, app: services.identity))
       return
@@ -203,6 +246,7 @@ final class AISettingsModel {
     keyDrafts[provider] = nil
     entries[provider] = nil
     storedKeys.insert(provider)
+    keySaved?(provider)
     guard provider == .openRouter else { return }
     await loadModels()
   }
@@ -227,8 +271,18 @@ final class AISettingsModel {
   private func resetDrafts() {
     let settings = services.settings
     modelDrafts = Dictionary(uniqueKeysWithValues: Pace.allCases.map { ($0, settings.assignments.models[$0] ?? "") })
+    unrestrictedDraft = settings.assignments.unrestricted ?? ""
     dailyText = SpendCapInput.text(for: settings.limits.daily)
     monthlyText = SpendCapInput.text(for: settings.limits.monthly)
+  }
+
+  private static func signInFailure(_ error: ModelError) -> PresentedError {
+    switch error {
+    case .transport: PresentedError(headline: AIErrors.headline(for: error), detail: error.code)
+    default:
+      PresentedError(
+        headline: String(localized: "Signing in with OpenRouter did not finish. Try again, or paste a key instead.", table: "AISettings", bundle: .module), detail: error.code)
+    }
   }
 
   private static var malformedKey: PresentedError {

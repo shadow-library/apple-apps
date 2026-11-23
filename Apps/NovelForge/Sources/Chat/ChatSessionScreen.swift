@@ -17,6 +17,9 @@ struct ChatSessionScreen: View {
       .aiConsentSheet($model.consentRequest, services: services, store: model.context.store) {
         Task { await model.consentAllowed() }
       }
+      .aiProviderSheet(isPresented: $model.needsProvider, services: services) {
+        Task { await model.providerConnected() }
+      }
   }
 
   @ViewBuilder

@@ -45,11 +45,13 @@ final class ChatSessionModel {
   let context: NovelContext
   var draft = ""
   var consentRequest: AIConsentRequest?
+  var needsProvider = false
   var notice: ChatNotice?
   /// What a message with no recorded mode follows: the novel's, standard unless known unrestricted (chat-selection.ts:22).
   var novelMode = ContentMode.standard
   /// The novel's offer, read when it is shown or a message is sent, so a change of AI settings or of the age confirmation holds at once.
   @ObservationIgnored var offering: () -> ChatReplyOffer = { .none }
+  @ObservationIgnored var providerReady: () -> Bool = { true }
   @ObservationIgnored var turnEnded: (() -> Void)?
   let composer = ChatComposerState()
   private(set) var activity = ChatTurnActivity.idle
@@ -64,6 +66,7 @@ final class ChatSessionModel {
   private let observer = ReadObserver<ChatTranscriptSnapshot>()
   @ObservationIgnored private var following: Task<Void, Never>?
   @ObservationIgnored private var awaitingConsent: ChatTurnRequest?
+  @ObservationIgnored private var awaitingProvider: ChatTurnRequest?
   @ObservationIgnored private var activityTicket = 0
 
   init(session: UUID, context: NovelContext, engine: ChatTurnEngine) {
@@ -208,6 +211,12 @@ final class ChatSessionModel {
     await perform(request)
   }
 
+  func providerConnected() async {
+    guard let request = awaitingProvider else { return }
+    awaitingProvider = nil
+    await perform(request)
+  }
+
   func refreshActivity() async {
     activityTicket += 1
     let ticket = activityTicket
@@ -219,6 +228,11 @@ final class ChatSessionModel {
   @discardableResult
   private func perform(_ request: ChatTurnRequest) async -> Bool {
     guard !isBusy else { return false }
+    guard asksForUnrestricted(request) || providerReady() else {
+      awaitingProvider = request
+      needsProvider = true
+      return false
+    }
     isBusy = true
     notice = nil
     defer { isBusy = false }
@@ -308,6 +322,12 @@ final class ChatSessionModel {
   private func streamed(_ turn: LocalTurn) -> StreamedTurn {
     guard let live, live.turn == turn.id else { return StreamedTurn(turn: turn.id, startedAt: turn.startedAt) }
     return live
+  }
+
+  /// Unrestricted writing goes to OpenRouter whatever the standard provider is, so the standard provider's check does not apply to it.
+  private func asksForUnrestricted(_ request: ChatTurnRequest) -> Bool {
+    guard case .send(_, _, let choices) = request else { return false }
+    return (choices.contentMode ?? novelMode) == .unrestricted
   }
 
   private func asksForUnrestricted(_ message: UUID) -> Bool {

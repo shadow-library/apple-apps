@@ -66,6 +66,7 @@ final class ChatNovelModel {
   @ObservationIgnored var turnEnded: (() -> Void)? {
     didSet { for session in sessions.values { session.turnEnded = turnEnded } }
   }
+  @ObservationIgnored var providerReady: () -> Bool = { true }
   @ObservationIgnored private var sessions: [UUID: ChatSessionModel] = [:]
   @ObservationIgnored private var created: UUID?
   @ObservationIgnored private var startRequest = 0
@@ -119,6 +120,7 @@ final class ChatNovelModel {
     model.novelMode = novelMode
     model.turnEnded = turnEnded
     model.offering = { [weak self] in self?.replyOffer ?? .none }
+    model.providerReady = { [weak self] in self?.providerReady() ?? true }
     sessions[id] = model
     return model
   }

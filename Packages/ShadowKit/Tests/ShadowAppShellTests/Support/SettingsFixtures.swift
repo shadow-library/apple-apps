@@ -63,13 +63,16 @@ enum SettingsFixtures {
     { () async throws(ModelError) -> [RemoteModel] in throw error }
   }
 
-  static func world(validation: @escaping CredentialValidation = { _, _ in .valid(label: nil) }, listing: @escaping ModelListing = { [] }) throws -> SettingsWorld {
+  static func world(
+    validation: @escaping CredentialValidation = { _, _ in .valid(label: nil) }, listing: @escaping ModelListing = { [] },
+    transport: any HTTPTransport & HTTPStreamingTransport = URLSessionTransport(), offersUnrestrictedModel: Bool = false
+  ) throws -> SettingsWorld {
     let suite = "ShadowAppShellSettingsTests-\(UUID().uuidString)"
     guard let defaults = UserDefaults(suiteName: suite) else { preconditionFailure("A defaults suite is always available.") }
     let secure = FakeSecureStore()
     let services = AIServices(
-      identity: .fixture, keys: .standard(store: secure), settingsStore: AISettingsStore(identity: .fixture, defaults: defaults), transport: URLSessionTransport(),
-      disclosures: [.fixtureText], requestGuard: { _ in nil }, validation: validation, listing: listing)
+      identity: .fixture, keys: .standard(store: secure), settingsStore: AISettingsStore(identity: .fixture, defaults: defaults), transport: transport,
+      disclosures: [.fixtureText], requestGuard: { _ in nil }, offersUnrestrictedModel: offersUnrestrictedModel, validation: validation, listing: listing)
     return SettingsWorld(services: services, secure: secure, defaults: defaults, suite: suite, store: try ShellStore.open())
   }
 }

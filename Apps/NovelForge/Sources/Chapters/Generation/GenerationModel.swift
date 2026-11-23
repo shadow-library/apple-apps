@@ -27,10 +27,24 @@ final class GenerationModel {
   private(set) var isStarting = false
   private(set) var notice: GenerationOutcome?
   var failure: PresentedError?
+  var needsProvider = false
+  private var awaitingProvider: GenerationKind?
 
   init(novel: UUID, chapter: Int) {
     self.novel = novel
     self.chapter = chapter
+  }
+
+  func ask(_ kind: GenerationKind, providerReady: Bool) -> GenerationKind? {
+    guard !providerReady else { return kind }
+    awaitingProvider = kind
+    needsProvider = true
+    return nil
+  }
+
+  func providerConnected() -> GenerationKind? {
+    defer { awaitingProvider = nil }
+    return awaitingProvider
   }
 
   @discardableResult

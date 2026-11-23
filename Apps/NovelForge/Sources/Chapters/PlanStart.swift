@@ -28,6 +28,7 @@ struct PlanStart: View {
   @State private var stopping: ChapterJobLine?
   @State private var failure: PresentedError?
   @State private var consent: AIConsentRequest?
+  @State private var gate = ProviderGate()
 
   private static let fallbackClock = LeaseClock(trusted: nil)
   private static let cardsAnchor = "plan-start-cards"
@@ -79,6 +80,11 @@ struct PlanStart: View {
       Text("It stops on every device. You can plan the chapter again later.", tableName: "PlanCard")
     }
     .aiConsentSheet($consent, services: services, store: context.store) { runtime?.consentAllowed() }
+    .aiProviderSheet(isPresented: $gate.needsProvider, services: services) { Task { await gate.providerConnected() } }
+    .aiProviderSheet(isPresented: $model.needsProvider, services: services) {
+      let runtime = runtimes.existing(for: context.store)
+      Task { await model.plan(using: requester(runtime), providerReady: services.isReady(toStart: .plan, on: runtime)) }
+    }
   }
 
   private func content(runtime: JobRuntime?) -> some View {
@@ -154,7 +160,7 @@ struct PlanStart: View {
       HStack(spacing: Spacing.space2) {
         Button {
           failure = nil
-          Task { await model.plan(using: requester(runtime)) }
+          Task { await model.plan(using: requester(runtime), providerReady: services.isReady(toStart: .plan, on: runtime)) }
         } label: {
           Text("Make the Plan", tableName: "PlanCard")
         }
@@ -211,15 +217,13 @@ struct PlanStart: View {
     switch action {
     case .runHere:
       Button {
-        failure = nil
-        Task { failure = await runtime.runHere(line.job) }
+        startingHere { await runtime.runHere(line.job) }
       } label: {
         JobDisplay.runHere
       }
     case .resume:
       Button {
-        failure = nil
-        Task { failure = await runtime.resume(line.job) }
+        startingHere { await runtime.resume(line.job) }
       } label: {
         JobDisplay.resume
       }
@@ -238,8 +242,7 @@ struct PlanStart: View {
       }
     case .tryAgain:
       Button {
-        failure = nil
-        Task { failure = await runtime.tryAgain(line.job) }
+        startingHere { await runtime.tryAgain(line.job) }
       } label: {
         Text("Try Again", tableName: "PlanCard")
       }
@@ -261,6 +264,11 @@ struct PlanStart: View {
   static func awaitsAnswer(marks: [ChatTurnMark]) -> Bool {
     guard let latest = marks.filter({ $0.asks != nil }).max(by: { $0.position < $1.position }), latest.asks == true else { return false }
     return !marks.contains { $0.isAuthor && $0.position > latest.position }
+  }
+
+  private func startingHere(_ action: @escaping @MainActor () async -> PresentedError?) {
+    failure = nil
+    Task { await gate.perform(providerReady: services.isReadyForStandardCalls) { failure = await action() } }
   }
 
   private func requester(_ runtime: JobRuntime?) -> PlanStartModel.Requester? {
@@ -360,6 +368,7 @@ final class PlanStartModel {
   private(set) var isOpen = false
   var direction = ""
   private(set) var isRequesting = false
+  var needsProvider = false
   private(set) var refusal: PresentedError?
   /// PlanCard.tsx:91: every plan card listed here since the panel appeared, so a saved or discarded one stays with its status, as in the reference's thread.
   private(set) var cards: [UUID] = []
@@ -394,10 +403,14 @@ final class PlanStartModel {
   }
 
   /// PlanStart.tsx:45-48: the chapter shown as next, with the author's line, if any, as their own intent. A refusal keeps the panel and the line open.
-  func plan(using requester: Requester?) async {
+  func plan(using requester: Requester?, providerReady: Bool = true) async {
     guard !isRequesting, let chapter = state.value?.next else { return }
     guard let requester else {
       refusal = JobsErrors.notRunningHere
+      return
+    }
+    guard providerReady else {
+      needsProvider = true
       return
     }
     let words = direction.trimmingCharacters(in: .whitespacesAndNewlines)

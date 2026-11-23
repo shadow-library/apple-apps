@@ -12,6 +12,7 @@ struct GenerationControls: View {
   let chapter: Int
   let row: ChapterRow?
   @Environment(JobRuntimes.self) private var runtimes
+  @Environment(AIServices.self) private var services
   @State private var jobs = ReadObserver<ChapterJobBoard>()
   @State private var model: GenerationModel
   @State private var reread = 0
@@ -54,6 +55,7 @@ struct GenerationControls: View {
     .sheet(item: $options) { kind in
       GenerationOptionsSheet(kind: kind, chapter: chapter) { options in Task { await model.start(kind, options: options, runtime: runtimes.existing(for: context.store)) } }
     }
+    .aiProviderSheet(isPresented: $model.needsProvider, services: services) { options = model.providerConnected() }
     .alert(Text(verbatim: model.failure?.headline ?? ""), isPresented: isFailing, presenting: model.failure) { _ in
       Button {
         model.failure = nil
@@ -72,7 +74,8 @@ struct GenerationControls: View {
 
   private func actions(busy: Bool) -> some View {
     Button {
-      options = hasDraft ? .regenerate : .generate
+      let runtime = runtimes.existing(for: context.store)
+      options = model.ask(hasDraft ? .regenerate : .generate, providerReady: services.isReady(toStart: .generate, on: runtime))
     } label: {
       Label(
         title: { if hasDraft { Text("Regenerate…", tableName: "Generation") } else { Text("Generate…", tableName: "Generation") } },

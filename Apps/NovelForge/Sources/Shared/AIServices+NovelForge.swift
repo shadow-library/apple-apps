@@ -8,8 +8,14 @@ extension AIServices {
   private static let sentenceEmbedders: any EmbedderProvider = NLSentenceEmbedders()
 
   static func novelForge(defaults: UserDefaults = .standard) -> AIServices {
-    live(identity: .novelForge, disclosures: ConsentDisclosure.novelForge, requestGuard: { ModelRequestGuard.hardLine(for: $0) }, defaults: defaults)
+    live(
+      identity: .novelForge, disclosures: ConsentDisclosure.novelForge, requestGuard: { ModelRequestGuard.hardLine(for: $0) },
+      offersUnrestrictedModel: UnrestrictedWriting.isAvailable, defaults: defaults)
   }
 
   var embedders: any EmbedderProvider { Self.sentenceEmbedders }
+
+  func isReady(toStart kind: NovelJobKind, on runtime: JobRuntime?) -> Bool {
+    runtime?.startsWhenAsked(kind) == false || isReadyForStandardCalls
+  }
 }

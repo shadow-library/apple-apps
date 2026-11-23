@@ -760,6 +760,146 @@
           }
         }
       }
+    },
+    "%@ writes with a model from a provider you choose, under your own account. Nothing is sent until you allow it.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ writes with a model from a provider you choose, under your own account. Nothing is sent until you allow it."
+          }
+        }
+      }
+    },
+    "Connect an AI Provider": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Connect an AI Provider"
+          }
+        }
+      }
+    },
+    "Not Now": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Not Now"
+          }
+        }
+      }
+    },
+    "Or paste a key you made on OpenRouter's site.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Or paste a key you made on OpenRouter's site."
+          }
+        }
+      }
+    },
+    "Recommended: paste an Anthropic API key. It is checked at no cost before it is saved.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Recommended: paste an Anthropic API key. It is checked at no cost before it is saved."
+          }
+        }
+      }
+    },
+    "Save Model": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Save Model"
+          }
+        }
+      }
+    },
+    "Sign In with OpenRouter": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sign In with OpenRouter"
+          }
+        }
+      }
+    },
+    "Signing in with OpenRouter did not finish. Try again, or paste a key instead.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Signing in with OpenRouter did not finish. Try again, or paste a key instead."
+          }
+        }
+      }
+    },
+    "Unrestricted writing always goes to OpenRouter with your OpenRouter key, to the model typed here. Leave it empty to leave unrestricted writing unavailable.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Unrestricted writing always goes to OpenRouter with your OpenRouter key, to the model typed here. Leave it empty to leave unrestricted writing unavailable."
+          }
+        }
+      }
+    },
+    "Unrestricted writing model": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Unrestricted writing model"
+          }
+        }
+      }
+    },
+    "Use Your Saved %@ Key": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Use Your Saved %@ Key"
+          }
+        }
+      }
+    },
+    "Signing in with OpenRouter": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Signing in with OpenRouter"
+          }
+        }
+      }
+    },
+    "Choose a model for each pace to finish connecting OpenRouter.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Choose a model for each pace to finish connecting OpenRouter."
+          }
+        }
+      }
+    },
+    "OpenRouter also needs a model for each pace, chosen here once it is connected.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "OpenRouter also needs a model for each pace, chosen here once it is connected."
+          }
+        }
+      }
     }
   },
   "version": "1.0"
