@@ -213,14 +213,14 @@ struct ShadowToastCountdownTests {
 @MainActor
 struct ShadowToastCenterTests {
   @Test("should hand off to the next toast after the current one is dismissed")
-  func handoff() async throws {
+  func handoff() async {
     let center = ShadowToastCenter()
     center.show(ShadowToast("Saved to your library", id: "saved"))
     center.show(ShadowToast("Chapter deleted", id: "deleted"))
     #expect(center.current?.id == "saved")
     center.dismiss(id: "saved")
     #expect(center.current == nil)
-    try await Task.sleep(for: ShadowToastCenter.handoffDelay * 3)
+    await center.handoffSettled()
     #expect(center.current?.id == "deleted")
   }
 

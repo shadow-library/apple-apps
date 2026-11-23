@@ -32,6 +32,10 @@ public final class ShadowToastCenter {
     handoff?.cancel()
     queue.removeAll()
   }
+
+  func handoffSettled() async {
+    await handoff?.value
+  }
 }
 
 public struct ShadowShowToastAction {
