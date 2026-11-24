@@ -45,8 +45,8 @@ struct ReminderPlanTests {
     halt: ReplayHalt? = nil
   ) -> ReminderSources {
     ReminderSources(
-      zone: zone, wakeWindow: wake, quests: quests, inactiveQuests: inactiveQuests, logs: logs, subscriptions: subscriptions, confirmations: confirmations,
-      halt: halt)
+      zone: zone, wakeWindow: wake, quests: quests, inactiveQuests: inactiveQuests, logs: logs, subscriptions: subscriptions, pausedSubscriptions: [],
+      confirmations: confirmations, halt: halt)
   }
 
   private static func settledQuest(_ quest: UUID = quest, on date: String) -> ReminderOccurrence {

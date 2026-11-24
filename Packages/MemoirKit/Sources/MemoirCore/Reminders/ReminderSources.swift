@@ -49,20 +49,34 @@ public struct ReminderSources: Sendable, Equatable {
   let inactiveQuests: [Quest]
   let logs: [Occurrence: Logged]
   let subscriptions: [Subscription]
+  /// The open cycles of the subscriptions that ask for a reminder while the Money module is off, so a reminder they had shown can be withdrawn.
+  let pausedSubscriptions: [Subscription]
   /// The confirmations of the reminded subscriptions' cycles, with the day each was issued on.
   let confirmations: [Confirmed]
   let halt: ReplayHalt?
 
-  /// A settings record this version cannot read leaves the standard wake window, and a failed subscription read leaves only the quest reminders.
+  /// A settings record this version cannot read leaves the standard wake window and every module on, and a failed subscription read leaves only the quest
+  /// reminders. Quests are reminded only with the Quests module and subscriptions only with the Money module; without its module every reminded quest or
+  /// subscription counts as paused, so the reminders it had shown are withdrawn.
   public static func load(in transaction: ReadTransaction) throws(MemoirReadError) -> ReminderSources {
     do throws(StoreError) {
       let hero = try MemoirDerived.hero(in: transaction)
-      let (quests, inactive) = try reminded(MemoirDerived.quests(in: transaction), in: transaction)
       let settings = try AccountSettingsRecord.read(key: .accountSettings, in: transaction).entry?.record
-      let (subscriptions, confirmations) = subscriptions(in: transaction)
+      let modules = ModuleSelection(settings: settings)
+      var (quests, inactive) = try reminded(MemoirDerived.quests(in: transaction), in: transaction)
+      if !modules.contains(.quests) {
+        inactive = (quests + inactive).sorted { $0.id.uuidString < $1.id.uuidString }
+        quests = []
+      }
+      var (subscriptions, confirmations) = subscriptions(in: transaction)
+      var paused = [Subscription]()
+      if !modules.contains(.money) {
+        paused = subscriptions
+        (subscriptions, confirmations) = ([], [])
+      }
       return ReminderSources(
         zone: hero?.zone ?? .unset, wakeWindow: settings?.schedule ?? .standard, quests: quests, inactiveQuests: inactive,
-        logs: try logs(of: Set(quests.map(\.id)), from: hero?.openDay, in: transaction), subscriptions: subscriptions, confirmations: confirmations,
+        logs: try logs(of: Set(quests.map(\.id)), from: hero?.openDay, in: transaction), subscriptions: subscriptions, pausedSubscriptions: paused, confirmations: confirmations,
         halt: hero?.halt)
     } catch {
       throw MemoirReadError(error)

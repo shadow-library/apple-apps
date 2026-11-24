@@ -105,6 +105,61 @@ struct InsightAssemblyTests {
     }
   }
 
+  private func assemble(_ consent: InsightConsentSnapshot, modules: Set<MemoirModule>) async throws -> (InsightAssembly, StubReplay) {
+    let replay = try StubReplay(InsightHarness.replayState())
+    let harness = try InsightHarness(replay: replay)
+    try await harness.seed()
+    let euro = try MemoirStoreFixture.currency("EUR")
+    var settings = AccountSettingsRecord(defaultCurrency: euro, enabledCurrencies: [euro])
+    for module in MemoirModule.allCases { settings.setModule(module, enabled: modules.contains(module)) }
+    let date = try MemoirStoreFixture.date("2026-11-20")
+    let meal = MealRecord(id: MemoirStoreFixture.commandID(900), date: date, name: "Lentil soup", calories: 420, mealType: .known(.cooked), loggedAtMillis: 1)
+    try await MoneyReadsFixture.seed(harness.stores.main, [settings, meal])
+    let assembler = InsightAssembler(stores: harness.stores, replay: replay)
+    return (try await assembler.assemble(question: Self.question, consent: consent, today: Self.today), replay)
+  }
+
+  @Test func shouldReadOnlyTheEnabledModulesOnTopOfConsent() async throws {
+    let (assembly, replay) = try await assemble(InsightConsentSnapshot(journal: true, health: true), modules: [.money, .journal])
+    let text = prompt(assembly)
+    #expect(text.contains(InsightHarness.journalText))
+    for hidden in [InsightHarness.reasonNote, "Evening run", "Pages read", "72.4", "8123", "Resting heart rate", "early_bird", "Lentil soup", #""hpStart""#, "level_up"] {
+      #expect(!text.contains(hidden), "\(hidden) reached the prompt with its module off")
+    }
+    #expect(text.contains(#""intensityMode":null"#), "the intensity mode is Hero's")
+    #expect(replay.includingText == [false], "reason and reflection text rides the quests, which are off")
+    #expect(assembly.dataClasses == [.journalReflectionReason])
+    #expect(assembly.questIDs.isEmpty && assembly.resultClass == .general)
+    #expect(assembly.sensitiveSources == [InsightHarness.journalText])
+  }
+
+  @Test func shouldSplitTheJournalClassBetweenJournalEntriesAndQuestText() async throws {
+    let (assembly, replay) = try await assemble(InsightConsentSnapshot(journal: true, health: true), modules: [.hero, .quests, .money, .meals, .body])
+    let text = prompt(assembly)
+    for shown in [
+      InsightHarness.reasonNote, "Evening run", "Pages read", #""kg":"72.4""#, "early_bird", "Lentil soup", #""intensityMode":"standard""#, #""type":"quest_complete""#,
+      #""type":"meal""#, #""type":"level_up""#,
+    ] {
+      #expect(text.contains(shown), "\(shown) is missing with its module on")
+    }
+    #expect(!text.contains(InsightHarness.journalText), "journal entries need the Journal module")
+    #expect(!text.contains(#""type":"journal""#), "a journal reward reveals a journal day")
+    #expect(replay.includingText == [true])
+    #expect(assembly.sensitiveSources == [InsightHarness.reasonNote])
+    #expect(assembly.resultClass == .health)
+  }
+
+  @Test func shouldKeepHeroProgressWithoutQuestData() async throws {
+    let (assembly, _) = try await assemble(.none, modules: [.hero, .money])
+    let text = prompt(assembly)
+    #expect(text.contains("early_bird"), "titles are Hero's")
+    #expect(text.contains(#""type":"level_up""#), "a level is Hero's own")
+    for hidden in ["Evening run", #""hpStart""#, #""state":"missed""#, #""type":"quest_complete""#, #""type":"journal""#, #""type":"meal""#] {
+      #expect(!text.contains(hidden), "\(hidden) reached the prompt with its module off")
+    }
+    #expect(assembly.dataClasses == [.heroEvents, .progressionEvents] && assembly.questIDs.isEmpty)
+  }
+
   @Test func shouldWriteInstantsAsTheReferenceDoes() {
     #expect(InsightRows.instant(0) == .string("1970-01-01T00:00:00.000Z"))
     #expect(InsightRows.instant(1_763_600_000_123) == .string("2025-11-20T00:53:20.123Z"))

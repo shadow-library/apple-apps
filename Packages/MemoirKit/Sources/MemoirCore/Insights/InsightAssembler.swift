@@ -50,6 +50,12 @@ public struct InsightAssembly: Sendable, Equatable {
 
 /// Builds the context from the owner's own data. Consent decides what is read, before a row is fetched: without the journal class no journal entry is
 /// read and no reflection or reason text is asked of replay or kept, and without the health class the activity and restricted stores are not opened.
+///
+/// The vault's modules narrow it further, on top of consent: Quests gives quests, their logs, daily states, side quests and the recovery, comeback,
+/// returner and shield events; Hero the achievements, titles, the profile's intensity mode and the hero events, each of those also needing its
+/// `HeroEventType.sourceModule`; Money finance; Meals meals; Body the general metrics and, with the health class, the health section. The journal class is
+/// split by where its text lives: journal entries need Journal, while reason notes and reflections ride their quest logs and recovery quests and need
+/// Quests, so replay is asked for text only with both.
 // apps/memoir-server/src/modules/ai-worker/read-assembly.service.ts:49-106; ai-read.repository.ts
 public struct InsightAssembler: Sendable {
   /// Trailing windows, in days, tried in turn when everything does not fit the budget.
@@ -69,7 +75,7 @@ public struct InsightAssembler: Sendable {
 
   /// The whole history when it fits, otherwise the widest trailing window ending on `today` that does.
   public func assemble(question: String, consent: InsightConsentSnapshot, today: LocalDate) async throws(InsightError) -> InsightAssembly {
-    let rows = try await read(consent: consent)
+    let rows = try await read(consent: consent, modules: try await modules())
     var units = 0
     for window in [nil] + Self.windows.map(Optional.some) {
       let start = window.flatMap { today.adding(days: -$0) }
@@ -80,24 +86,32 @@ public struct InsightAssembler: Sendable {
     throw .contextTooLarge(units: units, budget: budget)
   }
 
-  private func read(consent: InsightConsentSnapshot) async throws(InsightError) -> InsightRows {
-    let state = try await replay.insightState(includingText: consent.journal)
+  private func modules() async throws(InsightError) -> ModuleSelection {
+    do throws(StoreError) {
+      return try await stores.main.read { transaction in ModuleSelection(settings: try AccountSettingsRecord.read(key: .accountSettings, in: transaction).entry?.record) }
+    } catch {
+      throw .converting(error)
+    }
+  }
+
+  private func read(consent: InsightConsentSnapshot, modules: ModuleSelection) async throws(InsightError) -> InsightRows {
+    let state = try await replay.insightState(includingText: consent.journal && modules.contains(.quests))
     do throws(StoreError) {
       var rows = try await stores.main.read { transaction in
-        var rows = InsightRows(profile: state.profile)
+        var rows = InsightRows(profile: state.profile, modules: modules)
         try rows.readMain(transaction, replay: state, journal: consent.journal)
         return rows
       }
-      guard consent.health else { return rows }
+      guard consent.health, modules.contains(.body) else { return rows }
       rows.absorb(
         try await stores.activity.read { transaction in
-          var rows = InsightRows(profile: state.profile)
+          var rows = InsightRows(profile: state.profile, modules: modules)
           try rows.readMetrics(ActivityMetric.self, transaction, into: .health)
           return rows
         })
       rows.absorb(
         try await stores.restricted.read { transaction in
-          var rows = InsightRows(profile: state.profile)
+          var rows = InsightRows(profile: state.profile, modules: modules)
           try rows.readMetrics(HealthMetric.self, transaction, into: .health)
           try rows.readWeights(transaction)
           return rows
@@ -118,11 +132,13 @@ struct InsightRow: Sendable {
 
 struct InsightRows: Sendable {
   let profile: InsightProfile
+  let modules: ModuleSelection
   var sections: [InsightReadClass: [InsightRow]] = [:]
   var questIDs: [String] = []
 
-  init(profile: InsightProfile) {
+  init(profile: InsightProfile, modules: ModuleSelection) {
     self.profile = profile
+    self.modules = modules
   }
 
   mutating func absorb(_ other: InsightRows) {
@@ -136,7 +152,9 @@ struct InsightRows: Sendable {
         key: "profile",
         value: .object(
           JSONRow()
-            .put("timezone", profile.timeZone).put("intensityMode", profile.intensityMode.rawValue).put("windowStart", start?.isoString).object)
+            .put("timezone", profile.timeZone).put("intensityMode", modules.contains(.hero) ? profile.intensityMode.rawValue : nil).put(
+              "windowStart", start?.isoString
+            ).object)
       )
     ]
     for readClass in InsightReadClass.allCases { context.append((key: readClass.contextKey, value: .array((windowed[readClass] ?? []).map { .object($0.object) }))) }
@@ -156,16 +174,39 @@ struct InsightRows: Sendable {
   }
 
   mutating func readMain(_ transaction: ReadTransaction, replay: InsightReplayState, journal: Bool) throws(StoreError) {
+    if modules.contains(.quests) { try readQuests(transaction, replay: replay, journal: journal) }
+    if modules.contains(.hero) {
+      for event in replay.heroEvents where reads(event) { append(.heroEvents, InsightRow(date: event.date, object: Self.heroEvent(event))) }
+    }
+    for event in replay.progressionEvents where modules.contains(Self.module(of: event)) {
+      append(.progressionEvents, Self.progression(event, includingText: journal))
+    }
+    if modules.contains(.money) { try readFinance(transaction) }
+    if modules.contains(.meals) { try readMeals(transaction) }
+    if modules.contains(.body) { try readMetrics(GeneralMetric.self, transaction, into: .metrics) }
+    guard journal, modules.contains(.journal) else { return }
+    for entry in try live(JournalEntryRecord.self, transaction) {
+      let object = JSONRow().put("date", entry.date.isoString).put("text", entry.text).put("mood", entry.mood).put(
+        "tags", OrderedJSON.array(entry.tags.map(OrderedJSON.string))
+      ).object
+      append(.journalReflectionReason, InsightRow(date: entry.date, object: object, texts: entry.text.isEmpty ? [] : [entry.text]))
+    }
+  }
+
+  private mutating func readQuests(_ transaction: ReadTransaction, replay: InsightReplayState, journal: Bool) throws(StoreError) {
     let schedules = Dictionary(replay.quests.map { ($0.quest, $0) }) { first, _ in first }
     for quest in try QuestRecord.listing(in: transaction).entries.map(\.record) {
       questIDs.append(quest.id.lowercasedString)
       append(.quests, InsightRow(date: nil, object: Self.quest(quest, schedules[quest.id])))
     }
     for log in replay.questLogs { append(.questLogs, Self.questLog(log, includingText: journal)) }
-    for event in replay.heroEvents { append(.heroEvents, InsightRow(date: event.date, object: Self.heroEvent(event))) }
     for day in replay.dailyStates { append(.dailyStates, InsightRow(date: day.date, object: Self.dailyState(day))) }
-    for event in replay.progressionEvents { append(.progressionEvents, Self.progression(event, includingText: journal)) }
-    try readFinance(transaction)
+    for sideQuest in try live(SideQuestRecord.self, transaction) {
+      append(.sideQuests, InsightRow(date: sideQuest.date, object: JSONRow().put("date", sideQuest.date.isoString).put("name", sideQuest.name).object))
+    }
+  }
+
+  private mutating func readMeals(_ transaction: ReadTransaction) throws(StoreError) {
     for meal in try live(MealRecord.self, transaction) {
       append(
         .meals,
@@ -173,16 +214,17 @@ struct InsightRows: Sendable {
           date: meal.date,
           object: JSONRow().put("date", meal.date.isoString).put("name", meal.name).put("calories", meal.calories).put("mealType", meal.mealType.rawValue).object))
     }
-    for sideQuest in try live(SideQuestRecord.self, transaction) {
-      append(.sideQuests, InsightRow(date: sideQuest.date, object: JSONRow().put("date", sideQuest.date.isoString).put("name", sideQuest.name).object))
-    }
-    try readMetrics(GeneralMetric.self, transaction, into: .metrics)
-    guard journal else { return }
-    for entry in try live(JournalEntryRecord.self, transaction) {
-      let object = JSONRow().put("date", entry.date.isoString).put("text", entry.text).put("mood", entry.mood).put(
-        "tags", OrderedJSON.array(entry.tags.map(OrderedJSON.string))
-      ).object
-      append(.journalReflectionReason, InsightRow(date: entry.date, object: object, texts: entry.text.isEmpty ? [] : [entry.text]))
+  }
+
+  /// A hero event needs its source module as well as Hero; a type this build does not know is left out.
+  private func reads(_ event: InsightHeroEvent) -> Bool {
+    HeroEventType(rawValue: event.type).map { modules.contains($0.sourceModule) } ?? false
+  }
+
+  private static func module(of event: InsightProgressionEvent) -> MemoirModule {
+    switch event {
+    case .recoveryQuest, .comeback, .returner, .shieldConsumption: .quests
+    case .achievement, .title: .hero
     }
   }
 

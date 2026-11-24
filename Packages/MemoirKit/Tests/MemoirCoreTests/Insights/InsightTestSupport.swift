@@ -179,6 +179,11 @@ struct InsightHarness {
       profile: InsightProfile(timeZone: "Europe/London", intensityMode: .standard),
       quests: [InsightQuestState(quest: quest, startTimeMinutes: 1140, durationMinutes: 30, statAffinity: .body, strictness: .routine)],
       questLogs: [InsightQuestLog(quest: quest, date: date, state: .missed, strictness: .routine, intensityModeAtLog: .standard, reasonNote: reasonNote)],
+      heroEvents: [
+        InsightHeroEvent(type: HeroEventType.questComplete.rawValue, quest: quest, state: .completed, xpDelta: 20, date: date),
+        InsightHeroEvent(type: HeroEventType.journal.rawValue, xpDelta: 5, date: date), InsightHeroEvent(type: HeroEventType.meal.rawValue, xpDelta: 3, date: date),
+        InsightHeroEvent(type: HeroEventType.levelUp.rawValue, levelAfter: 2, date: date),
+      ],
       dailyStates: [InsightDailyState(date: date, intensityMode: .standard, hpStart: 100, hpEnd: 95, hpMax: 100)],
       progressionEvents: [.title(id: "early_bird", earnedOn: date)])
   }

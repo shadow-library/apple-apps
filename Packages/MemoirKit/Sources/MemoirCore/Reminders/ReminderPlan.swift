@@ -62,7 +62,7 @@ public struct ReminderPlan: Sendable, Equatable {
   public let omitted: Int
   /// Occurrences settled on today or the day before in the zone in force, whose reminders the app withdraws from those it has shown: a quest occurrence
   /// with an outcome the owner logged (any but missed or rescheduled), each occurrence on those days of a reminded quest deleted or paused, and a
-  /// subscription cycle confirmed on one of those days.
+  /// subscription cycle confirmed on one of those days; while the Money module is off, the open cycle of every reminded subscription, whatever its day.
   public let settled: Set<ReminderOccurrence>
   /// When the plan next changes with no write: the soonest reminder's fire instant, the instant the next reminder beyond the window enters it, or the next
   /// midnight in the zone in force, whichever comes first.
@@ -132,6 +132,9 @@ public struct ReminderPlan: Sendable, Equatable {
     }
     for confirmed in sources.confirmations where days.contains(confirmed.issuedOn) {
       settled.insert(ReminderOccurrence(kind: .subscription, record: confirmed.cycle.subscription, date: confirmed.cycle.billingDate))
+    }
+    for subscription in sources.pausedSubscriptions {
+      settled.insert(ReminderOccurrence(kind: .subscription, record: subscription.id, date: subscription.nextDue))
     }
     return settled
   }

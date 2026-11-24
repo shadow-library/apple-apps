@@ -51,6 +51,14 @@ public enum HealthSettings {
     return true
   }
 
+  /// Clears the designation whichever device holds it, as when the owner turns the Body module off; that device stops at its next import.
+  @discardableResult
+  public static func clearReader(in transaction: inout WriteTransaction) throws(MemoirRecordError) -> HealthReaderDesignation? {
+    guard let current = try designation(in: transaction) else { return nil }
+    try write(in: &transaction) { $0.reader = nil }
+    return current
+  }
+
   public static func setActivityOnICloud(_ isOn: Bool, in transaction: inout WriteTransaction) throws(MemoirRecordError) {
     guard try settings(in: transaction)?.activityOnICloud != isOn else { return }
     try write(in: &transaction) { $0.activityOnICloud = isOn }

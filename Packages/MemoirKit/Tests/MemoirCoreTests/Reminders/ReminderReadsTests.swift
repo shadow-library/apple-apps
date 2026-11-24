@@ -152,6 +152,47 @@ struct ReminderReadsTests {
     #expect(try await ReminderReads.plan(in: stores, query: try Self.query(), now: Self.date(Device.day(2), minute: 600)).settled.isEmpty, "confirmed two days ago")
   }
 
+  @Test func shouldRemindQuestsOnlyWithTheQuestsModuleAndWithdrawWhatTheyHadShown() async throws {
+    let (_, stores) = try await Self.seeded()
+    let euro = try #require(CurrencyCode("EUR"))
+    var settings = AccountSettingsRecord(defaultCurrency: euro, enabledCurrencies: [euro])
+    try await MoneyReadsFixture.seed(stores.main, [settings])
+    let now = Self.date(Device.day(0), minute: 600)
+    let on = try await ReminderReads.plan(in: stores, query: try Self.query(days: 2), now: now)
+    #expect(!on.reminders.isEmpty && on.settled.isEmpty)
+
+    settings.setModule(.quests, enabled: false)
+    let off = settings
+    _ = try await stores.main.write { transaction in try AccountSettingsRecord.edit(MemoirKey.accountSettings.ref, in: &transaction) { $0 = off } }
+    let plan = try await ReminderReads.plan(in: stores, query: try Self.query(days: 2), now: now)
+    #expect(plan.reminders.isEmpty)
+    #expect(plan.diff(against: on.identifiers).remove == on.identifiers.sorted(), "every pending quest reminder is removed")
+    #expect(
+      plan.settled == [
+        ReminderOccurrence(kind: .quest, record: Device.routine, date: Device.day(0)), ReminderOccurrence(kind: .quest, record: Device.goal, date: Device.day(0)),
+      ], "today's shown reminders of the reminded quests are withdrawn")
+  }
+
+  @Test func shouldRemindSubscriptionsOnlyWithTheMoneyModule() async throws {
+    let (_, stores) = try Self.open()
+    let eur = try #require(CurrencyCode("EUR"))
+    let music = SubscriptionRecord(
+      id: Self.subscription, name: "Music", amountMinor: 1_299, currency: eur, frequency: .known(.monthly), billingDay: 5, anchorOn: Device.day(3),
+      category: MoneyReadsFixture.category("subs"), reminderEnabled: true, reminderLead: .known(.oneDay))
+    var settings = AccountSettingsRecord(defaultCurrency: eur, enabledCurrencies: [eur])
+    try await MoneyReadsFixture.seed(stores.main, [settings, music])
+    let now = Self.date(Device.day(0), minute: 600)
+    let on = try await ReminderReads.plan(in: stores, query: try Self.query(), now: now)
+    #expect(on.reminders.count == 1 && on.settled.isEmpty)
+
+    settings.setModule(.money, enabled: false)
+    let off = settings
+    _ = try await stores.main.write { transaction in try AccountSettingsRecord.edit(MemoirKey.accountSettings.ref, in: &transaction) { $0 = off } }
+    let plan = try await ReminderReads.plan(in: stores, query: try Self.query(), now: now)
+    #expect(plan.reminders.isEmpty)
+    #expect(plan.settled == [ReminderOccurrence(kind: .subscription, record: Self.subscription, date: Device.day(3))], "the open cycle's shown reminder is withdrawn")
+  }
+
   @Test func shouldKeepQuestRemindersWhenTheSettingsAndASubscriptionCannotBeRead() async throws {
     let (_, stores) = try await Self.seeded()
     _ = try await stores.main.write { transaction in
