@@ -43,7 +43,8 @@ struct CommandIssuerTests {
   @Test func shouldIssueEveryKindIntoTheStoreAndReadItBack() async throws {
     let store = try MemoirStore.openInMemory(.main)
     let issuer = try issuer("Asia/Kathmandu")
-    let bodies = try CommandSamples.all()
+    let bodies = try CommandSamples.issuable()
+    #expect(Set(bodies.map(\.kind)) == Set(MemoirCommandKind.allCases).subtracting([.moneyNoSpend, .budgetClosePeriod, .goalMilestone, .goalBought]))
     let issued = try await store.write { transaction in
       try bodies.map { body in try issuer.issue(body, text: CommandSamples.text(for: body), in: &transaction) }
     }
@@ -58,6 +59,26 @@ struct CommandIssuerTests {
       let note = try await store.read { transaction in try CommandNoteRecord.read(id: command.id, in: transaction) }
       #expect(note.entry?.record.text == CommandSamples.text(for: body), "\(body.kind.rawValue)")
     }
+  }
+
+  @Test func shouldRefuseABodyThatNeedsANewerRulesetThanTheOneItIssuesUnder() async throws {
+    let issuer = try issuer("Europe/Berlin")
+    let newer = try CommandSamples.all().filter { $0.minimumRulesetVersion > Ruleset.current.version }
+    #expect(Set(newer.map(\.kind)) == [.moneyNoSpend, .budgetClosePeriod, .goalMilestone, .goalBought, .expenseCreate])
+    let store = try MemoirStore.openInMemory(.main)
+    for body in newer {
+      #expect(throws: CommandIssueError.self, "\(body.kind.rawValue)") { try issuer.command(body) }
+      do throws(CommandIssueError) {
+        _ = try issuer.command(body)
+      } catch {
+        guard case .refused(let refusal) = error else { throw error }
+        #expect(refusal == .needsNewerRuleset(body.kind, minimum: body.minimumRulesetVersion))
+        #expect(refusal.code == "memoir_command.needs_newer_ruleset")
+      }
+      await #expect(throws: (any Error).self) { try await store.write { transaction in try issuer.issue(body, in: &transaction) } }
+    }
+    let listing = try await store.read { transaction in try MemoirCommand.listing(in: transaction) }
+    #expect(listing.entries.isEmpty, "a refused body writes nothing")
   }
 
   @Test func shouldRefuseATextThatDoesNotFitTheBodysSlot() throws {

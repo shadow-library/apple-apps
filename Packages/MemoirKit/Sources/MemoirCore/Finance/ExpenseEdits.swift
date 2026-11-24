@@ -40,7 +40,8 @@ public enum ExpenseEdits {
       written = restored
     }
     try record { () throws(MemoirRecordError) in _ = try ExpenseChangeRecord.purge(expense: expense.id, in: &transaction) }
-    return (try issuer.issue(.expenseCreate(ExpenseCreation(id: expense.id, source: source)), in: &transaction), written)
+    let occurredOn = Ruleset.current.money == nil ? nil : expense.occurredOn
+    return (try issuer.issue(.expenseCreate(ExpenseCreation(id: expense.id, source: source, occurredOn: occurredOn)), in: &transaction), written)
   }
 
   /// `nil`, writing nothing, when the edit moves no field the owner sees. Moving the currency, rate, receipt or logging time is refused

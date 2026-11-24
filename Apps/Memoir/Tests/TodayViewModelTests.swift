@@ -118,7 +118,7 @@ struct TodayViewModelTests {
     try await world.append(
       try MemoirCommand(
         id: UUID.v7(at: TestClock.date(day: 0, minute: 721)), body: .recoveryComplete(RecoveryCompletion()), instantMillis: TestClock.millis(day: 0, minute: 721),
-        utcOffsetMinutes: 0, issuedOn: TestClock.day0, rulesetVersion: 2))
+        utcOffsetMinutes: 0, issuedOn: TestClock.day0, rulesetVersion: 3))
 
     let model = world.model
     try await TestClock.until("the update notice") { model.snapshot?.notices == [.needsAppUpdate] }

@@ -37,7 +37,7 @@ enum WritingErrors {
       default: refusal.referenceCode.flatMap(copy(referenceCode:)) ?? invalidDetails
       }
     case let refusal as ReplayRefusal:
-      copy(referenceCode: refusal.referenceCode)
+      refusal.referenceCode.flatMap(copy(referenceCode:))
     case let error as FinanceError:
       switch error {
       case .expenseFieldFixed: copy(referenceCode: "FIN_006")

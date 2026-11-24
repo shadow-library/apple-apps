@@ -204,11 +204,11 @@ struct QuickLogOutcomeTests {
     let later = Self.sideQuest(2, on: Self.today)
     try await vault.log(
       [
-        try Self.log(1, newer.id, on: Self.today, at: MoneyReadsFixture.stamp(Self.today, hour: 7), rulesetVersion: 2),
+        try Self.log(1, newer.id, on: Self.today, at: MoneyReadsFixture.stamp(Self.today, hour: 7), rulesetVersion: 3),
         try Self.log(2, later.id, on: Self.today, at: MoneyReadsFixture.stamp(Self.today, hour: 8)),
       ], sideQuests: [newer, later])
 
-    #expect(try await vault.replayed().halt == .rulesetUnavailable(command: MemoirStoreFixture.commandID(1), version: 2))
+    #expect(try await vault.replayed().halt == .rulesetUnavailable(command: MemoirStoreFixture.commandID(1), version: 3))
     let overview = try await Self.expectAgreement(vault, today: Self.today)
     #expect(overview.items.map(\.rewarded) == [false, false])
     #expect(overview.rewardedToday == 0)

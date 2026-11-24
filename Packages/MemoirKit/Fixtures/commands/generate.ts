@@ -207,6 +207,8 @@ const S1 = '0190f3a0-0000-7000-8000-0000000000d1';
 const P1 = '0190f3a0-0000-7000-8000-0000000000e1';
 const J1 = '0190f3a0-0000-7000-8000-0000000000f1';
 const R1 = '0190f3a0-0000-7000-8000-0000000000f2';
+const B1 = '0190f3a0-0000-7000-8000-0000000000b3';
+const G1 = '0190f3a0-0000-7000-8000-0000000000b4';
 /** The reference's quest, metric, subscription and preset ids are bigints written as digit strings. */
 const NUMERIC_IDS: Record<string, string> = { [Q1]: '101', [Q2]: '102', [M1]: '201', [S1]: '301', [P1]: '401' };
 const num = (value: Json | undefined): Json | undefined => (typeof value === 'string' && NUMERIC_IDS[value] ? NUMERIC_IDS[value] : value);
@@ -383,6 +385,8 @@ const STRICT_FLAG = 'a flag the reference reads as false unless it is true must 
 const STRICT_DATE = 'the reference only requires a non-empty string; a native date must be a real date';
 const NATIVE_ID = 'the native command names the record it creates by id, where the reference returns a server id';
 const UUID_ID = 'native ids are UUIDs';
+const OCCURRED_ON = 'the reference leaves the expense date to its database; the payload names a real civil date, which covers that day (ruleset v2)';
+const MONEY = 'money in the game is native (ruleset v2); the reference has no such command';
 const CANONICAL_ZONE =
   'a zone is UTC, GMT or a canonical Area/Location name, so token-shaped text cannot pass as one; ICU also accepts other spellings, offsets and one-word legacy zones';
 const occurrenceCases: Input[] = [
@@ -697,6 +701,12 @@ const groups: Group[] = [
       { id: 'id-missing', payload: {} },
       { id: 'id-not-uuid', payload: { id: 'expense-1' }, native: refused('id'), reason: UUID_ID },
       { id: 'amount-in-payload', payload: { id: E1, amountMinor: 1250 }, native: refused('amountMinor'), reason: CONTENT },
+      { id: 'occurred-on', payload: { id: E1, occurredOn: '2026-11-18' } },
+      { id: 'occurred-on-ocr', payload: { id: E1, source: 'ocr', occurredOn: TODAY } },
+      { id: 'occurred-on-not-date', payload: { id: E1, occurredOn: 'yesterday' }, native: refused('occurredOn'), reason: OCCURRED_ON },
+      { id: 'occurred-on-impossible', payload: { id: E1, occurredOn: '2026-02-30' }, native: refused('occurredOn'), reason: OCCURRED_ON },
+      { id: 'occurred-on-number', payload: { id: E1, occurredOn: 20261118 } },
+      { id: 'occurred-on-null', payload: { id: E1, occurredOn: null } },
     ],
   },
   { type: 'expense.update', source: 'handler', inputs: [{ id: 'base', payload: { id: E1 } }, { id: 'id-missing', payload: {} }] },
@@ -902,6 +912,80 @@ const groups: Group[] = [
       { id: 'receipt', payload: { receiptId: R1 }, native: { accepted: true }, reason: 'the reference counts a scan in its OCR endpoint, not a command' },
       { id: 'receipt-not-uuid', payload: { receiptId: 'r/1/x.jpg' }, native: refused('receiptId'), reason: UUID_ID },
       { id: 'text-in-payload', payload: { extractedText: 'TOTAL' }, native: refused('extractedText'), reason: CONTENT },
+    ],
+  },
+  {
+    type: 'money.noSpend',
+    source: 'native',
+    inputs: [
+      { id: 'base', payload: { date: TODAY }, native: { accepted: true }, reason: MONEY },
+      { id: 'date-missing', payload: {}, native: refused('date'), reason: MONEY },
+      { id: 'date-impossible', payload: { date: '2026-02-30' }, native: refused('date'), reason: MONEY },
+      { id: 'date-instant', payload: { date: '2026-11-20T00:00:00Z' }, native: refused('date'), reason: MONEY },
+      { id: 'date-number', payload: { date: 20261120 }, native: refused('date'), reason: MONEY },
+      { id: 'amount-in-payload', payload: { date: TODAY, amountMinor: 0 }, native: refused('amountMinor'), reason: CONTENT },
+    ],
+  },
+  {
+    type: 'budget.closePeriod',
+    source: 'native',
+    inputs: [
+      { id: 'within-typical', payload: { budgetId: B1, periodStart: '2026-10-01', outcome: 'within_typical', deposited: true }, native: { accepted: true }, reason: MONEY },
+      { id: 'within', payload: { budgetId: B1, periodStart: '2026-10-01', outcome: 'within', deposited: false }, native: { accepted: true }, reason: MONEY },
+      { id: 'over-10', payload: { budgetId: B1, periodStart: '2026-10-01', outcome: 'over_10', deposited: false }, native: { accepted: true }, reason: MONEY },
+      { id: 'over-25', payload: { budgetId: B1, periodStart: '2026-10-01', outcome: 'over_25', deposited: false }, native: { accepted: true }, reason: MONEY },
+      { id: 'over-more', payload: { budgetId: B1, periodStart: '2026-10-01', outcome: 'over_more', deposited: false }, native: { accepted: true }, reason: MONEY },
+      { id: 'unscored', payload: { budgetId: B1, periodStart: '2026-10-01', outcome: 'unscored', deposited: false }, native: { accepted: true }, reason: MONEY },
+      {
+        id: 'over-deposited',
+        payload: { budgetId: B1, periodStart: '2026-10-01', outcome: 'over_10', deposited: true },
+        native: refused('deposited'),
+        reason: 'a period over its limit deposits nothing',
+      },
+      {
+        id: 'unscored-deposited',
+        payload: { budgetId: B1, periodStart: '2026-10-01', outcome: 'unscored', deposited: true },
+        native: refused('deposited'),
+        reason: 'an unscored period deposits nothing',
+      },
+      { id: 'outcome-unknown', payload: { budgetId: B1, periodStart: '2026-10-01', outcome: 'over_50', deposited: false }, native: refused('outcome'), reason: MONEY },
+      { id: 'outcome-missing', payload: { budgetId: B1, periodStart: '2026-10-01', deposited: false }, native: refused('outcome'), reason: MONEY },
+      { id: 'deposited-missing', payload: { budgetId: B1, periodStart: '2026-10-01', outcome: 'within' }, native: refused('deposited'), reason: MONEY },
+      { id: 'deposited-string', payload: { budgetId: B1, periodStart: '2026-10-01', outcome: 'within', deposited: 'yes' }, native: refused('deposited'), reason: MONEY },
+      { id: 'period-impossible', payload: { budgetId: B1, periodStart: '2026-02-30', outcome: 'within', deposited: false }, native: refused('periodStart'), reason: MONEY },
+      { id: 'budget-not-uuid', payload: { budgetId: 'home', periodStart: '2026-10-01', outcome: 'within', deposited: false }, native: refused('budgetId'), reason: UUID_ID },
+      {
+        id: 'amount-in-payload',
+        payload: { budgetId: B1, periodStart: '2026-10-01', outcome: 'within', deposited: true, depositMinor: 1200 },
+        native: refused('depositMinor'),
+        reason: CONTENT,
+      },
+    ],
+  },
+  {
+    type: 'goal.milestone',
+    source: 'native',
+    inputs: [
+      { id: 'p25', payload: { goalId: G1, milestone: 'p25' }, native: { accepted: true }, reason: MONEY },
+      { id: 'p50', payload: { goalId: G1, milestone: 'p50' }, native: { accepted: true }, reason: MONEY },
+      { id: 'p75', payload: { goalId: G1, milestone: 'p75' }, native: { accepted: true }, reason: MONEY },
+      { id: 'p100', payload: { goalId: G1, milestone: 'p100' }, native: { accepted: true }, reason: MONEY },
+      { id: 'milestone-unknown', payload: { goalId: G1, milestone: 'p33' }, native: refused('milestone'), reason: MONEY },
+      { id: 'milestone-missing', payload: { goalId: G1 }, native: refused('milestone'), reason: MONEY },
+      { id: 'goal-missing', payload: { milestone: 'p25' }, native: refused('goalId'), reason: MONEY },
+      { id: 'goal-not-uuid', payload: { goalId: 'bike', milestone: 'p25' }, native: refused('goalId'), reason: UUID_ID },
+    ],
+  },
+  {
+    type: 'goal.bought',
+    source: 'native',
+    inputs: [
+      { id: 'within', payload: { goalId: G1, outcome: 'within' }, native: { accepted: true }, reason: MONEY },
+      { id: 'over', payload: { goalId: G1, outcome: 'over' }, native: { accepted: true }, reason: MONEY },
+      { id: 'outcome-unknown', payload: { goalId: G1, outcome: 'within_typical' }, native: refused('outcome'), reason: MONEY },
+      { id: 'outcome-missing', payload: { goalId: G1 }, native: refused('outcome'), reason: MONEY },
+      { id: 'goal-not-uuid', payload: { goalId: 'bike', outcome: 'within' }, native: refused('goalId'), reason: UUID_ID },
+      { id: 'amount-in-payload', payload: { goalId: G1, outcome: 'within', priceMinor: 49900 }, native: refused('priceMinor'), reason: CONTENT },
     ],
   },
   {

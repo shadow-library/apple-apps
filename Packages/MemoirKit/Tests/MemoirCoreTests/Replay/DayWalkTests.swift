@@ -40,9 +40,9 @@ struct DayWalkTests {
     #expect(walked.outcomes[refused.id] == .refused(.questNotFound))
     #expect(Self.closedDays(walked) == ["2026-03-09", "2026-03-10"])
 
-    let newer = try Fixture.command(3, .receiptScan(ReceiptScan()), at: "2026-03-14T08:00:00Z", rulesetVersion: 2)
+    let newer = try Fixture.command(3, .receiptScan(ReceiptScan()), at: "2026-03-14T08:00:00Z", rulesetVersion: 3)
     let halted = Replay.run(try Fixture.entries([try Self.create(), newer]))
-    #expect(halted.halt == .rulesetUnavailable(command: newer.id, version: 2))
+    #expect(halted.halt == .rulesetUnavailable(command: newer.id, version: 3))
     #expect(Self.closedDays(halted).isEmpty, "a command this app cannot judge moves no day")
     var walkedAfterHalt = halted
     Replay.walk(&walkedAfterHalt, through: try Self.stamp("2026-03-20T08:00:00Z"))

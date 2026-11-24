@@ -156,7 +156,8 @@ public enum Replay {
     let ruleset: Ruleset
   }
 
-  /// Nil for a command already taken in, or one this app cannot read, which sets `halt`.
+  /// Nil for a command already taken in, or one this app cannot read, which sets `halt`. Replay does not apply money rules yet, so a command stamped with
+  /// a ruleset that has them halts as one this build lacks.
   private static func admit(_ command: ReplayCommand, to state: inout ReplayState) -> Admitted? {
     guard case .readable(let entry) = command else {
       state.halt = .unreadableCommand(command.ref)
@@ -175,7 +176,7 @@ public enum Replay {
       state.halt = .unreadableCommand(stored.ref)
       return nil
     }
-    guard let ruleset = Ruleset.version(stored.rulesetVersion) else {
+    guard let ruleset = Ruleset.version(stored.rulesetVersion), ruleset.money == nil else {
       state.halt = .rulesetUnavailable(command: stored.id, version: stored.rulesetVersion)
       return nil
     }
@@ -188,6 +189,8 @@ public enum Replay {
     let context = ApplyContext(command: stored, ruleset: ruleset, accountDay: state.accountDay(issuedOn: stored.issuedOn), order: state.commandCount)
     let outcome: ReplayOutcome
     do throws(ReplayRefusal) {
+      let minimum = admitted.body.minimumRulesetVersion
+      guard ruleset.version >= minimum else { throw .needsNewerRuleset(minimum: minimum) }
       outcome = try state.apply(admitted.body, in: context)
     } catch {
       outcome = .refused(error)

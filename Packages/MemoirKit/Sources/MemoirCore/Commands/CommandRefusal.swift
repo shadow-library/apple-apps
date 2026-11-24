@@ -38,6 +38,7 @@ public enum CommandRefusal: ShadowError, Equatable {
   case calendar(field: String, CalendarError)
   case finance(FinanceError)
   case payload(MemoirCommandError)
+  case needsNewerRuleset(MemoirCommandKind, minimum: Int)
 
   public var field: String? {
     switch self {
@@ -47,7 +48,7 @@ public enum CommandRefusal: ShadowError, Equatable {
     case .unknownType, .occurrenceRequired, .occurrenceUnexpected, .anchorNeedsStartTime, .duplicateLockedQuest, .categoryNotArchivable, .unknownCategory, .unknownCosmetic,
       .cosmeticNotForSale,
       .unknownTitle,
-      .oneTextPerCommand, .textUnexpected, .finance, .payload:
+      .oneTextPerCommand, .textUnexpected, .finance, .payload, .needsNewerRuleset:
       nil
     }
   }
@@ -63,7 +64,7 @@ public enum CommandRefusal: ShadowError, Equatable {
     case .cosmeticNotForSale: "CSM_004"
     case .unknownTitle: "TTL_001"
     case .invalidField, .unexpectedField, .occurrenceRequired, .occurrenceUnexpected, .healthThresholdUnsupported, .oneTextPerCommand, .textRequired, .textUnexpected,
-      .calendar, .finance, .payload:
+      .calendar, .finance, .payload, .needsNewerRuleset:
       nil
     }
   }
@@ -89,6 +90,7 @@ public enum CommandRefusal: ShadowError, Equatable {
     case .calendar: "memoir_command.calendar"
     case .finance(let error): error.code
     case .payload(let error): error.code
+    case .needsNewerRuleset: "memoir_command.needs_newer_ruleset"
     }
   }
 
@@ -113,6 +115,7 @@ public enum CommandRefusal: ShadowError, Equatable {
     case .calendar(let field, let error): "The field \(field) is refused: \(error.errorDescription ?? error.code)"
     case .finance(let error): error.errorDescription
     case .payload(let error): error.errorDescription
+    case .needsNewerRuleset(let kind, let minimum): "\(kind.rawValue) needs ruleset \(minimum), newer than the one this app issues commands under."
     }
   }
 }

@@ -17,7 +17,7 @@ public enum ReplayRejection: String, Sendable, Hashable, Codable {
   case weightNeedsConfirmation = "needs-confirmation"
 }
 
-/// A command the state no longer admits, named by the reference's `AppErrorCode`.
+/// A command the state no longer admits, named by the reference's `AppErrorCode` where the reference refuses it too.
 public enum ReplayRefusal: ShadowError, Hashable, Codable {
   case alreadyRescheduled
   case questNotFound
@@ -40,34 +40,52 @@ public enum ReplayRefusal: ShadowError, Hashable, Codable {
   case expenseNotFound
   case subscriptionNotFound
   case mealPresetNotFound
+  /// The body needs a newer ruleset than the one the command was stamped with (`MemoirCommandBody.minimumRulesetVersion`).
+  case needsNewerRuleset(minimum: Int)
 
-  public var referenceCode: String {
+  private enum Identity {
+    case reference(String)
+    case native(String)
+  }
+
+  private var identity: Identity {
     switch self {
-    case .alreadyRescheduled: "QST_001"
-    case .questNotFound: "QST_002"
-    case .anchorNeedsStartTime: "QST_003"
-    case .noOccurrence: "QST_004"
-    case .postponeUnavailable: "QST_005"
-    case .editWindowClosed: "QST_006"
-    case .logNotFound: "QST_007"
-    case .rescheduleUnavailable: "QST_008"
-    case .notStarted: "QST_009"
-    case .notAccountDay: "CMD_002"
-    case .noPendingRecovery: "RCV_001"
-    case .lockedQuestNotFound: "LCK_001"
-    case .dayClosed: "LCK_002"
-    case .notEnoughCoins: "HRO_001"
-    case .cosmeticNotOwned: "CSM_003"
-    case .titleNotEarned: "TTL_001"
-    case .metricNotFound: "MET_002"
-    case .builtinMetric: "MET_003"
-    case .expenseNotFound: "FIN_003"
-    case .subscriptionNotFound: "FIN_004"
-    case .mealPresetNotFound: "QLG_001"
+    case .alreadyRescheduled: .reference("QST_001")
+    case .questNotFound: .reference("QST_002")
+    case .anchorNeedsStartTime: .reference("QST_003")
+    case .noOccurrence: .reference("QST_004")
+    case .postponeUnavailable: .reference("QST_005")
+    case .editWindowClosed: .reference("QST_006")
+    case .logNotFound: .reference("QST_007")
+    case .rescheduleUnavailable: .reference("QST_008")
+    case .notStarted: .reference("QST_009")
+    case .notAccountDay: .reference("CMD_002")
+    case .noPendingRecovery: .reference("RCV_001")
+    case .lockedQuestNotFound: .reference("LCK_001")
+    case .dayClosed: .reference("LCK_002")
+    case .notEnoughCoins: .reference("HRO_001")
+    case .cosmeticNotOwned: .reference("CSM_003")
+    case .titleNotEarned: .reference("TTL_001")
+    case .metricNotFound: .reference("MET_002")
+    case .builtinMetric: .reference("MET_003")
+    case .expenseNotFound: .reference("FIN_003")
+    case .subscriptionNotFound: .reference("FIN_004")
+    case .mealPresetNotFound: .reference("QLG_001")
+    case .needsNewerRuleset: .native("needs_newer_ruleset")
     }
   }
 
-  public var code: String { "memoir_replay.\(referenceCode.lowercased())" }
+  public var referenceCode: String? {
+    guard case .reference(let code) = identity else { return nil }
+    return code
+  }
+
+  public var code: String {
+    switch identity {
+    case .reference(let code): "memoir_replay.\(code.lowercased())"
+    case .native(let code): "memoir_replay.\(code)"
+    }
+  }
 
   public var errorDescription: String? {
     switch self {
@@ -92,6 +110,7 @@ public enum ReplayRefusal: ShadowError, Hashable, Codable {
     case .expenseNotFound: "The expense does not exist."
     case .subscriptionNotFound: "The subscription does not exist or was deleted."
     case .mealPresetNotFound: "The meal preset does not exist or was deleted."
+    case .needsNewerRuleset(let minimum): "The command needs ruleset \(minimum) or later, but was stamped with an older one."
     }
   }
 }

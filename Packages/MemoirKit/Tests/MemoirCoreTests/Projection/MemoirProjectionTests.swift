@@ -124,12 +124,12 @@ struct MemoirProjectionTests {
     let device = try Self.device()
     try await Self.live([0, 1], on: device)
     let future = try ProjectionSupport.command(
-      MemoirStoreFixture.commandID(700), .recoveryComplete(RecoveryCompletion()), at: try ProjectionSupport.stamp(Self.start, plus: 2), rulesetVersion: 2)
+      MemoirStoreFixture.commandID(700), .recoveryComplete(RecoveryCompletion()), at: try ProjectionSupport.stamp(Self.start, plus: 2), rulesetVersion: 3)
     try await ProjectionSupport.append([future], to: device.store)
 
     let hero = try #require(try await device.store.read { transaction in try MemoirDerived.hero(in: transaction) })
     #expect(hero.needsAppUpdate)
-    #expect(hero.halt == .rulesetUnavailable(command: future.id, version: 2))
+    #expect(hero.halt == .rulesetUnavailable(command: future.id, version: 3))
     #expect(try await Self.log(on: 1, in: device)?.entry.isHold == true, "what replay took in before the halt stays shown")
     try await Self.expectProjected(device)
   }

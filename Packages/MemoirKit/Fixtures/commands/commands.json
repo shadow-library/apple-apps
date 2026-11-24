@@ -233,7 +233,13 @@
 {"id":"source-unknown","payload":{"id":"0190f3a0-0000-7000-8000-0000000000c1","source":"scan"},"occurrence":null,"reference":{"refused":{"field":"source"}},"native":null,"reason":null},
 {"id":"id-missing","payload":{},"occurrence":null,"reference":{"refused":{"field":"id"}},"native":null,"reason":null},
 {"id":"id-not-uuid","payload":{"id":"expense-1"},"occurrence":null,"reference":{"accepted":true},"native":{"refused":{"field":"id"}},"reason":"native ids are UUIDs"},
-{"id":"amount-in-payload","payload":{"id":"0190f3a0-0000-7000-8000-0000000000c1","amountMinor":1250},"occurrence":null,"reference":{"accepted":true},"native":{"refused":{"field":"amountMinor"}},"reason":"content stays in the record the command names, so the payload refuses it"}
+{"id":"amount-in-payload","payload":{"id":"0190f3a0-0000-7000-8000-0000000000c1","amountMinor":1250},"occurrence":null,"reference":{"accepted":true},"native":{"refused":{"field":"amountMinor"}},"reason":"content stays in the record the command names, so the payload refuses it"},
+{"id":"occurred-on","payload":{"id":"0190f3a0-0000-7000-8000-0000000000c1","occurredOn":"2026-11-18"},"occurrence":null,"reference":{"accepted":true},"native":null,"reason":null},
+{"id":"occurred-on-ocr","payload":{"id":"0190f3a0-0000-7000-8000-0000000000c1","source":"ocr","occurredOn":"2026-11-20"},"occurrence":null,"reference":{"accepted":true},"native":null,"reason":null},
+{"id":"occurred-on-not-date","payload":{"id":"0190f3a0-0000-7000-8000-0000000000c1","occurredOn":"yesterday"},"occurrence":null,"reference":{"accepted":true},"native":{"refused":{"field":"occurredOn"}},"reason":"the reference leaves the expense date to its database; the payload names a real civil date, which covers that day (ruleset v2)"},
+{"id":"occurred-on-impossible","payload":{"id":"0190f3a0-0000-7000-8000-0000000000c1","occurredOn":"2026-02-30"},"occurrence":null,"reference":{"accepted":true},"native":{"refused":{"field":"occurredOn"}},"reason":"the reference leaves the expense date to its database; the payload names a real civil date, which covers that day (ruleset v2)"},
+{"id":"occurred-on-number","payload":{"id":"0190f3a0-0000-7000-8000-0000000000c1","occurredOn":20261118},"occurrence":null,"reference":{"refused":{"field":"occurredOn"}},"native":null,"reason":null},
+{"id":"occurred-on-null","payload":{"id":"0190f3a0-0000-7000-8000-0000000000c1","occurredOn":null},"occurrence":null,"reference":{"refused":{"field":"occurredOn"}},"native":null,"reason":null}
 ],
 "expense.update": [
 {"id":"base","payload":{"id":"0190f3a0-0000-7000-8000-0000000000c1"},"occurrence":null,"reference":{"accepted":true},"native":null,"reason":null},
@@ -381,6 +387,49 @@
 {"id":"receipt","payload":{"receiptId":"0190f3a0-0000-7000-8000-0000000000f2"},"occurrence":null,"reference":null,"native":{"accepted":true},"reason":"the reference counts a scan in its OCR endpoint, not a command"},
 {"id":"receipt-not-uuid","payload":{"receiptId":"r/1/x.jpg"},"occurrence":null,"reference":null,"native":{"refused":{"field":"receiptId"}},"reason":"native ids are UUIDs"},
 {"id":"text-in-payload","payload":{"extractedText":"TOTAL"},"occurrence":null,"reference":null,"native":{"refused":{"field":"extractedText"}},"reason":"content stays in the record the command names, so the payload refuses it"}
+],
+"money.noSpend": [
+{"id":"base","payload":{"date":"2026-11-20"},"occurrence":null,"reference":null,"native":{"accepted":true},"reason":"money in the game is native (ruleset v2); the reference has no such command"},
+{"id":"date-missing","payload":{},"occurrence":null,"reference":null,"native":{"refused":{"field":"date"}},"reason":"money in the game is native (ruleset v2); the reference has no such command"},
+{"id":"date-impossible","payload":{"date":"2026-02-30"},"occurrence":null,"reference":null,"native":{"refused":{"field":"date"}},"reason":"money in the game is native (ruleset v2); the reference has no such command"},
+{"id":"date-instant","payload":{"date":"2026-11-20T00:00:00Z"},"occurrence":null,"reference":null,"native":{"refused":{"field":"date"}},"reason":"money in the game is native (ruleset v2); the reference has no such command"},
+{"id":"date-number","payload":{"date":20261120},"occurrence":null,"reference":null,"native":{"refused":{"field":"date"}},"reason":"money in the game is native (ruleset v2); the reference has no such command"},
+{"id":"amount-in-payload","payload":{"date":"2026-11-20","amountMinor":0},"occurrence":null,"reference":null,"native":{"refused":{"field":"amountMinor"}},"reason":"content stays in the record the command names, so the payload refuses it"}
+],
+"budget.closePeriod": [
+{"id":"within-typical","payload":{"budgetId":"0190f3a0-0000-7000-8000-0000000000b3","periodStart":"2026-10-01","outcome":"within_typical","deposited":true},"occurrence":null,"reference":null,"native":{"accepted":true},"reason":"money in the game is native (ruleset v2); the reference has no such command"},
+{"id":"within","payload":{"budgetId":"0190f3a0-0000-7000-8000-0000000000b3","periodStart":"2026-10-01","outcome":"within","deposited":false},"occurrence":null,"reference":null,"native":{"accepted":true},"reason":"money in the game is native (ruleset v2); the reference has no such command"},
+{"id":"over-10","payload":{"budgetId":"0190f3a0-0000-7000-8000-0000000000b3","periodStart":"2026-10-01","outcome":"over_10","deposited":false},"occurrence":null,"reference":null,"native":{"accepted":true},"reason":"money in the game is native (ruleset v2); the reference has no such command"},
+{"id":"over-25","payload":{"budgetId":"0190f3a0-0000-7000-8000-0000000000b3","periodStart":"2026-10-01","outcome":"over_25","deposited":false},"occurrence":null,"reference":null,"native":{"accepted":true},"reason":"money in the game is native (ruleset v2); the reference has no such command"},
+{"id":"over-more","payload":{"budgetId":"0190f3a0-0000-7000-8000-0000000000b3","periodStart":"2026-10-01","outcome":"over_more","deposited":false},"occurrence":null,"reference":null,"native":{"accepted":true},"reason":"money in the game is native (ruleset v2); the reference has no such command"},
+{"id":"unscored","payload":{"budgetId":"0190f3a0-0000-7000-8000-0000000000b3","periodStart":"2026-10-01","outcome":"unscored","deposited":false},"occurrence":null,"reference":null,"native":{"accepted":true},"reason":"money in the game is native (ruleset v2); the reference has no such command"},
+{"id":"over-deposited","payload":{"budgetId":"0190f3a0-0000-7000-8000-0000000000b3","periodStart":"2026-10-01","outcome":"over_10","deposited":true},"occurrence":null,"reference":null,"native":{"refused":{"field":"deposited"}},"reason":"a period over its limit deposits nothing"},
+{"id":"unscored-deposited","payload":{"budgetId":"0190f3a0-0000-7000-8000-0000000000b3","periodStart":"2026-10-01","outcome":"unscored","deposited":true},"occurrence":null,"reference":null,"native":{"refused":{"field":"deposited"}},"reason":"an unscored period deposits nothing"},
+{"id":"outcome-unknown","payload":{"budgetId":"0190f3a0-0000-7000-8000-0000000000b3","periodStart":"2026-10-01","outcome":"over_50","deposited":false},"occurrence":null,"reference":null,"native":{"refused":{"field":"outcome"}},"reason":"money in the game is native (ruleset v2); the reference has no such command"},
+{"id":"outcome-missing","payload":{"budgetId":"0190f3a0-0000-7000-8000-0000000000b3","periodStart":"2026-10-01","deposited":false},"occurrence":null,"reference":null,"native":{"refused":{"field":"outcome"}},"reason":"money in the game is native (ruleset v2); the reference has no such command"},
+{"id":"deposited-missing","payload":{"budgetId":"0190f3a0-0000-7000-8000-0000000000b3","periodStart":"2026-10-01","outcome":"within"},"occurrence":null,"reference":null,"native":{"refused":{"field":"deposited"}},"reason":"money in the game is native (ruleset v2); the reference has no such command"},
+{"id":"deposited-string","payload":{"budgetId":"0190f3a0-0000-7000-8000-0000000000b3","periodStart":"2026-10-01","outcome":"within","deposited":"yes"},"occurrence":null,"reference":null,"native":{"refused":{"field":"deposited"}},"reason":"money in the game is native (ruleset v2); the reference has no such command"},
+{"id":"period-impossible","payload":{"budgetId":"0190f3a0-0000-7000-8000-0000000000b3","periodStart":"2026-02-30","outcome":"within","deposited":false},"occurrence":null,"reference":null,"native":{"refused":{"field":"periodStart"}},"reason":"money in the game is native (ruleset v2); the reference has no such command"},
+{"id":"budget-not-uuid","payload":{"budgetId":"home","periodStart":"2026-10-01","outcome":"within","deposited":false},"occurrence":null,"reference":null,"native":{"refused":{"field":"budgetId"}},"reason":"native ids are UUIDs"},
+{"id":"amount-in-payload","payload":{"budgetId":"0190f3a0-0000-7000-8000-0000000000b3","periodStart":"2026-10-01","outcome":"within","deposited":true,"depositMinor":1200},"occurrence":null,"reference":null,"native":{"refused":{"field":"depositMinor"}},"reason":"content stays in the record the command names, so the payload refuses it"}
+],
+"goal.milestone": [
+{"id":"p25","payload":{"goalId":"0190f3a0-0000-7000-8000-0000000000b4","milestone":"p25"},"occurrence":null,"reference":null,"native":{"accepted":true},"reason":"money in the game is native (ruleset v2); the reference has no such command"},
+{"id":"p50","payload":{"goalId":"0190f3a0-0000-7000-8000-0000000000b4","milestone":"p50"},"occurrence":null,"reference":null,"native":{"accepted":true},"reason":"money in the game is native (ruleset v2); the reference has no such command"},
+{"id":"p75","payload":{"goalId":"0190f3a0-0000-7000-8000-0000000000b4","milestone":"p75"},"occurrence":null,"reference":null,"native":{"accepted":true},"reason":"money in the game is native (ruleset v2); the reference has no such command"},
+{"id":"p100","payload":{"goalId":"0190f3a0-0000-7000-8000-0000000000b4","milestone":"p100"},"occurrence":null,"reference":null,"native":{"accepted":true},"reason":"money in the game is native (ruleset v2); the reference has no such command"},
+{"id":"milestone-unknown","payload":{"goalId":"0190f3a0-0000-7000-8000-0000000000b4","milestone":"p33"},"occurrence":null,"reference":null,"native":{"refused":{"field":"milestone"}},"reason":"money in the game is native (ruleset v2); the reference has no such command"},
+{"id":"milestone-missing","payload":{"goalId":"0190f3a0-0000-7000-8000-0000000000b4"},"occurrence":null,"reference":null,"native":{"refused":{"field":"milestone"}},"reason":"money in the game is native (ruleset v2); the reference has no such command"},
+{"id":"goal-missing","payload":{"milestone":"p25"},"occurrence":null,"reference":null,"native":{"refused":{"field":"goalId"}},"reason":"money in the game is native (ruleset v2); the reference has no such command"},
+{"id":"goal-not-uuid","payload":{"goalId":"bike","milestone":"p25"},"occurrence":null,"reference":null,"native":{"refused":{"field":"goalId"}},"reason":"native ids are UUIDs"}
+],
+"goal.bought": [
+{"id":"within","payload":{"goalId":"0190f3a0-0000-7000-8000-0000000000b4","outcome":"within"},"occurrence":null,"reference":null,"native":{"accepted":true},"reason":"money in the game is native (ruleset v2); the reference has no such command"},
+{"id":"over","payload":{"goalId":"0190f3a0-0000-7000-8000-0000000000b4","outcome":"over"},"occurrence":null,"reference":null,"native":{"accepted":true},"reason":"money in the game is native (ruleset v2); the reference has no such command"},
+{"id":"outcome-unknown","payload":{"goalId":"0190f3a0-0000-7000-8000-0000000000b4","outcome":"within_typical"},"occurrence":null,"reference":null,"native":{"refused":{"field":"outcome"}},"reason":"money in the game is native (ruleset v2); the reference has no such command"},
+{"id":"outcome-missing","payload":{"goalId":"0190f3a0-0000-7000-8000-0000000000b4"},"occurrence":null,"reference":null,"native":{"refused":{"field":"outcome"}},"reason":"money in the game is native (ruleset v2); the reference has no such command"},
+{"id":"goal-not-uuid","payload":{"goalId":"bike","outcome":"within"},"occurrence":null,"reference":null,"native":{"refused":{"field":"goalId"}},"reason":"native ids are UUIDs"},
+{"id":"amount-in-payload","payload":{"goalId":"0190f3a0-0000-7000-8000-0000000000b4","outcome":"within","priceMinor":49900},"occurrence":null,"reference":null,"native":{"refused":{"field":"priceMinor"}},"reason":"content stays in the record the command names, so the payload refuses it"}
 ],
 "quest.fly": [
 {"id":"unknown-type","payload":{},"occurrence":null,"reference":{"refused":{"code":"CMD_001"}},"native":null,"reason":null}

@@ -21,7 +21,7 @@ public enum SettingTiming: Sendable, Hashable {
 
 /// Every command type the reference registers (`quest-commands.service.ts:103-113`, `compassion-commands.service.ts:42-43`,
 /// `metrics-commands.service.ts:60-63`, `finance-commands.service.ts:129-136`, `progression-commands.service.ts:42-44`,
-/// `quick-logs-commands.service.ts:114-121`), the account settings that feed replay, and the receipt scan.
+/// `quick-logs-commands.service.ts:114-121`), the account settings that feed replay, the receipt scan, and money in the game (ruleset v2).
 public enum MemoirCommandKind: String, CaseIterable, Sendable, Hashable {
   case questCreate = "quest.create"
   case questUpdate = "quest.update"
@@ -63,6 +63,10 @@ public enum MemoirCommandKind: String, CaseIterable, Sendable, Hashable {
   case accountSetIntensityMode = "account.setIntensityMode"
   case accountSetReturnerThreshold = "account.setReturnerThreshold"
   case receiptScan = "receipt.scan"
+  case moneyNoSpend = "money.noSpend"
+  case budgetClosePeriod = "budget.closePeriod"
+  case goalMilestone = "goal.milestone"
+  case goalBought = "goal.bought"
 
   public init?(_ type: CommandType) {
     guard let kind = Self.allCases.first(where: { $0.rawValue.utf8.elementsEqual(type.name.utf8) }) else { return nil }

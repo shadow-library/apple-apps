@@ -3,6 +3,8 @@ import { writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+import * as money from './money-v2.ts';
+
 const platformRepo = process.env.PLATFORM_REPO;
 if (!platformRepo) throw new Error('PLATFORM_REPO must point at the platform checkout');
 const outDir = dirname(fileURLToPath(import.meta.url));
@@ -232,11 +234,35 @@ const canonical = (value: Json): string => {
   return JSON.stringify(value);
 };
 
-const canonicalRuleset = canonical(nativeRuleset());
-writeFileSync(
-  join(outDir, 'ruleset-v1.json'),
-  `{\n"sha256": ${JSON.stringify(createHash('sha256').update(canonicalRuleset).digest('hex'))},\n"canonical": ${canonicalRuleset}\n}\n`,
-);
+const writeRuleset = (version: number, ruleset: Json): void => {
+  const text = canonical(ruleset);
+  writeFileSync(join(outDir, `ruleset-v${version}.json`), `{\n"sha256": ${JSON.stringify(createHash('sha256').update(text).digest('hex'))},\n"canonical": ${text}\n}\n`);
+};
+writeRuleset(1, nativeRuleset());
+
+// Ruleset v2: v1's tables with money in the game from the literal input in money-v2.ts.
+
+const scaled = (value: number, scale: number): number => toNumber(roundHalfUp(mul(int(value), q(BigInt(scale), 1000n))));
+const reward = (amount: money.Reward, scale: number): Json => ({ xp: scaled(amount.xp, scale), coins: scaled(amount.coins, scale) });
+const closeEffect = (effect: money.Effect, scale: number): Json =>
+  effect.kind === 'reward'
+    ? { kind: 'reward', ...(reward(effect, scale) as { [key: string]: Json }) }
+    : { kind: 'penalty', fine: scaled(effect.fine, scale), debuff: { multiplier: { thousandths: effect.multiplier }, days: scaled(effect.days, scale) } };
+const byMode = (table: (scale: number) => Json): Json => Object.fromEntries(Object.entries(money.intensityScale).map(([mode, scale]) => [mode, table(scale)]));
+const scaledTable = <T>(table: Record<string, T>, map: (value: T, scale: number) => Json) =>
+  byMode(scale => Object.fromEntries(Object.entries(table).map(([key, value]) => [key, map(value, scale)])));
+const v1 = nativeRuleset() as { [key: string]: Json };
+writeRuleset(2, {
+  ...v1,
+  version: 2,
+  money: {
+    ...money.moneyV2,
+    dailyLog: byMode(scale => reward(money.standardDailyLog, scale)),
+    close: scaledTable(money.standardClose, closeEffect),
+    milestones: scaledTable(money.standardMilestones, reward),
+    goalPurchase: scaledTable(money.standardGoalPurchase, reward),
+  },
+});
 
 // Level curve. 100 * level^1.5 is sqrt(10000 * level^3); a square root of an integer is never a half, so rounding needs only the integer root.
 

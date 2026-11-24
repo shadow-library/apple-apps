@@ -15,21 +15,37 @@ struct RulesetTests {
     CanonicalJSON.encode(try CanonicalJSON.decode(JSONEncoder().encode(ruleset), mode: .lenient))
   }
 
-  @Test("should keep ruleset v1 byte for byte as the reference's RULESET_V1 in exact units, pinned by its canonical hash")
-  func pinsVersionOne() throws {
-    let pinned = try JSONDecoder().decode(Pinned.self, from: RuleVectors.data("rules/ruleset-v1.json"))
-    let native = try Self.canonical(.v1)
+  private static func expectPinned(_ ruleset: Ruleset, by file: String) throws {
+    let pinned = try JSONDecoder().decode(Pinned.self, from: RuleVectors.data("rules/\(file)"))
+    let native = try Self.canonical(ruleset)
     let digest = SHA256.hash(data: native).map { String(format: "%02x", $0) }.joined()
-    #expect(digest == pinned.sha256, "Ruleset.v1 changed; publish a new ruleset version instead of editing a frozen one.")
+    #expect(digest == pinned.sha256, "Ruleset.v\(ruleset.version) changed; publish a new ruleset version instead of editing a frozen one.")
     #expect(native == CanonicalJSON.encode(pinned.canonical))
   }
 
-  @Test("should resolve only published versions")
+  @Test("should keep ruleset v1 byte for byte as the reference's RULESET_V1 in exact units, pinned by its canonical hash")
+  func pinsVersionOne() throws {
+    try Self.expectPinned(.v1, by: "ruleset-v1.json")
+    #expect(Ruleset.v1.money == nil)
+  }
+
+  @Test("should keep ruleset v2 byte for byte as v1's tables plus the money rules of Fixtures/rules/money-v2.ts")
+  func shouldPinVersionTwo() throws {
+    try Self.expectPinned(.v2, by: "ruleset-v2.json")
+    let one = try #require(try CanonicalJSON.decode(try Self.canonical(.v1), mode: .lenient).objectValue)
+    var two = try #require(try CanonicalJSON.decode(try Self.canonical(.v2), mode: .lenient).objectValue)
+    #expect(two.removeValue(forKey: "money") != nil)
+    #expect(two.removeValue(forKey: "version") == 2)
+    #expect(two == one.filter { $0.key != "version" }, "v2 keeps every v1 table")
+  }
+
+  @Test("should resolve only published versions, issuing under v1 until replay handles money")
   func resolvesVersions() {
     #expect(Ruleset.version(1) == .v1)
+    #expect(Ruleset.version(2) == .v2)
     #expect(Ruleset.current == .v1)
     #expect(Ruleset.version(0) == nil)
-    #expect(Ruleset.version(2) == nil)
+    #expect(Ruleset.version(3) == nil)
   }
 
   @Test("should hold the level table from level 1 to the maximum")

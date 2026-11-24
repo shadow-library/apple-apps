@@ -46,6 +46,7 @@ public struct CommandIssuer: Sendable {
   }
 
   public func command(_ body: MemoirCommandBody) throws(CommandIssueError) -> MemoirCommand {
+    guard body.minimumRulesetVersion <= Ruleset.current.version else { throw .refused(.needsNewerRuleset(body.kind, minimum: body.minimumRulesetVersion)) }
     let now = wallClock()
     guard let instant = Int64(exactly: (now.timeIntervalSince1970 * 1000).rounded(.down)) else { throw .clock(.dateOutOfRange) }
     let stamp: IssueStamp

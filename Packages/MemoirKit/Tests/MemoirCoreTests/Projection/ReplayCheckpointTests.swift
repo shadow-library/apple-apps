@@ -219,7 +219,7 @@ struct ReplayCheckpointTests {
 
   @Test func shouldCheckpointOnlyAStateThatTookCommandsInAndDidNotHalt() throws {
     #expect(throws: ReplayCheckpointError.notAtBoundary) { try ReplayCheckpoint(.initial, stamp: Self.stamp) }
-    let future = try ReplayFixture.command(1, .recoveryComplete(RecoveryCompletion()), at: "2026-03-01T08:00:00Z", rulesetVersion: 2)
+    let future = try ReplayFixture.command(1, .recoveryComplete(RecoveryCompletion()), at: "2026-03-01T08:00:00Z", rulesetVersion: 3)
     let halted = Replay.run(try ReplayFixture.entries([future]))
     #expect(halted.halt != nil)
     #expect(throws: ReplayCheckpointError.notAtBoundary) { try ReplayCheckpoint(halted, stamp: Self.stamp) }

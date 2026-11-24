@@ -15,11 +15,17 @@ public struct Ruleset: Sendable, Hashable, Encodable {
   public let reasonTags: [ReasonTag]
   public let quickLogs: RuleTable<QuickLogSource, QuickLogReward>
   public let subscriptionConfirmationCoins: Int
+  /// Nil before v2, and then left out of the encoding, so v1's canonical bytes stay as published.
+  public private(set) var money: MoneyRules?
 
   public static let current = v1
 
   public static func version(_ version: Int) -> Ruleset? {
-    version == v1.version ? v1 : nil
+    switch version {
+    case v1.version: v1
+    case v2.version: v2
+    default: nil
+    }
   }
 }
 

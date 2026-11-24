@@ -183,6 +183,18 @@ struct MoneyReadsTests {
     MoneyReadsFixture.issuer(on: MoneyReadsFixture.date(day), hour: hour)
   }
 
+  @Test func shouldNameTheExpensesDayInItsCreationOnlyUnderARulesetWithMoneyRules() async throws {
+    let stores = try MemoirStores.openInMemory()
+    let created = MoneyReadsFixture.expense(1, 1250, "EUR", on: "2026-11-19")
+    try await MoneyReadsFixture.write(stores.main) { transaction in
+      try ExpenseEdits.create(created, source: .ocr, issuer: Self.issuer(hour: 9, on: "2026-11-20"), in: &transaction)
+    }
+    let commands = try await stores.main.read { transaction in try MemoirCommand.listing(in: transaction) }.entries
+    let occurredOn = Ruleset.current.money == nil ? nil : MoneyReadsFixture.date("2026-11-19")
+    #expect(try commands.map { try MemoirCommandBody($0.record) } == [.expenseCreate(ExpenseCreation(id: created.id, source: .ocr, occurredOn: occurredOn))])
+    #expect(commands.map(\.record.rulesetVersion) == [Ruleset.current.version])
+  }
+
   @Test func shouldReadAnExpensesHistoryAsTypedDiffsFromItsCommands() async throws {
     let stores = try MemoirStores.openInMemory()
     let id = MoneyReadsFixture.id(1)

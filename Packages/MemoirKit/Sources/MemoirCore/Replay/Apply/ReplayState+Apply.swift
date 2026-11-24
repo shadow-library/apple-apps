@@ -44,6 +44,7 @@ extension ReplayState {
     case .accountSetTimeZone(let change): return setTimeZone(change, in: context)
     case .accountSetIntensityMode(let change): return setIntensityMode(change, in: context)
     case .accountSetReturnerThreshold(let change): return setReturnerThreshold(change, in: context)
+    case .moneyNoSpend, .budgetClosePeriod, .goalMilestone, .goalBought: throw .needsNewerRuleset(minimum: body.minimumRulesetVersion)
     }
   }
 }

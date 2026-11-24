@@ -169,7 +169,7 @@ struct ReminderSchedulerTests {
     try await world.append(
       try MemoirCommand(
         id: UUID.v7(at: TestClock.date(day: 0, minute: 290)), body: .recoveryComplete(RecoveryCompletion()), instantMillis: TestClock.millis(day: 0, minute: 290),
-        utcOffsetMinutes: 0, issuedOn: TestClock.day0, rulesetVersion: 2))
+        utcOffsetMinutes: 0, issuedOn: TestClock.day0, rulesetVersion: 3))
 
     try await world.until("the quest reminders to pause") { $0.questRequests(walk).isEmpty }
     #expect(world.fake.subscriptionRequests.count == 1)

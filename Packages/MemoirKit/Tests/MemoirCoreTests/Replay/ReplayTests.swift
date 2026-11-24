@@ -117,11 +117,56 @@ struct ReplayTests {
   }
 
   @Test func shouldHaltOnARulesetThisAppLacks() throws {
-    let newer = try Fixture.command(3, .questComplete(try Fixture.occurrence("2026-03-11")), at: "2026-03-11T08:10:00Z", rulesetVersion: 2)
+    let newer = try Fixture.command(3, .questComplete(try Fixture.occurrence("2026-03-11")), at: "2026-03-11T08:10:00Z", rulesetVersion: 3)
     let state = Fixture.fold(try Fixture.entries(Self.createAndComplete() + [newer]))
-    #expect(state.halt == .rulesetUnavailable(command: newer.id, version: 2))
+    #expect(state.halt == .rulesetUnavailable(command: newer.id, version: 3))
     #expect(state.logs[try Fixture.occurrence("2026-03-11")] == nil)
     #expect(state.highestRulesetVersion == 1)
+  }
+
+  private static func moneyBodies() throws -> [MemoirCommandBody] {
+    let date = try MemoirStoreFixture.date("2026-03-10")
+    return [
+      .moneyNoSpend(NoSpendDay(date: date)),
+      .expenseCreate(ExpenseCreation(id: CommandSamples.record, occurredOn: date)),
+      .budgetClosePeriod(try BudgetPeriodClose(budgetId: CommandSamples.budget, periodStart: try MemoirStoreFixture.date("2026-02-01"), outcome: .overMore, deposited: false)),
+      .goalMilestone(GoalMilestoneReached(goalId: CommandSamples.goal, milestone: .p100)),
+      .goalBought(GoalPurchase(goalId: CommandSamples.goal, outcome: .within)),
+    ]
+  }
+
+  @Test func shouldRecordACommandStampedBelowItsBodysRulesetAsRefusedAndReplayOn() throws {
+    let stale = try Self.moneyBodies().enumerated().map { index, body in
+      try Fixture.command(10 + index, body, at: "2026-03-10T07:0\(index):00Z", rulesetVersion: 1)
+    }
+    let update = try Fixture.command(20, .expenseUpdate(RecordReference(id: CommandSamples.record)), at: "2026-03-10T07:30:00Z")
+    let later = try Fixture.command(3, .questComplete(try Fixture.occurrence("2026-03-11")), at: "2026-03-11T08:10:00Z")
+    let commands = try Self.createAndComplete() + stale + [update, later]
+    let state = Replay.run(try Fixture.entries(commands))
+    #expect(state.halt == nil)
+    for command in stale {
+      #expect(state.outcomes[command.id] == .refused(.needsNewerRuleset(minimum: 2)), "\(command.type)")
+    }
+    #expect(state.outcomes[update.id] == .refused(.expenseNotFound), "a refused creation names no expense")
+    #expect(state.outcomes[later.id] == .applied)
+    #expect(state.logs[try Fixture.occurrence("2026-03-11")]?.state == .completed)
+    let without = Replay.run(try Fixture.entries(Self.createAndComplete() + [later]))
+    #expect(state.hero == without.hero && state.logs == without.logs && state.days == without.days, "refusing changes nothing else")
+    #expect(ReplayRefusal.needsNewerRuleset(minimum: 2).code == "memoir_replay.needs_newer_ruleset")
+    #expect(ReplayRefusal.needsNewerRuleset(minimum: 2).referenceCode == nil)
+  }
+
+  @Test func shouldHaltAtAnyCommandStampedWithMoneyRulesUntilReplayAppliesThem() throws {
+    let stamped = try Self.moneyBodies() + [.questComplete(try Fixture.occurrence("2026-03-11")), .receiptScan(ReceiptScan())]
+    let before = Replay.run(try Fixture.entries(Self.createAndComplete()))
+    for (index, body) in stamped.enumerated() {
+      let command = try Fixture.command(10 + index, body, at: "2026-03-11T08:10:00Z", rulesetVersion: 2)
+      let later = try Fixture.command(30, .receiptScan(ReceiptScan()), at: "2026-03-11T09:00:00Z")
+      let state = Replay.run(try Fixture.entries(Self.createAndComplete() + [command, later]))
+      #expect(state.halt == .rulesetUnavailable(command: command.id, version: 2), "\(body.kind.rawValue)")
+      #expect(state.outcomes[command.id] == nil && state.outcomes[later.id] == nil, "\(body.kind.rawValue)")
+      #expect(state.hero == before.hero && state.days == before.days && state.highestRulesetVersion == 1, "a halt moves nothing, not even a day")
+    }
   }
 
   @Test func shouldHaltAtAnUnreadableItemInClockOrder() async throws {

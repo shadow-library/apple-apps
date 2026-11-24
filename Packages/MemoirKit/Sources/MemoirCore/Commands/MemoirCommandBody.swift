@@ -50,6 +50,10 @@ public enum MemoirCommandBody: Sendable, Hashable {
   case accountSetIntensityMode(IntensityModeChange)
   case accountSetReturnerThreshold(ReturnerThresholdChange)
   case receiptScan(ReceiptScan)
+  case moneyNoSpend(NoSpendDay)
+  case budgetClosePeriod(BudgetPeriodClose)
+  case goalMilestone(GoalMilestoneReached)
+  case goalBought(GoalPurchase)
 
   public init(_ command: MemoirCommand) throws(CommandRefusal) {
     try self.init(type: command.type, payload: command.payload.members, occurrence: command.occurrence)
@@ -115,6 +119,19 @@ public enum MemoirCommandBody: Sendable, Hashable {
     case .accountSetIntensityMode: .accountSetIntensityMode
     case .accountSetReturnerThreshold: .accountSetReturnerThreshold
     case .receiptScan: .receiptScan
+    case .moneyNoSpend: .moneyNoSpend
+    case .budgetClosePeriod: .budgetClosePeriod
+    case .goalMilestone: .goalMilestone
+    case .goalBought: .goalBought
+    }
+  }
+
+  /// The first ruleset that gives this body a meaning; replay refuses one stamped with an older ruleset, and it cannot be issued under one.
+  public var minimumRulesetVersion: Int {
+    switch self {
+    case .moneyNoSpend, .budgetClosePeriod, .goalMilestone, .goalBought: Ruleset.v2.version
+    case .expenseCreate(let creation): creation.occurredOn == nil ? Ruleset.v1.version : Ruleset.v2.version
+    default: Ruleset.v1.version
     }
   }
 
@@ -183,6 +200,10 @@ public enum MemoirCommandBody: Sendable, Hashable {
     case .accountSetIntensityMode(let change): change.write(to: &writer)
     case .accountSetReturnerThreshold(let change): change.write(to: &writer)
     case .receiptScan(let scan): scan.write(to: &writer)
+    case .moneyNoSpend(let day): day.write(to: &writer)
+    case .budgetClosePeriod(let close): close.write(to: &writer)
+    case .goalMilestone(let milestone): milestone.write(to: &writer)
+    case .goalBought(let purchase): purchase.write(to: &writer)
     }
   }
 
@@ -232,6 +253,10 @@ public enum MemoirCommandBody: Sendable, Hashable {
     case .accountSetIntensityMode: return .accountSetIntensityMode(try IntensityModeChange(reading: &reader))
     case .accountSetReturnerThreshold: return .accountSetReturnerThreshold(try ReturnerThresholdChange(reading: &reader))
     case .receiptScan: return .receiptScan(try ReceiptScan(reading: &reader))
+    case .moneyNoSpend: return .moneyNoSpend(try NoSpendDay(reading: &reader))
+    case .budgetClosePeriod: return .budgetClosePeriod(try BudgetPeriodClose(reading: &reader))
+    case .goalMilestone: return .goalMilestone(try GoalMilestoneReached(reading: &reader))
+    case .goalBought: return .goalBought(try GoalPurchase(reading: &reader))
     }
   }
 }

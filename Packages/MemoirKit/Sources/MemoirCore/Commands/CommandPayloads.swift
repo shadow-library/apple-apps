@@ -153,23 +153,28 @@ public enum ExpenseSource: String, RuleKey {
   case ocr
 }
 
+/// `occurredOn`, the expense's own date, is what lets the creation cover that day's money logging; it arrived with ruleset v2.
 public struct ExpenseCreation: Sendable, Hashable {
   public let id: UUID
   public let source: ExpenseSource
+  public let occurredOn: LocalDate?
 
-  public init(id: UUID, source: ExpenseSource = .manual) {
+  public init(id: UUID, source: ExpenseSource = .manual, occurredOn: LocalDate? = nil) {
     self.id = id
     self.source = source
+    self.occurredOn = occurredOn
   }
 
   init(reading reader: inout PayloadReader) throws(CommandRefusal) {
     let id = try reader.uuid("id")
-    self.init(id: id, source: reader.contains("source") ? try reader.choice("source", as: ExpenseSource.self) : .manual)
+    let source = reader.contains("source") ? try reader.choice("source", as: ExpenseSource.self) : .manual
+    self.init(id: id, source: source, occurredOn: reader.contains("occurredOn") ? try reader.date("occurredOn") : nil)
   }
 
   func write(to writer: inout PayloadWriter) {
     writer.put("id", id)
     writer.put("source", token: source)
+    writer.put("occurredOn", occurredOn)
   }
 }
 
@@ -505,5 +510,99 @@ public struct ReceiptScan: Sendable, Hashable {
 
   func write(to writer: inout PayloadWriter) {
     writer.put("receiptId", receiptId)
+  }
+}
+
+/// `money.noSpend`: the owner says nothing was spent on `date`, which covers that day's money logging as an expense would.
+public struct NoSpendDay: Sendable, Hashable {
+  public let date: LocalDate
+
+  public init(date: LocalDate) {
+    self.date = date
+  }
+
+  init(reading reader: inout PayloadReader) throws(CommandRefusal) {
+    self.init(date: try reader.date("date"))
+  }
+
+  func write(to writer: inout PayloadWriter) {
+    writer.put("date", date)
+  }
+}
+
+/// `budget.closePeriod`: the verdict on the budget's period starting `periodStart`, and whether a savings deposit was written with it. Amounts stay in
+/// the deposit record; a period over its limit or unscored deposits nothing.
+public struct BudgetPeriodClose: Sendable, Hashable {
+  public let budgetId: UUID
+  public let periodStart: LocalDate
+  public let outcome: BudgetCloseOutcome
+  public let deposited: Bool
+
+  public init(budgetId: UUID, periodStart: LocalDate, outcome: BudgetCloseOutcome, deposited: Bool) throws(CommandRefusal) {
+    switch (outcome, deposited) {
+    case (.over10, true), (.over25, true), (.overMore, true), (.unscored, true): throw .invalidField(field: "deposited", problem: .notAllowed)
+    default: break
+    }
+    self.budgetId = budgetId
+    self.periodStart = periodStart
+    self.outcome = outcome
+    self.deposited = deposited
+  }
+
+  init(reading reader: inout PayloadReader) throws(CommandRefusal) {
+    let budgetId = try reader.uuid("budgetId")
+    let periodStart = try reader.date("periodStart")
+    let outcome = try reader.choice("outcome", as: BudgetCloseOutcome.self)
+    guard let deposited = reader.value("deposited")?.boolValue else { throw .invalidField(field: "deposited", problem: .notBoolean) }
+    try self.init(budgetId: budgetId, periodStart: periodStart, outcome: outcome, deposited: deposited)
+  }
+
+  func write(to writer: inout PayloadWriter) {
+    writer.put("budgetId", budgetId)
+    writer.put("periodStart", periodStart)
+    writer.put("outcome", token: outcome)
+    writer.put("deposited", deposited)
+  }
+}
+
+/// `goal.milestone`: a savings goal's share reached a quarter, half, three quarters or all of its target.
+public struct GoalMilestoneReached: Sendable, Hashable {
+  public let goalId: UUID
+  public let milestone: GoalMilestone
+
+  public init(goalId: UUID, milestone: GoalMilestone) {
+    self.goalId = goalId
+    self.milestone = milestone
+  }
+
+  init(reading reader: inout PayloadReader) throws(CommandRefusal) {
+    let goalId = try reader.uuid("goalId")
+    self.init(goalId: goalId, milestone: try reader.choice("milestone", as: GoalMilestone.self))
+  }
+
+  func write(to writer: inout PayloadWriter) {
+    writer.put("goalId", goalId)
+    writer.put("milestone", token: milestone)
+  }
+}
+
+/// `goal.bought`: the goal's purchase, at or under its target (`within`) or above it.
+public struct GoalPurchase: Sendable, Hashable {
+  public let goalId: UUID
+  public let outcome: GoalPurchaseOutcome
+
+  public init(goalId: UUID, outcome: GoalPurchaseOutcome) {
+    self.goalId = goalId
+    self.outcome = outcome
+  }
+
+  init(reading reader: inout PayloadReader) throws(CommandRefusal) {
+    let goalId = try reader.uuid("goalId")
+    self.init(goalId: goalId, outcome: try reader.choice("outcome", as: GoalPurchaseOutcome.self))
+  }
+
+  func write(to writer: inout PayloadWriter) {
+    writer.put("goalId", goalId)
+    writer.put("outcome", token: outcome)
   }
 }

@@ -24,6 +24,9 @@ struct CommandBodyTests {
     add(MetricEntrySource.self)
     add(ExpenseSource.self)
     add(QuestModuleLink.self)
+    add(BudgetCloseOutcome.self)
+    add(GoalMilestone.self)
+    add(GoalPurchaseOutcome.self)
     return tokens
   }()
 
@@ -32,7 +35,7 @@ struct CommandBodyTests {
   }
 
   @Test func shouldCoverEveryCommandTypeOfTheReference() throws {
-    #expect(MemoirCommandKind.allCases.count == 40)
+    #expect(MemoirCommandKind.allCases.count == 44)
     #expect(Set(try CommandSamples.all().map(\.kind)) == Set(MemoirCommandKind.allCases))
     for kind in MemoirCommandKind.allCases { #expect(MemoirCommandKind(kind.commandType) == kind) }
   }

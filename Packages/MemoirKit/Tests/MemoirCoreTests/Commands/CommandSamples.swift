@@ -9,6 +9,8 @@ enum CommandSamples {
   static let metric = MemoirStoreFixture.metric
   static let record = MemoirStoreFixture.uuid("0190f3a0-0000-7000-8000-0000000000c1")
   static let preset = MemoirStoreFixture.uuid("0190f3a0-0000-7000-8000-0000000000e1")
+  static let budget = MemoirStoreFixture.uuid("0190f3a0-0000-7000-8000-0000000000b3")
+  static let goal = MemoirStoreFixture.uuid("0190f3a0-0000-7000-8000-0000000000b4")
 
   static func occurrence() throws -> Occurrence {
     Occurrence(quest: quest, date: try MemoirStoreFixture.date("2026-11-19"))
@@ -81,6 +83,8 @@ enum CommandSamples {
       .metricRegister(MetricRegistration(metric: MetricReference(id: metric, metricClass: .activity), date: date, source: .questLog, questLog: occurrence)),
       .expenseCreate(ExpenseCreation(id: record)),
       .expenseCreate(ExpenseCreation(id: record, source: .ocr)),
+      .expenseCreate(ExpenseCreation(id: record, occurredOn: date)),
+      .expenseCreate(ExpenseCreation(id: record, source: .ocr, occurredOn: try MemoirStoreFixture.date("2026-11-18"))),
       .expenseUpdate(RecordReference(id: record)),
       .expenseDelete(RecordReference(id: record)),
       .subscriptionCreate(RecordReference(id: record)),
@@ -109,8 +113,21 @@ enum CommandSamples {
       .accountSetReturnerThreshold(try ReturnerThresholdChange(days: 90)),
       .receiptScan(ReceiptScan()),
       .receiptScan(ReceiptScan(receiptId: record)),
+      .moneyNoSpend(NoSpendDay(date: date)),
+      .budgetClosePeriod(try BudgetPeriodClose(budgetId: budget, periodStart: try MemoirStoreFixture.date("2026-10-01"), outcome: .withinTypical, deposited: true)),
+      .budgetClosePeriod(try BudgetPeriodClose(budgetId: budget, periodStart: try MemoirStoreFixture.date("2026-10-01"), outcome: .within, deposited: false)),
+      .budgetClosePeriod(try BudgetPeriodClose(budgetId: budget, periodStart: try MemoirStoreFixture.date("2026-09-01"), outcome: .over25, deposited: false)),
+      .budgetClosePeriod(try BudgetPeriodClose(budgetId: budget, periodStart: try MemoirStoreFixture.date("2026-08-01"), outcome: .unscored, deposited: false)),
+      .goalMilestone(GoalMilestoneReached(goalId: goal, milestone: .p25)),
+      .goalMilestone(GoalMilestoneReached(goalId: goal, milestone: .p100)),
+      .goalBought(GoalPurchase(goalId: goal, outcome: .within)),
+      .goalBought(GoalPurchase(goalId: goal, outcome: .over)),
     ]
     return bodies
+  }
+
+  static func issuable() throws -> [MemoirCommandBody] {
+    try all().filter { $0.minimumRulesetVersion <= Ruleset.current.version }
   }
 
   static func text(for body: MemoirCommandBody) -> String? {

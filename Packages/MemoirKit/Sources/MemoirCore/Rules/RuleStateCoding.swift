@@ -192,6 +192,16 @@ extension Halves: Decodable {
   }
 }
 
+extension Thousandths: Decodable {
+  private enum DecodingKeys: String, CodingKey {
+    case thousandths
+  }
+
+  public init(from decoder: any Decoder) throws {
+    self.init(try decoder.container(keyedBy: DecodingKeys.self).decode(Int.self, forKey: .thousandths))
+  }
+}
+
 extension RewardAmount: Codable {
   private enum CodingKeys: String, CodingKey {
     case xp

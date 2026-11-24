@@ -219,7 +219,7 @@ struct MemoirRestoreTests {
     let source = try world.open("Source")
     _ = try await Self.fill(source)
     let contents = try await Self.contents(of: source, imagesIn: world.root)
-    let newer = Self.changingFirstCommand(in: contents) { $0[CommandMember.rulesetVersion.rawValue] = .int(Int64(Ruleset.current.version + 1)) }
+    let newer = Self.changingFirstCommand(in: contents) { $0[CommandMember.rulesetVersion.rawValue] = .int(3) }
     let unreadable = Self.changingFirstCommand(in: contents) { $0[CommandMember.payload.rawValue] = .object(["unknown_member": "x"]) }
 
     let tooNew = #expect(throws: MemoirRestoreError.self) { try MemoirRestore.check(newer) }
