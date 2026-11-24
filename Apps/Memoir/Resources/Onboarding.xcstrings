@@ -1,6 +1,17 @@
 {
   "sourceLanguage": "en",
   "strings": {
+    "%@ a month": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ a month"
+          }
+        }
+      }
+    },
     "%@ · about %@ of promises. %@": {
       "extractionState": "manual",
       "localizations": {
@@ -69,13 +80,24 @@
         }
       }
     },
-    "A day in Memoir runs from when you wake to when you sleep, not from midnight. Two times and a currency, and you never have to think about this again.": {
+    "A day in Memoir runs from when you wake to when you sleep, not from midnight. Two times, and you never have to think about this again.": {
       "extractionState": "manual",
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "A day in Memoir runs from when you wake to when you sleep, not from midnight. Two times and a currency, and you never have to think about this again."
+            "value": "A day in Memoir runs from when you wake to when you sleep, not from midnight. Two times, and you never have to think about this again."
+          }
+        }
+      }
+    },
+    "A limit for each month, or none yet.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A limit for each month, or none yet."
           }
         }
       }
@@ -168,6 +190,61 @@
         }
       }
     },
+    "Body": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Body"
+          }
+        }
+      }
+    },
+    "Both": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Both"
+          }
+        }
+      }
+    },
+    "Budgets, expenses and subscriptions, with nothing else on screen.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Budgets, expenses and subscriptions, with nothing else on screen."
+          }
+        }
+      }
+    },
+    "Budgets, expenses, subscriptions, receipts and savings.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Budgets, expenses, subscriptions, receipts and savings."
+          }
+        }
+      }
+    },
+    "Build habits as a game": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Build habits as a game"
+          }
+        }
+      }
+    },
     "Choose a start time": {
       "extractionState": "manual",
       "localizations": {
@@ -197,6 +274,28 @@
           "stringUnit": {
             "state": "translated",
             "value": "Choose at least one day."
+          }
+        }
+      }
+    },
+    "Choose at least one part of Memoir to continue.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Choose at least one part of Memoir to continue."
+          }
+        }
+      }
+    },
+    "Choose for myself": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Choose for myself"
           }
         }
       }
@@ -267,6 +366,17 @@
         }
       }
     },
+    "Daily promises, a plan for the week, recovery and a weekly review.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Daily promises, a plan for the week, recovery and a weekly review."
+          }
+        }
+      }
+    },
     "Days of the week": {
       "extractionState": "manual",
       "localizations": {
@@ -285,6 +395,28 @@
           "stringUnit": {
             "state": "translated",
             "value": "Detected from this device. Travel will not move your day unless you change it."
+          }
+        }
+      }
+    },
+    "Enter a limit above zero, or leave it empty for no limit yet.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Enter a limit above zero, or leave it empty for no limit yet."
+          }
+        }
+      }
+    },
+    "Entries in your own words.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Entries in your own words."
           }
         }
       }
@@ -311,6 +443,17 @@
         }
       }
     },
+    "Everything": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Everything"
+          }
+        }
+      }
+    },
     "Everything else here can be changed in Settings, including after a year of history. Changing your wake window never rewrites past days.": {
       "extractionState": "manual",
       "localizations": {
@@ -329,6 +472,17 @@
           "stringUnit": {
             "state": "translated",
             "value": "Experience when kept · %@ up one"
+          }
+        }
+      }
+    },
+    "Experience, levels, coins and titles for what you keep up.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Experience, levels, coins and titles for what you keep up."
           }
         }
       }
@@ -355,6 +509,50 @@
         }
       }
     },
+    "Habits as a game, with spending that counts in it too.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Habits as a game, with spending that counts in it too."
+          }
+        }
+      }
+    },
+    "Hero": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hero"
+          }
+        }
+      }
+    },
+    "Hero needs Quests or Money, the parts it earns from.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hero needs Quests or Money, the parts it earns from."
+          }
+        }
+      }
+    },
+    "Home budget": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Home budget"
+          }
+        }
+      }
+    },
     "Home currency": {
       "extractionState": "manual",
       "localizations": {
@@ -362,6 +560,17 @@
           "stringUnit": {
             "state": "translated",
             "value": "Home currency"
+          }
+        }
+      }
+    },
+    "Home is your monthly budget in %@. Set a limit for each month now, or leave it empty and set one in Money whenever you like.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Home is your monthly budget in %@. Set a limit for each month now, or leave it empty and set one in Money whenever you like."
           }
         }
       }
@@ -421,6 +630,17 @@
         }
       }
     },
+    "Journal": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Journal"
+          }
+        }
+      }
+    },
     "Just looking?": {
       "extractionState": "manual",
       "localizations": {
@@ -443,6 +663,61 @@
         }
       }
     },
+    "Lowering the limit applies to this month at once; raising it waits for the next month.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lowering the limit applies to this month at once; raising it waits for the next month."
+          }
+        }
+      }
+    },
+    "Manage my spending": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Manage my spending"
+          }
+        }
+      }
+    },
+    "Meals": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Meals"
+          }
+        }
+      }
+    },
+    "Memoir can turn the habits you keep into a game, keep your spending in hand, or both. Only what you choose shows; the rest stays out of the way.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Memoir can turn the habits you keep into a game, keep your spending in hand, or both. Only what you choose shows; the rest stays out of the way."
+          }
+        }
+      }
+    },
+    "Memoir keeps every total in one home currency, even if you only start logging money later.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Memoir keeps every total in one home currency, even if you only start logging money later."
+          }
+        }
+      }
+    },
     "Memoir opens with it as soon as sync finishes, so there may be nothing to set up here. Wait a moment before creating anything.": {
       "extractionState": "manual",
       "localizations": {
@@ -450,6 +725,28 @@
           "stringUnit": {
             "state": "translated",
             "value": "Memoir opens with it as soon as sync finishes, so there may be nothing to set up here. Wait a moment before creating anything."
+          }
+        }
+      }
+    },
+    "Money": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Money"
+          }
+        }
+      }
+    },
+    "Monthly limit": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Monthly limit"
           }
         }
       }
@@ -487,6 +784,17 @@
         }
       }
     },
+    "Next is Memoir with what you chose.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Next is Memoir with what you chose."
+          }
+        }
+      }
+    },
     "Next is your Today screen with this quest on it.": {
       "extractionState": "manual",
       "localizations": {
@@ -505,6 +813,17 @@
           "stringUnit": {
             "state": "translated",
             "value": "Next is your Today screen. This quest starts %@, so today stays clear until then."
+          }
+        }
+      }
+    },
+    "No limit yet · set one in Money whenever you like": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No limit yet · set one in Money whenever you like"
           }
         }
       }
@@ -531,6 +850,17 @@
         }
       }
     },
+    "Nothing else is set up. Settings can turn on the other parts whenever you want them.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nothing else is set up. Settings can turn on the other parts whenever you want them."
+          }
+        }
+      }
+    },
     "Nothing is saved until the last step.": {
       "extractionState": "manual",
       "localizations": {
@@ -549,6 +879,17 @@
           "stringUnit": {
             "state": "translated",
             "value": "Nothing was changed. Go back to check the details, then create it again."
+          }
+        }
+      }
+    },
+    "One decision about money, made once.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "One decision about money, made once."
           }
         }
       }
@@ -586,6 +927,17 @@
         }
       }
     },
+    "Only what you choose shows, and Settings can change it later.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Only what you choose shows, and Settings can change it later."
+          }
+        }
+      }
+    },
     "Part of an export reached this device before the restore stopped. Erase it to start again empty, then restore the export again or set up from the start.": {
       "extractionState": "manual",
       "localizations": {
@@ -597,6 +949,39 @@
         }
       }
     },
+    "Pick the parts you want, one by one.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pick the parts you want, one by one."
+          }
+        }
+      }
+    },
+    "Quests": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Quests"
+          }
+        }
+      }
+    },
+    "Quests need Hero: experience and levels are what a kept promise earns.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Quests need Hero: experience and levels are what a kept promise earns."
+          }
+        }
+      }
+    },
     "Quests scheduled before this are not counted late.": {
       "extractionState": "manual",
       "localizations": {
@@ -604,6 +989,28 @@
           "stringUnit": {
             "state": "translated",
             "value": "Quests scheduled before this are not counted late."
+          }
+        }
+      }
+    },
+    "Quests you promise yourself, and a hero who levels up as you keep them.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Quests you promise yourself, and a hero who levels up as you keep them."
+          }
+        }
+      }
+    },
+    "Quests, money, journal, meals and body together.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Quests, money, journal, meals and body together."
           }
         }
       }
@@ -725,6 +1132,17 @@
           "stringUnit": {
             "state": "translated",
             "value": "Set up your day"
+          }
+        }
+      }
+    },
+    "Settings can turn any part on or off later. Turning one off hides it and keeps everything it holds.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Settings can turn any part on or off later. Turning one off hides it and keeps everything it holds."
           }
         }
       }
@@ -927,13 +1345,13 @@
         }
       }
     },
-    "Two decisions about time, one about money.": {
+    "Two decisions about time.": {
       "extractionState": "manual",
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Two decisions about time, one about money."
+            "value": "Two decisions about time."
           }
         }
       }
@@ -971,6 +1389,28 @@
         }
       }
     },
+    "Weight, measurements and activity.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Weight, measurements and activity."
+          }
+        }
+      }
+    },
+    "What do you want Memoir for?": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "What do you want Memoir for?"
+          }
+        }
+      }
+    },
     "What is the promise?": {
       "extractionState": "manual",
       "localizations": {
@@ -978,6 +1418,39 @@
           "stringUnit": {
             "state": "translated",
             "value": "What is the promise?"
+          }
+        }
+      }
+    },
+    "What shows": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "What shows"
+          }
+        }
+      }
+    },
+    "What you ate, in a line.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "What you ate, in a line."
+          }
+        }
+      }
+    },
+    "What you chose, with nothing else in the way.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "What you chose, with nothing else in the way."
           }
         }
       }
@@ -1059,6 +1532,17 @@
         }
       }
     },
+    "Your Home budget": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your Home budget"
+          }
+        }
+      }
+    },
     "Your day closes here — logs after it still belong to today.": {
       "extractionState": "manual",
       "localizations": {
@@ -1070,6 +1554,17 @@
         }
       }
     },
+    "Your day starts here, so a late night still counts as the day before.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your day starts here, so a late night still counts as the day before."
+          }
+        }
+      }
+    },
     "Your first quest": {
       "extractionState": "manual",
       "localizations": {
@@ -1077,6 +1572,17 @@
           "stringUnit": {
             "state": "translated",
             "value": "Your first quest"
+          }
+        }
+      }
+    },
+    "Your home currency": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your home currency"
           }
         }
       }

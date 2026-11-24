@@ -1,16 +1,25 @@
 import Foundation
 import MemoirCore
 
-/// The five steps (`HEADINGS`, `onboarding-screen.tsx:45-51`): the day, the first quest, when it happens, how strict it is, and the summary.
-nonisolated enum OnboardingStep: Int, CaseIterable, Hashable, Sendable {
+/// Every step onboarding can show. memoir-web's five (`HEADINGS`, `onboarding-screen.tsx:45-51`) are the day, the first quest, when it happens, how strict
+/// it is and the summary; here the purpose comes first, the home currency has its own step, and Home's limit has one while Money is chosen.
+nonisolated enum OnboardingStep: Hashable, Sendable, CaseIterable {
+  case purpose
   case day
+  case currency
   case quest
   case schedule
   case strictness
+  case budget
   case ready
 
-  var next: OnboardingStep? { OnboardingStep(rawValue: rawValue + 1) }
-  var previous: OnboardingStep? { OnboardingStep(rawValue: rawValue - 1) }
+  /// The steps the chosen modules need, in order: the quest's three only with Quests, Home's limit only with Money.
+  static func path(for modules: Set<MemoirModule>) -> [OnboardingStep] {
+    var steps: [OnboardingStep] = [.purpose, .day, .currency]
+    if modules.contains(.quests) { steps += [.quest, .schedule, .strictness] }
+    if modules.contains(.money) { steps.append(.budget) }
+    return steps + [.ready]
+  }
 }
 
 nonisolated enum OnboardingRecurrence: Hashable, Sendable, CaseIterable {
@@ -19,12 +28,44 @@ nonisolated enum OnboardingRecurrence: Hashable, Sendable, CaseIterable {
   case count
 }
 
-/// What keeps a step from going on (`problems`, `onboarding-screen.tsx:178-184`).
-nonisolated enum OnboardingProblem: Hashable, Sendable {
+/// The answers to "What do you want Memoir for?" that choose the modules in one tap.
+nonisolated enum OnboardingPreset: Hashable, Sendable, CaseIterable {
+  case habits
+  case spending
+  case both
+  case everything
+
+  var modules: Set<MemoirModule> {
+    switch self {
+    case .habits: [.hero, .quests]
+    case .spending: [.money]
+    case .both: [.hero, .quests, .money]
+    case .everything: Set(MemoirModule.allCases)
+    }
+  }
+}
+
+nonisolated enum OnboardingPurpose: Hashable, Sendable {
+  case preset(OnboardingPreset)
+  case custom(Set<MemoirModule>)
+
+  var modules: Set<MemoirModule> {
+    switch self {
+    case .preset(let preset): preset.modules
+    case .custom(let modules): modules
+    }
+  }
+}
+
+/// What keeps a step from going on (`problems`, `onboarding-screen.tsx:178-184`), with the modules `ModuleSelection` refuses and a limit that is no amount.
+nonisolated enum OnboardingProblem: Equatable, Sendable {
+  case modules(ModuleSelectionError)
   case sleepWindow(SleepWindowProblem)
   case nameRequired
   case noDays
   case anchorNeedsTime
+  case budgetAmount(AmountInputRefusal)
+  case budgetZero
 }
 
 /// The first quest as the reference drafts it (`draft()`, `onboarding-screen.tsx:200-225`): ten minutes, untimed unless it is an anchor, no reminder.
@@ -33,8 +74,10 @@ nonisolated struct OnboardingQuest: Sendable {
   let creation: QuestCreation
 }
 
-/// Everything the five steps decide; nothing is written until the last one.
+/// Everything the steps decide; nothing is written until the last one. A step left off the path by a later change of purpose keeps its answers, which
+/// the write ignores, so choosing Quests again brings them back.
 nonisolated struct OnboardingDraft: Hashable, Sendable {
+  static let moduleOrder: [MemoirModule] = [.quests, .hero, .money, .journal, .meals, .body]
   static let strictnessOrder: [Strictness] = [.optional, .goal, .routine, .anchor]
   static let statOrder: [StatAffinity] = [.body, .mind, .wealth, .discipline]
   static let weekdays: [LocalDate.Weekday] = [.monday, .tuesday, .wednesday, .thursday, .friday, .saturday, .sunday]
@@ -51,6 +94,7 @@ nonisolated struct OnboardingDraft: Hashable, Sendable {
   static let standardSleep = 22 * 60 + 30
   static let standardAnchorStart = 7 * 60
 
+  var purpose: OnboardingPurpose?
   var currency: CurrencyCode
   var timeZone: String
   var wakeMinute = standardWake
@@ -62,10 +106,21 @@ nonisolated struct OnboardingDraft: Hashable, Sendable {
   var chosenDays: Set<LocalDate.Weekday> = [.monday, .tuesday, .wednesday, .thursday, .friday]
   var timesPerWeek = 4
   var startMinute: Int?
+  var budgetText = ""
+  let format: AmountFormat
 
-  init(currency: CurrencyCode, timeZone: String) {
+  init(currency: CurrencyCode, timeZone: String, format: AmountFormat) {
     self.currency = currency
     self.timeZone = timeZone
+    self.format = format
+  }
+
+  var modules: Set<MemoirModule> { purpose?.modules ?? [] }
+
+  var path: [OnboardingStep] { OnboardingStep.path(for: modules) }
+
+  var selection: Result<ModuleSelection, ModuleSelectionError> {
+    Result { () throws(ModuleSelectionError) in try ModuleSelection(modules) }
   }
 
   var trimmedName: String { name.trimmingCharacters(in: .whitespacesAndNewlines) }
@@ -84,25 +139,56 @@ nonisolated struct OnboardingDraft: Hashable, Sendable {
   /// Only an anchor keeps a start time (`onboarding-screen.tsx:160`).
   var questStartMinute: Int? { strictness == .anchor ? startMinute : nil }
 
+  /// Home's limit in the home currency's minor units, read exactly through `AmountInput`; an empty field leaves Home without a limit until one is set.
+  var budgetLimit: Result<Int64?, AmountInputRefusal> {
+    let trimmed = budgetText.trimmingCharacters(in: .whitespacesAndNewlines)
+    guard !trimmed.isEmpty else { return .success(nil) }
+    return Result { () throws(AmountInputRefusal) in try AmountInput.minorUnits(trimmed, currency: currency, format: format) }
+  }
+
   func problem(at step: OnboardingStep) -> OnboardingProblem? {
     switch step {
-    case .day: SleepWindowProblem(wake: wakeMinute, sleep: sleepMinute).map(OnboardingProblem.sleepWindow)
-    case .quest: trimmedName.isEmpty ? .nameRequired : nil
-    case .schedule: scheduledDays.isEmpty ? .noDays : nil
-    case .strictness: strictness == .anchor && startMinute == nil ? .anchorNeedsTime : nil
-    case .ready: nil
+    case .purpose:
+      guard case .failure(let refusal) = selection else { return nil }
+      return .modules(refusal)
+    case .day: return SleepWindowProblem(wake: wakeMinute, sleep: sleepMinute).map(OnboardingProblem.sleepWindow)
+    case .currency, .ready: return nil
+    case .quest: return trimmedName.isEmpty ? .nameRequired : nil
+    case .schedule: return scheduledDays.isEmpty ? .noDays : nil
+    case .strictness: return strictness == .anchor && startMinute == nil ? .anchorNeedsTime : nil
+    case .budget:
+      switch budgetLimit {
+      case .failure(let refusal): return .budgetAmount(refusal)
+      case .success(.some(0)): return .budgetZero
+      case .success: return nil
+      }
     }
   }
+
+  /// No step on the path holds a problem; steps off it are not asked.
+  var isComplete: Bool { path.allSatisfy { problem(at: $0) == nil } }
 
   /// The first scheduled day from `today` on (`firstDay`, `onboarding-screen.tsx:111-115`).
   func firstDay(from today: LocalDate) -> LocalDate? {
     (0..<7).lazy.compactMap { today.adding(days: $0) }.first { scheduledDays.contains($0.weekday) }
   }
 
-  /// `onboarding.complete`'s values (`account.service.ts:159-176`): the home currency, enabled alone, and the day; the budget starts unset.
+  /// `onboarding.complete`'s values (`account.service.ts:159-176`): the home currency, enabled alone, and the day; the monthly budget starts unset, since
+  /// Home holds the limit. A module not chosen is written off and a chosen one left unwritten, which reads as on.
   var settings: AccountSettingsRecord? {
-    guard let window = ScheduleWindow(start: wakeMinute, end: sleepMinute) else { return nil }
-    return AccountSettingsRecord(defaultCurrency: currency, enabledCurrencies: [currency], schedule: window)
+    guard case .success(let selection) = selection, let window = ScheduleWindow(start: wakeMinute, end: sleepMinute) else { return nil }
+    var record = AccountSettingsRecord(defaultCurrency: currency, enabledCurrencies: [currency], schedule: window)
+    for module in MemoirModule.allCases where !selection.contains(module) { record.setModule(module, enabled: false) }
+    return record
+  }
+
+  /// With Hero and Money both chosen, money is scored from the account's first day.
+  var scoresMoney: Bool { modules.contains(.hero) && modules.contains(.money) }
+
+  /// Home's limit as the write sets it: only on a path with Money, and none when the field is empty.
+  var homeLimitMinor: Int64? {
+    guard path.contains(.budget), case .success(let limit) = budgetLimit else { return nil }
+    return limit
   }
 
   func quest(id: UUID = UUID(), startingOn today: LocalDate) throws -> OnboardingQuest {

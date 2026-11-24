@@ -250,9 +250,9 @@ struct MemoirWindowRuntimesTests {
     try await until("onboarding") { gate.state == .needed }
     let onboarding = OnboardingModel(context: MemoirScreenContext(ownerVault))
     #expect(onboarding.offersDemo)
+    onboarding.choose(.habits)
     onboarding.advance()
-    onboarding.setName("Morning walk")
-    #expect(onboarding.step == .quest && !onboarding.offersDemo)
+    #expect(onboarding.step == .day && !onboarding.offersDemo)
     onboarding.back()
     #expect(onboarding.offersDemo)
 

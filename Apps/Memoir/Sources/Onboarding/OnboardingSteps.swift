@@ -10,17 +10,15 @@ struct OnboardingDayStep: View {
     VStack(alignment: .leading, spacing: Spacing.space5) {
       OnboardingLead(
         Text(
-          "A day in Memoir runs from when you wake to when you sleep, not from midnight. Two times and a currency, and you never have to think about this again.",
+          "A day in Memoir runs from when you wake to when you sleep, not from midnight. Two times, and you never have to think about this again.",
           tableName: "Onboarding"))
-      OnboardingField(
-        label: Text("Wake time", tableName: "Onboarding"), helper: Text("Quests scheduled before this are not counted late.", tableName: "Onboarding")
-      ) {
+      OnboardingField(label: Text("Wake time", tableName: "Onboarding"), helper: wakeHelper) {
         DatePicker(selection: minute(\.wakeMinute), displayedComponents: .hourAndMinute) { Text("Wake time", tableName: "Onboarding") }.labelsHidden()
       }
       OnboardingField(
         label: Text("Sleep time", tableName: "Onboarding"),
         helper: Text("Your day closes here — logs after it still belong to today.", tableName: "Onboarding"),
-        problem: model.problem.map(OnboardingCopy.problem)
+        problem: model.problem.map { OnboardingCopy.problem($0, in: model.draft) }
       ) {
         DatePicker(selection: minute(\.sleepMinute), displayedComponents: .hourAndMinute) { Text("Sleep time", tableName: "Onboarding") }.labelsHidden()
       }
@@ -40,26 +38,19 @@ struct OnboardingDayStep: View {
         }
         .buttonStyle(.plain)
       }
-      OnboardingField(
-        label: Text("Home currency", tableName: "Onboarding"),
-        helper: Text(
-          "Chosen once. Spend in another currency keeps its own and converts to this one, and this stays fixed afterwards.", tableName: "Onboarding")
-      ) {
-        Picker(selection: $model.draft.currency) {
-          ForEach(SettingsCurrencies.supported, id: \.self) { code in Text(verbatim: SettingsCurrencies.label(code)).tag(code) }
-        } label: {
-          Text("Home currency", tableName: "Onboarding")
-        }
-        .labelsHidden()
-      }
       Text(
         "Everything else here can be changed in Settings, including after a year of history. Changing your wake window never rewrites past days.",
         tableName: "Onboarding"
       )
       .shadowFont(.footnote)
       .foregroundStyle(ShadowColor.textSecondary)
-      OnboardingSyncLink()
     }
+  }
+
+  private var wakeHelper: Text {
+    model.path.contains(.quest)
+      ? Text("Quests scheduled before this are not counted late.", tableName: "Onboarding")
+      : Text("Your day starts here, so a late night still counts as the day before.", tableName: "Onboarding")
   }
 
   private var zoneHelper: Text {
@@ -75,6 +66,120 @@ struct OnboardingDayStep: View {
   }
 }
 
+struct OnboardingPurposeStep: View {
+  let model: OnboardingModel
+
+  var body: some View {
+    VStack(alignment: .leading, spacing: Spacing.space5) {
+      OnboardingLead(
+        Text(
+          "Memoir can turn the habits you keep into a game, keep your spending in hand, or both. Only what you choose shows; the rest stays out of the way.",
+          tableName: "Onboarding"))
+      VStack(spacing: Spacing.space3) {
+        ForEach(OnboardingPreset.allCases, id: \.self) { preset in
+          OnboardingChoice(isSelected: model.draft.purpose == .preset(preset), action: { model.choose(preset) }) {
+            choice(Text(verbatim: OnboardingCopy.preset(preset)), Text(verbatim: OnboardingCopy.presetDescription(preset)))
+          }
+        }
+        OnboardingChoice(isSelected: customModules != nil, action: { model.chooseCustom() }) {
+          choice(Text("Choose for myself", tableName: "Onboarding"), Text("Pick the parts you want, one by one.", tableName: "Onboarding"))
+        }
+      }
+      if let modules = customModules {
+        VStack(alignment: .leading, spacing: Spacing.space3) {
+          ForEach(OnboardingDraft.moduleOrder, id: \.self) { module in
+            Toggle(isOn: Binding(get: { modules.contains(module) }, set: { model.setModule(module, enabled: $0) })) {
+              choice(Text(verbatim: OnboardingCopy.module(module)), Text(verbatim: OnboardingCopy.moduleDescription(module)))
+            }
+          }
+        }
+      }
+      if let problem = model.shownProblem { ShadowValidationMessage(Text(verbatim: OnboardingCopy.problem(problem, in: model.draft))) }
+      Text("Settings can turn any part on or off later. Turning one off hides it and keeps everything it holds.", tableName: "Onboarding")
+        .shadowFont(.footnote)
+        .foregroundStyle(ShadowColor.textSecondary)
+      OnboardingSyncLink()
+    }
+    .onChange(of: model.shownProblem) { _, problem in
+      guard let problem else { return }
+      AccessibilityNotification.Announcement(OnboardingCopy.problem(problem, in: model.draft)).post()
+    }
+  }
+
+  private var customModules: Set<MemoirModule>? {
+    guard case .custom(let modules) = model.draft.purpose else { return nil }
+    return modules
+  }
+
+  private func choice(_ title: Text, _ detail: Text) -> some View {
+    VStack(alignment: .leading, spacing: Spacing.space1) {
+      title.shadowFont(.headline).foregroundStyle(ShadowColor.textPrimary)
+      detail.shadowFont(.footnote).foregroundStyle(ShadowColor.textSecondary).fixedSize(horizontal: false, vertical: true)
+    }
+  }
+}
+
+struct OnboardingCurrencyStep: View {
+  @Bindable var model: OnboardingModel
+
+  var body: some View {
+    VStack(alignment: .leading, spacing: Spacing.space5) {
+      OnboardingLead(
+        Text("Memoir keeps every total in one home currency, even if you only start logging money later.", tableName: "Onboarding"))
+      OnboardingField(
+        label: Text("Home currency", tableName: "Onboarding"),
+        helper: Text(
+          "Chosen once. Spend in another currency keeps its own and converts to this one, and this stays fixed afterwards.", tableName: "Onboarding")
+      ) {
+        Picker(selection: $model.draft.currency) {
+          ForEach(SettingsCurrencies.supported, id: \.self) { code in Text(verbatim: SettingsCurrencies.label(code)).tag(code) }
+        } label: {
+          Text("Home currency", tableName: "Onboarding")
+        }
+        .labelsHidden()
+      }
+    }
+  }
+}
+
+/// Home's monthly limit, which may stay empty: Home then has no limit until one is set in Money.
+struct OnboardingBudgetStep: View {
+  let model: OnboardingModel
+
+  var body: some View {
+    let currency = model.draft.currency
+    VStack(alignment: .leading, spacing: Spacing.space5) {
+      OnboardingLead(
+        Text(
+          "Home is your monthly budget in \(currency.code). Set a limit for each month now, or leave it empty and set one in Money whenever you like.",
+          tableName: "Onboarding"))
+      OnboardingField(
+        label: Text("Monthly limit", tableName: "Onboarding"),
+        helper: Text("Lowering the limit applies to this month at once; raising it waits for the next month.", tableName: "Onboarding"),
+        problem: model.shownProblem.map { OnboardingCopy.problem($0, in: model.draft) }
+      ) {
+        HStack(spacing: Spacing.space2) {
+          TextField(
+            text: Binding(get: { model.draft.budgetText }, set: { model.setBudgetText($0) }),
+            prompt: Text(verbatim: MoneyText.example(currency, format: model.draft.format))
+          ) {
+            Text("Monthly limit", tableName: "Onboarding")
+          }
+          .shadowField()
+          .monospacedDigit()
+          .autocorrectionDisabled()
+          #if os(iOS)
+            .keyboardType(.decimalPad)
+          #endif
+          .accessibilityHint(Text(verbatim: currency.code))
+          .onSubmit { model.advance() }
+          Text(verbatim: currency.code).shadowFont(.body).foregroundStyle(ShadowColor.textSecondary).accessibilityHidden(true)
+        }
+      }
+    }
+  }
+}
+
 struct OnboardingQuestStep: View {
   let model: OnboardingModel
 
@@ -87,8 +192,7 @@ struct OnboardingQuestStep: View {
       OnboardingField(
         label: Text("What is the promise?", tableName: "Onboarding"),
         helper: Text("Concrete beats ambitious: read ten pages keeps better than read more.", tableName: "Onboarding"),
-        problem: model.nameTouched && model.problem == .nameRequired
-          ? String(localized: "Name the promise — for example, read 10 pages.", table: "Onboarding") : nil
+        problem: model.shownProblem == .nameRequired ? String(localized: "Name the promise — for example, read 10 pages.", table: "Onboarding") : nil
       ) {
         TextField(
           text: Binding(get: { model.draft.name }, set: { model.setName($0) }), prompt: Text("e.g. Read 10 pages", tableName: "Onboarding")
@@ -149,7 +253,7 @@ struct OnboardingScheduleStep: View {
           }
           .accessibilityElement(children: .contain)
           .accessibilityLabel(Text("Days of the week", tableName: "Onboarding"))
-          if model.problem == .noDays { ShadowValidationMessage(Text(verbatim: OnboardingCopy.problem(.noDays))) }
+          if model.problem == .noDays { ShadowValidationMessage(Text(verbatim: OnboardingCopy.problem(.noDays, in: model.draft))) }
         }
       case .count:
         OnboardingField(label: Text("How many days a week?", tableName: "Onboarding")) {
@@ -251,7 +355,7 @@ struct OnboardingStrictnessStep: View {
     OnboardingField(
       label: Text("Start time", tableName: "Onboarding"),
       helper: Text("Anchor quests happen at a fixed time each day, with thirty minutes of grace.", tableName: "Onboarding"),
-      problem: model.startTimeTouched && model.problem == .anchorNeedsTime ? String(localized: "Choose a start time to continue.", table: "Onboarding") : nil
+      problem: model.shownProblem == .anchorNeedsTime ? String(localized: "Choose a start time to continue.", table: "Onboarding") : nil
     ) {
       if let minute = model.draft.startMinute {
         DatePicker(
@@ -274,43 +378,60 @@ struct OnboardingStrictnessStep: View {
 
 struct OnboardingReadyStep: View {
   let model: OnboardingModel
+  @Environment(\.locale) private var locale
 
   var body: some View {
     let draft = model.draft
+    let hasQuest = model.path.contains(.quest)
     let starts = OnboardingCopy.weekday(model.firstDay?.weekday)
     VStack(alignment: .leading, spacing: Spacing.space4) {
-      VStack(alignment: .leading, spacing: Spacing.space2) {
-        Text("Your first quest", tableName: "Onboarding").shadowFont(.subheadline).foregroundStyle(ShadowColor.textSecondary)
-        Text(verbatim: draft.trimmedName).shadowFont(.title3).foregroundStyle(ShadowColor.textPrimary)
-        ShadowFlowLayout {
-          ShadowTag(Text(verbatim: QuestsCopy.stat(draft.stat)))
-          ShadowBadge(Text(verbatim: QuestsCopy.strictness(draft.strictness)), intent: .neutral)
-          ShadowBadge(Text(verbatim: OnboardingCopy.frequency(draft.scheduledDays.count)), intent: .info)
+      if hasQuest {
+        VStack(alignment: .leading, spacing: Spacing.space2) {
+          Text("Your first quest", tableName: "Onboarding").shadowFont(.subheadline).foregroundStyle(ShadowColor.textSecondary)
+          Text(verbatim: draft.trimmedName).shadowFont(.title3).foregroundStyle(ShadowColor.textPrimary)
+          ShadowFlowLayout {
+            ShadowTag(Text(verbatim: QuestsCopy.stat(draft.stat)))
+            ShadowBadge(Text(verbatim: QuestsCopy.strictness(draft.strictness)), intent: .neutral)
+            ShadowBadge(Text(verbatim: OnboardingCopy.frequency(draft.scheduledDays.count)), intent: .info)
+          }
         }
       }
       VStack(alignment: .leading, spacing: Spacing.space3) {
-        row(
-          Text("First occurrence", tableName: "Onboarding"),
-          model.startsToday
-            ? Text("Today · it goes on your Today screen as soon as you start", tableName: "Onboarding")
-            : Text("Starts \(starts) · your Today screen stays clear until then", tableName: "Onboarding"))
-        row(Text("Reward", tableName: "Onboarding"), Text("Experience when kept · \(QuestsCopy.stat(draft.stat)) up one", tableName: "Onboarding"))
-        row(Text("If you miss it", tableName: "Onboarding"), Text(verbatim: QuestsCopy.strictnessRule(draft.strictness)))
+        if hasQuest {
+          row(
+            Text("First occurrence", tableName: "Onboarding"),
+            model.startsToday
+              ? Text("Today · it goes on your Today screen as soon as you start", tableName: "Onboarding")
+              : Text("Starts \(starts) · your Today screen stays clear until then", tableName: "Onboarding"))
+          row(Text("Reward", tableName: "Onboarding"), Text("Experience when kept · \(QuestsCopy.stat(draft.stat)) up one", tableName: "Onboarding"))
+          row(Text("If you miss it", tableName: "Onboarding"), Text(verbatim: QuestsCopy.strictnessRule(draft.strictness)))
+        }
+        row(Text("What shows", tableName: "Onboarding"), Text(verbatim: OnboardingCopy.modules(draft.modules)))
         row(
           Text("Home currency", tableName: "Onboarding"),
           Text("\(draft.currency.code) · fixed from here, so your totals stay comparable", tableName: "Onboarding"))
+        if model.path.contains(.budget) { row(Text("Home budget", tableName: "Onboarding"), budget) }
       }
       Group {
-        model.startsToday
-          ? Text("Next is your Today screen with this quest on it.", tableName: "Onboarding")
-          : Text("Next is your Today screen. This quest starts \(starts), so today stays clear until then.", tableName: "Onboarding")
+        if !hasQuest {
+          Text("Next is Memoir with what you chose.", tableName: "Onboarding")
+        } else if model.startsToday {
+          Text("Next is your Today screen with this quest on it.", tableName: "Onboarding")
+        } else {
+          Text("Next is your Today screen. This quest starts \(starts), so today stays clear until then.", tableName: "Onboarding")
+        }
       }
       .shadowFont(.footnote)
       .foregroundStyle(ShadowColor.textSecondary)
-      Text(
-        "Nothing else is set up, and nothing else needs to be — expenses, meals, weight and journal all work whenever you first reach for them.",
-        tableName: "Onboarding"
-      )
+      Group {
+        if draft.modules == Set(MemoirModule.allCases) {
+          Text(
+            "Nothing else is set up, and nothing else needs to be — expenses, meals, weight and journal all work whenever you first reach for them.",
+            tableName: "Onboarding")
+        } else {
+          Text("Nothing else is set up. Settings can turn on the other parts whenever you want them.", tableName: "Onboarding")
+        }
+      }
       .shadowFont(.footnote)
       .foregroundStyle(ShadowColor.textSecondary)
       if let failure = model.failure {
@@ -330,6 +451,13 @@ struct OnboardingReadyStep: View {
         }
       }
     }
+  }
+
+  private var budget: Text {
+    guard let limit = model.draft.homeLimitMinor else {
+      return Text("No limit yet · set one in Money whenever you like", tableName: "Onboarding")
+    }
+    return Text("\(MoneyText.formatted(limit, model.draft.currency, locale: locale)) a month", tableName: "Onboarding")
   }
 
   private func row(_ term: Text, _ value: Text) -> some View {

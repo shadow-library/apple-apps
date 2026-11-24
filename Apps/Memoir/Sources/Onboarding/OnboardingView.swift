@@ -5,7 +5,7 @@ import ShadowSyncRuntime
 import SwiftUI
 import UniformTypeIdentifiers
 
-/// The first run of an empty vault (`features/onboarding/onboarding-screen.tsx`): no account, five steps, and the app with the first quest after them.
+/// The first run of an empty vault (`features/onboarding/onboarding-screen.tsx`): no account, the steps the chosen modules need, and the app after them.
 struct OnboardingView: View {
   @State private var model: OnboardingModel
   @State private var restore: RestoreModel
@@ -64,13 +64,16 @@ struct OnboardingView: View {
   private var header: some View {
     VStack(alignment: .leading, spacing: Spacing.space3) {
       ShadowSteps(
-        current: model.step.rawValue, titles: OnboardingStep.allCases.map { Text(verbatim: OnboardingCopy.title($0)) },
+        current: model.path.firstIndex(of: model.step) ?? 0, titles: model.path.map { Text(verbatim: OnboardingCopy.title($0)) },
         position: { position in Text("Step \(position.number) of \(position.count)", tableName: "Onboarding") })
       VStack(alignment: .leading, spacing: Spacing.space1) {
         Text(verbatim: OnboardingCopy.title(model.step)).shadowFont(.title2).foregroundStyle(ShadowColor.textPrimary).accessibilityAddTraits(.isHeader)
-        Text(verbatim: OnboardingCopy.subtitle(model.step, startsOn: model.firstDay?.weekday, startsToday: model.startsToday))
-          .shadowFont(.subheadline)
-          .foregroundStyle(ShadowColor.textSecondary)
+        Text(
+          verbatim: OnboardingCopy.subtitle(
+            model.step, startsOn: model.firstDay?.weekday, startsToday: model.startsToday, hasQuest: model.path.contains(.quest))
+        )
+        .shadowFont(.subheadline)
+        .foregroundStyle(ShadowColor.textSecondary)
       }
     }
   }
@@ -78,10 +81,13 @@ struct OnboardingView: View {
   @ViewBuilder
   private var step: some View {
     switch model.step {
+    case .purpose: OnboardingPurposeStep(model: model)
     case .day: OnboardingDayStep(model: model)
+    case .currency: OnboardingCurrencyStep(model: model)
     case .quest: OnboardingQuestStep(model: model)
     case .schedule: OnboardingScheduleStep(model: model)
     case .strictness: OnboardingStrictnessStep(model: model)
+    case .budget: OnboardingBudgetStep(model: model)
     case .ready: OnboardingReadyStep(model: model)
     }
   }
@@ -96,7 +102,7 @@ struct OnboardingView: View {
           Text("Back", tableName: "Onboarding")
         }
         .buttonStyle(.shadowBordered)
-        .disabled(model.step == .day || model.isSaving)
+        .disabled(model.previous == nil || model.isSaving)
         Spacer()
         if model.step == .ready {
           Button {
@@ -112,13 +118,13 @@ struct OnboardingView: View {
           Button {
             model.advance()
           } label: {
-            model.step.next == .ready ? Text("Review", tableName: "Onboarding") : Text("Continue", tableName: "Onboarding")
+            model.next == .ready ? Text("Review", tableName: "Onboarding") : Text("Continue", tableName: "Onboarding")
           }
           .buttonStyle(.shadowFilled)
           .keyboardShortcut(.defaultAction)
         }
       }
-      Text(verbatim: OnboardingCopy.footNote(model.step, problem: model.problem))
+      Text(verbatim: OnboardingCopy.footNote(model.step, problem: model.problem, in: model.draft))
         .shadowFont(.footnote)
         .foregroundStyle(ShadowColor.textSecondary)
     }
