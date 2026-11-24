@@ -193,6 +193,51 @@ struct BudgetEditsTests {
     #expect(try await Self.live(Self.dollars, in: store).limitMinor(on: F.date("2026-12-31")) == 35_000)
   }
 
+  @Test func shouldRestoreAMistakenLoweringAtOnceUpToTheOpeningLimitButNoFurther() async throws {
+    let store = try await F.store()
+    try await Self.create(F.monthly("Dollars", F.usd, limitMinor: 30_000), Self.dollars, in: store)
+    let lowered = try await Self.update(Self.dollars, in: store) { $0.limitMinor = 2_000 }
+    #expect(lowered?.limitMinor == 30_000)
+
+    let between = try await Self.update(Self.dollars, in: store) { $0.limitMinor = 12_000 }
+    #expect(between?.limitMinor == 30_000)
+    #expect(between?.stagedLimit == StagedAmount(amountMinor: 12_000, from: F.date("2026-11-01")), "a raise between the lowered and the opening limit applies at once")
+
+    let refused = try await F.refusal(in: store) { transaction throws(FinanceError) in
+      _ = try BudgetEdits.update(Self.dollars, today: Self.today, in: &transaction) { $0.limitMinor = 30_001 }
+    }
+    #expect(refused == .limitChangedThisMonth, "above the opening limit the month's limit has already changed")
+
+    let restored = try await Self.update(Self.dollars, in: store) { $0.limitMinor = 30_000 }
+    #expect(restored?.limitMinor == 30_000)
+    #expect(restored?.stagedLimit == nil, "the opening limit again leaves nothing staged")
+    let budget = try await Self.live(Self.dollars, in: store)
+    #expect(budget.limitMinor(on: F.date("2026-11-01")) == 30_000)
+    #expect(budget.limitMinor(on: F.date("2026-10-31")) == 30_000)
+
+    let raised = try await Self.update(Self.dollars, in: store) { $0.limitMinor = 40_000 }
+    #expect(raised?.stagedLimit == StagedAmount(amountMinor: 40_000, from: F.date("2026-12-01")), "above the opening limit a raise waits when the limit is unchanged")
+  }
+
+  @Test func shouldRestoreAfterALoweringWhenAPendingRaiseWasDropped() async throws {
+    let store = try await F.store()
+    try await Self.create(F.monthly("Dollars", F.usd, limitMinor: 30_000), Self.dollars, in: store)
+    try await Self.update(Self.dollars, in: store) { $0.limitMinor = 45_000 }
+    try await Self.update(Self.dollars, in: store) { $0.limitMinor = 2_000 }
+    let restored = try await Self.update(Self.dollars, in: store) { $0.limitMinor = 30_000 }
+    #expect(restored?.stagedLimit == nil)
+    #expect(try await Self.live(Self.dollars, in: store).limitMinor(on: F.date("2026-12-31")) == 30_000, "the lowering dropped the raise to 45 000")
+  }
+
+  @Test func shouldKeepAHomeLimitFromTheAccountAsTheOpeningLimitWhenRestoring() async throws {
+    let store = try await F.store()
+    _ = try await store.write { transaction in try HomeBudget.ensure(on: Self.today, in: &transaction) }
+    try await Self.update(HomeBudget.id, in: store) { $0.limitMinor = 1_000 }
+    let restored = try await Self.update(HomeBudget.id, in: store) { $0.limitMinor = 50_000 }
+    #expect(restored?.limitMinor == 50_000)
+    #expect(restored?.stagedLimit == nil, "Home's opening limit is the account's monthly budget")
+  }
+
   @Test func shouldRefuseARaiseThatWouldLiftLastMonthsLimitBeforeItCloses() async throws {
     let store = try await F.store()
     try await Self.create(F.monthly("Dollars", F.usd, limitMinor: 30_000), Self.dollars, in: store)

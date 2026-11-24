@@ -92,8 +92,10 @@ struct BudgetPropertyTests {
         let monthStart = try BudgetStaging.monthStart(of: day)
         let nextMonth = try BudgetStaging.nextMonthStart(of: day)
         let lastMonthEnd = try #require(monthStart.adding(days: -1))
-        let isRaise = current.map { limit > $0 } ?? false
-        if isRaise, staging.value(on: lastMonthEnd) != current {
+        let opening = staging.value(on: lastMonthEnd)
+        let restoresOpening = opening.map { limit <= $0 } ?? false
+        let isRaise = !restoresOpening && (current.map { limit > $0 } ?? false)
+        if isRaise, opening != current {
           #expect(throws: FinanceError.limitChangedThisMonth, "a raise after this month's limit changed") { try staging.monthlyLimit(to: limit, today: day) }
           continue
         }
@@ -101,11 +103,13 @@ struct BudgetPropertyTests {
         #expect(next.value(on: lastMonthEnd) == staging.value(on: lastMonthEnd), "last month keeps its limit")
         #expect(next.latest(on: day) == limit)
         #expect(next.value(on: nextMonth) == limit)
+        let ceiling = max(opening ?? .min, current ?? .min)
+        #expect(next.value(on: day) ?? .min <= ceiling, "no edit lifts this month above its opening limit or the limit in force before the edit")
         if isRaise {
           #expect(next.value(on: day) == current, "a raise waits for the next month")
           #expect(next.pending(on: day) == StagedAmount(amountMinor: limit, from: nextMonth))
         } else {
-          #expect(next.value(on: monthStart) == limit, "a lowering or a return to the limit in force holds for the whole month")
+          #expect(next.value(on: monthStart) == limit, "a lowering, a return to the limit in force or a raise up to the opening limit holds for the whole month")
           #expect(next.pending(on: day) == nil)
         }
         staging = next

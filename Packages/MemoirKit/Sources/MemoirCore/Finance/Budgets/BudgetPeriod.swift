@@ -40,14 +40,16 @@ struct BudgetStaging: Hashable, Sendable {
     pending(on: date)?.amountMinor ?? value(on: date)
   }
 
-  /// A raise waits for the next month. A lowering, or setting the limit back to the one in force, applies to the whole current month and drops a
-  /// pending raise. Every accepted change leaves last month's limit as it was for its close, so a raise in a month whose limit already changed is
-  /// refused: two slots cannot hold last month's, this month's and next month's limits.
+  /// A raise above the limit the month opened with waits for the next month. A lowering, setting the limit back to the one in force, or a raise up to
+  /// the opening limit applies to the whole current month and drops a pending raise, so a mistaken lowering can be undone. Every accepted change
+  /// leaves last month's limit as it was for its close, so a raise above the opening limit in a month whose limit already changed is refused: two
+  /// slots cannot hold last month's, this month's and next month's limits.
   func monthlyLimit(to limit: Int64, today: LocalDate) throws(FinanceError) -> BudgetStaging {
     let month = try Self.monthStart(of: today)
     let current = value(on: today)
     let previous = month.adding(days: -1).map { value(on: $0) } ?? current
-    if let current, limit > current {
+    let restoresOpening = previous.map { limit <= $0 } ?? false
+    if let current, limit > current, !restoresOpening {
       guard previous == current else { throw .limitChangedThisMonth }
       return BudgetStaging(base: current, staged: StagedAmount(amountMinor: limit, from: try Self.nextMonthStart(of: today)))
     }
