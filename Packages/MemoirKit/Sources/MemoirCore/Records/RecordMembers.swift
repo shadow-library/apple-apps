@@ -40,6 +40,17 @@ public struct MemberReader<Field: MemoirField>: Sendable {
     return value
   }
 
+  /// Whether the field was ever written, an explicit null included.
+  public func contains(_ field: Field) -> Bool {
+    values[ExactString(field.rawValue)] != nil
+  }
+
+  /// The field's value once written, else `seed`.
+  public func required<Value: StoredValue>(_ field: Field, seed: Value?) throws(MemoirUnreadable) -> Value {
+    guard !contains(field), let seed else { return try required(field) }
+    return seed
+  }
+
   func common(_ field: CommonField) -> JSONValue? {
     values[ExactString(field.rawValue)]
   }

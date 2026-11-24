@@ -73,7 +73,7 @@ struct MoneyRecordTests {
     try await roundTrip(
       ExpenseRecord(
         id: Self.id, amountMinor: 999, currency: eur, occurredOn: day, category: groceries, budget: Self.budget, fromSavingsMinor: 400, goal: Self.goal,
-        cycle: ExpenseCycleSeed(subscription: Self.id, amountMinor: 999, occurredOn: day, category: groceries, note: "Music"), loggedAtMillis: 5), in: store)
+        cycle: ExpenseCycleSeed(subscription: Self.id, amountMinor: 999, occurredOn: day, category: groceries), loggedAtMillis: 5), in: store)
     try await roundTrip(
       SubscriptionRecord(
         id: Self.id, name: "Music", amountMinor: 999, currency: eur, frequency: .known(.monthly), billingDay: 3, anchorOn: day, category: groceries, budget: Self.budget),

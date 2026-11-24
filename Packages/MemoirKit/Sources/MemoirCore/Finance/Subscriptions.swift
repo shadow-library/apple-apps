@@ -98,16 +98,18 @@ public enum SubscriptionCycles {
   }
 
   public static func expense(for confirmation: CycleConfirmation, of subscription: SubscriptionRecord, loggedAtMillis: Int64) -> ExpenseRecord {
-    ExpenseRecord(
-      id: expenseID(for: confirmation), amountMinor: subscription.amountMinor, currency: subscription.currency, occurredOn: confirmation.billingDate,
-      category: subscription.category, note: subscription.note, loggedAtMillis: loggedAtMillis)
+    let seed = ExpenseCycleSeed(subscription: subscription.id, amountMinor: subscription.amountMinor, occurredOn: confirmation.billingDate, category: subscription.category)
+    return ExpenseRecord(
+      id: expenseID(for: confirmation), amountMinor: seed.amountMinor, currency: subscription.currency, occurredOn: seed.occurredOn, category: seed.category,
+      cycle: seed, loggedAtMillis: loggedAtMillis)
   }
 
   /// Writes the cycle's expense in the transaction that appends the confirm command, with its rate captured. Returns `nil` when this device already
   /// holds the cycle's expense in any state, so confirming again here never re-inserts an expense the owner deleted (the reference re-inserts it).
-  /// Change records an earlier expense under that id left are purged, as the reference clears the audit of a cycle's new expense.
-  /// A device that has not yet received the expense writes it again under the same derived id. Its fields are registers, so when that write carries the
-  /// later clock it restores an expense the owner deleted elsewhere and reverts the owner's edits made elsewhere.
+  /// Unlike the reference, the expense does not copy the subscription's note: the seed is first-writer and would keep it past the expense's deletion.
+  /// A device that has not received the expense yet writes it again under the same derived id, but only its first-writer fields (the seed, currency,
+  /// rate and logging time) and no removal, so whatever its clock it neither restores an expense the owner deleted elsewhere nor reverts an edit made
+  /// there; two seeds of one cycle settle on the earlier. It purges no change record: any it holds for the expense were written elsewhere.
   @discardableResult
   public static func confirm(_ confirmation: CycleConfirmation, loggedAtMillis: Int64, in transaction: inout WriteTransaction) throws(FinanceError) -> ExpenseRecord? {
     let reading: MemoirReading<MemoirEntry<SubscriptionRecord>>
@@ -129,11 +131,12 @@ public enum SubscriptionCycles {
     }
     _ = try BillingTerms(subscription)
     guard existing == nil else { return nil }
+    let written = try self.expense(for: confirmation, of: subscription, loggedAtMillis: loggedAtMillis).capturingVaultRate(from: transaction)
     do throws(MemoirRecordError) {
-      try ExpenseChangeRecord.purge(expense: expenseID(for: confirmation), in: &transaction)
+      try written.createKeepingRemovalAndEdits(in: &transaction)
     } catch {
       throw FinanceError(error)
     }
-    return try self.expense(for: confirmation, of: subscription, loggedAtMillis: loggedAtMillis).createCapturingRate(in: &transaction)
+    return written
   }
 }

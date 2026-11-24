@@ -41,6 +41,9 @@ public enum MemoirSchema {
   public static let mainVersion = 6
   public static let activityVersion = 3
   public static let restrictedVersion = 3
+  /// The main registry version below which a build stops syncing the vault (`SyncedVault.schemaFloor`): raised on purpose, only when an older build
+  /// would misread what this one writes, never with every registry bump.
+  public static let syncFloor = 6
 
   static let journalRetention = 20
 

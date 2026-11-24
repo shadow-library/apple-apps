@@ -136,6 +136,13 @@ struct MemoirSyncTests {
     #expect(MemoirSyncRoutes.vault(stores).declaredRoutes == [MemoirSyncRoutes.activity, MemoirSyncRoutes.health])
   }
 
+  @Test func shouldRaiseTheMainStoresDeclaredSchemaFloorThatThisBuildReads() throws {
+    let stores = try MemoirStores.openInMemory()
+
+    #expect(MemoirSyncRoutes.vault(stores).schemaFloor == 6)
+    #expect(MemoirSchema.syncFloor <= MemoirSchema.mainRegistry.version, "a floor above this build would stop it for good")
+  }
+
   @Test func shouldKeepTheRouteNamesOfTheStoredLayout() {
     #expect(MemoirSyncRoutes.activity.name == "activity")
     #expect(MemoirSyncRoutes.health.name == "health")

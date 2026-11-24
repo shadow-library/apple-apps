@@ -36,6 +36,25 @@ enum FinanceFixture {
   static func ledger(in store: VaultStore) async throws -> FinanceLedger {
     try await store.read { transaction in try FinanceLedger.load(from: transaction) }
   }
+
+  /// The words of `words` that any stored expense or expense change record still holds, in any field, null-cleared ones aside.
+  static func heldWords(_ words: [String], in store: VaultStore) async throws -> [String] {
+    let stored = try await store.read { transaction in
+      var values = [JSONValue]()
+      for kind in [ExpenseRecord.kind, ExpenseChangeRecord.kind] {
+        for (_, state) in try transaction.states(ofKind: kind.entityKind, scope: .vault) {
+          switch state {
+          case .record(let record): values += record.fields.values.map(\.value)
+          case .appended(let appended): values.append(.object(appended.item))
+          case .revisioned(let document): values += document.fields.values.map(\.value)
+          case .purged: continue
+          }
+        }
+      }
+      return values.map { String(decoding: CanonicalJSON.encode($0), as: UTF8.self) }
+    }
+    return words.filter { word in stored.contains { $0.contains(word) } }
+  }
 }
 
 /// Answers from a fixed table and records every request, so a test can check that only pairs and dates leave the device.

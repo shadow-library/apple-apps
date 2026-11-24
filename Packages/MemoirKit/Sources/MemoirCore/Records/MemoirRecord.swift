@@ -136,6 +136,18 @@ extension MemoirRecord {
     try create(members.values.merging(identityMembers) { $1 }, in: &transaction)
   }
 
+  /// Writes only the first-writer members, without marking the record present, so a device that has not received the owner's edits and removal yet
+  /// writes nothing that could revert or undo them, whichever clock is later.
+  @discardableResult
+  func createKeepingRemovalAndEdits(in transaction: inout WriteTransaction) throws(MemoirRecordError) -> ChangeRecord {
+    let fields = members.values.filter { MemoirSchema.rule(of: Self.kind, field: $0.key) == .firstWriterWins }.merging(identityMembers) { $1 }
+    do throws(StoreError) {
+      return try transaction.set(ref, fields)
+    } catch {
+      throw .store(error)
+    }
+  }
+
   private func create(_ fields: [String: JSONValue], in transaction: inout WriteTransaction) throws(MemoirRecordError) -> [ChangeRecord] {
     do throws(StoreError) {
       var changes = [try transaction.set(ref, fields)]

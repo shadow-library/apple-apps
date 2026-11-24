@@ -391,6 +391,7 @@ public actor SyncEngine {
     try await requireClaimed(replica)
     try await refuseMoved()
     try await refuseNewerSchema(as: replica)
+    if let floor = configuration.schemaFloor { try await raiseSchemaFloor(to: floor, as: replica) }
     try await repairDroppedChanges(of: replica)
     var uploaded = try await finishInFlight(as: replica).map { [$0] } ?? []
     var remints = 0
@@ -519,6 +520,15 @@ public actor SyncEngine {
   private func refuseNewerSchema(as replica: ReplicaID) async throws(SyncError) {
     guard let minimum = try await raisedFloors(as: replica).schema, minimum > store.registry.version else { return }
     throw .appUpdateRequired(minimumSchema: minimum, current: store.registry.version)
+  }
+
+  /// Written as a change of this replica, so the floor goes out with the upload it precedes.
+  private func raiseSchemaFloor(to declared: Int, as replica: ReplicaID) async throws(SyncError) {
+    assert(declared <= store.registry.version, "a schema floor of \(declared) would stop this build of registry \(store.registry.version) for good")
+    let version = min(declared, store.registry.version)
+    let directory = try await lifecycleCall { () async throws(ReplicaLifecycleError) in try await lifecycle.directory() }
+    if let floor = directory.minimumSchema, floor >= version { return }
+    try await write(as: replica) { transaction in try ReplicaDirectory.read(in: transaction).raiseSchemaFloor(to: version, in: &transaction) }
   }
 
   private func listForeignFiles(excluding replica: ReplicaID) async throws(SyncError) -> ([ReplicaID: SyncListedReplica], noticeListed: Bool) {

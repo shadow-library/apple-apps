@@ -8,8 +8,8 @@ import ShadowStore
 /// (`ExpenseAuditRepository.removeForExpense`).
 public enum ExpenseEdits {
   /// Creates the expense with its rate captured. An id already held as a deleted expense is created again: its fields take the new values, but the
-  /// currency must be the one it was first written with (`FIN_006`), and it keeps its first rate and logging time, which never change. It comes back
-  /// without the receipt it had: the deletion purged that receipt's record.
+  /// currency must be the one it was first written with (`FIN_006`), and it keeps its first rate, logging time and cycle seed, which never change. It
+  /// comes back without the receipt it had: the deletion purged that receipt's record.
   @discardableResult
   public static func create(_ expense: ExpenseRecord, source: ExpenseSource = .manual, issuer: CommandIssuer, in transaction: inout WriteTransaction)
     throws(CommandIssueError) -> (command: MemoirCommand, expense: ExpenseRecord)
@@ -31,6 +31,7 @@ public enum ExpenseEdits {
       var recreated = expense
       recreated.rate = entry.record.rate
       recreated.loggedAtMillis = entry.record.loggedAtMillis
+      recreated.cycle = entry.record.cycle
       if recreated.receipt == entry.record.receipt { recreated.receipt = nil }
       let restored = recreated
       try record { () throws(MemoirRecordError) in
@@ -44,8 +45,9 @@ public enum ExpenseEdits {
     return (try issuer.issue(.expenseCreate(ExpenseCreation(id: expense.id, source: source, occurredOn: occurredOn)), in: &transaction), written)
   }
 
-  /// `nil`, writing nothing, when the edit moves no field the owner sees. Moving the currency, rate, receipt or logging time is refused
-  /// (`expenseFieldFixed`, the reference's `FIN_006` for the currency) before anything is written.
+  /// `nil`, writing nothing, when the edit moves no field the owner sees. Moving the currency, rate, receipt, logging time or cycle seed is refused
+  /// (`expenseFieldFixed`, the reference's `FIN_006` for the currency) before anything is written. Only the fields it moves are written, so a cycle's
+  /// expense keeps following its seed in every other field.
   @discardableResult
   public static func update(
     _ id: UUID, issuer: CommandIssuer, in transaction: inout WriteTransaction, _ change: (inout ExpenseRecord) throws(MemoirRecordError) -> Void
@@ -89,6 +91,7 @@ public enum ExpenseEdits {
     if before.rate != after.rate { return .rate }
     if before.receipt != after.receipt { return .receipt }
     if before.loggedAtMillis != after.loggedAtMillis { return .loggedAtMillis }
+    if before.cycle != after.cycle { return .cycle }
     return nil
   }
 

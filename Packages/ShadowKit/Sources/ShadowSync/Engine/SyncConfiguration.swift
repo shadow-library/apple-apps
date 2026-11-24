@@ -33,6 +33,10 @@ public struct SyncConfiguration: Sendable, Equatable {
   public var blobPartBytes: Int
   /// How long a blob this device put stays stored after nothing names it, and how long its local file outlives its removal.
   public var blobRetention: Duration
+  /// Every upload first raises the vault's schema floor to this registry version, so a replica of an older registry stops with `appUpdateRequired`
+  /// once it reads the floor instead of syncing records it would misread; nil raises nothing. A floor is never lowered, and one above the store's own
+  /// registry version is held to it, since a floor can never come down again.
+  public var schemaFloor: Int?
 
   public init(
     maximumSegmentBytes: Int = 512 * 1024,
@@ -52,7 +56,8 @@ public struct SyncConfiguration: Sendable, Equatable {
     activityOnICloud: Bool = false,
     maximumBlobBytes: Int = defaultMaximumBlobBytes,
     blobPartBytes: Int = 8 * 1024 * 1024,
-    blobRetention: Duration = .seconds(30 * 24 * 60 * 60)
+    blobRetention: Duration = .seconds(30 * 24 * 60 * 60),
+    schemaFloor: Int? = nil
   ) {
     self.maximumSegmentBytes = maximumSegmentBytes
     self.maximumSegmentLines = maximumSegmentLines
@@ -72,6 +77,7 @@ public struct SyncConfiguration: Sendable, Equatable {
     self.maximumBlobBytes = maximumBlobBytes
     self.blobPartBytes = blobPartBytes
     self.blobRetention = blobRetention
+    self.schemaFloor = schemaFloor
   }
 }
 

@@ -288,7 +288,7 @@ struct FinanceTests {
     let first = try await store.write { transaction in try SubscriptionCycles.confirm(confirmation, loggedAtMillis: 10, in: &transaction) }
     let expense = try #require(first)
     #expect(expense.id == derivedID("com.shadow.library.memoircore.subscription-cycle-expense", "\(subscription.id.lowercasedString)|2026-01-15"))
-    #expect(expense.amountMinor == 1_999 && expense.currency == usd && expense.occurredOn == anchor && expense.note == "Plan")
+    #expect(expense.amountMinor == 1_999 && expense.currency == usd && expense.occurredOn == anchor && expense.note == nil, "the subscription's note is not copied")
     #expect(expense.rate == ExpenseRate(rate: try MemoirStoreFixture.decimal("0.9213"), date: anchor, quote: eur))
     _ = try await store.write { transaction in try ExpenseRecord.remove(expense.ref, in: &transaction) }
     let second = try await store.write { transaction in try SubscriptionCycles.confirm(confirmation, loggedAtMillis: 11, in: &transaction) }
@@ -302,6 +302,77 @@ struct FinanceTests {
     #expect(try await Self.refusal(confirming: next, in: store) == .subscriptionAbsent(subscription.id))
   }
 
+  @Test func shouldWriteACycleExpenseAsItsSeedAndReadEachSeededFieldFromItUntilAnEditWritesThatField() async throws {
+    let store = try MemoirStore.openInMemory(.main)
+    let eur = try Self.code("EUR")
+    let anchor = try Self.date("2026-01-15")
+    let subscription = try FinanceFixture.subscription(frequency: .monthly, billingDay: 15, anchorOn: anchor, amountMinor: 1_999, currency: eur)
+    let confirmation = CycleConfirmation(subscription: subscription.id, billingDate: anchor)
+    let issuer = CommandIssuer(clock: HealthFixture.utc, wallClock: HealthFixture.wallClock())
+    try await store.write { transaction in
+      try FinanceFixture.settings(home: eur).create(in: &transaction)
+      try subscription.create(in: &transaction)
+    }
+    let confirmed = try await store.write { transaction in try SubscriptionCycles.confirm(confirmation, loggedAtMillis: 10, in: &transaction) }
+    let expense = try #require(confirmed)
+    let seed = ExpenseCycleSeed(subscription: subscription.id, amountMinor: 1_999, occurredOn: anchor, category: subscription.category)
+    #expect(expense.cycle == seed && expense.note == nil)
+    #expect(try await FinanceFixture.heldWords(["Plan"], in: store).isEmpty, "the subscription's note is not copied anywhere")
+    #expect(try await Self.storedFields(of: expense.ref, in: store) == ["currency": true, "cycle": true, "logged_at_millis": true], "no register and no removal")
+    #expect(try await Self.read(expense.id, in: store) == expense)
+
+    _ = try await store.write { transaction in try ExpenseEdits.update(expense.id, issuer: issuer, in: &transaction) { $0.amountMinor = 1_500 } }
+    #expect(try await Self.storedFields(of: expense.ref, in: store)["amount_minor"] == true, "an edit writes only the field it moves")
+    #expect(try await Self.storedFields(of: expense.ref, in: store)["occurred_on"] == nil)
+    var edited = expense
+    edited.amountMinor = 1_500
+    #expect(try await Self.read(expense.id, in: store) == edited, "the written amount beats the seed; the rest still follows it")
+    _ = try await store.write { transaction in try ExpenseEdits.update(expense.id, issuer: issuer, in: &transaction) { $0.note = "Gift for Ana" } }
+    #expect(try await FinanceFixture.heldWords(["Gift for Ana"], in: store) == ["Gift for Ana"])
+
+    let moved = await #expect(throws: StoreError.self) {
+      try await store.write { transaction in _ = try ExpenseEdits.update(expense.id, issuer: issuer, in: &transaction) { $0.cycle = nil } }
+    }
+    guard case .aborted(CommandIssueError.refused(.finance(.expenseFieldFixed("cycle"))))? = moved else {
+      throw FinanceTestFailure("expected the seed to be fixed, got \(String(describing: moved))")
+    }
+
+    _ = try await store.write { transaction in try ExpenseEdits.delete(expense.id, issuer: issuer, in: &transaction) }
+    #expect(try await Self.storedFields(of: expense.ref, in: store)["note"] == false, "the deletion clears the owner's note with a null")
+    #expect(try await FinanceFixture.heldWords(["Gift for Ana", "Plan"], in: store).isEmpty, "no stored field or change record keeps the owner's words")
+    let deleted = try #require(try await Self.read(expense.id, in: store))
+    #expect(deleted.note == nil && deleted.amountMinor == 1_500 && deleted.cycle == seed)
+
+    var withoutSeed = edited
+    withoutSeed.cycle = nil
+    let recreated = withoutSeed
+    _ = try await store.write { transaction in try ExpenseEdits.create(recreated, issuer: issuer, in: &transaction) }
+    #expect(try await Self.read(expense.id, in: store) == edited, "the re-created expense keeps its seed")
+  }
+
+  @Test func shouldReadAnExpenseWithoutASeedOnlyFromItsFieldsAndRefuseANullAmount() async throws {
+    let store = try MemoirStore.openInMemory(.main)
+    let eur = try Self.code("EUR")
+    let plain = try FinanceFixture.expense(1, amountMinor: 700, currency: eur, on: try Self.date("2026-01-15"))
+    try await store.write { transaction in try plain.create(in: &transaction) }
+    #expect(try await Self.read(plain.id, in: store) == plain)
+    try await store.write { transaction in _ = try transaction.set(plain.ref, [ExpenseField.amountMinor.rawValue: .null]) }
+    let reading = try await store.read { transaction in try ExpenseRecord.read(id: plain.id, in: transaction) }
+    #expect(reading == .unreadable(.invalid(field: ExpenseField.amountMinor.rawValue)))
+  }
+
+  private static func read(_ id: UUID, in store: VaultStore) async throws -> ExpenseRecord? {
+    try await store.read { transaction in try ExpenseRecord.read(id: id, in: transaction).entry?.record }
+  }
+
+  /// Each stored field of the entity, true when it holds a value and false when it holds null.
+  private static func storedFields(of ref: EntityRef, in store: VaultStore) async throws -> [String: Bool] {
+    try await store.read { transaction -> [String: Bool] in
+      guard case .record(let record)? = try transaction.state(of: ref, scope: .vault) else { return [:] }
+      return Dictionary(uniqueKeysWithValues: record.fields.map { ($0.key.value, !$0.value.value.isNull) })
+    }
+  }
+
   private static func refusal(confirming confirmation: CycleConfirmation, in store: VaultStore) async throws -> FinanceError? {
     try await store.write { transaction -> FinanceError? in
       do throws(FinanceError) {
@@ -311,5 +382,13 @@ struct FinanceTests {
         return error
       }
     }
+  }
+}
+
+private struct FinanceTestFailure: Error, CustomStringConvertible {
+  let description: String
+
+  init(_ description: String) {
+    self.description = description
   }
 }

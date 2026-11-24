@@ -129,36 +129,99 @@ struct FinanceConvergenceTests {
     #expect(HomeConverter(home: eur, rates: first.rates).homeAmount(of: expense) == .converted(8_000), "every device converts at the owner's rate")
   }
 
-  @Test func shouldLetALaterConfirmationElsewhereRestoreAndRevertTheCycleExpense() async throws {
+  private enum OwnerAction: CaseIterable {
+    case delete
+    case raise
+    case refund
+    case renote
+  }
+
+  @Test func shouldKeepTheOwnersDeletionOrEditWhenLaggingDevicesConfirmTheCycleLater() async throws {
     let eur = try MemoirStoreFixture.currency("EUR")
     let anchor = try MemoirStoreFixture.date("2026-01-31")
     let subscription = try FinanceFixture.subscription(frequency: .monthly, billingDay: 31, anchorOn: anchor, amountMinor: 1_999, currency: eur)
     let cycle = CycleConfirmation(subscription: subscription.id, billingDate: anchor)
-    for deletes in [true, false] {
-      let replicas = try await CausalReplicas(CausalReplicaSetup(count: 2, registry: MemoirSchema.mainRegistry))
+    let id = SubscriptionCycles.expenseID(for: cycle)
+    let issuer = CommandIssuer(clock: HealthFixture.utc, wallClock: HealthFixture.wallClock())
+    try await forAll(iterations: 16) { generator in
+      let action = OwnerAction.allCases[generator.int(in: 0...(OwnerAction.allCases.count - 1))]
+      let replicas = try await CausalReplicas(CausalReplicaSetup(count: Self.replicaCount, registry: MemoirSchema.mainRegistry, seed: generator.next()))
       _ = try await replicas.write(0) { transaction in
         try FinanceFixture.settings(home: eur).create(in: &transaction)
         try subscription.create(in: &transaction)
       }
       try await replicas.settle()
       _ = try await replicas.write(0) { transaction in
-        let expense = try #require(try SubscriptionCycles.confirm(cycle, loggedAtMillis: 1, in: &transaction))
-        if deletes {
-          try ExpenseRecord.remove(expense.ref, in: &transaction)
-        } else {
-          try ExpenseRecord.edit(id: expense.id, in: &transaction) { $0.amountMinor = 2_500 }
+        _ = try #require(try SubscriptionCycles.confirm(cycle, loggedAtMillis: 1, in: &transaction))
+        switch action {
+        case .delete:
+          _ = try ExpenseEdits.update(id, issuer: issuer, in: &transaction) { $0.note = "Annual" }
+          _ = try ExpenseEdits.delete(id, issuer: issuer, in: &transaction)
+        case .raise: _ = try ExpenseEdits.update(id, issuer: issuer, in: &transaction) { $0.amountMinor = 2_500 }
+        case .refund: _ = try ExpenseEdits.update(id, issuer: issuer, in: &transaction) { $0.amountMinor = 499 }
+        case .renote: _ = try ExpenseEdits.update(id, issuer: issuer, in: &transaction) { $0.note = "Annual" }
         }
       }
-      await replicas.advanceClock(of: 1, by: .seconds(1))
-      let rewritten = try await replicas.write(1) { transaction in try SubscriptionCycles.confirm(cycle, loggedAtMillis: 2, in: &transaction) }
-      #expect(rewritten != nil, "the second device has not received the expense, so it writes it again")
-      try await replicas.settle()
-      for index in 0..<2 {
-        let snapshot = try await Self.snapshot(replicas.store(index))
-        #expect(snapshot.removed == 0, "a later confirmation elsewhere restores the expense the owner deleted")
-        #expect(snapshot.expenses.map(\.amountMinor) == [1_999], "and reverts the owner's edit")
-        #expect(snapshot.expenses.map(\.loggedAtMillis) == [1], "the first writer's logging time stays")
+      for lagging in 1..<Self.replicaCount {
+        await replicas.advanceClock(of: lagging, by: .milliseconds(Int(generator.int(in: 1...5_000))))
+        let rewritten = try await replicas.write(lagging) { transaction in try SubscriptionCycles.confirm(cycle, loggedAtMillis: Int64(1 + lagging), in: &transaction) }
+        #expect(rewritten?.cycle?.subscription == subscription.id, "a device that has not received the expense writes its seed, later than the owner's change")
       }
+      try await Self.deliverInSomeOrder(replicas, using: &generator)
+      let first = try await Self.snapshot(replicas.store(0))
+      for index in 1..<Self.replicaCount { #expect(try await Self.snapshot(replicas.store(index)) == first) }
+      let history = try await (0..<Self.replicaCount).asyncMap { index in
+        try await replicas.store(index).read { transaction in try ExpenseChangeRecord.listing(in: transaction).entries.count }
+      }
+      switch action {
+      case .delete:
+        #expect(first.removed == 1 && first.expenses.isEmpty, "the deletion stays")
+        #expect(history == Array(repeating: 0, count: Self.replicaCount))
+        for index in 0..<Self.replicaCount {
+          #expect(try await FinanceFixture.heldWords(["Annual", "Plan"], in: replicas.store(index)).isEmpty, "no replica keeps the owner's words")
+        }
+      case .raise, .refund, .renote:
+        let expected: (amount: Int64, note: String?) =
+          switch action {
+          case .raise: (2_500, nil)
+          case .refund: (499, nil)
+          default: (1_999, "Annual")
+          }
+        #expect(first.removed == 0)
+        #expect(first.expenses.map(\.amountMinor) == [expected.amount] && first.expenses.map(\.note) == [expected.note], "the owner's edit stays")
+        #expect(first.expenses.map(\.loggedAtMillis) == [1], "the first writer's logging time stays")
+        #expect(history == Array(repeating: 1, count: Self.replicaCount), "no device drops the owner's history")
+      }
+    }
+  }
+
+  @Test func shouldSettleOnTheEarlierSeedWhenTwoDevicesConfirmACycleFromDifferentSubscriptions() async throws {
+    let eur = try MemoirStoreFixture.currency("EUR")
+    let anchor = try MemoirStoreFixture.date("2026-01-31")
+    let subscription = try FinanceFixture.subscription(frequency: .monthly, billingDay: 31, anchorOn: anchor, amountMinor: 1_999, currency: eur)
+    let cycle = CycleConfirmation(subscription: subscription.id, billingDate: anchor)
+    try await forAll(iterations: 12) { generator in
+      let replicas = try await CausalReplicas(CausalReplicaSetup(count: 2, registry: MemoirSchema.mainRegistry, seed: generator.next()))
+      _ = try await replicas.write(0) { transaction in
+        try FinanceFixture.settings(home: eur).create(in: &transaction)
+        try subscription.create(in: &transaction)
+      }
+      try await replicas.settle()
+      _ = try await replicas.write(1) { transaction in
+        try SubscriptionRecord.edit(id: subscription.id, in: &transaction) { $0.amountMinor = 2_999 }
+      }
+      let earlier = generator.int(in: 0...1)
+      await replicas.advanceClock(of: 1 - earlier, by: .milliseconds(Int(generator.int(in: 1...5_000))))
+      for index in [earlier, 1 - earlier] {
+        _ = try await replicas.write(index) { transaction in try SubscriptionCycles.confirm(cycle, loggedAtMillis: Int64(10 + index), in: &transaction) }
+      }
+      try await Self.deliverInSomeOrder(replicas, using: &generator)
+      let first = try await Self.snapshot(replicas.store(0))
+      #expect(try await Self.snapshot(replicas.store(1)) == first)
+      let seed: Int64 = earlier == 0 ? 1_999 : 2_999
+      let expense = try #require(first.expenses.first)
+      #expect(expense.cycle?.amountMinor == seed && expense.amountMinor == seed && expense.note == nil)
+      #expect(expense.loggedAtMillis == Int64(10 + earlier), "the earlier confirmation's write wins every first-writer field")
     }
   }
 

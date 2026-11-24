@@ -229,6 +229,13 @@ struct RestoreTests {
         "memoir_import.too_large"
       ),
       ("newer registry", try RestoreWorld.json(base) { RestoreWorld.setRegistry(in: &$0, version: MemoirSchema.restrictedVersion + 1) }, image, "memoir_import.newer_records"),
+      (
+        "newer registry with a kind this build lacks",
+        try RestoreWorld.json(base) { manifest in
+          RestoreWorld.setRegistry(in: &manifest, store: "main", version: MemoirSchema.mainVersion + 1)
+          RestoreWorld.addKind("mm_future", toStore: "main", in: &manifest)
+        }, image, "memoir_import.newer_records"
+      ),
     ]
     let target = try DataWorld()
     defer { target.remove() }
@@ -560,9 +567,18 @@ private enum RestoreWorld {
     manifest["receiptImages"] = images
   }
 
-  static func setRegistry(in manifest: inout [String: Any], version: Int) {
+  static func setRegistry(in manifest: inout [String: Any], store: String = "health", version: Int) {
     guard var stores = manifest["stores"] as? [[String: Any]] else { return }
-    for index in stores.indices where stores[index]["name"] as? String == "health" { stores[index]["registryVersion"] = version }
+    for index in stores.indices where stores[index]["name"] as? String == store { stores[index]["registryVersion"] = version }
+    manifest["stores"] = stores
+  }
+
+  static func addKind(_ kind: String, toStore store: String, in manifest: inout [String: Any]) {
+    guard var stores = manifest["stores"] as? [[String: Any]] else { return }
+    for index in stores.indices where stores[index]["name"] as? String == store {
+      let kinds = stores[index]["kinds"] as? [[String: Any]] ?? []
+      stores[index]["kinds"] = kinds + [["kind": kind, "syncClass": "general", "shape": "record", "entries": [[String: Any]]()]]
+    }
     manifest["stores"] = stores
   }
 

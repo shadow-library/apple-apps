@@ -83,13 +83,17 @@ extension ExpenseRecord {
   /// Creates the expense with its rate captured against the vault's default currency.
   @discardableResult
   public func createCapturingRate(in transaction: inout WriteTransaction) throws(FinanceError) -> ExpenseRecord {
-    var written = self
-    if let settings = try FinanceLedger.settings(in: transaction) { written = try capturingRate(home: settings.defaultCurrency, from: transaction) }
+    let written = try capturingVaultRate(from: transaction)
     do throws(MemoirRecordError) {
       try written.create(in: &transaction)
     } catch {
       throw FinanceError(error)
     }
     return written
+  }
+
+  func capturingVaultRate<Source: RecordSource & ~Copyable>(from source: borrowing Source) throws(FinanceError) -> ExpenseRecord {
+    guard let settings = try FinanceLedger.settings(in: source) else { return self }
+    return try capturingRate(home: settings.defaultCurrency, from: source)
   }
 }

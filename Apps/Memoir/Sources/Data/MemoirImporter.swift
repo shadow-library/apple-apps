@@ -221,7 +221,8 @@ nonisolated enum MemoirImporter {
       && ext.allSatisfy { (UInt8(ascii: "a")...UInt8(ascii: "z")).contains($0) || (UInt8(ascii: "0")...UInt8(ascii: "9")).contains($0) }
   }
 
-  /// The file's contents as the restore writes them, checked for shape; `image` turns each listed receipt image into a file the restore can stage.
+  /// The file's contents as the restore writes them, checked for shape; `image` turns each listed receipt image into a file the restore can stage. A store
+  /// written under a newer registry is refused before its kinds are read, since its new kinds are unknown here.
   static func preview(
     of file: MemoirExportFile, image: (MemoirExportFile.ReceiptImage) throws(MemoirImportError) -> MemoirRestoreContents.ReceiptImage?
   ) throws(MemoirImportError) -> MemoirRestorePreview {
@@ -233,6 +234,10 @@ nonisolated enum MemoirImporter {
     for section in file.stores {
       guard let kind = MemoirStoreKind.allCases.first(where: { MemoirExporter.storeName($0) == section.name }) else { throw .malformed("unknown store \(section.name)") }
       guard stores[kind] == nil else { throw .malformed("store \(section.name) is listed twice") }
+      guard section.registryVersion <= kind.registry.version else {
+        let refusal = MemoirRestoreError.registryTooNew(kind, found: section.registryVersion, supported: kind.registry.version)
+        throw .newerRecords(refusal.errorDescription ?? refusal.code)
+      }
       var entities = [ImportedEntity]()
       for kindSection in section.kinds { entities += try self.entities(of: kindSection, in: kind, keepsClocks: keepsClocks) }
       stores[kind] = MemoirRestoreContents.Store(registryVersion: section.registryVersion, entities: entities)

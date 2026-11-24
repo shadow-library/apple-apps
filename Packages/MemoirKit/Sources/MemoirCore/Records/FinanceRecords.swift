@@ -90,20 +90,18 @@ public struct ManualRate: Hashable, Sendable, StoredValue {
 }
 
 /// The values a subscription cycle's expense was first written with, and the subscription that wrote it, kept whole in one first-writer field so every
-/// device seeds the expense alike.
+/// device seeds the expense alike. It holds none of the owner's words: a first-writer value outlives the expense's deletion.
 public struct ExpenseCycleSeed: Hashable, Sendable, StoredValue {
   public let subscription: UUID
   public let amountMinor: Int64
   public let occurredOn: LocalDate
   public let category: CategoryKey
-  public let note: String?
 
-  public init(subscription: UUID, amountMinor: Int64, occurredOn: LocalDate, category: CategoryKey, note: String? = nil) {
+  public init(subscription: UUID, amountMinor: Int64, occurredOn: LocalDate, category: CategoryKey) {
     self.subscription = subscription
     self.amountMinor = amountMinor
     self.occurredOn = occurredOn
     self.category = category
-    self.note = note
   }
 
   public init?(stored: JSONValue) {
@@ -113,8 +111,7 @@ public struct ExpenseCycleSeed: Hashable, Sendable, StoredValue {
         { reader throws(MemoirUnreadable) in
           ExpenseCycleSeed(
             subscription: try reader.required(.subscription), amountMinor: try reader.required(.amountMinor), occurredOn: try reader.required(.occurredOn),
-            category: try reader.required(.category),
-            note: try reader.optional(.note))
+            category: try reader.required(.category))
         })
     else { return nil }
     self = seed
@@ -126,7 +123,6 @@ public struct ExpenseCycleSeed: Hashable, Sendable, StoredValue {
     members.put(.amountMinor, amountMinor)
     members.put(.occurredOn, occurredOn)
     members.put(.category, category)
-    members.put(.note, note)
     return members.json
   }
 }
@@ -174,13 +170,15 @@ public struct ExpenseRecord: IdentifiedRecord, RemovableMemoirRecord {
     self.loggedAtMillis = loggedAtMillis
   }
 
+  /// A cycle's expense is written with its seed alone, so the amount, date and category follow the seed until an edit writes them.
   public init(id: UUID, reading reader: MemberReader<ExpenseField>) throws(MemoirUnreadable) {
+    let cycle: ExpenseCycleSeed? = try reader.optional(.cycle)
     self.init(
-      id: id, amountMinor: try reader.required(.amountMinor), currency: try reader.required(.currency), occurredOn: try reader.required(.occurredOn),
-      category: try reader.required(.category), merchant: try reader.optional(.merchant), note: try reader.optional(.note), receipt: try reader.optional(.receipt),
+      id: id, amountMinor: try reader.required(.amountMinor, seed: cycle?.amountMinor), currency: try reader.required(.currency),
+      occurredOn: try reader.required(.occurredOn, seed: cycle?.occurredOn), category: try reader.required(.category, seed: cycle?.category),
+      merchant: try reader.optional(.merchant), note: try reader.optional(.note), receipt: try reader.optional(.receipt),
       rate: try reader.optional(.rate), manualRate: try reader.optional(.manualRate), budget: try reader.optional(.budget),
-      fromSavingsMinor: try reader.optional(.fromSavingsMinor), goal: try reader.optional(.goal), cycle: try reader.optional(.cycle),
-      loggedAtMillis: try reader.required(.loggedAtMillis))
+      fromSavingsMinor: try reader.optional(.fromSavingsMinor), goal: try reader.optional(.goal), cycle: cycle, loggedAtMillis: try reader.required(.loggedAtMillis))
   }
 
   public var members: RecordMembers<ExpenseField> {

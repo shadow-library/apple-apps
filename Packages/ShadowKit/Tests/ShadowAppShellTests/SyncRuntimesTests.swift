@@ -191,6 +191,29 @@ struct SyncRuntimesTests {
     await runtimes.shutDown()
   }
 
+  @Test(arguments: [false, true])
+  func shouldRaiseThePrimarysSchemaFloorOnlyForAVaultThatDeclaresOne(raises: Bool) async throws {
+    let world = try SyncWorld()
+    defer { world.remove() }
+    let runtimes = world.runtimes()
+    let (store, clock) = try SyncWorld.openStore()
+    await runtimes.phaseChanged(.active)
+    if raises {
+      await runtimes.launch(SyncedVault(primary: store, schemaFloor: store.registry.version - 1), trustedClock: clock)
+    } else {
+      await runtimes.launch(store, trustedClock: clock)
+    }
+    let runtime = try #require(runtimes.runtime)
+    #expect(try await runtime.attach(world.settings, choice: .create).canSync)
+
+    try await SyncWorld.writeNote("Ashfall", in: store)
+
+    try await SyncWorld.until("the write is uploaded") { try await SyncWorld.isUploaded(store) && runtimes.status == .upToDate }
+    let floor = try await store.read { transaction in try ReplicaDirectory.read(in: transaction).minimumSchema }
+    #expect(floor == (raises ? store.registry.version - 1 : nil), "the declared floor, not the registry version")
+    await runtimes.shutDown()
+  }
+
   @Test func shouldSendWhatIsLeftInsideABackgroundTaskWhenTheAppGoesToTheBackground() async throws {
     let world = try SyncWorld()
     defer { world.remove() }

@@ -28,21 +28,25 @@ public nonisolated struct SyncedStore: Sendable {
 /// What an app syncs from its vault: the primary store, which attaches, detaches and holds the keys, and the stores routed beside it. `declaredRoutes`
 /// names every route the vault may ever sync, whether or not it runs now, since a stopped route still has history at the location; a vault that
 /// declares any cannot move yet. `routes` is asked for the attached location's class policy whenever the primary's status changes and whenever the app
-/// calls `SyncRuntimes.reroute()`; it names only declared routes, and one it stops naming stops syncing and keeps its records.
+/// calls `SyncRuntimes.reroute()`; it names only declared routes, and one it stops naming stops syncing and keeps its records. A `schemaFloor` raises
+/// the primary's schema floor to that registry version with every upload (`SyncConfiguration.schemaFloor`), so builds of an older registry stop
+/// syncing the vault; nil raises nothing, and routed stores keep their own configuration.
 public nonisolated struct SyncedVault: Sendable {
   public typealias Routes = @Sendable (StorageClassPolicy) async -> [SyncedStore]
 
   public let primary: VaultStore
+  public let schemaFloor: Int?
   public let declaredRoutes: Set<SyncStoreRoute>
   public let routes: Routes
 
-  public init(primary: VaultStore, declaredRoutes: Set<SyncStoreRoute> = [], routes: @escaping Routes = { _ in [] }) {
+  public init(primary: VaultStore, schemaFloor: Int? = nil, declaredRoutes: Set<SyncStoreRoute> = [], routes: @escaping Routes = { _ in [] }) {
     self.primary = primary
+    self.schemaFloor = schemaFloor
     self.declaredRoutes = declaredRoutes
     self.routes = routes
   }
 
   var primaryStore: SyncedStore {
-    SyncedStore(store: primary, route: nil, configuration: .init(), title: nil, routedBeside: declaredRoutes)
+    SyncedStore(store: primary, route: nil, configuration: SyncConfiguration(schemaFloor: schemaFloor), title: nil, routedBeside: declaredRoutes)
   }
 }

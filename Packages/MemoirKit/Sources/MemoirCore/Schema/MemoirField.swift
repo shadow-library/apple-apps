@@ -87,7 +87,6 @@ public enum ExpenseCycleMember: String, MemoirField {
   case amountMinor = "amount_minor"
   case occurredOn = "occurred_on"
   case category
-  case note
 }
 
 public enum ExpenseRateMember: String, MemoirField {

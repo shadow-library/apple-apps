@@ -264,6 +264,35 @@ struct SyncEngineFloorTests {
     #expect(try await harness.savedFloors() == lowered)
   }
 
+  @Test("should raise the schema floor once to the declared version, over a lower one, and leave an equal one alone")
+  func shouldRaiseSchemaFloorOnce() async throws {
+    let version = SyncFixture.registry.version - 1
+    for existing in [nil, version - 1, version] {
+      let harness = try await SyncHarness.started(configuration: SyncConfiguration(schemaFloor: version))
+      if let existing { try await harness.raiseDirectoryFloors(schema: existing) }
+      _ = try await harness.engine.upload()
+      let floors = try await harness.schemaFloorRecords()
+
+      #expect(floors == Set([existing, version].compactMap(\.self)), "floor records over \(String(describing: existing))")
+      #expect(try await harness.lifecycle.directory().minimumSchema == version)
+      #expect(try await harness.engine.upload() == .nothingToUpload, "a second upload writes no further floor")
+      #expect(try await harness.schemaFloorRecords() == floors)
+    }
+  }
+
+  @Test("should never raise the schema floor unless one is declared, nor lower one a newer replica raised")
+  func shouldLeaveSchemaFloorAlone() async throws {
+    let plain = try await SyncHarness.started()
+    try await plain.writeNotes(1)
+    _ = try await plain.engine.upload()
+    #expect(try await plain.lifecycle.directory().minimumSchema == nil)
+
+    let raising = try await SyncHarness.started(configuration: SyncConfiguration(schemaFloor: SyncFixture.registry.version))
+    try await raising.raiseDirectoryFloors(schema: SyncFixture.registry.version + 2)
+    await #expect(throws: SyncError.self) { try await raising.engine.upload() }
+    #expect(try await raising.schemaFloorRecords() == [SyncFixture.registry.version + 2])
+  }
+
   @Test("should refuse to upload and keep the pending changes when the vault needs a newer schema")
   func shouldRefuseNewerSchema() async throws {
     let provider = InMemoryStorageProvider()

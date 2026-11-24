@@ -462,4 +462,28 @@ struct SyncDownloadIdentityTests {
       }
     }
   }
+
+  @Test("should raise the floor to the declared version on upload, so an older replica stops with appUpdateRequired")
+  func shouldStopAnOlderReplicaOnceANewerOneRaisedTheFloor() async throws {
+    let newer = SyncKernelSchema.registry(version: SyncFixture.registry.version + 1, adding: SyncFixture.entities)
+    let peers = try await SyncPeers.make(2, configurations: [SyncConfiguration(schemaFloor: newer.version), .init()], registries: [newer, SyncFixture.registry])
+    let (a, b) = (peers[0], peers[1])
+    try await a.writeNotes(1)
+    _ = try await a.uploaded()
+    #expect(try await a.lifecycle.directory().minimumSchema == newer.version)
+
+    #expect(!(try await b.engine.download().applied.isEmpty))
+
+    #expect(try await b.savedFloors().schema == newer.version)
+    for attempt in 0..<2 {
+      let error = await #expect(throws: SyncError.self) {
+        if attempt == 0 { _ = try await b.engine.download() } else { _ = try await b.engine.upload() }
+      }
+      guard case .appUpdateRequired(newer.version, SyncFixture.registry.version)? = error else {
+        throw SyncFixtureFailure("expected appUpdateRequired, got \(String(describing: error))")
+      }
+    }
+    _ = try await a.engine.sync()
+    #expect(try await a.lifecycle.directory().minimumSchema == newer.version, "the newer replica keeps syncing")
+  }
 }

@@ -156,6 +156,11 @@ struct SyncHarness {
     }
   }
 
+  func schemaFloorRecords() async throws -> Set<Int> {
+    let states = try await store.read { try $0.states(ofKind: SyncKernelSchema.schemaFloorKind) }
+    return Set(states.compactMap { SyncKernelSchema.schemaFloor(of: $0.ref.key) })
+  }
+
   func history() async throws -> ReplicaUploadHistory {
     let replica = store.replica
     return try await store.read { try ReplicaHistory.uploads(of: replica, in: $0.database) }
@@ -210,6 +215,7 @@ struct SyncPeers {
     _ count: Int,
     provider: any StorageProvider = InMemoryStorageProvider(),
     configuration: SyncConfiguration = .init(),
+    configurations: [SyncConfiguration]? = nil,
     registries: [SchemaRegistry]? = nil,
     clocks: [SyncSettableClock]? = nil,
     sharedKey: Bool = true
@@ -223,7 +229,8 @@ struct SyncPeers {
       let store = try SyncFixture.open(registry: registries?[index] ?? SyncFixture.registry, wallClock: SyncEngine.wallClock(preferring: trusted) { clock.now })
       peers.append(
         SyncHarness(
-          store: store, provider: provider, keychain: keychain, device: "peer\(index)", configuration: configuration, trustedClock: trusted, wallClock: { clock.now }))
+          store: store, provider: provider, keychain: keychain, device: "peer\(index)", configuration: configurations?[index] ?? configuration, trustedClock: trusted,
+          wallClock: { clock.now }))
     }
     if sharedKey {
       _ = try peers[0].ring.createKey()
