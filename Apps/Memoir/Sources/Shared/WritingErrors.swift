@@ -42,9 +42,21 @@ enum WritingErrors {
       switch error {
       case .expenseFieldFixed: copy(referenceCode: "FIN_006")
       case .subscriptionAbsent: copy(referenceCode: "FIN_004")
+      case .budgetAbsent: String(localized: "That’s no longer available.", table: "Writing")
+      case .homeBudgetFixed: String(localized: "Home is always kept as a monthly budget in your home currency.", table: "Writing")
+      case .budgetFieldFixed: String(localized: "A budget’s currency and kind can’t be changed. Make a new budget instead.", table: "Writing")
+      case .budgetNameRequired: String(localized: "Give the budget a name.", table: "Writing")
+      case .budgetLimitRequired: String(localized: "Set a limit for the budget.", table: "Writing")
+      case .invalidTripDates: String(localized: "A trip ends on or after the day it starts.", table: "Writing")
+      case .tripsOverlap: String(localized: "Trips can’t share a day. Change the dates so they don’t overlap.", table: "Writing")
+      case .tripLimitLocked: String(localized: "A trip’s limit can’t be raised once the trip has started.", table: "Writing")
+      case .tripStartFixed: String(localized: "A trip that has started keeps its first day.", table: "Writing")
+      case .tripStartTooEarly: String(localized: "A trip can start at most 3 days ago.", table: "Writing")
+      case .limitChangedThisMonth: String(localized: "This month’s limit has already changed. Raise it again next month.", table: "Writing")
+      case .currencyTaken: String(localized: "There’s already a monthly budget in that currency.", table: "Writing")
       case .unreadable, .store, .recordWrite: PresentedError.storeHeadline
       case .unknownCurrency, .currencyMismatch, .overflow, .rateNotPositive, .rateOutOfRange, .negativeBudget, .unknownFrequency, .customIntervalNotPositive,
-        .billingDayOutOfRange, .dateOutOfRange, .expenseExists:
+        .billingDayOutOfRange, .dateOutOfRange, .expenseExists, .budgetExists, .negativeLimit:
         invalidDetails
       }
     case let error as MemoirRecordError:

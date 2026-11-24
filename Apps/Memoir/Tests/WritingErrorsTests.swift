@@ -68,6 +68,19 @@ struct WritingErrorsTests {
       WritingErrors.presented(MemoirWriteError.recordNotGeneral(.weight)) == PresentedError(headline: PresentedError.genericHeadline, detail: "memoir_write.record_not_general"))
   }
 
+  @Test("should give a budget refusal the owner's words, with its code underneath")
+  func presentsBudgetRefusals() {
+    let overlap = WritingErrors.presented(MemoirWriteError.command(.finance(.tripsOverlap(UUID()))))
+
+    #expect(overlap == PresentedError(headline: "Trips can’t share a day. Change the dates so they don’t overlap.", detail: "memoir_finance.trips_overlap"))
+    #expect(WritingErrors.presented(FinanceError.tripLimitLocked)?.headline == "A trip’s limit can’t be raised once the trip has started.")
+    #expect(WritingErrors.presented(FinanceError.homeBudgetFixed)?.headline == "Home is always kept as a monthly budget in your home currency.")
+    #expect(WritingErrors.presented(FinanceError.budgetAbsent(UUID()))?.headline == "That’s no longer available.")
+    #expect(WritingErrors.presented(FinanceError.negativeLimit(-1))?.headline == "Some of the details weren’t valid.")
+    #expect(WritingErrors.presented(FinanceError.limitChangedThisMonth)?.headline == "This month’s limit has already changed. Raise it again next month.")
+    #expect(WritingErrors.presented(FinanceError.tripStartTooEarly(earliest: TestClock.day(0)))?.headline == "A trip can start at most 3 days ago.")
+  }
+
   @Test("should fall back to the generic headline for an error it does not know")
   func fallsBack() {
     #expect(WritingErrors.presented(Unknown()) == PresentedError(headline: PresentedError.genericHeadline, detail: nil))

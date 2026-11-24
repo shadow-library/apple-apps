@@ -17,6 +17,20 @@ public enum FinanceError: ShadowError, Equatable, Hashable {
   /// The reference's `FIN_006` for the currency: an expense keeps the currency, rate, receipt and logging time of its first write.
   case expenseFieldFixed(String)
   case expenseExists(UUID)
+  case budgetAbsent(UUID)
+  case budgetExists(UUID)
+  case homeBudgetFixed
+  case budgetFieldFixed(String)
+  case budgetNameRequired
+  case budgetLimitRequired
+  case negativeLimit(Int64)
+  case invalidTripDates
+  case tripsOverlap(UUID)
+  case tripLimitLocked
+  case tripStartFixed
+  case tripStartTooEarly(earliest: LocalDate)
+  case limitChangedThisMonth
+  case currencyTaken(CurrencyCode)
   case unreadable(EntityRef)
   case store(String)
   case recordWrite(String)
@@ -36,6 +50,20 @@ public enum FinanceError: ShadowError, Equatable, Hashable {
     case .subscriptionAbsent: "memoir_finance.subscription_absent"
     case .expenseFieldFixed: "memoir_finance.expense_field_fixed"
     case .expenseExists: "memoir_finance.expense_exists"
+    case .budgetAbsent: "memoir_finance.budget_absent"
+    case .budgetExists: "memoir_finance.budget_exists"
+    case .homeBudgetFixed: "memoir_finance.home_budget_fixed"
+    case .budgetFieldFixed: "memoir_finance.budget_field_fixed"
+    case .budgetNameRequired: "memoir_finance.budget_name_required"
+    case .budgetLimitRequired: "memoir_finance.budget_limit_required"
+    case .negativeLimit: "memoir_finance.negative_limit"
+    case .invalidTripDates: "memoir_finance.invalid_trip_dates"
+    case .tripsOverlap: "memoir_finance.trips_overlap"
+    case .tripLimitLocked: "memoir_finance.trip_limit_locked"
+    case .tripStartFixed: "memoir_finance.trip_start_fixed"
+    case .tripStartTooEarly: "memoir_finance.trip_start_too_early"
+    case .limitChangedThisMonth: "memoir_finance.limit_changed_this_month"
+    case .currencyTaken: "memoir_finance.currency_taken"
     case .unreadable: "memoir_finance.unreadable"
     case .store: "memoir_finance.store"
     case .recordWrite: "memoir_finance.record_write"
@@ -58,6 +86,20 @@ public enum FinanceError: ShadowError, Equatable, Hashable {
     case .subscriptionAbsent(let id): "Subscription \(id.lowercasedString) is not in the vault."
     case .expenseFieldFixed(let field): "An expense's \(field) cannot change after it is written; record a new expense instead."
     case .expenseExists(let id): "Expense \(id.lowercasedString) already exists."
+    case .budgetAbsent(let id): "Budget \(id.lowercasedString) is not in the vault."
+    case .budgetExists(let id): "Budget \(id.lowercasedString) already exists."
+    case .homeBudgetFixed: "Home is always kept, monthly and in the currency it was created in; it cannot be deleted, renamed or moved."
+    case .budgetFieldFixed(let field): "A budget's \(field) cannot change after it is created."
+    case .budgetNameRequired: "A budget other than Home needs a name."
+    case .budgetLimitRequired: "A budget needs a limit."
+    case .negativeLimit(let amount): "A budget's limit and one-off threshold are zero or more, not \(amount)."
+    case .invalidTripDates: "A trip ends on or after the day it starts."
+    case .tripsOverlap(let id): "The trip shares a day with trip \(id.lowercasedString)."
+    case .tripLimitLocked: "A trip's limit cannot be raised once the trip has started."
+    case .tripStartFixed: "A trip that has started keeps its first day."
+    case .tripStartTooEarly(let earliest): "A trip starts on \(earliest) or later."
+    case .limitChangedThisMonth: "This month's limit has already changed; a raise waits until next month."
+    case .currencyTaken(let code): "There is already a monthly budget in \(code)."
     case .unreadable(let ref): "\(ref.kind)/\(ref.key) cannot be read."
     case .store(let reason): "The store failed: \(reason)"
     case .recordWrite(let reason): "The record write was refused: \(reason)"

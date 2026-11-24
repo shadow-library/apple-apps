@@ -187,6 +187,127 @@
           }
         }
       }
+    },
+    "Home is always kept as a monthly budget in your home currency.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Home is always kept as a monthly budget in your home currency."
+          }
+        }
+      }
+    },
+    "A budget’s currency and kind can’t be changed. Make a new budget instead.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A budget’s currency and kind can’t be changed. Make a new budget instead."
+          }
+        }
+      }
+    },
+    "Give the budget a name.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Give the budget a name."
+          }
+        }
+      }
+    },
+    "Set a limit for the budget.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Set a limit for the budget."
+          }
+        }
+      }
+    },
+    "A trip ends on or after the day it starts.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A trip ends on or after the day it starts."
+          }
+        }
+      }
+    },
+    "Trips can’t share a day. Change the dates so they don’t overlap.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Trips can’t share a day. Change the dates so they don’t overlap."
+          }
+        }
+      }
+    },
+    "A trip’s limit can’t be raised once the trip has started.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A trip’s limit can’t be raised once the trip has started."
+          }
+        }
+      }
+    },
+    "A trip that has started keeps its first day.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A trip that has started keeps its first day."
+          }
+        }
+      }
+    },
+    "There’s already a monthly budget in that currency.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "There’s already a monthly budget in that currency."
+          }
+        }
+      }
+    },
+    "A trip can start at most 3 days ago.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A trip can start at most 3 days ago."
+          }
+        }
+      }
+    },
+    "This month’s limit has already changed. Raise it again next month.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This month’s limit has already changed. Raise it again next month."
+          }
+        }
+      }
     }
   },
   "version": "1.0"
