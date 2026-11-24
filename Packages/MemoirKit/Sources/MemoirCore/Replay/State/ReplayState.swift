@@ -20,6 +20,7 @@ public struct ReplayState: Sendable, Hashable {
   public internal(set) var hero = HeroLedger.empty
   public internal(set) var progression = ProgressionState.empty
   public internal(set) var compassion = CompassionState.empty
+  public internal(set) var money = MoneyState.empty
   public internal(set) var days: [LocalDate: ReplayDay] = [:]
   public internal(set) var settings = ReplaySettings.empty
   public internal(set) var records = RecordIndex.empty

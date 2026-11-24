@@ -1,8 +1,8 @@
 import Foundation
 import ShadowCore
 
-/// Metrics, finance and settings. Only a confirmed subscription cycle moves hero state; the rest is judged against what earlier commands named, so a
-/// refusal reads as the reference's code. A metric's value never reaches replay.
+/// Metrics, finance and settings. Only a confirmed subscription cycle and, under money rules, an expense's day move hero state; the rest is judged
+/// against what earlier commands named, so a refusal reads as the reference's code. A metric's value never reaches replay.
 extension ReplayState {
   /// A built-in metric exists on every device from the start (`BuiltinMetric`), so a create naming one finds it there.
   mutating func createMetric(_ metric: MetricReference) -> ReplayOutcome {
@@ -28,8 +28,11 @@ extension ReplayState {
     return .applied
   }
 
-  mutating func createExpense(_ creation: ExpenseCreation) -> ReplayOutcome {
+  /// A creation that names its day covers that day's money logging when it is still inside the late window.
+  mutating func createExpense(_ creation: ExpenseCreation, in context: ApplyContext) -> ReplayOutcome {
     records.expenses.insert(creation.id)
+    noteMoneyActivity(in: context)
+    if let date = creation.occurredOn, isInLoggingWindow(date, in: context) { cover(date, by: .expense, in: context) }
     return .applied
   }
 

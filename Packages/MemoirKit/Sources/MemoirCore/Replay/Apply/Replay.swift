@@ -156,8 +156,7 @@ public enum Replay {
     let ruleset: Ruleset
   }
 
-  /// Nil for a command already taken in, or one this app cannot read, which sets `halt`. Replay does not apply money rules yet, so a command stamped with
-  /// a ruleset that has them halts as one this build lacks.
+  /// Nil for a command already taken in, or one this app cannot read, which sets `halt`.
   private static func admit(_ command: ReplayCommand, to state: inout ReplayState) -> Admitted? {
     guard case .readable(let entry) = command else {
       state.halt = .unreadableCommand(command.ref)
@@ -176,7 +175,7 @@ public enum Replay {
       state.halt = .unreadableCommand(stored.ref)
       return nil
     }
-    guard let ruleset = Ruleset.version(stored.rulesetVersion), ruleset.money == nil else {
+    guard let ruleset = Ruleset.version(stored.rulesetVersion) else {
       state.halt = .rulesetUnavailable(command: stored.id, version: stored.rulesetVersion)
       return nil
     }

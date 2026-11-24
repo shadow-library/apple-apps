@@ -56,7 +56,7 @@ extension ReplayState {
       strictness: schedule.strictness, band: band, completion: completion, streakDays: postStreakDays, lockActive: lockActive, oneShot: .none)
     var claimed = rewardInput
     claimed.oneShot = fire == nil ? .none : .comeback
-    let reward = ruleset.reward(for: claimed)
+    let reward = debuffed(ruleset.reward(for: claimed), on: occurrence.date, ruleset: ruleset)
 
     let write = QuestLogWrite(
       id: context.id, state: state, xpAwarded: reward.xp, coinsAwarded: reward.coins, statAffinity: schedule.statAffinity, strictness: schedule.strictness,

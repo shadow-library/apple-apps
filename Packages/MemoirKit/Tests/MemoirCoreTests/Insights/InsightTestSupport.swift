@@ -183,6 +183,7 @@ struct InsightHarness {
         InsightHeroEvent(type: HeroEventType.questComplete.rawValue, quest: quest, state: .completed, xpDelta: 20, date: date),
         InsightHeroEvent(type: HeroEventType.journal.rawValue, xpDelta: 5, date: date), InsightHeroEvent(type: HeroEventType.meal.rawValue, xpDelta: 3, date: date),
         InsightHeroEvent(type: HeroEventType.levelUp.rawValue, levelAfter: 2, date: date),
+        InsightHeroEvent(type: HeroEventType.moneyFine.rawValue, coinsDelta: -15, date: date),
       ],
       dailyStates: [InsightDailyState(date: date, intensityMode: .standard, hpStart: 100, hpEnd: 95, hpMax: 100)],
       progressionEvents: [.title(id: "early_bird", earnedOn: date)])

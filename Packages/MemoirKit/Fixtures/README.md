@@ -85,6 +85,17 @@ PLATFORM_REPO=<path to the platform checkout> bun Packages/MemoirKit/Fixtures/re
 - `scenarios.json` holds one scenario per line with `expected.steps` and `expected.state`: the hero totals and trail (ledger keys naming the occurrence or day instead of the reference's serial ids), logs, reschedules, streaks, shield uses, counters, achievements, titles, cosmetics, days (closed, intensity, HP, misses, momentum, Returner, lock, Comeback, Crown and its bank), the open day and last active date, Comeback events, Recovery quests (source and trigger logs), Returner events, metrics and quick-log rewards.
 - `tests/commands/hero-ledger.service.spec.ts` drives the ledger with intents no single command produces (several spends in one grant, a jump of three levels); `ReplayTests` checks those literal cases against `HeroLedger` directly.
 
+## money
+
+```sh
+bun Packages/MemoirKit/Fixtures/money/generate.ts
+```
+
+- Money in the game (ruleset v2) is native: the reference has no money commands, so this generator imports nothing, reads no checkout and needs no `PLATFORM_REPO`. Like the native `receipt.scan` cases in `commands.json`, every expected outcome is literal, worked out by hand from `rules/money-v2.ts` and ruleset v1's quest and quick-log tables, and each case carries the `reason` it holds.
+- `vectors.json` holds one case per line: `{"id", "reason", "steps", "expected"}`. A step is a native payload with `@name` for an id (`at`, `type`, `payload`, an `occurrence` naming its quest without the `@`, `rulesetVersion` when it is not 2, and `clock` when it is delivered out of clock order); a `horizon` step only walks the days. `expected.steps` is each command's outcome as the whole log decides it (`applied`, `superseded`, or `refused` with the native code), and `expected.state` names only the members a case checks: the hero's XP and coins, covered days, the money and saving streaks, the last settled week, the last money activity, closes and their fines, debuff multipliers on given days, Returner events, notices, achievements, quest log XP and the money events on the trail.
+- Cases cover the late logging window and its refusals, the daily log's intensity, v1 commands from an older device, Monday-anchored weeks settling once the late window after them has closed (with late cover, a short week, two full weeks and an absence past the catch-up limit), close rewards and duplicates, the saving streak, fines clamped to the balance, debuffs on quick logs, side quests, the money log and a quest completion, debuffs that never stack, intensity on a penalty, a penalty resetting the money streak, goal milestones and purchases, achievements reached through money XP, the Returner measuring money activity only once a quest was kept, an earlier-clocked close delivered late, and a late fine withdrawing a purchase.
+- `MoneyReplayVectorTests` runs each case through `Replay.step` and compares; a step clocked before one already taken replays every command so far from the start, as a device does from the checkpoint before it.
+
 ## guardrails
 
 ```sh

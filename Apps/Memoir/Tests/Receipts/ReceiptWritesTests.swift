@@ -28,8 +28,8 @@ struct ReceiptWritesTests {
     #expect(receipt.byteCount == photo.data.count)
     #expect(written.receipt == receipt.id)
     #expect(try await MoneyFixture.expenseEntries(context).map(\.record.receipt) == [receipt.id])
-    #expect(
-      try await MoneyFixture.bodies(context) == [.expenseCreate(ExpenseCreation(id: expense.id, source: .ocr)), .receiptScan(ReceiptScan(receiptId: receipt.id))])
+    let creation = ExpenseCreation(id: expense.id, source: .ocr, occurredOn: expense.occurredOn)
+    #expect(try await MoneyFixture.bodies(context) == [.expenseCreate(creation), .receiptScan(ReceiptScan(receiptId: receipt.id))])
   }
 
   @Test("should save a kept but unread photo as a typed expense with no scan")
@@ -41,7 +41,7 @@ struct ReceiptWritesTests {
     _ = try await ReceiptWrites.create(expense, attaching: ReceiptAttachment(photo: try ReceiptFixture.photo(), scanned: false), blobs: blobs.blobs, writer: context.writer)
 
     #expect(try await ReceiptFixture.receipts(context).count == 1)
-    #expect(try await MoneyFixture.bodies(context) == [.expenseCreate(ExpenseCreation(id: expense.id, source: .manual))])
+    #expect(try await MoneyFixture.bodies(context) == [.expenseCreate(ExpenseCreation(id: expense.id, source: .manual, occurredOn: expense.occurredOn))])
   }
 
   @Test("should write nothing when the image cannot be kept")
@@ -82,7 +82,7 @@ struct ReceiptWritesTests {
     #expect(blobs.puts == 1, "the image was kept first; nothing names it, so the sync kernel removes it in time")
     #expect(try await ReceiptFixture.receipts(context).isEmpty, "no record names the kept image")
     #expect(try await MoneyFixture.expenseEntries(context).map(\.record.receipt) == [nil])
-    #expect(try await MoneyFixture.bodies(context) == [.expenseCreate(ExpenseCreation(id: existing.id))])
+    #expect(try await MoneyFixture.bodies(context) == [.expenseCreate(ExpenseCreation(id: existing.id, occurredOn: existing.occurredOn))])
   }
 
   @Test("should keep the image in the main store's blobs and show it from this device's copy")

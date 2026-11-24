@@ -126,10 +126,6 @@ enum CommandSamples {
     return bodies
   }
 
-  static func issuable() throws -> [MemoirCommandBody] {
-    try all().filter { $0.minimumRulesetVersion <= Ruleset.current.version }
-  }
-
   static func text(for body: MemoirCommandBody) -> String? {
     switch body.textSlot {
     case .reasonNote?: "Physio said rest this week"

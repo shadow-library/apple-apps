@@ -96,11 +96,11 @@ struct ReplayCheckpointTests {
   }
 
   /// Settings staged and promoted, metrics, expenses, a subscription cycle, quick logs, a quest updated and deleted, a purchase, a lock, misses that arm
-  /// Comeback and an absence the Returner answers, so every part of the state holds something.
+  /// Comeback, an absence the Returner answers, and money logging, closes and goal rewards under v2, so every part of the state holds something.
   private static func broadHistory() throws -> [ReplayCommand] {
     let day0 = try MemoirStoreFixture.date("2026-01-05")
     let quests = (1...4).map { MemoirStoreFixture.uuid(String(format: "0190f3a0-0000-7000-8000-00000000f%03d", $0)) }
-    let other = (1...8).map { MemoirStoreFixture.uuid(String(format: "0190f3a0-0000-7000-8000-00000000e%03d", $0)) }
+    let other = (1...10).map { MemoirStoreFixture.uuid(String(format: "0190f3a0-0000-7000-8000-00000000e%03d", $0)) }
     let recurrence = try RecurrenceRule(frequency: .daily, startDate: day0)
     let schedules = [
       try QuestSchedule(strictness: .anchor, startTimeMinutes: 420, durationMinutes: 30, statAffinity: .discipline, recurrence: recurrence),
@@ -144,11 +144,19 @@ struct ReplayCheckpointTests {
     on(6, 900, .questSkip(QuestBreak(occurrence: Occurrence(quest: quests[1], date: try date(6)), reasonTag: .travel)))
     on(31, 900, .metricDelete(MetricDeletion(metric: metric)))
     on(41, 600, .expenseDelete(RecordReference(id: other[1])))
+    let budgets = [CommandSamples.budget, CommandSamples.goal]
+    on(42, 900, .moneyNoSpend(NoSpendDay(date: try date(42))))
+    on(42, 905, .expenseCreate(ExpenseCreation(id: other[8], occurredOn: try date(41))))
+    on(43, 900, .budgetClosePeriod(try BudgetPeriodClose(budgetId: budgets[0], periodStart: try date(0), outcome: .within, deposited: true)))
+    on(43, 905, .budgetClosePeriod(try BudgetPeriodClose(budgetId: budgets[1], periodStart: try date(0), outcome: .over10, deposited: false)))
+    on(44, 900, .goalMilestone(GoalMilestoneReached(goalId: other[0], milestone: .p25)))
+    on(45, 900, .goalBought(GoalPurchase(goalId: other[0], outcome: .within)))
+    on(45, 905, .expenseCreate(ExpenseCreation(id: other[9], occurredOn: try date(45))))
     return try bodies.enumerated().map { index, entry in
       let instant = Int64(try date(entry.day).daysSinceEpoch) * ReplaySamples.millisPerDay + Int64(entry.minute) * 60_000
       let command = try MemoirCommand(
         id: MemoirStoreFixture.commandID(9_000 + index), body: entry.body, instantMillis: instant, utcOffsetMinutes: 0,
-        issuedOn: try MemoirCommand.localDate(instantMillis: instant, utcOffsetMinutes: 0), rulesetVersion: 1)
+        issuedOn: try MemoirCommand.localDate(instantMillis: instant, utcOffsetMinutes: 0), rulesetVersion: entry.body.minimumRulesetVersion)
       return try ReplayFixture.entry(command, wall: Int64(index + 1))
     }
   }
@@ -163,6 +171,9 @@ struct ReplayCheckpointTests {
     #expect(!state.compassion.returnerEvents.isEmpty && !state.compassion.recoveries.isEmpty)
     #expect(!state.progression.cosmetics.isEmpty && !state.progression.achievements.isEmpty)
     #expect(state.quests.values.contains { !$0.isActive })
+    #expect(state.money.coveredDays.count == 3 && state.money.closes.count == 2 && !state.money.milestones.isEmpty && !state.money.goalsBought.isEmpty)
+    #expect(state.money.lastSettledWeekStart != nil && state.money.lastActivityDay != nil)
+    #expect(Self.boundaries(of: commands).contains { !$0.money.debuffs.isEmpty }, "a debuff is checkpointed while it lasts")
     #expect(state.days.values.contains { $0.comebackEvents.values.contains { $0.trigger != nil } })
     #expect(state.days.values.contains { ($0.crown?.banked?.xp ?? 0) > 0 })
     #expect(!state.reasonedReschedules.isEmpty && state.logs.all.contains { $0.value.reasonTag == .travel })
@@ -215,6 +226,42 @@ struct ReplayCheckpointTests {
     json["version"] = .int(Int64(ReplayState.codingVersion + 1))
     let newer = try Self.resealed(checkpoint, body: CanonicalJSON.encode(.object(json)))
     #expect(throws: ReplayCheckpointError.self, "a body of another coding version is refused") { try newer.state(expecting: Self.stamp) }
+  }
+
+  @Test func shouldRefuseAMoneyStateReplayCouldNeverLeave() throws {
+    let state = Replay.run(try Self.broadHistory())
+    func refused(_ change: (inout [String: JSONValue]) throws -> Void, _ comment: Comment) throws {
+      var json = try #require(try CanonicalJSON.decode(try state.canonicalJSON()).objectValue)
+      var money = try #require(json["money"]?.objectValue)
+      try change(&money)
+      json["money"] = .object(money)
+      #expect(throws: (any Error).self, comment) { try ReplayState(canonicalJSON: CanonicalJSON.encode(.object(json))) }
+    }
+    try refused({ $0["weekStreak"] = -1 }, "a negative streak")
+    try refused({ $0["savingStreak"] = -2 }, "a negative saving streak")
+    try refused(
+      { money in
+        var closes = try #require(money["closes"]?.arrayValue)
+        closes.append(try #require(closes.first))
+        money["closes"] = .array(closes)
+      }, "a period closed twice")
+    try refused(
+      { money in
+        var closes = try #require(money["closes"]?.arrayValue)
+        var entry = try #require(closes.first?.objectValue)
+        var close = try #require(entry["close"]?.objectValue)
+        close["command"] = .string(MemoirStoreFixture.commandID(777).lowercasedString)
+        entry["close"] = .object(close)
+        closes[0] = .object(entry)
+        money["closes"] = .array(closes)
+      }, "a close naming a command replay never applied")
+    try refused(
+      { money in
+        money["debuffs"] = .array([
+          .object(["from": "2026-01-10", "through": "2026-01-12", "multiplier": .object(["thousandths": 600]), "command": .string(CommandSamples.record.lowercasedString)])
+        ])
+      }, "a debuff without its close")
+    #expect(try ReplayState(canonicalJSON: try state.canonicalJSON()) == state)
   }
 
   @Test func shouldCheckpointOnlyAStateThatTookCommandsInAndDidNotHalt() throws {

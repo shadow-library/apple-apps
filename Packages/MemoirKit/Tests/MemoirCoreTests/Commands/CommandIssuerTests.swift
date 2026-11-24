@@ -43,8 +43,8 @@ struct CommandIssuerTests {
   @Test func shouldIssueEveryKindIntoTheStoreAndReadItBack() async throws {
     let store = try MemoirStore.openInMemory(.main)
     let issuer = try issuer("Asia/Kathmandu")
-    let bodies = try CommandSamples.issuable()
-    #expect(Set(bodies.map(\.kind)) == Set(MemoirCommandKind.allCases).subtracting([.moneyNoSpend, .budgetClosePeriod, .goalMilestone, .goalBought]))
+    let bodies = try CommandSamples.all()
+    #expect(Set(bodies.map(\.kind)) == Set(MemoirCommandKind.allCases))
     let issued = try await store.write { transaction in
       try bodies.map { body in try issuer.issue(body, text: CommandSamples.text(for: body), in: &transaction) }
     }
@@ -61,24 +61,16 @@ struct CommandIssuerTests {
     }
   }
 
-  @Test func shouldRefuseABodyThatNeedsANewerRulesetThanTheOneItIssuesUnder() async throws {
+  @Test func shouldIssueEveryMoneyBodyUnderTheCurrentRuleset() throws {
     let issuer = try issuer("Europe/Berlin")
-    let newer = try CommandSamples.all().filter { $0.minimumRulesetVersion > Ruleset.current.version }
-    #expect(Set(newer.map(\.kind)) == [.moneyNoSpend, .budgetClosePeriod, .goalMilestone, .goalBought, .expenseCreate])
-    let store = try MemoirStore.openInMemory(.main)
-    for body in newer {
-      #expect(throws: CommandIssueError.self, "\(body.kind.rawValue)") { try issuer.command(body) }
-      do throws(CommandIssueError) {
-        _ = try issuer.command(body)
-      } catch {
-        guard case .refused(let refusal) = error else { throw error }
-        #expect(refusal == .needsNewerRuleset(body.kind, minimum: body.minimumRulesetVersion))
-        #expect(refusal.code == "memoir_command.needs_newer_ruleset")
-      }
-      await #expect(throws: (any Error).self) { try await store.write { transaction in try issuer.issue(body, in: &transaction) } }
+    let money = try CommandSamples.all().filter { $0.minimumRulesetVersion > Ruleset.v1.version }
+    #expect(Set(money.map(\.kind)) == [.moneyNoSpend, .budgetClosePeriod, .goalMilestone, .goalBought, .expenseCreate])
+    for body in money {
+      let command = try issuer.command(body)
+      #expect(command.rulesetVersion == Ruleset.current.version && command.rulesetVersion >= body.minimumRulesetVersion, "\(body.kind.rawValue)")
     }
-    let listing = try await store.read { transaction in try MemoirCommand.listing(in: transaction) }
-    #expect(listing.entries.isEmpty, "a refused body writes nothing")
+    #expect(try CommandSamples.all().allSatisfy { $0.minimumRulesetVersion <= Ruleset.current.version }, "the issuer refuses only a body above current")
+    #expect(CommandRefusal.needsNewerRuleset(.moneyNoSpend, minimum: 3).code == "memoir_command.needs_newer_ruleset")
   }
 
   @Test func shouldRefuseATextThatDoesNotFitTheBodysSlot() throws {

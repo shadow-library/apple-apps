@@ -104,6 +104,11 @@ nonisolated enum HeroCopy {
     case .crownInit: return String(localized: "Crown period opened", table: "Hero")
     case .crownForfeit: return String(localized: "Crown share lost on \(quest ?? String(localized: "a quest", table: "Hero"))", table: "Hero")
     case .returnerFired: return String(localized: "Welcome back", table: "Hero")
+    case .moneyFine: return String(localized: "Budget overspent", table: "Hero")
+    case .moneyReward: return String(localized: "Budget kept", table: "Hero")
+    case .moneyLog: return String(localized: "Spending logged", table: "Hero")
+    case .goalMilestone: return String(localized: "Savings goal milestone reached", table: "Hero")
+    case .goalBought: return String(localized: "Savings goal bought", table: "Hero")
     }
   }
 

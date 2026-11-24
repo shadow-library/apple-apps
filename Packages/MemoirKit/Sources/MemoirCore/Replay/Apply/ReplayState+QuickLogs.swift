@@ -46,11 +46,12 @@ extension ReplayState {
     var credited: RewardAmount?
     if entry.date == context.accountDay && rewardedToday < reward.maxRewardedPerDay {
       let slot = rewardedToday + 1
+      let amount = debuffed(RewardAmount(xp: reward.xp, coins: reward.coins), on: entry.date, ruleset: context.ruleset)
       credited = Self.credited(
         hero.credit(
           [
             GrantIntent(
-              key: "sidequest_\(entry.date)_\(slot)", type: .sideQuest, date: entry.date, xpDelta: reward.xp, coinsDelta: reward.coins,
+              key: "sidequest_\(entry.date)_\(slot)", type: .sideQuest, date: entry.date, xpDelta: amount.xp, coinsDelta: amount.coins,
               statAffinity: entry.statAffinity, statDelta: reward.statTick)
           ], ruleset: context.ruleset))
       if credited != nil { records.sideQuestsRewarded[entry.date] = slot }
@@ -73,7 +74,8 @@ extension ReplayState {
     _ source: QuickLogSource, on date: LocalDate, link: QuestModuleLink, type: HeroEventType, in context: ApplyContext
   ) throws(ReplayRefusal) -> RewardAmount? {
     guard date == context.accountDay, !linkedQuestExists(link, on: date) else { return nil }
-    let reward = context.ruleset.quickLogs[source]
+    let rule = context.ruleset.quickLogs[source]
+    let reward = debuffed(RewardAmount(xp: rule.xp, coins: rule.coins), on: date, ruleset: context.ruleset)
     return Self.credited(
       hero.credit(
         [GrantIntent(key: "\(source.rawValue)_\(date)", type: type, date: date, xpDelta: reward.xp, coinsDelta: reward.coins)], ruleset: context.ruleset))

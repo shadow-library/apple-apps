@@ -32,7 +32,7 @@ struct ExpenseFormTests {
     #expect(expense.merchant == nil)
     #expect(expense.category == MoneyFixture.food)
     #expect(expense.occurredOn == TestClock.day0)
-    #expect(try await MoneyFixture.bodies(context) == [.expenseCreate(ExpenseCreation(id: id))])
+    #expect(try await MoneyFixture.bodies(context) == [.expenseCreate(ExpenseCreation(id: id, occurredOn: expense.occurredOn))])
   }
 
   @Test("should refuse amounts past the currency's places, with none for the yen and three for the dinar")
@@ -149,7 +149,7 @@ struct ExpenseFormTests {
     let restored = try #require(try await MoneyFixture.expenseEntries(context).first)
     #expect(!restored.isRemoved)
     #expect(restored.record == expense)
-    let creations = try await MoneyFixture.bodies(context).filter { $0 == .expenseCreate(ExpenseCreation(id: expense.id)) }
+    let creations = try await MoneyFixture.bodies(context).filter { $0 == .expenseCreate(ExpenseCreation(id: expense.id, occurredOn: expense.occurredOn)) }
     #expect(creations.count == 2)
     try await TestClock.until("the restored detail") { detail.expense?.note == "Train" }
     #expect(detail.deletion == nil)

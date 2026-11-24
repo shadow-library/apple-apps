@@ -32,6 +32,7 @@ extension ReplayState {
     onDayClosed(date: date, scheduledCount: scheduled.count, missedCount: missedCount, ruleset: ruleset)
     if Self.lockCleared(existing?.lock, logs: dayLogs) { onLockedDayCleared(date: date, ruleset: ruleset) }
     if dayLogs.contains(where: { $0.value.isHold }), compassion.lastActiveDate.map({ $0 < date }) ?? true { compassion.lastActiveDate = date }
+    settleMoney(closing: date, ruleset: ruleset)
   }
 
   /// A scheduled occurrence nobody resolved is missed and breaks its streak, or uses a shield; an occurrence with any row keeps it.

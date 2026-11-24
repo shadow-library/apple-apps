@@ -156,16 +156,16 @@ struct ReplayTests {
     #expect(ReplayRefusal.needsNewerRuleset(minimum: 2).referenceCode == nil)
   }
 
-  @Test func shouldHaltAtAnyCommandStampedWithMoneyRulesUntilReplayAppliesThem() throws {
+  @Test func shouldApplyEveryCommandStampedWithMoneyRules() throws {
     let stamped = try Self.moneyBodies() + [.questComplete(try Fixture.occurrence("2026-03-11")), .receiptScan(ReceiptScan())]
-    let before = Replay.run(try Fixture.entries(Self.createAndComplete()))
+    let tenth = try MemoirStoreFixture.date("2026-03-10")
     for (index, body) in stamped.enumerated() {
       let command = try Fixture.command(10 + index, body, at: "2026-03-11T08:10:00Z", rulesetVersion: 2)
       let later = try Fixture.command(30, .receiptScan(ReceiptScan()), at: "2026-03-11T09:00:00Z")
       let state = Replay.run(try Fixture.entries(Self.createAndComplete() + [command, later]))
-      #expect(state.halt == .rulesetUnavailable(command: command.id, version: 2), "\(body.kind.rawValue)")
-      #expect(state.outcomes[command.id] == nil && state.outcomes[later.id] == nil, "\(body.kind.rawValue)")
-      #expect(state.hero == before.hero && state.days == before.days && state.highestRulesetVersion == 1, "a halt moves nothing, not even a day")
+      #expect(state.halt == nil, "\(body.kind.rawValue)")
+      #expect(state.outcomes[later.id] == .applied && state.outcomes[command.id] != nil, "\(body.kind.rawValue)")
+      #expect(state.highestRulesetVersion == 2 && state.days[tenth]?.rulesetVersion == 2, "a day closes under v2 once seen")
     }
   }
 

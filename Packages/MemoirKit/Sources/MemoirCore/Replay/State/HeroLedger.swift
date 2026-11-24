@@ -21,6 +21,11 @@ public enum HeroEventType: String, RuleKey, Codable {
   case crownInit = "crown_init"
   case crownForfeit = "crown_forfeit"
   case returnerFired = "returner_fired"
+  case moneyFine = "money_fine"
+  case moneyReward = "money_reward"
+  case moneyLog = "money_log"
+  case goalMilestone = "goal_milestone"
+  case goalBought = "goal_bought"
 }
 
 /// One entry of the append-only hero trail; `key` is the reference's dedupe key, so the same action reached twice grants once.
@@ -104,6 +109,17 @@ public struct HeroLedger: Sendable, Hashable {
   mutating func credit(_ intents: [GrantIntent], ruleset: Ruleset) -> [GrantOutcome] {
     precondition(intents.allSatisfy { $0.coinsDelta >= 0 }, "a credit never spends coins")
     return applyAll(intents, ruleset: ruleset)
+  }
+
+  /// A coin fine takes at most the balance, so it is never refused, and its event records what it took; the coins it returns are that amount, or what
+  /// the trail already holds for the key.
+  mutating func fine(_ intent: GrantIntent, coins fine: Int, ruleset: Ruleset) -> Int {
+    precondition(fine >= 0 && intent.coinsDelta == 0 && intent.xpDelta == 0, "a fine names its coins apart and moves nothing else")
+    if let existing = event(forKey: intent.key) { return -existing.coinsDelta }
+    var charged = intent
+    charged.coinsDelta = -min(fine, coins)
+    _ = applyAll([charged], ruleset: ruleset)
+    return -charged.coinsDelta
   }
 
   private mutating func applyAll(_ intents: [GrantIntent], ruleset: Ruleset) -> [GrantOutcome] {

@@ -58,12 +58,14 @@ extension ReplayState {
   }
 
   /// The Returner fires once per day after an absence of the threshold's length; its shield goes to the quest with the longest run before the absence,
-  /// or waits for the next quest created.
+  /// or waits for the next quest created. Only an account that has once been active on a quest can return; under money rules its money activity
+  /// counts as presence too, while the shield still follows the quests alone.
   private mutating func fireReturner(on date: LocalDate, mode: IntensityMode, ruleset: Ruleset) -> Bool {
-    guard let lastActive = compassion.lastActiveDate else { return false }
+    guard let questActive = compassion.lastActiveDate else { return false }
+    let lastActive = ruleset.money == nil ? questActive : max(questActive, money.lastActivityDay ?? questActive)
     let daysAbsent = date.days(since: lastActive)
     guard ruleset.returnerFires(daysSinceLastActivity: daysAbsent, thresholdDays: settings.returnerThresholdDays(on: date)) else { return false }
-    let plan = ruleset.planReturnerShieldGrant(returnerCandidates(lastActive: lastActive))
+    let plan = ruleset.planReturnerShieldGrant(returnerCandidates(lastActive: questActive))
     guard compassion.returnerEvents[date] == nil else { return true }
     let target = plan.questID.flatMap(UUID.init(uuidString:))
     var shieldPending = true

@@ -822,6 +822,28 @@
         }
       }
     },
+    "Budget kept": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Budget kept"
+          }
+        }
+      }
+    },
+    "Budget overspent": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Budget overspent"
+          }
+        }
+      }
+    },
     "Cancel": {
       "extractionState": "manual",
       "localizations": {
@@ -2296,6 +2318,28 @@
         }
       }
     },
+    "Savings goal bought": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Savings goal bought"
+          }
+        }
+      }
+    },
+    "Savings goal milestone reached": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Savings goal milestone reached"
+          }
+        }
+      }
+    },
     "Saving…": {
       "extractionState": "manual",
       "localizations": {
@@ -2589,6 +2633,17 @@
           "stringUnit": {
             "state": "translated",
             "value": "Something you have not attempted yet"
+          }
+        }
+      }
+    },
+    "Spending logged": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Spending logged"
           }
         }
       }

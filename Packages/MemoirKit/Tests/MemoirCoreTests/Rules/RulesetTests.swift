@@ -39,11 +39,11 @@ struct RulesetTests {
     #expect(two == one.filter { $0.key != "version" }, "v2 keeps every v1 table")
   }
 
-  @Test("should resolve only published versions, issuing under v1 until replay handles money")
+  @Test("should resolve only published versions, issuing under v2")
   func resolvesVersions() {
     #expect(Ruleset.version(1) == .v1)
     #expect(Ruleset.version(2) == .v2)
-    #expect(Ruleset.current == .v1)
+    #expect(Ruleset.current == .v2)
     #expect(Ruleset.version(0) == nil)
     #expect(Ruleset.version(3) == nil)
   }

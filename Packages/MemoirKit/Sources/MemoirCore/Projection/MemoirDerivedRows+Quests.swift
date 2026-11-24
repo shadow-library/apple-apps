@@ -174,8 +174,9 @@ public struct ReturnerRow: Hashable, Sendable, FetchableRecord, PersistableRecor
 /// One entry of the hero trail, at its place in it; screens list only the latest visible ones (`MemoirDerived.recentHeroEvents`).
 public struct HeroEventRow: Hashable, Sendable, FetchableRecord, PersistableRecord {
   public static let databaseTableName = "mm_derived_hero_event"
-  /// `HIDDEN_EVENT_TYPES` (`lib/sync/synced-hero-provider.ts:61`): a Crown period opening is never listed, so it never takes a place in the view.
-  public static let hiddenTypes: Set<HeroEventType> = [.crownInit]
+  /// `HIDDEN_EVENT_TYPES` (`lib/sync/synced-hero-provider.ts:61`): a Crown period opening is never listed, so it never takes a place in the view; nor is
+  /// the daily money log, one a covered day, which would crowd out everything else.
+  public static let hiddenTypes: Set<HeroEventType> = [.crownInit, .moneyLog]
   static let definition = """
     CREATE TABLE mm_derived_hero_event (
       ordinal INTEGER PRIMARY KEY, key TEXT NOT NULL, type TEXT NOT NULL, date TEXT NOT NULL, xp INTEGER NOT NULL, coins INTEGER NOT NULL, stat TEXT,

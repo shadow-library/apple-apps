@@ -419,11 +419,16 @@ struct DerivedRows: Equatable {
   let quickLogDays: Set<QuickLogDayRow>
   let comebacks: Set<ComebackRow>
   let shields: Set<ShieldConsumptionRow>
+  let money: Set<MoneyRow>
+  let moneyDays: Set<MoneyDayRow>
+  let moneyCloses: Set<MoneyCloseRow>
+  let goalRewards: Set<GoalRewardRow>
 
   init(
     hero: Set<HeroSummaryRow>, questLogs: Set<QuestLogRow>, days: Set<DayRow>, unlocks: Set<UnlockRow>, notices: Set<NoticeRow>, quests: Set<QuestRow>,
     reschedules: Set<RescheduleRow>, recoveries: Set<RecoveryRow>, returners: Set<ReturnerRow>, heroEvents: Set<HeroEventRow>, quickLogs: Set<QuickLogRow>,
-    quickLogDays: Set<QuickLogDayRow>, comebacks: Set<ComebackRow>, shields: Set<ShieldConsumptionRow>
+    quickLogDays: Set<QuickLogDayRow>, comebacks: Set<ComebackRow>, shields: Set<ShieldConsumptionRow>, money: Set<MoneyRow>, moneyDays: Set<MoneyDayRow>,
+    moneyCloses: Set<MoneyCloseRow>, goalRewards: Set<GoalRewardRow>
   ) {
     self.hero = hero
     self.questLogs = questLogs
@@ -439,6 +444,10 @@ struct DerivedRows: Equatable {
     self.quickLogDays = quickLogDays
     self.comebacks = comebacks
     self.shields = shields
+    self.money = money
+    self.moneyDays = moneyDays
+    self.moneyCloses = moneyCloses
+    self.goalRewards = goalRewards
   }
 
   init(_ state: ReplayState) {
@@ -461,17 +470,22 @@ struct DerivedRows: Equatable {
     quickLogDays = QuickLogDayRow.rows(events)
     comebacks = Set(state.days.values.flatMap { day in day.comebackEvents.values.map { ComebackRow(date: day.date, event: $0) } })
     shields = Set(state.shieldConsumptions.map(ShieldConsumptionRow.init))
+    money = [MoneyRow(state)]
+    moneyDays = Set(state.money.coveredDays.map { MoneyDayRow(date: $0.key, coverage: $0.value) })
+    moneyCloses = Set(state.money.closes.map { MoneyCloseRow(key: $0.key, close: $0.value) })
+    goalRewards = GoalRewardRow.rows(state.money)
   }
 
-  static let definitions = [
+  static let definitions: [String] = [
     HeroSummaryRow.definition, QuestLogRow.definition, DayRow.definition, UnlockRow.definition, NoticeRow.definition, QuestRow.definition, RescheduleRow.definition,
     RecoveryRow.definition, ReturnerRow.definition, HeroEventRow.definition, QuickLogRow.definition, QuickLogDayRow.definition, ComebackRow.definition,
-    ShieldConsumptionRow.definition,
+    ShieldConsumptionRow.definition, MoneyRow.definition, MoneyDayRow.definition, MoneyCloseRow.definition, GoalRewardRow.definition,
   ]
-  static let tables = [
+  static let tables: [String] = [
     HeroSummaryRow.databaseTableName, QuestLogRow.databaseTableName, DayRow.databaseTableName, UnlockRow.databaseTableName, NoticeRow.databaseTableName,
     QuestRow.databaseTableName, RescheduleRow.databaseTableName, RecoveryRow.databaseTableName, ReturnerRow.databaseTableName, HeroEventRow.databaseTableName,
     QuickLogRow.databaseTableName, QuickLogDayRow.databaseTableName, ComebackRow.databaseTableName, ShieldConsumptionRow.databaseTableName,
+    MoneyRow.databaseTableName, MoneyDayRow.databaseTableName, MoneyCloseRow.databaseTableName, GoalRewardRow.databaseTableName,
   ]
 
   static func stored(in database: Database) throws -> DerivedRows {
@@ -481,7 +495,8 @@ struct DerivedRows: Equatable {
       reschedules: Set(try RescheduleRow.fetchAll(database)), recoveries: Set(try RecoveryRow.fetchAll(database)), returners: Set(try ReturnerRow.fetchAll(database)),
       heroEvents: Set(try HeroEventRow.fetchAll(database)), quickLogs: Set(try QuickLogRow.fetchAll(database)),
       quickLogDays: Set(try QuickLogDayRow.fetchAll(database)), comebacks: Set(try ComebackRow.fetchAll(database)),
-      shields: Set(try ShieldConsumptionRow.fetchAll(database)))
+      shields: Set(try ShieldConsumptionRow.fetchAll(database)), money: Set(try MoneyRow.fetchAll(database)), moneyDays: Set(try MoneyDayRow.fetchAll(database)),
+      moneyCloses: Set(try MoneyCloseRow.fetchAll(database)), goalRewards: Set(try GoalRewardRow.fetchAll(database)))
   }
 
   /// Rewrites only the rows that differ from what the tables hold.
@@ -501,6 +516,10 @@ struct DerivedRows: Equatable {
     try Self.replace(stored.quickLogDays, with: quickLogDays, in: database)
     try Self.replace(stored.comebacks, with: comebacks, in: database)
     try Self.replace(stored.shields, with: shields, in: database)
+    try Self.replace(stored.money, with: money, in: database)
+    try Self.replace(stored.moneyDays, with: moneyDays, in: database)
+    try Self.replace(stored.moneyCloses, with: moneyCloses, in: database)
+    try Self.replace(stored.goalRewards, with: goalRewards, in: database)
   }
 
   private static func replace<Output: PersistableRecord & Hashable>(_ stored: Set<Output>, with rows: Set<Output>, in database: Database) throws {

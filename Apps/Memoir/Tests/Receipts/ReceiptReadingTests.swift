@@ -130,8 +130,8 @@ struct ReceiptReadingTests {
     let receipt = try #require(try await ReceiptFixture.receipts(context).first?.record)
     let expense = try #require(try await MoneyFixture.expenseEntries(context).first?.record)
     #expect(expense.id == id && expense.receipt == receipt.id && expense.amountMinor == 21_400 && expense.currency == MoneyFixture.krone)
-    #expect(
-      try await MoneyFixture.bodies(context) == [.expenseCreate(ExpenseCreation(id: id, source: .ocr)), .receiptScan(ReceiptScan(receiptId: receipt.id))])
+    let creation = ExpenseCreation(id: id, source: .ocr, occurredOn: expense.occurredOn)
+    #expect(try await MoneyFixture.bodies(context) == [.expenseCreate(creation), .receiptScan(ReceiptScan(receiptId: receipt.id))])
   }
 
   @Test("should leave out what the form cannot take: a future date, an archived or unknown category, decimals the currency lacks")

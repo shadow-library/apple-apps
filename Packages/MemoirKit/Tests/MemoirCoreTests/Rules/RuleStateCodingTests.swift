@@ -1,4 +1,5 @@
 import Foundation
+import ShadowCore
 import Testing
 
 @testable import MemoirCore
@@ -56,6 +57,32 @@ struct RuleStateCodingTests {
     counters.level = 0
     #expect(throws: DecodingError.self) { try Self.roundTrip(counters) }
     #expect(throws: DecodingError.self) { try Self.decode(RuleTable<StatAffinity, Int>.self, #"{"discipline":1,"body":1,"wealth":1}"#) }
+  }
+
+  @Test func shouldRoundTripMoneyStateAndRefuseACloseThatIsBothOrNeither() throws {
+    let day = try MemoirStoreFixture.date("2026-03-04")
+    let span = MoneyDebuffSpan(from: day, through: try #require(day.adding(days: 6)), multiplier: Thousandths(850), command: CommandSamples.record)
+    var money = MoneyState.empty
+    money.coveredDays[day] = MoneyCoverage(source: .expense, command: CommandSamples.record)
+    money.closes[MoneyCloseKey(budget: CommandSamples.budget, periodStart: try MemoirStoreFixture.date("2026-02-01"))] = MoneyClose(
+      command: CommandSamples.record, outcome: .over10, deposited: false, closedOn: day, result: .fined(intended: 15, applied: 4, debuff: span))
+    money.closes[MoneyCloseKey(budget: CommandSamples.goal, periodStart: try MemoirStoreFixture.date("2026-02-01"))] = MoneyClose(
+      command: CommandSamples.record, outcome: .within, deposited: true, closedOn: day, result: .rewarded(RewardAmount(xp: 20, coins: 3)))
+    money.milestones = [GoalMilestoneKey(goal: CommandSamples.goal, milestone: .p50)]
+    money.goalsBought = [CommandSamples.goal]
+    money.debuffs = [span]
+    money.weekStreak = 2
+    money.savingStreak = 1
+    money.lastActivityDay = day
+    money.lastSettledWeekStart = try MemoirStoreFixture.date("2026-02-23")
+    #expect(try Self.roundTrip(money) == money)
+    #expect(try MemoirReconciler.canonicalJSON(money) == (try MemoirReconciler.canonicalJSON(Self.roundTrip(money))), "the encoding is canonical")
+
+    let id = CommandSamples.record.lowercasedString
+    let reward = #"{"command":"\#(id)","outcome":"within","deposited":true,"closedOn":"2026-03-04","reward":{"xp":20,"coins":3}"#
+    #expect(try Self.decode(MoneyClose.self, reward + "}").result == .rewarded(RewardAmount(xp: 20, coins: 3)))
+    #expect(throws: DecodingError.self) { try Self.decode(MoneyClose.self, reward + #","fine":15,"fineApplied":4}"#) }
+    #expect(throws: DecodingError.self) { try Self.decode(MoneyClose.self, #"{"command":"\#(id)","outcome":"within","deposited":true,"closedOn":"2026-03-04"}"#) }
   }
 
   @Test func shouldBuildOnlyAConsistentCrownDay() {

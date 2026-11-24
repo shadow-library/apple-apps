@@ -142,6 +142,7 @@ struct InsightAssemblyTests {
     ] {
       #expect(text.contains(shown), "\(shown) is missing with its module on")
     }
+    #expect(text.contains(#""type":"money_fine""#), "a budget close is Money's")
     #expect(!text.contains(InsightHarness.journalText), "journal entries need the Journal module")
     #expect(!text.contains(#""type":"journal""#), "a journal reward reveals a journal day")
     #expect(replay.includingText == [true])
@@ -158,6 +159,15 @@ struct InsightAssemblyTests {
       #expect(!text.contains(hidden), "\(hidden) reached the prompt with its module off")
     }
     #expect(assembly.dataClasses == [.heroEvents, .progressionEvents] && assembly.questIDs.isEmpty)
+    #expect(text.contains(#""type":"money_fine""#), "money events ride the Money module")
+  }
+
+  @Test func shouldLeaveMoneyEventsOutWithoutTheMoneyModule() async throws {
+    let (assembly, _) = try await assemble(.none, modules: [.hero, .quests])
+    let text = prompt(assembly)
+    #expect(text.contains(#""type":"quest_complete""#) && text.contains(#""type":"level_up""#))
+    #expect(!text.contains(#""type":"money_fine""#), "a money event reveals a budget close")
+    for type in [HeroEventType.moneyFine, .moneyReward, .moneyLog, .goalMilestone, .goalBought] { #expect(type.sourceModule == .money, "\(type.rawValue)") }
   }
 
   @Test func shouldWriteInstantsAsTheReferenceDoes() {

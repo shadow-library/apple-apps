@@ -15,7 +15,9 @@ extension ReplayState {
     recovery.completedAtMillis = context.instant
     compassion.recoveries[date] = recovery
 
-    let reward = ruleset.reward(for: RewardInput(strictness: .recovery, band: .onTime, completion: .full, streakDays: 0, lockActive: false, oneShot: .none))
+    let reward = debuffed(
+      ruleset.reward(for: RewardInput(strictness: .recovery, band: .onTime, completion: .full, streakDays: 0, lockActive: false, oneShot: .none)), on: date,
+      ruleset: ruleset)
     _ = hero.credit(
       [
         GrantIntent(

@@ -33,7 +33,7 @@ extension ReplayState {
     case .metricUpdate(let metric): return try updateMetric(metric)
     case .metricDelete(let deletion): return try deleteMetric(deletion)
     case .metricRegister(let registration): return try registerMetric(registration)
-    case .expenseCreate(let creation): return createExpense(creation)
+    case .expenseCreate(let creation): return createExpense(creation, in: context)
     case .expenseUpdate(let reference): return try updateExpense(reference)
     case .expenseDelete(let reference): return try deleteExpense(reference)
     case .subscriptionCreate(let reference): return createSubscription(reference)
@@ -44,7 +44,10 @@ extension ReplayState {
     case .accountSetTimeZone(let change): return setTimeZone(change, in: context)
     case .accountSetIntensityMode(let change): return setIntensityMode(change, in: context)
     case .accountSetReturnerThreshold(let change): return setReturnerThreshold(change, in: context)
-    case .moneyNoSpend, .budgetClosePeriod, .goalMilestone, .goalBought: throw .needsNewerRuleset(minimum: body.minimumRulesetVersion)
+    case .moneyNoSpend(let day): return try logNoSpend(day, in: context)
+    case .budgetClosePeriod(let close): return try closePeriod(close, in: context)
+    case .goalMilestone(let reached): return try reachMilestone(reached, in: context)
+    case .goalBought(let purchase): return try buyGoal(purchase, in: context)
     }
   }
 }

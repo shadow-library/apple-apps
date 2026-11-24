@@ -18,7 +18,7 @@ public struct Ruleset: Sendable, Hashable, Encodable {
   /// Nil before v2, and then left out of the encoding, so v1's canonical bytes stay as published.
   public private(set) var money: MoneyRules?
 
-  public static let current = v1
+  public static let current = v2
 
   public static func version(_ version: Int) -> Ruleset? {
     switch version {

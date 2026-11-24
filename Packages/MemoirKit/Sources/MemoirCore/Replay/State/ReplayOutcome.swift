@@ -42,6 +42,8 @@ public enum ReplayRefusal: ShadowError, Hashable, Codable {
   case mealPresetNotFound
   /// The body needs a newer ruleset than the one the command was stamped with (`MemoirCommandBody.minimumRulesetVersion`).
   case needsNewerRuleset(minimum: Int)
+  /// A day said to have no spending is covered only on it or within the late window after it (`MoneyRules.lateDays`).
+  case outsideLoggingWindow(LocalDate)
 
   private enum Identity {
     case reference(String)
@@ -72,6 +74,7 @@ public enum ReplayRefusal: ShadowError, Hashable, Codable {
     case .subscriptionNotFound: .reference("FIN_004")
     case .mealPresetNotFound: .reference("QLG_001")
     case .needsNewerRuleset: .native("needs_newer_ruleset")
+    case .outsideLoggingWindow: .native("outside_logging_window")
     }
   }
 
@@ -111,6 +114,7 @@ public enum ReplayRefusal: ShadowError, Hashable, Codable {
     case .subscriptionNotFound: "The subscription does not exist or was deleted."
     case .mealPresetNotFound: "The meal preset does not exist or was deleted."
     case .needsNewerRuleset(let minimum): "The command needs ruleset \(minimum) or later, but was stamped with an older one."
+    case .outsideLoggingWindow(let date): "\(date) is no longer, or not yet, a day whose money logging can be covered."
     }
   }
 }
