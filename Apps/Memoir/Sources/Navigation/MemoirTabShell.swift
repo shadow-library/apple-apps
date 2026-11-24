@@ -2,6 +2,7 @@ import ShadowAppShell
 import ShadowDesignSystem
 import SwiftUI
 
+/// The tab bar with the tabs the modules show; a lone tab is its stack without a bar, its root's toolbar reaching everything else.
 struct MemoirTabShell: View {
   #if os(macOS)
     private static let syncPlacement = ToolbarItemPlacement.automatic
@@ -13,35 +14,39 @@ struct MemoirTabShell: View {
   @Bindable var navigator: MemoirNavigator
 
   var body: some View {
-    TabView(selection: $navigator.tab) {
-      ForEach(MemoirTab.allCases) { tab in
-        Tab(value: tab) {
-          NavigationStack(path: path(of: tab)) {
-            root(of: tab)
-              .navigationDestination(for: MemoirRoute.self) { MemoirRouteView(route: $0, context: context) }
+    if navigator.map.showsTabBar {
+      TabView(selection: $navigator.tab) {
+        ForEach(navigator.map.tabs) { tab in
+          Tab(value: tab) {
+            stack(of: tab)
+          } label: {
+            Label(title: { Text(navigator.map.title(of: tab)) }, icon: { Image(systemName: navigator.map.systemImage(of: tab)) })
           }
-        } label: {
-          Label(title: { Text(tab.title) }, icon: { Image(systemName: tab.systemImage) })
         }
       }
+    } else {
+      stack(of: navigator.tab)
     }
   }
 
-  private func path(of tab: MemoirTab) -> Binding<[MemoirRoute]> {
-    Binding(get: { navigator.paths[tab] ?? [] }, set: { navigator.paths[tab] = $0 })
+  private func stack(of tab: MemoirTab) -> some View {
+    NavigationStack(path: Binding(get: { navigator.paths[tab] ?? [] }, set: { navigator.paths[tab] = $0 })) {
+      root(of: tab)
+        .navigationDestination(for: MemoirRoute.self) { MemoirRouteView(route: $0, context: context) }
+    }
   }
 
   private func root(of tab: MemoirTab) -> some View {
     Group {
-      if let destination = tab.root {
+      if let destination = navigator.map.root(of: tab) {
         MemoirDestinationView(destination: destination, context: context)
-          .toolbar {
-            ForEach(tab.toolbar) { entry in
-              ToolbarItem { toolbarItem(entry, in: tab).shadowBarItem() }
-            }
-          }
       } else {
-        LogHub(destinations: tab.pushed)
+        LogHub(destinations: navigator.map.listed(in: tab))
+      }
+    }
+    .toolbar {
+      ForEach(navigator.map.toolbar(of: tab)) { entry in
+        ToolbarItem { toolbarItem(entry, in: tab).shadowBarItem() }
       }
     }
     .toolbar {

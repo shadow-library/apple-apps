@@ -1,4 +1,5 @@
 import Foundation
+import MemoirCore
 
 enum MemoirDestination: String, CaseIterable, Hashable, Identifiable, Sendable {
   case today
@@ -68,7 +69,22 @@ enum MemoirDestination: String, CaseIterable, Hashable, Identifiable, Sendable {
     }
   }
 
-  /// The compact tab whose stack shows this destination: at its root, or pushed from it.
+  /// Weekly Review walks quests and money; reflection and Settings read whatever is on.
+  var requirement: MemoirModuleRequirement {
+    switch self {
+    case .today, .planningBoard, .quests, .sideQuests: .module(.quests)
+    case .journal: .module(.journal)
+    case .meals: .module(.meals)
+    case .weight, .bodyAndHealth: .module(.body)
+    case .money: .module(.money)
+    case .hero: .module(.hero)
+    case .weeklyReview: .anyOf([.quests, .money])
+    case .history, .insights, .ask: .anyModule
+    case .settings: .always
+    }
+  }
+
+  /// The compact tab whose stack shows this destination, at its root or pushed from it, while that tab shows (`MemoirNavigationMap.tab(of:)`).
   var tab: MemoirTab {
     switch self {
     case .today, .history, .insights, .weeklyReview, .ask, .settings: .today
@@ -106,10 +122,6 @@ enum MemoirSection: String, CaseIterable, Hashable, Identifiable, Sendable {
     case .footer: "ellipsis.circle"
     }
   }
-
-  var destinations: [MemoirDestination] {
-    MemoirDestination.allCases.filter { $0.section == self }
-  }
 }
 
 /// The iPhone tab bar, in the order a day is lived; what is reached less than daily is pushed from a tab's root.
@@ -142,7 +154,7 @@ enum MemoirTab: String, CaseIterable, Hashable, Identifiable, Sendable {
     }
   }
 
-  /// The tab's root screen; nil for Log, whose root lists the capture screens.
+  /// The tab's root screen; nil for Log, whose root is chosen by the modules (`MemoirNavigationMap.root(of:)`).
   var root: MemoirDestination? {
     switch self {
     case .today: .today
@@ -150,21 +162,6 @@ enum MemoirTab: String, CaseIterable, Hashable, Identifiable, Sendable {
     case .log: nil
     case .money: .money
     case .hero: .hero
-    }
-  }
-
-  /// Pushed from the root: Today's toolbar reaches Reflect and Settings, Plan's reaches Quests, and Log's root lists every capture screen.
-  var pushed: [MemoirDestination] {
-    MemoirDestination.allCases.filter { $0.tab == self && $0 != root }
-  }
-
-  /// The root's toolbar: a section's destinations share one menu, a lone destination is its own button. Log's root lists its screens instead.
-  var toolbar: [MemoirToolbarEntry] {
-    guard root != nil else { return [] }
-    let sections = MemoirSection.allCases.filter { section in pushed.contains { $0.section == section } }
-    return sections.map { section in
-      let destinations = pushed.filter { $0.section == section }
-      return destinations.count == 1 ? .link(destinations[0]) : .menu(section, destinations)
     }
   }
 }

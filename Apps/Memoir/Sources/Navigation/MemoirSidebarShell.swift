@@ -15,9 +15,9 @@ struct MemoirSidebarShell: View {
   var body: some View {
     NavigationSplitView {
       List(selection: Binding(get: { navigator.selection }, set: { if let destination = $0 { navigator.selection = destination } })) {
-        ForEach(MemoirSection.allCases) { section in
+        ForEach(navigator.map.sections) { section in
           Section {
-            ForEach(section.destinations) { destination in
+            ForEach(navigator.map.destinations(in: section)) { destination in
               ShadowSidebarLabel(Text(destination.title), systemImage: destination.systemImage).tag(destination)
             }
           } header: {

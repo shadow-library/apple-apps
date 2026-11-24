@@ -45,6 +45,17 @@
         }
       }
     },
+    "Each entry is meant to take under ten seconds.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Each entry is meant to take under ten seconds."
+          }
+        }
+      }
+    },
     "Hero": {
       "extractionState": "manual",
       "localizations": {
