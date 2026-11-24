@@ -146,45 +146,64 @@ enum WeeklyReviewPresentation {
     String(localized: "Week \(review.isoWeek.week) closed", table: "Reflect")
   }
 
-  static func summary(_ review: WeeklyReview) -> [String] {
+  static func summary(_ review: WeeklyReview, modules: ModuleSelection = .all) -> [String] {
     let kept = review.kept
-    var lines = [
-      kept.occurrences == 0
-        ? String(localized: "No occurrences were logged this week", table: "Reflect")
-        : String(localized: "\(kept.held) of \(kept.occurrences) kept · \(ReflectFormat.percent(kept.percent ?? 0))", table: "Reflect")
-    ]
-    if let money = review.money {
-      let expenses = String(localized: "\(money.expenseCount) expenses", table: "Reflect")
-      lines.append(String(localized: "\(ReflectFormat.money(money.spent.totalMinor, money.spent.home)) spent across \(expenses)", table: "Reflect"))
-    }
-    if let weight = review.body.series.first(where: { $0.subject == .weight }) {
-      let movement = ReflectCopy.movement(weight.change)
+    var lines = [String]()
+    if modules.contains(.quests) {
       lines.append(
-        weight.change.map(ReflectFormat.isZero) ?? true
-          ? String(localized: "Weight \(movement)", table: "Reflect") : String(localized: "Weight \(movement) kg", table: "Reflect"))
-    } else {
-      lines.append(String(localized: "Not enough weight entries to read a trend", table: "Reflect"))
+        kept.occurrences == 0
+          ? String(localized: "No occurrences were logged this week", table: "Reflect")
+          : String(localized: "\(kept.held) of \(kept.occurrences) kept · \(ReflectFormat.percent(kept.percent ?? 0))", table: "Reflect"))
     }
-    lines.append(
-      kept.topReason.map { String(localized: "Most common reason for a miss: \(ReflectCopy.reason($0.reason)) (\($0.count))", table: "Reflect") }
-        ?? String(localized: "No reasons were given for a miss this week", table: "Reflect"))
-    lines.append(String(localized: "\(ReflectFormat.count(review.glance.weekXP)) XP earned", table: "Reflect"))
+    if let money = review.money, modules.contains(.money) { lines.append(spentLine(money)) }
+    if modules.contains(.body) {
+      if let weight = review.body.series.first(where: { $0.subject == .weight }) {
+        let movement = ReflectCopy.movement(weight.change)
+        lines.append(
+          weight.change.map(ReflectFormat.isZero) ?? true
+            ? String(localized: "Weight \(movement)", table: "Reflect") : String(localized: "Weight \(movement) kg", table: "Reflect"))
+      } else {
+        lines.append(String(localized: "Not enough weight entries to read a trend", table: "Reflect"))
+      }
+    }
+    if modules.contains(.quests) {
+      lines.append(
+        kept.topReason.map { String(localized: "Most common reason for a miss: \(ReflectCopy.reason($0.reason)) (\($0.count))", table: "Reflect") }
+          ?? String(localized: "No reasons were given for a miss this week", table: "Reflect"))
+    }
+    if modules.contains(.hero) { lines.append(String(localized: "\(ReflectFormat.count(review.glance.weekXP)) XP earned", table: "Reflect")) }
     return lines
   }
 
-  static func glance(_ review: WeeklyReview) -> [String] {
+  static func glance(_ review: WeeklyReview, modules: ModuleSelection = .all) -> [String] {
     let kept = review.kept
     let glance = review.glance
+    var lines = [String]()
+    if modules.contains(.quests) {
+      lines.append(
+        kept.occurrences == 0
+          ? String(localized: "No occurrences logged", table: "Reflect")
+          : String(localized: "\(kept.occurrences) occurrences · \(kept.held) kept · \(ReflectFormat.percent(kept.percent ?? 0))", table: "Reflect"))
+    }
+    if modules.contains(.hero) {
+      lines.append(String(localized: "Level \(glance.level ?? 1) · \(ReflectFormat.count(glance.weekXP)) XP earned", table: "Reflect"))
+      lines.append(glance.hp.map { String(localized: "HP \($0.hpEnd) of \($0.hpMax)", table: "Reflect") } ?? String(localized: "No HP yet", table: "Reflect"))
+    }
+    if let money = review.money, modules.contains(.money) { lines.append(spentLine(money)) }
     let journal = String(localized: "\(glance.journalEntries) journal entries", table: "Reflect")
     let meals = String(localized: "\(glance.meals) meals logged", table: "Reflect")
-    return [
-      kept.occurrences == 0
-        ? String(localized: "No occurrences logged", table: "Reflect")
-        : String(localized: "\(kept.occurrences) occurrences · \(kept.held) kept · \(ReflectFormat.percent(kept.percent ?? 0))", table: "Reflect"),
-      String(localized: "Level \(glance.level ?? 1) · \(ReflectFormat.count(glance.weekXP)) XP earned", table: "Reflect"),
-      glance.hp.map { String(localized: "HP \($0.hpEnd) of \($0.hpMax)", table: "Reflect") } ?? String(localized: "No HP yet", table: "Reflect"),
-      String(localized: "\(journal) · \(meals)", table: "Reflect"),
-    ]
+    switch (modules.contains(.journal), modules.contains(.meals)) {
+    case (true, true): lines.append(String(localized: "\(journal) · \(meals)", table: "Reflect"))
+    case (true, false): lines.append(journal)
+    case (false, true): lines.append(meals)
+    case (false, false): break
+    }
+    return lines
+  }
+
+  private static func spentLine(_ money: ReviewMoney) -> String {
+    let expenses = String(localized: "\(money.expenseCount) expenses", table: "Reflect")
+    return String(localized: "\(ReflectFormat.money(money.spent.totalMinor, money.spent.home)) spent across \(expenses)", table: "Reflect")
   }
 
   private static func lowered(_ text: String) -> String {

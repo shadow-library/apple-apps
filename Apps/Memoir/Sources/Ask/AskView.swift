@@ -327,6 +327,11 @@ struct AskSpendCard: View {
 struct AskResultCard: View {
   let result: InsightResultEntry
   let request: InsightRequest?
+  @Environment(MemoirModules.self) private var modules: MemoirModules?
+
+  private var suggestions: [InsightSuggestion] {
+    AskSuggestionLink.offered(result.suggestions) { modules?.shows($0) ?? true }
+  }
 
   var body: some View {
     ShadowCard {
@@ -339,7 +344,7 @@ struct AskResultCard: View {
         if let note = result.limitationNote, !note.isEmpty {
           finding(Text("What this answer could not see", tableName: "Ask"), note)
         }
-        if !result.suggestions.isEmpty { suggestions }
+        if !suggestions.isEmpty { suggestionList }
       }
     } header: {
       VStack(alignment: .leading, spacing: Spacing.space1) {
@@ -364,11 +369,11 @@ struct AskResultCard: View {
     }
   }
 
-  private var suggestions: some View {
+  private var suggestionList: some View {
     VStack(alignment: .leading, spacing: Spacing.space2) {
       Text("Suggestions", tableName: "Ask").shadowFont(.subheadline)
       Text("Nothing changes until you edit the quest yourself.", tableName: "Ask").shadowFont(.footnote).foregroundStyle(ShadowColor.textSecondary)
-      ForEach(Array(result.suggestions.enumerated()), id: \.offset) { _, suggestion in
+      ForEach(Array(suggestions.enumerated()), id: \.offset) { _, suggestion in
         VStack(alignment: .leading, spacing: Spacing.space1) {
           Text(verbatim: suggestion.text)
           NavigationLink(value: AskSuggestionLink.route(for: suggestion)) {
@@ -382,6 +387,10 @@ struct AskResultCard: View {
 
 /// Where the owner takes a suggestion by hand: the quest builder for a change to its fields, a copy of it to split it, its detail to pause it.
 enum AskSuggestionLink {
+  static func offered(_ suggestions: [InsightSuggestion], shows: (MemoirRoute) -> Bool) -> [InsightSuggestion] {
+    suggestions.filter { shows(route(for: $0)) }
+  }
+
   static func route(for suggestion: InsightSuggestion) -> MemoirRoute {
     switch suggestion.kind {
     case .known(.shiftTime), .known(.adjustDuration), .known(.adjustStrictness), .known(.adjustReminder): .quest(.edit(suggestion.quest))

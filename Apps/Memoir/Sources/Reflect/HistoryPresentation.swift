@@ -179,16 +179,27 @@ struct HistoryGroup: Identifiable, Equatable {
 
 /// `historyTotals` (`reflect.derive.ts:386-402`), over the records the filter and search keep.
 enum HistoryTotalsCopy {
-  static func lines(_ totals: HistoryTotals) -> [String] {
-    let spent = totals.spent.map { ReflectFormat.money($0.totalMinor, $0.home) }
-    return [
-      String(
-        localized: "\(totals.questRecords) quest records · \(totals.outcomes) outcomes · \(totals.kept) kept", table: "Reflect"),
-      spent.map { String(localized: "\(totals.expenses) expenses · \($0)", table: "Reflect") }
-        ?? String(localized: "\(totals.expenses) expenses", table: "Reflect"),
-      String(localized: "\(totals.journalEntries) journal entries · \(totals.words) words", table: "Reflect"),
-      String(localized: "\(totals.metricEntries) metric entries · \(totals.meals) meals · \(totals.weights) weights", table: "Reflect"),
-    ] + (totals.spent.flatMap { ReflectCopy.pending($0.pending) }.map { [$0] } ?? [])
+  static func lines(_ totals: HistoryTotals, modules: ModuleSelection = .all) -> [String] {
+    var lines = [String]()
+    if modules.contains(.quests) {
+      lines.append(String(localized: "\(totals.questRecords) quest records · \(totals.outcomes) outcomes · \(totals.kept) kept", table: "Reflect"))
+    }
+    if modules.contains(.money) {
+      let spent = totals.spent.map { ReflectFormat.money($0.totalMinor, $0.home) }
+      lines.append(
+        spent.map { String(localized: "\(totals.expenses) expenses · \($0)", table: "Reflect") } ?? String(localized: "\(totals.expenses) expenses", table: "Reflect"))
+    }
+    if modules.contains(.journal) {
+      lines.append(String(localized: "\(totals.journalEntries) journal entries · \(totals.words) words", table: "Reflect"))
+    }
+    switch (modules.contains(.body), modules.contains(.meals)) {
+    case (true, true): lines.append(String(localized: "\(totals.metricEntries) metric entries · \(totals.meals) meals · \(totals.weights) weights", table: "Reflect"))
+    case (true, false): lines.append(String(localized: "\(totals.metricEntries) metric entries · \(totals.weights) weights", table: "Reflect"))
+    case (false, true): lines.append(String(localized: "\(totals.meals) meals", table: "Reflect"))
+    case (false, false): break
+    }
+    guard modules.contains(.money) else { return lines }
+    return lines + (totals.spent.flatMap { ReflectCopy.pending($0.pending) }.map { [$0] } ?? [])
   }
 
   static func count(matched: Int, isFiltered: Bool) -> String {

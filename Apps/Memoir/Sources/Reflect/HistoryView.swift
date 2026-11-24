@@ -25,8 +25,10 @@ private struct HistoryScreen: View {
   let context: MemoirScreenContext
   @State private var generation = 0
   @Environment(\.horizontalSizeClass) private var sizeClass
+  @Environment(MemoirModules.self) private var modules: MemoirModules?
 
   private var isWide: Bool { sizeClass != .compact }
+  private var moduleSelection: ModuleSelection { modules?.selection ?? .all }
 
   var body: some View {
     ScrollView {
@@ -52,16 +54,18 @@ private struct HistoryScreen: View {
     .searchable(text: $model.searchText, prompt: Text("Search everything you have logged", tableName: "Reflect"))
     .navigationTitle(Text(MemoirDestination.history.title))
     .shadowScreen(.root)
+    .onChange(of: moduleSelection, initial: true) { model.apply(moduleSelection) }
     .task { await model.followToday() }
     .task { await model.observeLookups() }
     .task(id: model.searchText) { await model.applySearchAfterPause() }
     .task(id: ObservationKey(read: model.readKey, generation: generation)) { await model.observe() }
+    .task(id: model.overallKey) { await model.observeOverall() }
   }
 
   private var filters: some View {
     VStack(alignment: .leading, spacing: Spacing.space2) {
       ShadowFlowLayout(spacing: Spacing.space2, lineSpacing: Spacing.space2) {
-        ForEach(HistoryModel.filters, id: \.self) { kind in
+        ForEach(model.filters, id: \.self) { kind in
           ShadowTag(
             Text(verbatim: kind.map(ReflectCopy.kind) ?? ReflectCopy.everything),
             isSelected: Binding(get: { model.kind == kind }, set: { if $0 { model.filter(kind) } }))
@@ -92,10 +96,10 @@ private struct HistoryScreen: View {
           }
           .buttonStyle(.shadowBordered)
         }
-      case .loaded(let page) where page.totalRecords == 0:
+      case .loaded where model.recordCount == 0:
         ShadowContentUnavailable(
           Text("Nothing logged yet", tableName: "Reflect"), systemImage: MemoirDestination.history.systemImage,
-          message: Text("Everything you record — quests, money, journal, meals, weight and health — will show up here as you go.", tableName: "Reflect"))
+          message: Text(verbatim: ReflectCopy.historyEmpty(model.modules)))
       case .loaded(let page):
         records(page)
       }
@@ -105,10 +109,10 @@ private struct HistoryScreen: View {
   @ViewBuilder
   private func records(_ page: HistoryPage) -> some View {
     VStack(alignment: .leading, spacing: Spacing.space1) {
-      Text(verbatim: HistoryTotalsCopy.count(matched: model.isFiltered ? page.records.total : page.totalRecords, isFiltered: model.isFiltered))
+      Text(verbatim: HistoryTotalsCopy.count(matched: page.records.total, isFiltered: model.isFiltered))
         .shadowFont(.headline)
         .foregroundStyle(ShadowColor.textPrimary)
-      Text("Quests, hero events, money, journal, meals, weight and health, in one place.", tableName: "Reflect")
+      Text(verbatim: ReflectCopy.historySubtitle(model.modules))
         .shadowFont(.footnote)
         .foregroundStyle(ShadowColor.textSecondary)
     }
@@ -200,11 +204,11 @@ private struct HistoryScreen: View {
   @ViewBuilder
   private var aside: some View {
     VStack(alignment: .leading, spacing: Spacing.space4) {
-      if let page = model.history.state.value, page.totalRecords > 0 {
+      if let page = model.history.state.value, (model.recordCount ?? 0) > 0 {
         if let selection = model.selection {
           HistoryRecordPane(
             context: context, id: selection, kind: model.kind, search: model.search, listed: model.rows.first { $0.id == selection },
-            bodyClasses: model.bodyClasses
+            bodyClasses: model.bodyClasses, modules: model.modules
           )
           .id(PaneKey(id: selection, kind: model.kind))
         } else {
@@ -220,13 +224,13 @@ private struct HistoryScreen: View {
 
   @ViewBuilder
   private var totals: some View {
-    if let page = model.history.state.value, page.totalRecords > 0 {
+    if let page = model.history.state.value, (model.recordCount ?? 0) > 0 {
       VStack(alignment: .leading, spacing: Spacing.space2) {
         Text("Totals for this view", tableName: "Reflect")
           .shadowFont(.headline)
           .foregroundStyle(ShadowColor.textPrimary)
           .accessibilityAddTraits(.isHeader)
-        ForEach(HistoryTotalsCopy.lines(page.totals), id: \.self) { line in
+        ForEach(HistoryTotalsCopy.lines(page.totals, modules: model.modules), id: \.self) { line in
           Text(verbatim: line).shadowFont(.subheadline).foregroundStyle(ShadowColor.textSecondary)
         }
       }
@@ -279,11 +283,16 @@ private struct HistoryRow: View {
 private struct HistoryRecordPane: View {
   @State private var model: HistoryRecordModel
   let search: String
+  let modules: ModuleSelection
   let listed: HistoryPresentation?
 
-  init(context: MemoirScreenContext, id: String, kind: HistoryKind?, search: String, listed: HistoryPresentation?, bodyClasses: Set<SyncClass>) {
-    _model = State(initialValue: HistoryRecordModel(context: context, id: id, kind: kind, search: search, bodyClasses: bodyClasses))
+  init(
+    context: MemoirScreenContext, id: String, kind: HistoryKind?, search: String, listed: HistoryPresentation?, bodyClasses: Set<SyncClass>,
+    modules: ModuleSelection
+  ) {
+    _model = State(initialValue: HistoryRecordModel(context: context, id: id, kind: kind, search: search, modules: modules, bodyClasses: bodyClasses))
     self.search = search
+    self.modules = modules
     self.listed = listed
   }
 
@@ -311,8 +320,9 @@ private struct HistoryRecordPane: View {
     .shadowCard()
     .task { await model.followToday() }
     .task { await model.observeLookups() }
-    .task(id: PaneRead(today: model.day.day?.today, search: search)) {
+    .task(id: PaneRead(today: model.day.day?.today, search: search, modules: modules)) {
       model.search = search
+      model.apply(modules)
       await model.observe()
     }
   }
@@ -320,6 +330,7 @@ private struct HistoryRecordPane: View {
   private struct PaneRead: Hashable {
     let today: LocalDate?
     let search: String
+    let modules: ModuleSelection
   }
 }
 
@@ -327,6 +338,7 @@ private struct HistoryRecordPane: View {
 struct HistoryRecordDetail: View {
   let presentation: HistoryPresentation
   let today: LocalDate?
+  @Environment(MemoirModules.self) private var modules: MemoirModules?
 
   var body: some View {
     VStack(alignment: .leading, spacing: Spacing.space3) {
@@ -352,10 +364,12 @@ struct HistoryRecordDetail: View {
           .shadowFont(.subheadline)
         }
       }
-      NavigationLink(value: presentation.link.route) {
-        Text("Open in \(presentation.link.section)", tableName: "Reflect")
+      if modules?.shows(presentation.link.route) ?? true {
+        NavigationLink(value: presentation.link.route) {
+          Text("Open in \(presentation.link.section)", tableName: "Reflect")
+        }
+        .buttonStyle(.shadowBordered)
       }
-      .buttonStyle(.shadowBordered)
     }
     .frame(maxWidth: .infinity, alignment: .leading)
   }

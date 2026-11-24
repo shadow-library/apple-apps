@@ -243,6 +243,17 @@
         }
       }
     },
+    "%@, in one place.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@, in one place."
+          }
+        }
+      }
+    },
     "%@: %@ across the week": {
       "extractionState": "manual",
       "localizations": {
@@ -514,6 +525,29 @@
         }
       }
     },
+    "%lld meals": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld meal"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld meals"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "%lld meals logged": {
       "extractionState": "manual",
       "localizations": {
@@ -544,6 +578,17 @@
           "stringUnit": {
             "state": "translated",
             "value": "%lld metric entries · %lld meals · %lld weights"
+          }
+        }
+      }
+    },
+    "%lld metric entries · %lld weights": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld metric entries · %lld weights"
           }
         }
       }
@@ -834,6 +879,17 @@
           "stringUnit": {
             "state": "translated",
             "value": "A quest"
+          }
+        }
+      }
+    },
+    "A restrained look back at the week, in %lld short steps. Every prompt in it is optional.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A restrained look back at the week, in %lld short steps. Every prompt in it is optional."
           }
         }
       }
@@ -1285,6 +1341,17 @@
           "stringUnit": {
             "state": "translated",
             "value": "Everything"
+          }
+        }
+      }
+    },
+    "Everything you record — %@ — will show up here as you go.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Everything you record — %@ — will show up here as you go."
           }
         }
       }
@@ -1971,6 +2038,17 @@
         }
       }
     },
+    "Nothing to chart yet": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nothing to chart yet"
+          }
+        }
+      }
+    },
     "Nothing was logged as spent this week.": {
       "extractionState": "manual",
       "localizations": {
@@ -2462,6 +2540,17 @@
           "stringUnit": {
             "state": "translated",
             "value": "Stat"
+          }
+        }
+      }
+    },
+    "Statistics cover quests, hero, money and body. Turn one of them on in Settings to see them here.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Statistics cover quests, hero, money and body. Turn one of them on in Settings to see them here."
           }
         }
       }
@@ -3104,6 +3193,28 @@
         }
       }
     },
+    "hero events": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "hero events"
+          }
+        }
+      }
+    },
+    "journal": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "journal"
+          }
+        }
+      }
+    },
     "level": {
       "extractionState": "manual",
       "localizations": {
@@ -3111,6 +3222,28 @@
           "stringUnit": {
             "state": "translated",
             "value": "level"
+          }
+        }
+      }
+    },
+    "meals": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "meals"
+          }
+        }
+      }
+    },
+    "money": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "money"
           }
         }
       }
@@ -3192,6 +3325,17 @@
         }
       }
     },
+    "quests": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "quests"
+          }
+        }
+      }
+    },
     "schedule conflict": {
       "extractionState": "manual",
       "localizations": {
@@ -3243,6 +3387,17 @@
           "stringUnit": {
             "state": "translated",
             "value": "up %@"
+          }
+        }
+      }
+    },
+    "weight and health": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "weight and health"
           }
         }
       }

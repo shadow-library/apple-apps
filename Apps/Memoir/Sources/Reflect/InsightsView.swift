@@ -21,6 +21,9 @@ struct InsightsView: View {
 private struct InsightsScreen: View {
   @Bindable var model: InsightsModel
   @State private var generation = 0
+  @Environment(MemoirModules.self) private var modules: MemoirModules?
+
+  private var moduleSelection: ModuleSelection { modules?.selection ?? .all }
 
   var body: some View {
     ScrollView {
@@ -48,18 +51,21 @@ private struct InsightsScreen: View {
     .background(ShadowColor.surfaceApp)
     .navigationTitle(Text(MemoirDestination.insights.title))
     .toolbar {
-      ToolbarItem(placement: .primaryAction) {
-        NavigationLink(value: MemoirRoute.destination(.ask)) {
-          Label {
-            Text("Ask the coach about this", tableName: "Reflect")
-          } icon: {
-            Image(systemName: MemoirDestination.ask.systemImage)
+      if modules?.shows(.destination(.ask)) ?? true {
+        ToolbarItem(placement: .primaryAction) {
+          NavigationLink(value: MemoirRoute.destination(.ask)) {
+            Label {
+              Text("Ask the coach about this", tableName: "Reflect")
+            } icon: {
+              Image(systemName: MemoirDestination.ask.systemImage)
+            }
           }
+          .shadowBarItem()
         }
-        .shadowBarItem()
       }
     }
     .shadowScreen(.root)
+    .onChange(of: moduleSelection, initial: true) { model.apply(moduleSelection) }
     .task { await model.followToday() }
     .task { await model.observeLookups() }
     .task(id: ObservationKey(read: model.readKey, generation: generation)) { await model.observe() }
@@ -79,7 +85,7 @@ private struct InsightsScreen: View {
         .buttonStyle(.shadowBordered)
       }
     } else if let statistics = model.shown {
-      InsightsContent(statistics: statistics, lookups: model.lookups.state.value, bodyClasses: model.bodyClasses)
+      InsightsContent(statistics: statistics, lookups: model.lookups.state.value, bodyClasses: model.bodyClasses, modules: model.modules)
     } else {
       ProgressView().frame(maxWidth: .infinity)
     }
@@ -95,21 +101,32 @@ private struct InsightsContent: View {
   let statistics: InsightStatistics
   let lookups: ReflectLookups?
   let bodyClasses: Set<SyncClass>
+  let modules: ModuleSelection
+
+  private var sections: InsightSections { InsightSections(modules) }
 
   var body: some View {
     VStack(alignment: .leading, spacing: Spacing.space4) {
-      ShadowStatisticGrid(minimumWidth: 160) {
-        ForEach(InsightsPresentation.kpis(statistics, streak: lookups?.longestStreak)) { kpi in
-          InsightTile(kpi: kpi)
+      if sections.isEmpty {
+        ShadowContentUnavailable(
+          Text("Nothing to chart yet", tableName: "Reflect"), systemImage: MemoirDestination.insights.systemImage,
+          message: Text("Statistics cover quests, hero, money and body. Turn one of them on in Settings to see them here.", tableName: "Reflect"))
+      } else {
+        ShadowStatisticGrid(minimumWidth: 160) {
+          ForEach(InsightsPresentation.kpis(statistics, streak: lookups?.longestStreak, modules: modules)) { kpi in
+            InsightTile(kpi: kpi)
+          }
         }
       }
       ShadowAdaptiveColumns {
-        byQuest
-        byWeekday
-        byMonth
-        reasons
-        spending
-        bodyAndHealth
+        if sections.quests {
+          byQuest
+          byWeekday
+        }
+        if sections.hero { byMonth }
+        if sections.quests { reasons }
+        if sections.money { spending }
+        if sections.body { bodyAndHealth }
         InsightCard(title: Text("These numbers are yours alone", tableName: "Reflect")) {
           Text(
             "Every comparison here is you against your own history, and every one of them is optional to look at. Nothing on this screen is shared, published or ranked.",

@@ -7,6 +7,7 @@ import ShadowStore
 struct InsightsReadKey: Hashable {
   let period: InsightPeriod
   let today: LocalDate
+  let readsBody: Bool
 }
 
 /// `features/insights/index.tsx`: the owner's history against itself over 30 days, 90 days (the reference's default) or a year.
@@ -19,6 +20,7 @@ final class InsightsModel {
   let statistics = ReadObserver<InsightStatistics>()
   let lookups = ReadObserver<ReflectLookups>()
   var period = InsightPeriod.ninetyDays
+  private(set) var modules = ModuleSelection.all
 
   init(context: MemoirScreenContext, bodyClasses: Set<SyncClass> = ReflectBody.onThisDevice) {
     self.context = context
@@ -26,8 +28,15 @@ final class InsightsModel {
     day = ReflectDayFollower(context: context)
   }
 
+  var sections: InsightSections { InsightSections(modules) }
+
   var readKey: InsightsReadKey? {
-    day.day.map { InsightsReadKey(period: period, today: $0.today) }
+    day.day.map { InsightsReadKey(period: period, today: $0.today, readsBody: modules.contains(.body)) }
+  }
+
+  func apply(_ selection: ModuleSelection) {
+    guard selection != modules else { return }
+    modules = selection
   }
 
   /// The statistics of the period chosen, never a stale period's while the new one loads.
@@ -42,7 +51,7 @@ final class InsightsModel {
   func observe() async {
     guard let key = readKey else { return }
     let stores = context.stores
-    let bodyClasses = bodyClasses
+    let bodyClasses = modules.readableBodyClasses(bodyClasses)
     await statistics.run { ReflectReads.observeInsights(in: stores, period: key.period, bodyClasses: bodyClasses, today: key.today) }
   }
 
@@ -92,10 +101,11 @@ enum InsightsPresentation {
     }
   }
 
-  static func kpis(_ statistics: InsightStatistics, streak: LongestStreak?) -> [InsightKPI] {
+  static func kpis(_ statistics: InsightStatistics, streak: LongestStreak?, modules: ModuleSelection = .all) -> [InsightKPI] {
     let whole = !statistics.period.isCompared
     let days = statistics.period.days
-    return [
+    let sections = InsightSections(modules)
+    let all = [
       InsightKPI(
         kind: .kept, label: String(localized: "Quests kept", table: "Reflect"), value: statistics.kept.percent.map(ReflectFormat.percent), deltaPercent: nil,
         higherIsBetter: true, caption: keptCaption(statistics, whole: whole, days: days)),
@@ -115,6 +125,13 @@ enum InsightsPresentation {
           ? String(localized: "No home currency yet. Choose one in Settings.", table: "Reflect")
           : windowCaption(whole: whole, hasBaseline: (statistics.previousSpentMinor ?? 0) > 0, days: days)),
     ]
+    return all.filter { kpi in
+      switch kpi.kind {
+      case .kept, .streak: sections.quests
+      case .xp: sections.hero
+      case .spend: sections.money
+      }
+    }
   }
 
   private static func keptCaption(_ statistics: InsightStatistics, whole: Bool, days: Int) -> String {

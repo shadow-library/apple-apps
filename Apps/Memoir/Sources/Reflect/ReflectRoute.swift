@@ -22,6 +22,7 @@ struct ReflectRouteView: View {
 /// A history record pushed on a narrow screen; it says so when the record has gone, as when another device deleted it.
 struct HistoryRecordView: View {
   @State private var model: HistoryRecordModel
+  @Environment(MemoirModules.self) private var modules: MemoirModules?
 
   init(context: MemoirScreenContext, id: String, bodyClasses: Set<SyncClass> = ReflectBody.onThisDevice) {
     _model = State(initialValue: HistoryRecordModel(context: context, id: id, bodyClasses: bodyClasses))
@@ -56,6 +57,16 @@ struct HistoryRecordView: View {
     .shadowScreen(.pushed)
     .task { await model.followToday() }
     .task { await model.observeLookups() }
-    .task(id: model.day.day?.today) { await model.observe() }
+    .task(id: PageRead(today: model.day.day?.today, modules: modules?.selection ?? .all)) {
+      model.apply(modules?.selection ?? .all)
+      await model.observe()
+    }
+  }
+}
+
+extension HistoryRecordView {
+  fileprivate struct PageRead: Hashable {
+    let today: LocalDate?
+    let modules: ModuleSelection
   }
 }

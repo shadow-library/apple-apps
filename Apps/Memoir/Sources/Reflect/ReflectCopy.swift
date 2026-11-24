@@ -20,6 +20,30 @@ nonisolated enum ReflectCopy {
 
   static var everything: String { String(localized: "Everything", table: "Reflect") }
 
+  static func historySubtitle(_ modules: ModuleSelection) -> String {
+    guard modules != .all else { return String(localized: "Quests, hero events, money, journal, meals, weight and health, in one place.", table: "Reflect") }
+    let list = historyModuleNames(modules)
+    return String(localized: "\(list.prefix(1).uppercased() + list.dropFirst()), in one place.", table: "Reflect")
+  }
+
+  static func historyEmpty(_ modules: ModuleSelection) -> String {
+    guard modules != .all else {
+      return String(localized: "Everything you record — quests, money, journal, meals, weight and health — will show up here as you go.", table: "Reflect")
+    }
+    return String(localized: "Everything you record — \(historyModuleNames(modules)) — will show up here as you go.", table: "Reflect")
+  }
+
+  private static func historyModuleNames(_ modules: ModuleSelection) -> String {
+    var names = [String]()
+    if modules.contains(.quests) { names.append(String(localized: "quests", table: "Reflect")) }
+    if modules.contains(.hero) { names.append(String(localized: "hero events", table: "Reflect")) }
+    if modules.contains(.money) { names.append(String(localized: "money", table: "Reflect")) }
+    if modules.contains(.journal) { names.append(String(localized: "journal", table: "Reflect")) }
+    if modules.contains(.meals) { names.append(String(localized: "meals", table: "Reflect")) }
+    if modules.contains(.body) { names.append(String(localized: "weight and health", table: "Reflect")) }
+    return names.formatted(.list(type: .and))
+  }
+
   static func questName(_ name: String?) -> String {
     guard let name, !name.isEmpty else { return String(localized: "Unnamed quest", table: "Reflect") }
     return name

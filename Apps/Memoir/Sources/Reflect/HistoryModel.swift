@@ -13,14 +13,15 @@ struct HistoryReadKey: Hashable {
 @MainActor
 @Observable
 final class HistoryModel {
-  static let filters: [HistoryKind?] = [nil] + HistoryKind.allCases.map { $0 }
   static let searchPause = Duration.milliseconds(250)
 
   private let context: MemoirScreenContext
   let bodyClasses: Set<SyncClass>
   let day: ReflectDayFollower
   let history = ReadObserver<HistoryPage>()
+  let overall = ReadObserver<HistoryPage>()
   let lookups = ReadObserver<ReflectLookups>()
+  private(set) var modules = ModuleSelection.all
   private(set) var kind: HistoryKind?
   private(set) var search = ""
   /// What is typed in the search field; it becomes `search` once typing pauses.
@@ -34,13 +35,32 @@ final class HistoryModel {
     day = ReflectDayFollower(context: context)
   }
 
+  var filters: [HistoryKind?] { [nil] + HistoryKind.allCases.filter(modules.historyKinds.contains).map { $0 } }
+
   var query: HistoryQuery? {
-    try? HistoryQuery.page(page, kinds: kind.map { [$0] }, search: search, categoryNames: ReflectCopy.builtInCategoryNames)
+    try? HistoryQuery.page(page, kinds: kind.map { [$0] } ?? modules.historyKinds, search: search, categoryNames: ReflectCopy.builtInCategoryNames)
   }
 
   var readKey: HistoryReadKey? {
     guard let today = day.day?.today, let query else { return nil }
     return HistoryReadKey(query: query, today: today)
+  }
+
+  var overallKey: HistoryReadKey? {
+    guard modules != .all, let today = day.day?.today, let query = try? HistoryQuery.page(1, kinds: modules.historyKinds) else { return nil }
+    return HistoryReadKey(query: query, today: today)
+  }
+
+  var recordCount: Int? {
+    guard modules != .all else { return history.state.value?.totalRecords }
+    return overall.state.value?.records.total
+  }
+
+  func apply(_ selection: ModuleSelection) {
+    guard selection != modules else { return }
+    modules = selection
+    page = 1
+    if let kind, !selection.historyKinds.contains(kind) { self.kind = nil }
   }
 
   var isFiltered: Bool {
@@ -71,7 +91,7 @@ final class HistoryModel {
   }
 
   func filter(_ kind: HistoryKind?) {
-    guard kind != self.kind else { return }
+    guard kind != self.kind, kind.map(modules.historyKinds.contains) ?? true else { return }
     self.kind = kind
     page = 1
   }
@@ -112,12 +132,19 @@ final class HistoryModel {
   func observe() async {
     guard let key = readKey else { return }
     let stores = context.stores
-    let bodyClasses = bodyClasses
+    let bodyClasses = modules.readableBodyClasses(bodyClasses)
     await history.run {
       ReflectReads.observeHistory(in: stores, matching: key.query, bodyClasses: bodyClasses, today: key.today)
     } onValue: { [weak self] page in
       self?.settle(page)
     }
+  }
+
+  func observeOverall() async {
+    guard let key = overallKey else { return }
+    let stores = context.stores
+    let bodyClasses = modules.readableBodyClasses(bodyClasses)
+    await overall.run { ReflectReads.observeHistory(in: stores, matching: key.query, bodyClasses: bodyClasses, today: key.today) }
   }
 
   func observeLookups() async {
@@ -150,14 +177,19 @@ final class HistoryRecordModel {
   let day: ReflectDayFollower
   let history = ReadObserver<HistoryPage>()
   let lookups = ReadObserver<ReflectLookups>()
-  private let kinds: Set<HistoryKind>?
+  private let kind: HistoryKind?
+  private(set) var modules: ModuleSelection
   var search: String
 
-  init(context: MemoirScreenContext, id: String, kind: HistoryKind? = nil, search: String = "", bodyClasses: Set<SyncClass> = ReflectBody.onThisDevice) {
+  init(
+    context: MemoirScreenContext, id: String, kind: HistoryKind? = nil, search: String = "", modules: ModuleSelection = .all,
+    bodyClasses: Set<SyncClass> = ReflectBody.onThisDevice
+  ) {
     self.context = context
     self.id = id
     self.bodyClasses = bodyClasses
-    kinds = kind.map { [$0] }
+    self.kind = kind
+    self.modules = modules
     self.search = search
     day = ReflectDayFollower(context: context)
   }
@@ -172,6 +204,10 @@ final class HistoryRecordModel {
     }
   }
 
+  func apply(_ selection: ModuleSelection) {
+    modules = selection
+  }
+
   func followToday() async {
     await day.follow()
   }
@@ -179,8 +215,8 @@ final class HistoryRecordModel {
   func observe() async {
     guard let today = day.day?.today else { return }
     let stores = context.stores
-    let query = HistoryQuery(kinds: kinds, search: search, categoryNames: ReflectCopy.builtInCategoryNames, page: .all)
-    let bodyClasses = bodyClasses
+    let query = HistoryQuery(kinds: kind.map { [$0] } ?? modules.historyKinds, search: search, categoryNames: ReflectCopy.builtInCategoryNames, page: .all)
+    let bodyClasses = modules.readableBodyClasses(bodyClasses)
     await history.run { ReflectReads.observeHistory(in: stores, matching: query, bodyClasses: bodyClasses, today: today) }
   }
 

@@ -21,11 +21,20 @@ private struct WeeklyReviewScreen: View {
   let model: WeeklyReviewModel
   @State private var generation = 0
   @Environment(\.horizontalSizeClass) private var sizeClass
+  @Environment(MemoirModules.self) private var modules: MemoirModules?
+
+  private var moduleSelection: ModuleSelection { modules?.selection ?? .all }
+
+  private var introduction: Text {
+    model.steps.count == ReviewStep.allCases.count
+      ? Text("A restrained look back at the week, in five short steps. Every prompt in it is optional.", tableName: "Reflect")
+      : Text("A restrained look back at the week, in \(model.steps.count) short steps. Every prompt in it is optional.", tableName: "Reflect")
+  }
 
   var body: some View {
     ScrollView {
       VStack(alignment: .leading, spacing: Spacing.space4) {
-        Text("A restrained look back at the week, in five short steps. Every prompt in it is optional.", tableName: "Reflect")
+        introduction
           .shadowFont(.subheadline)
           .foregroundStyle(ShadowColor.textSecondary)
         content
@@ -36,9 +45,10 @@ private struct WeeklyReviewScreen: View {
     .background(ShadowColor.surfaceApp)
     .navigationTitle(Text(MemoirDestination.weeklyReview.title))
     .shadowScreen(.root)
+    .onChange(of: moduleSelection, initial: true) { model.apply(moduleSelection) }
     .task { await model.followToday() }
     .task { await model.observeLookups() }
-    .task(id: ObservationKey(today: model.day.day?.today, generation: generation)) { await model.observe() }
+    .task(id: ObservationKey(today: model.day.day?.today, generation: generation, readsBody: model.modules.contains(.body))) { await model.observe() }
   }
 
   @ViewBuilder
@@ -90,30 +100,34 @@ private struct WeeklyReviewScreen: View {
   @ViewBuilder
   private func aside(_ review: WeeklyReview) -> some View {
     InsightCard(title: Text("Week at a glance", tableName: "Reflect")) {
-      ForEach(WeeklyReviewPresentation.glance(review), id: \.self) { line in
+      ForEach(WeeklyReviewPresentation.glance(review, modules: model.modules), id: \.self) { line in
         Text(verbatim: line).shadowFont(.subheadline).foregroundStyle(ShadowColor.textSecondary)
       }
     }
-    InsightCard(title: Text("Carried into planning", tableName: "Reflect")) {
-      Text("Anything you decide here reaches the Planning Board as a suggestion. The board never rewrites itself.", tableName: "Reflect")
-        .shadowFont(.subheadline)
-        .foregroundStyle(ShadowColor.textSecondary)
-      NavigationLink(value: MemoirRoute.destination(.planningBoard)) { Text("Open the board", tableName: "Reflect") }
-        .buttonStyle(.shadowBordered)
+    if modules?.shows(.destination(.planningBoard)) ?? true {
+      InsightCard(title: Text("Carried into planning", tableName: "Reflect")) {
+        Text("Anything you decide here reaches the Planning Board as a suggestion. The board never rewrites itself.", tableName: "Reflect")
+          .shadowFont(.subheadline)
+          .foregroundStyle(ShadowColor.textSecondary)
+        NavigationLink(value: MemoirRoute.destination(.planningBoard)) { Text("Open the board", tableName: "Reflect") }
+          .buttonStyle(.shadowBordered)
+      }
     }
   }
 
   private struct ObservationKey: Hashable {
     let today: LocalDate?
     let generation: Int
+    let readsBody: Bool
   }
 }
 
 private struct ReviewStepBar: View {
   let model: WeeklyReviewModel
   let review: WeeklyReview
+  @Environment(MemoirModules.self) private var modules: MemoirModules?
 
-  private var index: Int { ReviewStep.allCases.firstIndex(of: model.step) ?? 0 }
+  private var index: Int { model.steps.firstIndex(of: model.step) ?? 0 }
 
   var body: some View {
     VStack(alignment: .leading, spacing: Spacing.space3) {
@@ -128,7 +142,7 @@ private struct ReviewStepBar: View {
           actions
         }
       }
-      ShadowSteps(current: index, titles: ReviewStep.allCases.map { Text(verbatim: WeeklyReviewPresentation.title($0)) }) { position in
+      ShadowSteps(current: index, titles: model.steps.map { Text(verbatim: WeeklyReviewPresentation.title($0)) }) { position in
         Text("Step \(position.number) of \(position.count)", tableName: "Reflect")
       }
     }
@@ -145,7 +159,7 @@ private struct ReviewStepBar: View {
         if model.step == .done {
           model.isComplete ? Text("Completed", tableName: "Reflect") : Text("Not finished yet", tableName: "Reflect")
         } else {
-          Text("Step \(index + 1) of \(ReviewStep.allCases.count) · about four minutes", tableName: "Reflect")
+          Text("Step \(index + 1) of \(model.steps.count) · about four minutes", tableName: "Reflect")
         }
       }
       .shadowFont(.footnote)
@@ -165,8 +179,10 @@ private struct ReviewStepBar: View {
       .disabled(index == 0)
       if model.step == .done {
         if model.isComplete {
-          NavigationLink(value: MemoirRoute.destination(.planningBoard)) { Text("Plan next week", tableName: "Reflect") }
-            .buttonStyle(.shadowFilled)
+          if modules?.shows(.destination(.planningBoard)) ?? true {
+            NavigationLink(value: MemoirRoute.destination(.planningBoard)) { Text("Plan next week", tableName: "Reflect") }
+              .buttonStyle(.shadowFilled)
+          }
         } else {
           Button {
             Task { await model.show(.reflect) }
@@ -353,7 +369,7 @@ private struct ReviewDoneStep: View {
           Text(verbatim: WeeklyReviewPresentation.completionTitle(review)),
           message: Text("Kept on this device. It stays here, but does not follow you to another device.", tableName: "Reflect"), intent: .success)
         VStack(alignment: .leading, spacing: Spacing.space2) {
-          ForEach(WeeklyReviewPresentation.summary(review), id: \.self) { line in
+          ForEach(WeeklyReviewPresentation.summary(review, modules: model.modules), id: \.self) { line in
             Text(verbatim: line).shadowFont(.subheadline).foregroundStyle(ShadowColor.textPrimary)
           }
         }

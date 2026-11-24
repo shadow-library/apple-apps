@@ -10,8 +10,8 @@ enum ReviewSaveStatus: Equatable {
   case saved
 }
 
-/// `features/review/index.tsx`: last week in five steps. The answers and the week's completion stay on this device (`WeeklyReviewAnswers`), and a
-/// review already finished opens on its last step.
+/// `features/review/index.tsx`: last week in the steps of the modules that are on (reflection and the close always). The answers and the week's
+/// completion stay on this device (`WeeklyReviewAnswers`), and a review already finished opens on its last step.
 @MainActor
 @Observable
 final class WeeklyReviewModel {
@@ -20,6 +20,7 @@ final class WeeklyReviewModel {
   let day: ReflectDayFollower
   let review = ReadObserver<WeeklyReview>()
   let lookups = ReadObserver<ReflectLookups>()
+  private(set) var modules = ModuleSelection.all
   private(set) var step = ReviewStep.kept
   private(set) var furthest = ReviewStep.kept
   var drafts = [ReviewPrompt: String]()
@@ -38,6 +39,21 @@ final class WeeklyReviewModel {
 
   var isComplete: Bool { review.state.value?.answers.isComplete ?? false }
 
+  var steps: [ReviewStep] { modules.reviewSteps }
+
+  func apply(_ selection: ModuleSelection) {
+    guard selection != modules else { return }
+    modules = selection
+    step = valid(step)
+    furthest = valid(furthest)
+  }
+
+  private func valid(_ step: ReviewStep) -> ReviewStep {
+    let steps = steps
+    guard !steps.contains(step) else { return step }
+    return steps.first { $0.position > step.position } ?? .done
+  }
+
   func followToday() async {
     await day.follow()
   }
@@ -45,7 +61,7 @@ final class WeeklyReviewModel {
   func observe() async {
     guard let today = day.day?.today else { return }
     let stores = context.stores
-    let bodyClasses = bodyClasses
+    let bodyClasses = modules.readableBodyClasses(bodyClasses)
     await review.run {
       ReflectReads.observeReview(in: stores, bodyClasses: bodyClasses, today: today)
     } onValue: { [weak self] review in
@@ -59,14 +75,16 @@ final class WeeklyReviewModel {
   }
 
   func show(_ step: ReviewStep) async {
+    guard steps.contains(step) else { return }
     await saveAll()
     reach(step)
   }
 
   func back() async {
-    guard let index = ReviewStep.allCases.firstIndex(of: step), index > 0 else { return }
+    let steps = steps
+    guard let index = steps.firstIndex(of: step), index > 0 else { return }
     await saveAll()
-    step = ReviewStep.allCases[index - 1]
+    step = steps[index - 1]
   }
 
   /// Continue; on the reflection step of an unfinished review this finishes it (`advance`, `features/review/index.tsx:76-82`).
@@ -75,9 +93,10 @@ final class WeeklyReviewModel {
       await finish()
       return
     }
-    guard let index = ReviewStep.allCases.firstIndex(of: step), index + 1 < ReviewStep.allCases.count else { return }
+    let steps = steps
+    guard let index = steps.firstIndex(of: step), index + 1 < steps.count else { return }
     await saveAll()
-    reach(ReviewStep.allCases[index + 1])
+    reach(steps[index + 1])
   }
 
   /// Saves what is typed, then closes the week on this device.
@@ -139,7 +158,7 @@ final class WeeklyReviewModel {
 
   private func reach(_ step: ReviewStep) {
     self.step = step
-    if let index = ReviewStep.allCases.firstIndex(of: step), let reached = ReviewStep.allCases.firstIndex(of: furthest), index > reached { furthest = step }
+    if step.position > furthest.position { furthest = step }
   }
 
   /// A new week (the first read, or a day turn into the next week) starts on its first step, or on the last when it is already closed; within a week,
@@ -151,7 +170,7 @@ final class WeeklyReviewModel {
       drafts = answers
       stored = answers
       status = [:]
-      step = review.answers.isComplete ? .done : .kept
+      step = review.answers.isComplete ? .done : steps[0]
       furthest = step
       return
     }
