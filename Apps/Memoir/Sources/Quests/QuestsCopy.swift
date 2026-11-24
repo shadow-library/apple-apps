@@ -183,7 +183,7 @@ enum QuestsCopy {
     case .nothingToLock: String(localized: "Nothing is scheduled today.", table: "Quests")
     case .notAccountDay: String(localized: "Only today’s plan can be locked.", table: "Quests")
     case .notScheduled, .notYetBegun, .dayPassed, .alreadyRecorded, .alreadyRescheduled, .notAllowedFor, .rescheduleCapReached, .nothingRecorded, .notLocked,
-      .recoveryClosed:
+      .recoveryClosed, .alreadyCovered, .loggingWindowClosed:
       nil
     }
   }

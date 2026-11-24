@@ -22,8 +22,8 @@ struct ReadAgreementPropertyTests {
     var mismatches = [String]()
   }
 
-  /// Random histories from the convergence generators; then, for every occurrence on the days around the open day and every action, the command is issued
-  /// on a copy of the replayed state: whatever the board offers replay applies, and whatever it blocks replay does not, but for the client's own policy.
+  /// Random histories from the convergence generators; then, for every occurrence on the days around the open day and every action, and "No spend" on
+  /// the days around it, the command is issued on a copy of the replayed state: whatever the board offers replay applies, and whatever it blocks replay does not, but for the client's own policy.
   @Test func shouldOfferExactlyTheActionsReplayTakes() async throws {
     var tally = Tally()
     try await forAll(iterations: 12) { generator in
@@ -48,11 +48,12 @@ struct ReadAgreementPropertyTests {
       let instant = Int64(openDay.daysSinceEpoch) * ReplaySamples.millisPerDay + 1_420 * 60_000
       var number = 0
 
-      func check(_ availability: ActionAvailability, _ body: () throws -> MemoirCommandBody, _ what: String) throws {
+      func check(_ availability: ActionAvailability, _ body: () throws -> MemoirCommandBody, _ what: String, rulesetVersion: Int = Ruleset.v1.version) throws {
         if case .unavailable(let block) = availability, Self.isPolicy(block) { return }
         number += 1
         let command = try MemoirCommand(
-          id: MemoirStoreFixture.commandID(900_000 + number), body: try body(), instantMillis: instant, utcOffsetMinutes: 0, issuedOn: openDay, rulesetVersion: 1)
+          id: MemoirStoreFixture.commandID(900_000 + number), body: try body(), instantMillis: instant, utcOffsetMinutes: 0, issuedOn: openDay,
+          rulesetVersion: rulesetVersion)
         let outcome = try Replay.extend(base, with: [try ReplayFixture.entry(command, wall: 4_000_000_000_000)]).outcomes[command.id]
         let offered = availability.isPossible(at: instant)
         if offered { tally.offered += 1 } else { tally.blocked += 1 }
@@ -80,6 +81,13 @@ struct ReadAgreementPropertyTests {
         try check(board.lock.lock, { .planSetLock(try PlanLock(locking: lockable)) }, "lock \(date)")
         try check(board.lock.unlock, { .planSetLock(.unlocked) }, "unlock \(date)")
         if let recovery = board.recovery { try check(recovery.complete, { .recoveryComplete(RecoveryCompletion()) }, "recovery \(date)") }
+      }
+
+      let money = try await device.board(openDay).money
+      #expect(money.logging.allSatisfy { $0.noSpend == money.noSpend(on: $0.date) })
+      for offset in -4...1 {
+        let date = openDay.movedBy(days: offset)
+        try check(money.noSpend(on: date), { .moneyNoSpend(NoSpendDay(date: date)) }, "no spend on \(date) (open \(openDay))", rulesetVersion: Ruleset.current.version)
       }
     }
     #expect(tally.mismatches.isEmpty, "\(tally.mismatches.prefix(5).joined(separator: "\n"))")

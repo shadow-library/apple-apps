@@ -192,6 +192,10 @@ public enum ActionBlock: Sendable, Hashable {
   case recoveryClosed(RecoveryQuestState)
   /// The quest is in today's active lock, so its schedule stays as planned (`quest-builder-screen.tsx:259-266`).
   case lockedInTodaysPlan
+  /// The day's money logging is already covered, by an expense dated that day or an earlier "No spend".
+  case alreadyCovered(MoneyLogSource)
+  /// The day is past the money rules' late window, so logging no longer covers it.
+  case loggingWindowClosed
 }
 
 public struct OccurrenceActions: Sendable, Hashable {

@@ -65,6 +65,8 @@ public struct TodayBoard: ReplayReadModel {
   public let nextScheduled: NextOccurrence?
   /// Set only on the open day.
   public let comingBack: ComingBackReason?
+  /// As of the open day, whichever day the board is for.
+  public let money: MoneyGameStanding
   public let scheduleWindow: ScheduleWindow
   public let notices: [ReplayNotice]
   /// Set when replay stopped at a command this build cannot read.
@@ -86,7 +88,8 @@ public struct TodayBoard: ReplayReadModel {
       summary: try row.map { row throws(StoreError) in try summary(row, ruleset: ruleset, in: transaction) },
       lock: try lock(on: date, row: row, source: source, ruleset: ruleset, in: transaction),
       nextScheduled: occurrences.isEmpty ? next(after: date, context: context) : nil,
-      comingBack: relation == .today ? ComingBackReason.on(row, recovery: recoveryRow) : nil, scheduleWindow: context.scheduleWindow,
+      comingBack: relation == .today ? ComingBackReason.on(row, recovery: recoveryRow) : nil,
+      money: try MoneyGameStanding.load(openDay: context.openDay, in: transaction), scheduleWindow: context.scheduleWindow,
       notices: try MemoirDerived.notices(in: transaction).map(\.notice), halt: context.hero?.halt, changesOn: context.changesOn)
   }
 

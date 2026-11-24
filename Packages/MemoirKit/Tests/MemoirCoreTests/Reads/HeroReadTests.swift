@@ -34,7 +34,7 @@ struct HeroReadTests {
     #expect(deck.achievements.first { $0.id == .firstGoldStreak }?.unlocks == .badgeGoldStreak && deck.achievementsEarned == state.progression.achievements.count)
     #expect(deck.name == .untitled && deck.titles.allSatisfy { $0.earnedOn == nil && !$0.isDisplayed })
     #expect(deck.shields == ShieldStanding(available: 0, cap: 3 * Ruleset.v1.shields.capPerQuest), "hero-standing.service.ts:55-59: Optional keeps no streak")
-    #expect(deck.momentum == state.days[Device.day(2)]?.momentum && deck.activeDays == 2 && deck.questsCompleted == 3)
+    #expect(deck.momentum == .measured(try #require(state.days[Device.day(2)]?.momentum)) && deck.activeDays == 2 && deck.questsCompleted == 3)
     #expect(deck.crown?.periodStart == Device.day(2) && deck.hp == state.days[Device.day(2)]?.hp)
   }
 

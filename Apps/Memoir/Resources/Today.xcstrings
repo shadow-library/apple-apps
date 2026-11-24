@@ -2238,6 +2238,28 @@
         }
       }
     },
+    "That day is too long ago to log.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "That day is too long ago to log."
+          }
+        }
+      }
+    },
+    "That day’s spending is already logged.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "That day’s spending is already logged."
+          }
+        }
+      }
+    },
     "That quest isn’t in your plan any more.": {
       "extractionState": "manual",
       "localizations": {

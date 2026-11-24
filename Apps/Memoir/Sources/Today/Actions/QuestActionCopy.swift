@@ -175,6 +175,8 @@ enum QuestActionCopy {
     case .notLocked: String(localized: "Today’s plan isn’t locked.", table: "Today")
     case .recoveryClosed: String(localized: "There’s no recovery quest waiting today.", table: "Today")
     case .lockedInTodaysPlan: String(localized: "This quest is in today’s locked plan, so its schedule stays as planned.", table: "Today")
+    case .alreadyCovered: String(localized: "That day’s spending is already logged.", table: "Today")
+    case .loggingWindowClosed: String(localized: "That day is too long ago to log.", table: "Today")
     }
   }
 

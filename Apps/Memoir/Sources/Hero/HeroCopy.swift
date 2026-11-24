@@ -45,14 +45,14 @@ nonisolated enum HeroCopy {
     return hp.hpEnd >= hp.hpMax ? String(localized: "full", table: "Hero") : String(localized: "Regenerates overnight, on its own.", table: "Hero")
   }
 
-  /// A Returner or Recovery day shows "Returning" whatever the momentum (`synced-hero-provider.ts:282`).
-  static func momentum(_ bucket: MomentumBucket?, comingBack: ComingBackReason?) -> String? {
+  /// A Returner or Recovery day shows "Returning" whatever the momentum (`synced-hero-provider.ts:282`); without an active quest none is shown.
+  static func momentum(_ momentum: HeroMomentum, comingBack: ComingBackReason?) -> String? {
+    guard case .measured(let bucket) = momentum else { return nil }
     if comingBack == .returner || comingBack == .recovery { return String(localized: "Returning", table: "Hero") }
-    switch bucket {
-    case .cold?: return String(localized: "Settling", table: "Hero")
-    case .steady?: return String(localized: "Steady", table: "Hero")
-    case .warm?: return String(localized: "Warm", table: "Hero")
-    case nil: return nil
+    return switch bucket {
+    case .cold: String(localized: "Settling", table: "Hero")
+    case .steady: String(localized: "Steady", table: "Hero")
+    case .warm: String(localized: "Warm", table: "Hero")
     }
   }
 

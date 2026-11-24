@@ -49,19 +49,19 @@ final class ReadsDevice: Sendable {
       recurrence: try recurrence ?? daily())
   }
 
-  func command(_ body: MemoirCommandBody, on day: LocalDate, minute: Int = 600) throws -> MemoirCommand {
+  func command(_ body: MemoirCommandBody, on day: LocalDate, minute: Int = 600, rulesetVersion: Int = Ruleset.v1.version) throws -> MemoirCommand {
     let number = counter.withLock { value in
       value += 1
       return value
     }
     let stamp = Self.stamp(day, minute: minute)
     return try MemoirCommand(
-      id: MemoirStoreFixture.commandID(number), body: body, instantMillis: stamp.instantMillis, utcOffsetMinutes: 0, issuedOn: day, rulesetVersion: 1)
+      id: MemoirStoreFixture.commandID(number), body: body, instantMillis: stamp.instantMillis, utcOffsetMinutes: 0, issuedOn: day, rulesetVersion: rulesetVersion)
   }
 
   @discardableResult
-  func issue(_ body: MemoirCommandBody, on day: LocalDate, minute: Int = 600) async throws -> MemoirCommand {
-    let command = try command(body, on: day, minute: minute)
+  func issue(_ body: MemoirCommandBody, on day: LocalDate, minute: Int = 600, rulesetVersion: Int = Ruleset.v1.version) async throws -> MemoirCommand {
+    let command = try command(body, on: day, minute: minute, rulesetVersion: rulesetVersion)
     try await append([command])
     return command
   }

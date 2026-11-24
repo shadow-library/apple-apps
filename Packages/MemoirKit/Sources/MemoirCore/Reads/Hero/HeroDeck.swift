@@ -80,6 +80,14 @@ public struct CosmeticStanding: Sendable, Hashable, Identifiable {
   public let state: CosmeticState
 }
 
+/// Momentum measures how the owner keeps quests, so it is withheld without an active quest, where it would read cold every day.
+public enum HeroMomentum: Sendable, Hashable {
+  case measured(MomentumBucket)
+  case noActiveQuest
+  /// The walk has not opened a day yet.
+  case notStarted
+}
+
 /// The Hero screen: level, coins, HP, stats, recent progression, the Crown and its history, momentum, shields, and the catalogues of achievements,
 /// titles and cosmetics from the rules (`Rules/Progress.swift`, `CosmeticID`); their names and descriptions are the app's strings.
 public struct HeroDeck: ReplayReadModel {
@@ -92,8 +100,9 @@ public struct HeroDeck: ReplayReadModel {
   public let crown: CrownWindow?
   /// Oldest first.
   public let crownHistory: [CrownClose]
-  public let momentum: MomentumBucket?
+  public let momentum: HeroMomentum
   public let comingBack: ComingBackReason?
+  public let money: MoneyGameStanding
   public let shields: ShieldStanding
   public let activeDays: Int
   public let questsCompleted: Int
@@ -129,7 +138,8 @@ public struct HeroDeck: ReplayReadModel {
       crownHistory: try MemoirDerived.crownCloses(limit: CrownClose.historyLength, in: transaction).reversed().compactMap { row in
         row.crownBanked.map { CrownClose(periodStart: row.crownPeriodStart ?? row.date, closedOn: row.date, banked: $0) }
       },
-      momentum: context.openDayRow?.momentum, comingBack: ComingBackReason.on(context.openDayRow, recovery: recovery),
+      momentum: momentum(context), comingBack: ComingBackReason.on(context.openDayRow, recovery: recovery),
+      money: try MoneyGameStanding.load(openDay: openDay, in: transaction),
       shields: ShieldStanding(context.quests, ruleset: ruleset), activeDays: hero?.activeDays ?? 0, questsCompleted: hero?.questsCompleted ?? 0,
       longestStreakDays: hero?.longestStreakDays ?? 0,
       achievements: AchievementID.allCases.map { id in
@@ -147,6 +157,12 @@ public struct HeroDeck: ReplayReadModel {
     return LifetimeStat.order.map { stat in
       LifetimeStat(stat: stat, value: table[stat], percentOfBest: best <= 0 ? 0 : Int(clamping: Exact.roundHalfUp(Int128(table[stat]) * 100, Int128(best))))
     }
+  }
+
+  static func momentum(_ context: QuestReadContext) -> HeroMomentum {
+    guard let row = context.openDayRow else { return .notStarted }
+    guard context.activeQuests.contains(where: { $0.schedule.strictness != .recovery }) else { return .noActiveQuest }
+    return .measured(row.momentum)
   }
 
   static func name(displayed: TitleID?, anyEarned: Bool) -> HeroName {
