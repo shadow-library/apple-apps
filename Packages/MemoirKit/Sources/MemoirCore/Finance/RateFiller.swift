@@ -82,9 +82,12 @@ public struct DatedPair: Hashable, Sendable {
 /// Fills the rates of foreign expenses for their own date, as the reference's reconciliation sweep does: each rate is recorded once per pair and day
 /// as an `mm_fx_rate` (first writer wins), and each expense still without a rate locks it. Two devices filling the same pair and day converge on the
 /// record written first, and ``HomeConverter`` converts through that record, so an expense locked from the losing record still converts at the winner.
-/// Expenses dated after `today` wait for their day; one in a currency outside ``ISO4217`` is never asked about, and neither is one the owner gave a rate.
+/// Expenses dated after `today` wait for their day; one in a currency outside ``ISO4217`` is never asked about, and neither is the currency of one the
+/// owner gave a rate. An expense counted in a budget whose currency is neither home nor its own also asks for that budget's currency against home on
+/// its date, which ``BudgetConverter`` inverts, even when the owner gave the expense a rate, since that rate reaches only home.
 /// An active subscription in a currency with no recorded rate in the week up to `today` asks for yesterday's, the latest day likely to have a final
-/// daily rate, as the reference warms its rate cache; it is not asked when an expense in its currency already asks for a date up to `today`.
+/// daily rate, as the reference warms its rate cache; it is not asked when an expense in its currency, or a budget in it, already asks for a date up
+/// to `today`.
 public struct RateFiller: Sendable {
   public static let defaultMaximumDates = 30
   public static let subscriptionRateDays = 7
@@ -152,11 +155,15 @@ public struct RateFiller: Sendable {
     } catch {
       throw FinanceError(error)
     }
-    return requests(ledger, subscriptions: subscriptions.entries.filter { !$0.isRemoved }.map(\.record), today: today)
+    let assignments = BudgetAssignments(
+      budgets: try Budgets.live(in: source), expenses: ledger.expenses,
+      subscriptions: Dictionary(subscriptions.entries.map { ($0.record.id, $0.record) }) { first, _ in first })
+    return requests(ledger, subscriptions: subscriptions.entries.filter { !$0.isRemoved }.map(\.record), assignments: assignments, today: today)
   }
 
-  static func requests(_ ledger: FinanceLedger, subscriptions: [SubscriptionRecord], today: LocalDate) -> RateRequests {
-    guard let converter = ledger.converter else { return .none }
+  static func requests(_ ledger: FinanceLedger, subscriptions: [SubscriptionRecord], assignments: BudgetAssignments? = nil, today: LocalDate) -> RateRequests {
+    guard let budgetConverter = ledger.budgetConverter else { return .none }
+    let converter = budgetConverter.homeConverter
     var dates = [LocalDate: Set<CurrencyPair>]()
     var pendingLocks = false
     for expense in candidates(ledger.expenses, converter: converter, today: today) {
@@ -166,6 +173,7 @@ public struct RateFiller: Sendable {
       }
       dates[expense.occurredOn, default: []].insert(CurrencyPair(base: expense.currency, quote: converter.home))
     }
+    for (date, pair) in budgetRequests(assignments, converter: budgetConverter, today: today) { dates[date, default: []].insert(pair) }
     let asked = Set(dates.values.joined().map(\.base))
     guard let yesterday = today.adding(days: -1), let freshSince = today.adding(days: -subscriptionRateDays) else {
       return RateRequests(dates: dates, pendingLocks: pendingLocks)
@@ -194,6 +202,16 @@ public struct RateFiller: Sendable {
       filled += 1
     }
     return (recorded, filled)
+  }
+
+  private static func budgetRequests(_ assignments: BudgetAssignments?, converter: BudgetConverter, today: LocalDate) -> [(LocalDate, CurrencyPair)] {
+    guard let assignments else { return [] }
+    return assignments.expenses.compactMap { expense in
+      guard expense.occurredOn <= today, let assignment = assignments.assignments[expense.id], let budget = assignments.budgets.budget(assignment.budget),
+        let pair = converter.missingRate(for: expense, in: budget.currency)
+      else { return nil }
+      return (expense.occurredOn, pair)
+    }
   }
 
   private static func candidates(_ expenses: [ExpenseRecord], converter: HomeConverter, today: LocalDate) -> [ExpenseRecord] {
