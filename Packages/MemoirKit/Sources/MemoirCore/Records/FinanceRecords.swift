@@ -89,6 +89,50 @@ public struct ManualRate: Hashable, Sendable, StoredValue {
   }
 }
 
+/// The values a subscription cycle's expense was first written with, and the subscription that wrote it, kept whole in one first-writer field so every
+/// device seeds the expense alike.
+public struct ExpenseCycleSeed: Hashable, Sendable, StoredValue {
+  public let subscription: UUID
+  public let amountMinor: Int64
+  public let occurredOn: LocalDate
+  public let category: CategoryKey
+  public let note: String?
+
+  public init(subscription: UUID, amountMinor: Int64, occurredOn: LocalDate, category: CategoryKey, note: String? = nil) {
+    self.subscription = subscription
+    self.amountMinor = amountMinor
+    self.occurredOn = occurredOn
+    self.category = category
+    self.note = note
+  }
+
+  public init?(stored: JSONValue) {
+    guard
+      let seed = MemberReader<ExpenseCycleMember>.nested(
+        stored,
+        { reader throws(MemoirUnreadable) in
+          ExpenseCycleSeed(
+            subscription: try reader.required(.subscription), amountMinor: try reader.required(.amountMinor), occurredOn: try reader.required(.occurredOn),
+            category: try reader.required(.category),
+            note: try reader.optional(.note))
+        })
+    else { return nil }
+    self = seed
+  }
+
+  public var stored: JSONValue {
+    var members = RecordMembers<ExpenseCycleMember>()
+    members.put(.subscription, subscription)
+    members.put(.amountMinor, amountMinor)
+    members.put(.occurredOn, occurredOn)
+    members.put(.category, category)
+    members.put(.note, note)
+    return members.json
+  }
+}
+
+/// `budget` overrides the budget the expense is counted in, `fromSavingsMinor` is the part paid from savings in the expense's currency and `goal` the
+/// savings goal it buys.
 public struct ExpenseRecord: IdentifiedRecord, RemovableMemoirRecord {
   public static let kind = MemoirKind.expense
 
@@ -102,11 +146,16 @@ public struct ExpenseRecord: IdentifiedRecord, RemovableMemoirRecord {
   public var receipt: UUID?
   public var rate: ExpenseRate?
   public var manualRate: ManualRate?
+  public var budget: UUID?
+  public var fromSavingsMinor: Int64?
+  public var goal: UUID?
+  public var cycle: ExpenseCycleSeed?
   public var loggedAtMillis: Int64
 
   public init(
     id: UUID, amountMinor: Int64, currency: CurrencyCode, occurredOn: LocalDate, category: CategoryKey, merchant: String? = nil, note: String? = nil, receipt: UUID? = nil,
-    rate: ExpenseRate? = nil, manualRate: ManualRate? = nil, loggedAtMillis: Int64
+    rate: ExpenseRate? = nil, manualRate: ManualRate? = nil, budget: UUID? = nil, fromSavingsMinor: Int64? = nil, goal: UUID? = nil, cycle: ExpenseCycleSeed? = nil,
+    loggedAtMillis: Int64
   ) {
     self.id = id
     self.amountMinor = amountMinor
@@ -118,6 +167,10 @@ public struct ExpenseRecord: IdentifiedRecord, RemovableMemoirRecord {
     self.receipt = receipt
     self.rate = rate
     self.manualRate = manualRate
+    self.budget = budget
+    self.fromSavingsMinor = fromSavingsMinor
+    self.goal = goal
+    self.cycle = cycle
     self.loggedAtMillis = loggedAtMillis
   }
 
@@ -125,7 +178,9 @@ public struct ExpenseRecord: IdentifiedRecord, RemovableMemoirRecord {
     self.init(
       id: id, amountMinor: try reader.required(.amountMinor), currency: try reader.required(.currency), occurredOn: try reader.required(.occurredOn),
       category: try reader.required(.category), merchant: try reader.optional(.merchant), note: try reader.optional(.note), receipt: try reader.optional(.receipt),
-      rate: try reader.optional(.rate), manualRate: try reader.optional(.manualRate), loggedAtMillis: try reader.required(.loggedAtMillis))
+      rate: try reader.optional(.rate), manualRate: try reader.optional(.manualRate), budget: try reader.optional(.budget),
+      fromSavingsMinor: try reader.optional(.fromSavingsMinor), goal: try reader.optional(.goal), cycle: try reader.optional(.cycle),
+      loggedAtMillis: try reader.required(.loggedAtMillis))
   }
 
   public var members: RecordMembers<ExpenseField> {
@@ -139,6 +194,10 @@ public struct ExpenseRecord: IdentifiedRecord, RemovableMemoirRecord {
     members.put(.receipt, receipt)
     members.put(.rate, rate)
     members.put(.manualRate, manualRate)
+    members.put(.budget, budget)
+    members.put(.fromSavingsMinor, fromSavingsMinor)
+    members.put(.goal, goal)
+    members.put(.cycle, cycle)
     members.put(.loggedAtMillis, loggedAtMillis)
     return members
   }
@@ -161,6 +220,7 @@ public enum SubscriptionReminderLead: String, CaseIterable, Hashable, Sendable {
 }
 
 /// `anchorOn` is the due date the owner set; the next due and last confirmed cycles are derived from confirm-cycle commands, which also grant the coin.
+/// `budget` overrides the budget every cycle's expense is counted in.
 public struct SubscriptionRecord: IdentifiedRecord, RemovableMemoirRecord {
   public static let kind = MemoirKind.subscription
 
@@ -177,11 +237,12 @@ public struct SubscriptionRecord: IdentifiedRecord, RemovableMemoirRecord {
   public var reminderEnabled: Bool
   public var reminderLead: StoredChoice<SubscriptionReminderLead>
   public var active: Bool
+  public var budget: UUID?
 
   public init(
     id: UUID, name: String, note: String? = nil, amountMinor: Int64, currency: CurrencyCode, frequency: StoredChoice<SubscriptionFrequency>, customIntervalDays: Int? = nil,
     billingDay: Int, anchorOn: LocalDate, category: CategoryKey, reminderEnabled: Bool = false,
-    reminderLead: StoredChoice<SubscriptionReminderLead> = .known(.onDay), active: Bool = true
+    reminderLead: StoredChoice<SubscriptionReminderLead> = .known(.onDay), active: Bool = true, budget: UUID? = nil
   ) {
     self.id = id
     self.name = name
@@ -196,6 +257,7 @@ public struct SubscriptionRecord: IdentifiedRecord, RemovableMemoirRecord {
     self.reminderEnabled = reminderEnabled
     self.reminderLead = reminderLead
     self.active = active
+    self.budget = budget
   }
 
   public init(id: UUID, reading reader: MemberReader<SubscriptionField>) throws(MemoirUnreadable) {
@@ -203,7 +265,8 @@ public struct SubscriptionRecord: IdentifiedRecord, RemovableMemoirRecord {
       id: id, name: try reader.required(.name), note: try reader.optional(.note), amountMinor: try reader.required(.amountMinor), currency: try reader.required(.currency),
       frequency: try reader.required(.frequency), customIntervalDays: try reader.optional(.customIntervalDays), billingDay: try reader.required(.billingDay),
       anchorOn: try reader.required(.anchorOn), category: try reader.required(.category),
-      reminderEnabled: try reader.required(.reminderEnabled), reminderLead: try reader.required(.reminderLead), active: try reader.required(.active))
+      reminderEnabled: try reader.required(.reminderEnabled), reminderLead: try reader.required(.reminderLead), active: try reader.required(.active),
+      budget: try reader.optional(.budget))
   }
 
   public var members: RecordMembers<SubscriptionField> {
@@ -220,27 +283,30 @@ public struct SubscriptionRecord: IdentifiedRecord, RemovableMemoirRecord {
     members.put(.reminderEnabled, reminderEnabled)
     members.put(.reminderLead, reminderLead)
     members.put(.active, active)
+    members.put(.budget, budget)
     return members
   }
 }
 
-/// Keyed by its category key, so two devices seeding the same built-in category create one record.
+/// Keyed by its category key, so two devices seeding the same built-in category create one record. `essential` is the owner's choice, nil until made.
 public struct ExpenseCategoryRecord: NaturalKeyRecord {
   public static let kind = MemoirKind.expenseCategory
 
   public let categoryKey: CategoryKey
   public var label: String
   public var archived: Bool
+  public var essential: Bool?
 
-  public init(key: CategoryKey, label: String, archived: Bool = false) {
+  public init(key: CategoryKey, label: String, archived: Bool = false, essential: Bool? = nil) {
     categoryKey = key
     self.label = label
     self.archived = archived
+    self.essential = essential
   }
 
   public init(key: MemoirKey, reading reader: MemberReader<ExpenseCategoryField>) throws(MemoirUnreadable) {
     guard case .expenseCategory(let categoryKey) = key else { throw .identity(key.ref) }
-    self.init(key: categoryKey, label: try reader.required(.label), archived: try reader.required(.archived))
+    self.init(key: categoryKey, label: try reader.required(.label), archived: try reader.required(.archived), essential: try reader.optional(.essential))
   }
 
   public var key: MemoirKey { .expenseCategory(categoryKey) }
@@ -249,6 +315,7 @@ public struct ExpenseCategoryRecord: NaturalKeyRecord {
     var members = RecordMembers<ExpenseCategoryField>()
     members.put(.label, label)
     members.put(.archived, archived)
+    members.put(.essential, essential)
     return members
   }
 }
@@ -363,7 +430,8 @@ public struct ScheduleWindow: Hashable, Sendable, StoredValue {
   }
 }
 
-/// The vault's single settings record. The time zone, intensity mode and returner threshold feed replay, so they are commands instead.
+/// The vault's single settings record. The time zone, intensity mode and returner threshold feed replay, so they are commands instead. Each module is
+/// its own register, nil meaning on, so two devices turning different modules on or off both keep their change; `moneyScoredFrom` is written once.
 public struct AccountSettingsRecord: NaturalKeyRecord {
   public static let kind = MemoirKind.accountSettings
 
@@ -372,24 +440,40 @@ public struct AccountSettingsRecord: NaturalKeyRecord {
   public var monthlyBudget: MoneyAmount?
   public var schedule: ScheduleWindow
   public var weekStart: Int
+  public var moduleHero: Bool?
+  public var moduleQuests: Bool?
+  public var moduleMoney: Bool?
+  public var moduleJournal: Bool?
+  public var moduleMeals: Bool?
+  public var moduleBody: Bool?
+  public var moneyScoredFrom: LocalDate?
 
   public init(
     defaultCurrency: CurrencyCode, enabledCurrencies: [CurrencyCode], monthlyBudget: MoneyAmount? = nil, schedule: ScheduleWindow = .standard,
-    weekStart: Int = 1
+    weekStart: Int = 1, moduleHero: Bool? = nil, moduleQuests: Bool? = nil, moduleMoney: Bool? = nil, moduleJournal: Bool? = nil, moduleMeals: Bool? = nil,
+    moduleBody: Bool? = nil, moneyScoredFrom: LocalDate? = nil
   ) {
     self.defaultCurrency = defaultCurrency
     self.enabledCurrencies = enabledCurrencies
     self.monthlyBudget = monthlyBudget
     self.schedule = schedule
     self.weekStart = weekStart
+    self.moduleHero = moduleHero
+    self.moduleQuests = moduleQuests
+    self.moduleMoney = moduleMoney
+    self.moduleJournal = moduleJournal
+    self.moduleMeals = moduleMeals
+    self.moduleBody = moduleBody
+    self.moneyScoredFrom = moneyScoredFrom
   }
 
   public init(key: MemoirKey, reading reader: MemberReader<AccountSettingsField>) throws(MemoirUnreadable) {
     guard case .accountSettings = key else { throw .identity(key.ref) }
     self.init(
       defaultCurrency: try reader.required(.defaultCurrency), enabledCurrencies: try reader.required(.enabledCurrencies), monthlyBudget: try reader.optional(.monthlyBudget),
-      schedule: try reader.required(.schedule),
-      weekStart: try reader.required(.weekStart))
+      schedule: try reader.required(.schedule), weekStart: try reader.required(.weekStart), moduleHero: try reader.optional(.moduleHero),
+      moduleQuests: try reader.optional(.moduleQuests), moduleMoney: try reader.optional(.moduleMoney), moduleJournal: try reader.optional(.moduleJournal),
+      moduleMeals: try reader.optional(.moduleMeals), moduleBody: try reader.optional(.moduleBody), moneyScoredFrom: try reader.optional(.moneyScoredFrom))
   }
 
   public var key: MemoirKey { .accountSettings }
@@ -401,6 +485,13 @@ public struct AccountSettingsRecord: NaturalKeyRecord {
     members.put(.monthlyBudget, monthlyBudget)
     members.put(.schedule, schedule)
     members.put(.weekStart, weekStart)
+    members.put(.moduleHero, moduleHero)
+    members.put(.moduleQuests, moduleQuests)
+    members.put(.moduleMoney, moduleMoney)
+    members.put(.moduleJournal, moduleJournal)
+    members.put(.moduleMeals, moduleMeals)
+    members.put(.moduleBody, moduleBody)
+    members.put(.moneyScoredFrom, moneyScoredFrom)
     return members
   }
 }

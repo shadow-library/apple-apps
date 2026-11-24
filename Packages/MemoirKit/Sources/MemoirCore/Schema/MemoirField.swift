@@ -76,6 +76,18 @@ public enum ExpenseField: String, MemoirField {
   case rate
   case loggedAtMillis = "logged_at_millis"
   case manualRate = "manual_rate"
+  case budget
+  case fromSavingsMinor = "from_savings_minor"
+  case goal
+  case cycle
+}
+
+public enum ExpenseCycleMember: String, MemoirField {
+  case subscription
+  case amountMinor = "amount_minor"
+  case occurredOn = "occurred_on"
+  case category
+  case note
 }
 
 public enum ExpenseRateMember: String, MemoirField {
@@ -92,6 +104,7 @@ public enum ManualRateMember: String, MemoirField {
 public enum ExpenseChangeMember: String, MemoirField {
   case expense
   case changes
+  case reason
 }
 
 public enum ExpenseFieldChangeMember: String, MemoirField {
@@ -113,11 +126,13 @@ public enum SubscriptionField: String, MemoirField {
   case reminderEnabled = "reminder_enabled"
   case reminderLead = "reminder_lead"
   case active
+  case budget
 }
 
 public enum ExpenseCategoryField: String, MemoirField {
   case label
   case archived
+  case essential
 }
 
 public enum ReceiptField: String, MemoirField {
@@ -130,12 +145,64 @@ public enum FxRateField: String, MemoirField {
   case rate
 }
 
+public enum BudgetField: String, MemoirField {
+  case name
+  case currency
+  case limitMinor = "limit_minor"
+  case period
+  case stagedLimit = "staged_limit"
+  case oneOffFromMinor = "one_off_from_minor"
+  case stagedOneOff = "staged_one_off"
+  case createdOn = "created_on"
+}
+
+public enum BudgetPeriodMember: String, MemoirField {
+  case kind
+  case from
+  case through
+}
+
+public enum StagedAmountMember: String, MemoirField {
+  case amountMinor = "amount_minor"
+  case from
+}
+
+public enum SavingsDepositField: String, MemoirField {
+  case deposit
+}
+
+public enum SavingsDepositMember: String, MemoirField {
+  case amountMinor = "amount_minor"
+  case currency
+  case rate
+  case closedOn = "closed_on"
+  case command
+}
+
+public enum SavingsGoalField: String, MemoirField {
+  case name
+  case symbol
+  case targetMinor = "target_minor"
+  case currency
+  case targetDate = "target_date"
+  case rank
+  case createdOn = "created_on"
+  case state
+}
+
 public enum AccountSettingsField: String, MemoirField {
   case defaultCurrency = "default_currency"
   case enabledCurrencies = "enabled_currencies"
   case monthlyBudget = "monthly_budget"
   case schedule
   case weekStart = "week_start"
+  case moduleHero = "module_hero"
+  case moduleQuests = "module_quests"
+  case moduleMoney = "module_money"
+  case moduleJournal = "module_journal"
+  case moduleMeals = "module_meals"
+  case moduleBody = "module_body"
+  case moneyScoredFrom = "money_scored_from"
 }
 
 public enum ScheduleMember: String, MemoirField {

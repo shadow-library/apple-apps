@@ -14,7 +14,7 @@ struct MemoirSchemaTests {
     (.main, "schema/registry-v1.json", 1), (.activity, "schema/activity-registry-v1.json", 1), (.restricted, "schema/restricted-registry-v1.json", 1),
     (.main, "schema/registry-v2.json", 2), (.activity, "schema/activity-registry-v2.json", 2), (.restricted, "schema/restricted-registry-v2.json", 2),
     (.main, "schema/registry-v3.json", 3), (.activity, "schema/activity-registry-v3.json", 3), (.restricted, "schema/restricted-registry-v3.json", 3),
-    (.main, "schema/registry-v4.json", 4), (.main, "schema/registry-v5.json", 5),
+    (.main, "schema/registry-v4.json", 4), (.main, "schema/registry-v5.json", 5), (.main, "schema/registry-v6.json", 6),
   ]
 
   @Test func shouldMatchTheFrozenRegistryDescriptions() throws {
@@ -104,6 +104,7 @@ struct MemoirSchemaTests {
       (.accountSettings, "n:e6b97cc7ab9e3c985780d7bba26e604befd06c44"),
       (.healthSettings, "n:94e1707da641c2bc97d562d091c0a0b68d3834b4"),
       (.insightSchedule, "n:eb5f029bb4f0ee614ad24c6b7296743dfe1dd778"),
+      (.savingsDeposit(budget: MemoirStoreFixture.quest, periodStart: date), "n:b5dfe2c5fabf0e83b7874918fbca5d850e37d031"),
     ]
     for (key, pinned) in keys {
       #expect(key.ref.key.rawValue == pinned, "\(key.kind.rawValue) hashes its components differently; never reorder or rename them")

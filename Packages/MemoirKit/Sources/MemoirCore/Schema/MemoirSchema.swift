@@ -38,7 +38,7 @@ public enum MemoirStoreKind: String, CaseIterable, Sendable {
 }
 
 public enum MemoirSchema {
-  public static let mainVersion = 5
+  public static let mainVersion = 6
   public static let activityVersion = 3
   public static let restrictedVersion = 3
 
@@ -84,7 +84,7 @@ public enum MemoirSchema {
     case .sideQuest:
       record(kind, removable(registers(SideQuestField.self, firstWriter: [.date, .loggedAtMillis])))
     case .expense:
-      record(kind, removable(registers(ExpenseField.self, firstWriter: [.currency, .rate, .loggedAtMillis])))
+      record(kind, removable(registers(ExpenseField.self, firstWriter: [.currency, .rate, .loggedAtMillis, .cycle])))
     case .subscription:
       record(kind, removable(registers(SubscriptionField.self)))
     case .expenseCategory:
@@ -94,7 +94,13 @@ public enum MemoirSchema {
     case .fxRate:
       record(kind, keyed(registers(FxRateField.self, firstWriter: [.rate])))
     case .accountSettings:
-      record(kind, keyed(registers(AccountSettingsField.self)))
+      record(kind, keyed(registers(AccountSettingsField.self, firstWriter: [.moneyScoredFrom])))
+    case .budget:
+      record(kind, removable(registers(BudgetField.self, firstWriter: [.currency, .createdOn])))
+    case .savingsDeposit:
+      record(kind, keyed(registers(SavingsDepositField.self, firstWriter: Array(SavingsDepositField.allCases))))
+    case .savingsGoal:
+      record(kind, removable(registers(SavingsGoalField.self, firstWriter: [.currency, .createdOn])))
     case .generalMetric, .activityMetric, .healthMetric:
       record(kind, removable(registers(MetricField.self)))
     case .generalMetricDay, .activityMetricDay, .healthMetricDay:

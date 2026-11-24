@@ -11,6 +11,7 @@ public enum MemoirKey: Hashable, Sendable {
   case accountSettings
   case healthSettings
   case insightSchedule
+  case savingsDeposit(budget: UUID, periodStart: LocalDate)
 
   public static let scope = "com.shadow.library.memoircore"
 
@@ -23,6 +24,7 @@ public enum MemoirKey: Hashable, Sendable {
     case .accountSettings: .accountSettings
     case .healthSettings: .healthSettings
     case .insightSchedule: .insightSchedule
+    case .savingsDeposit: .savingsDeposit
     }
   }
 
@@ -56,8 +58,12 @@ public enum MemoirKey: Hashable, Sendable {
     case .insightSchedule:
       guard members.isEmpty else { throw .invalid(field: CommonField.naturalKey.rawValue) }
       self = .insightSchedule
+    case .savingsDeposit:
+      let names = ["budget", "period_start"]
+      self = .savingsDeposit(budget: try reader.value("budget", names), periodStart: try reader.value("period_start", names))
     case .command, .commandNote, .quest, .journalEntry, .meal, .mealPreset, .sideQuest, .expense, .subscription, .receipt, .generalMetric, .activityMetric, .healthMetric,
-      .generalQuestThreshold, .activityQuestThreshold, .healthQuestThreshold, .generalInsight, .activityInsight, .healthInsight, .expenseChange:
+      .generalQuestThreshold, .activityQuestThreshold, .healthQuestThreshold, .generalInsight, .activityInsight, .healthInsight, .expenseChange,
+      .budget, .savingsGoal:
       throw .identity(ref)
     }
     guard self.ref == ref else { throw .keyMismatch(ref) }
@@ -70,6 +76,7 @@ public enum MemoirKey: Hashable, Sendable {
     case .metricDay(_, let metric, let date): [("metric", metric.lowercasedString), ("date", date.isoString)]
     case .weight(let date): [("date", date.isoString)]
     case .accountSettings, .healthSettings, .insightSchedule: []
+    case .savingsDeposit(let budget, let periodStart): [("budget", budget.lowercasedString), ("period_start", periodStart.isoString)]
     }
   }
 }

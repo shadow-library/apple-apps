@@ -177,6 +177,9 @@ final class ExpenseDetailModel {
     case .manualRate(let from, let to):
       let rate = { (manual: ManualRate) in MoneyText.rate(manual.rate, locale: locale) }
       return Self.moved(String(localized: "Rate you entered", table: "Money"), from.map(rate), to.map(rate))
+    case .budget: return Self.moved(String(localized: "Budget", table: "Money"), nil, nil)
+    case .fromSavings(let from, let to): return Self.moved(String(localized: "From savings", table: "Money"), from.map(amount), to.map(amount))
+    case .goal: return Self.moved(String(localized: "Savings goal", table: "Money"), nil, nil)
     }
   }
 

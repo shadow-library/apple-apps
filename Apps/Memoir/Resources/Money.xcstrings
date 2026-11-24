@@ -982,6 +982,17 @@
         }
       }
     },
+    "Budget": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Budget"
+          }
+        }
+      }
+    },
     "Budget is monthly": {
       "extractionState": "manual",
       "localizations": {
@@ -1485,6 +1496,17 @@
           "stringUnit": {
             "state": "translated",
             "value": "Frequency"
+          }
+        }
+      }
+    },
+    "From savings": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "From savings"
           }
         }
       }
@@ -2189,6 +2211,17 @@
           "stringUnit": {
             "state": "translated",
             "value": "Save subscription"
+          }
+        }
+      }
+    },
+    "Savings goal": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Savings goal"
           }
         }
       }

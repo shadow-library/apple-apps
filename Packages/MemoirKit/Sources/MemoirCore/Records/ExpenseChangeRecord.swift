@@ -3,7 +3,7 @@ import ShadowCore
 import ShadowStore
 
 /// One field an expense edit moved, from and to; memoir-web `ExpenseAuditChange` (`lib/data/finance.types.ts:120-126`) without the currency, which an
-/// expense keeps from its first write, and with the rate the owner typed, which the reference does not have.
+/// expense keeps from its first write, and with the rate the owner typed, the budget, the savings draw and the goal, which the reference does not have.
 public enum ExpenseFieldChange: Sendable, Hashable {
   case amount(from: Int64, to: Int64)
   case occurredOn(from: LocalDate, to: LocalDate)
@@ -11,6 +11,9 @@ public enum ExpenseFieldChange: Sendable, Hashable {
   case merchant(from: String?, to: String?)
   case note(from: String?, to: String?)
   case manualRate(from: ManualRate?, to: ManualRate?)
+  case budget(from: UUID?, to: UUID?)
+  case fromSavings(from: Int64?, to: Int64?)
+  case goal(from: UUID?, to: UUID?)
 
   /// memoir-web `expenseChanges` (`lib/data/finance.rules.ts:357-367`): the owner-visible fields that moved, in its order; an empty text is no text.
   public static func changes(from before: ExpenseRecord, to after: ExpenseRecord) -> [ExpenseFieldChange] {
@@ -21,6 +24,9 @@ public enum ExpenseFieldChange: Sendable, Hashable {
     if text(before.note) != text(after.note) { changes.append(.note(from: text(before.note), to: text(after.note))) }
     if text(before.merchant) != text(after.merchant) { changes.append(.merchant(from: text(before.merchant), to: text(after.merchant))) }
     if before.manualRate != after.manualRate { changes.append(.manualRate(from: before.manualRate, to: after.manualRate)) }
+    if before.budget != after.budget { changes.append(.budget(from: before.budget, to: after.budget)) }
+    if before.fromSavingsMinor != after.fromSavingsMinor { changes.append(.fromSavings(from: before.fromSavingsMinor, to: after.fromSavingsMinor)) }
+    if before.goal != after.goal { changes.append(.goal(from: before.goal, to: after.goal)) }
     return changes
   }
 
@@ -38,6 +44,9 @@ extension ExpenseFieldChange: StoredValue {
     case merchant
     case note
     case manualRate = "manual_rate"
+    case budget
+    case fromSavings = "from_savings_minor"
+    case goal
   }
 
   public init?(stored: JSONValue) {
@@ -53,6 +62,9 @@ extension ExpenseFieldChange: StoredValue {
           case .merchant: return .merchant(from: try reader.optional(.from), to: try reader.optional(.to))
           case .note: return .note(from: try reader.optional(.from), to: try reader.optional(.to))
           case .manualRate: return .manualRate(from: try reader.optional(.from), to: try reader.optional(.to))
+          case .budget: return .budget(from: try reader.optional(.from), to: try reader.optional(.to))
+          case .fromSavings: return .fromSavings(from: try reader.optional(.from), to: try reader.optional(.to))
+          case .goal: return .goal(from: try reader.optional(.from), to: try reader.optional(.to))
           case nil: throw .invalid(field: ExpenseFieldChangeMember.field.rawValue)
           }
         })
@@ -69,6 +81,9 @@ extension ExpenseFieldChange: StoredValue {
     case .merchant(let from, let to): Self.put(&members, .merchant, from, to)
     case .note(let from, let to): Self.put(&members, .note, from, to)
     case .manualRate(let from, let to): Self.put(&members, .manualRate, from, to)
+    case .budget(let from, let to): Self.put(&members, .budget, from, to)
+    case .fromSavings(let from, let to): Self.put(&members, .fromSavings, from, to)
+    case .goal(let from, let to): Self.put(&members, .goal, from, to)
     }
     return members.json
   }
@@ -81,22 +96,25 @@ extension ExpenseFieldChange: StoredValue {
 }
 
 /// What an `expense.update` changed, kept under the command's own id as a reason note is, so the command's payload stays free of the owner's values.
-/// Appended, so two devices editing one expense at once both keep their change in the history, whichever edit the expense's registers kept.
+/// Appended, so two devices editing one expense at once both keep their change in the history, whichever edit the expense's registers kept. `reason`
+/// names why an edit was made when it was more than a correction.
 public struct ExpenseChangeRecord: AppendedMemoirRecord {
   public static let kind = MemoirKind.expenseChange
 
   public let command: UUID
   public let expense: UUID
   public let changes: [ExpenseFieldChange]
+  public let reason: StoredChoice<ExpenseChangeReason>?
 
-  public init(command: UUID, expense: UUID, changes: [ExpenseFieldChange]) {
+  public init(command: UUID, expense: UUID, changes: [ExpenseFieldChange], reason: StoredChoice<ExpenseChangeReason>? = nil) {
     self.command = command
     self.expense = expense
     self.changes = changes
+    self.reason = reason
   }
 
   public init(id: UUID, reading reader: MemberReader<ExpenseChangeMember>) throws(MemoirUnreadable) {
-    self.init(command: id, expense: try reader.required(.expense), changes: try reader.required(.changes))
+    self.init(command: id, expense: try reader.required(.expense), changes: try reader.required(.changes), reason: try reader.optional(.reason))
   }
 
   public var id: UUID { command }
@@ -105,8 +123,13 @@ public struct ExpenseChangeRecord: AppendedMemoirRecord {
     var members = RecordMembers<ExpenseChangeMember>()
     members.put(.expense, expense)
     members.put(.changes, changes)
+    members.put(.reason, reason)
     return members
   }
+}
+
+public enum ExpenseChangeReason: String, CaseIterable, Hashable, Sendable {
+  case refund
 }
 
 extension ExpenseChangeRecord {
