@@ -17,6 +17,9 @@ public enum FinanceError: ShadowError, Equatable, Hashable {
   /// The reference's `FIN_006` for the currency: an expense keeps the currency, rate, receipt and logging time of its first write.
   case expenseFieldFixed(String)
   case expenseExists(UUID)
+  case refundExceedsAmount(refund: Int64, amount: Int64)
+  case refundNotPositive(Int64)
+  case nothingToRefund(UUID)
   case budgetAbsent(UUID)
   case budgetExists(UUID)
   case homeBudgetFixed
@@ -50,6 +53,9 @@ public enum FinanceError: ShadowError, Equatable, Hashable {
     case .subscriptionAbsent: "memoir_finance.subscription_absent"
     case .expenseFieldFixed: "memoir_finance.expense_field_fixed"
     case .expenseExists: "memoir_finance.expense_exists"
+    case .refundExceedsAmount: "memoir_finance.refund_exceeds_amount"
+    case .refundNotPositive: "memoir_finance.refund_not_positive"
+    case .nothingToRefund: "memoir_finance.nothing_to_refund"
     case .budgetAbsent: "memoir_finance.budget_absent"
     case .budgetExists: "memoir_finance.budget_exists"
     case .homeBudgetFixed: "memoir_finance.home_budget_fixed"
@@ -86,6 +92,9 @@ public enum FinanceError: ShadowError, Equatable, Hashable {
     case .subscriptionAbsent(let id): "Subscription \(id.lowercasedString) is not in the vault."
     case .expenseFieldFixed(let field): "An expense's \(field) cannot change after it is written; record a new expense instead."
     case .expenseExists(let id): "Expense \(id.lowercasedString) already exists."
+    case .refundExceedsAmount(let refund, let amount): "A refund of \(refund) is more than the \(amount) the expense still holds."
+    case .refundNotPositive(let refund): "A refund is above zero, not \(refund)."
+    case .nothingToRefund(let id): "Expense \(id.lowercasedString) has nothing left to refund."
     case .budgetAbsent(let id): "Budget \(id.lowercasedString) is not in the vault."
     case .budgetExists(let id): "Budget \(id.lowercasedString) already exists."
     case .homeBudgetFixed: "Home is always kept, monthly and in the currency it was created in; it cannot be deleted, renamed or moved."

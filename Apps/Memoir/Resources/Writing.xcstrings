@@ -243,6 +243,39 @@
         }
       }
     },
+    "That refund is more than what’s left on the expense.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "That refund is more than what’s left on the expense."
+          }
+        }
+      }
+    },
+    "A refund has to be more than zero.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A refund has to be more than zero."
+          }
+        }
+      }
+    },
+    "There’s nothing left to refund on this expense.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "There’s nothing left to refund on this expense."
+          }
+        }
+      }
+    },
     "Trips can’t share a day. Change the dates so they don’t overlap.": {
       "extractionState": "manual",
       "localizations": {

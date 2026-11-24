@@ -2072,6 +2072,17 @@
         }
       }
     },
+    "Refund: %@ → %@": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Refund: %@ → %@"
+          }
+        }
+      }
+    },
     "Reference rate": {
       "extractionState": "manual",
       "localizations": {

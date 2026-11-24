@@ -6,6 +6,8 @@ public enum ExpenseHistoryAction: Sendable, Hashable {
   case created(source: ExpenseSource)
   /// The fields the edit moved, or `nil` when the edit was made without its change record (an app before registry v4).
   case updated(changes: [ExpenseFieldChange]?)
+  /// A refund, with every field it moved: the amount, and the part paid from savings when it no longer fit.
+  case refunded(from: Int64, to: Int64, changes: [ExpenseFieldChange])
   case deleted
   case cycleConfirmed(subscription: UUID)
   case receiptScanned
@@ -28,6 +30,13 @@ public struct ExpenseHistory: Sendable, Equatable {
   /// Commands this version cannot read; one of them may name the expense.
   public let unreadableCommands: Int
 
+  private static func updateAction(of change: ExpenseChangeRecord?, for id: UUID) -> ExpenseHistoryAction {
+    guard let change, change.expense == id else { return .updated(changes: nil) }
+    guard case .known(.refund)? = change.reason else { return .updated(changes: change.changes) }
+    for case .amount(let from, let to) in change.changes { return .refunded(from: from, to: to, changes: change.changes) }
+    return .updated(changes: change.changes)
+  }
+
   static func read(_ id: UUID, in transaction: ReadTransaction) throws(StoreError) -> ExpenseHistory {
     let expense = try ExpenseRecord.read(id: id, in: transaction)
     let receipt = expense.entry?.record.receipt
@@ -42,7 +51,7 @@ public struct ExpenseHistory: Sendable, Equatable {
         action = .created(source: creation.source)
       case .expenseUpdate(let reference) where reference.id == id:
         let change = try ExpenseChangeRecord.read(id: command.id, in: transaction).entry?.record
-        action = .updated(changes: change.flatMap { $0.expense == id ? $0.changes : nil })
+        action = Self.updateAction(of: change, for: id)
       case .expenseDelete(let reference) where reference.id == id:
         action = .deleted
       case .subscriptionConfirmCycle(let confirmation) where SubscriptionCycles.expenseID(for: confirmation) == id:

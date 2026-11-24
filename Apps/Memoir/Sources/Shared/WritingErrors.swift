@@ -53,6 +53,9 @@ enum WritingErrors {
       case .tripStartFixed: String(localized: "A trip that has started keeps its first day.", table: "Writing")
       case .tripStartTooEarly: String(localized: "A trip can start at most 3 days ago.", table: "Writing")
       case .limitChangedThisMonth: String(localized: "This month’s limit has already changed. Raise it again next month.", table: "Writing")
+      case .refundExceedsAmount: String(localized: "That refund is more than what’s left on the expense.", table: "Writing")
+      case .refundNotPositive: String(localized: "A refund has to be more than zero.", table: "Writing")
+      case .nothingToRefund: String(localized: "There’s nothing left to refund on this expense.", table: "Writing")
       case .currencyTaken: String(localized: "There’s already a monthly budget in that currency.", table: "Writing")
       case .unreadable, .store, .recordWrite: PresentedError.storeHeadline
       case .unknownCurrency, .currencyMismatch, .overflow, .rateNotPositive, .rateOutOfRange, .negativeBudget, .unknownFrequency, .customIntervalNotPositive,

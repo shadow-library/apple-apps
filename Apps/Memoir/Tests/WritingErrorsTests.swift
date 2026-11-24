@@ -22,6 +22,17 @@ struct WritingErrorsTests {
     #expect(WritingErrors.presented(QuickLogError.issue(.refused(.categoryNotArchivable(CategoryKey("uncat")!))))?.headline.hasPrefix("Uncategorised and Subscriptions") == true)
   }
 
+  @Test("should say what a refused refund needs, with the finance code underneath")
+  func presentsRefundRefusals() {
+    let refused = { (error: FinanceError) in WritingErrors.presented(MemoirWriteError.command(.refused(.finance(error)))) }
+
+    #expect(refused(.nothingToRefund(UUID())) == PresentedError(headline: "There’s nothing left to refund on this expense.", detail: "memoir_finance.nothing_to_refund"))
+    #expect(
+      refused(.refundExceedsAmount(refund: 5, amount: 3))
+        == PresentedError(headline: "That refund is more than what’s left on the expense.", detail: "memoir_finance.refund_exceeds_amount"))
+    #expect(refused(.refundNotPositive(0)) == PresentedError(headline: "A refund has to be more than zero.", detail: "memoir_finance.refund_not_positive"))
+  }
+
   @Test("should fall back to the generic headline with its code for a replay refusal the reference has no words for")
   func presentsAReplayRefusalWithoutWords() {
     let presented = WritingErrors.presented(ReplayRefusal.notAccountDay(TestClock.day(0)))

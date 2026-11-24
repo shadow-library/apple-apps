@@ -2,6 +2,12 @@ import Foundation
 import ShadowCore
 import ShadowStore
 
+/// How much of an expense a refund returns, in minor units of the expense's currency.
+public enum RefundAmount: Sendable, Hashable {
+  case full
+  case partial(Int64)
+}
+
 /// The owner's expense writes, each in the caller's main-store write with its command, as the reference's `finance-commands.service.ts` handles
 /// `expense.create`, `expense.update` and `expense.delete`. An edit also appends the `ExpenseChangeRecord` of what moved, so the history shows the change
 /// on every device; a creation or a deletion purges the expense's change records, which hold its old notes and merchants
@@ -52,6 +58,38 @@ public enum ExpenseEdits {
   public static func update(
     _ id: UUID, issuer: CommandIssuer, in transaction: inout WriteTransaction, _ change: (inout ExpenseRecord) throws(MemoirRecordError) -> Void
   ) throws(CommandIssueError) -> MemoirCommand? {
+    try apply(id, reason: nil, issuer: issuer, in: &transaction, change)
+  }
+
+  /// Moves the amount to what is left after the refund and returns the part paid from savings that no longer fits to savings, in the same `expense.update`;
+  /// the change record carries `reason: .refund`. A full refund leaves the expense at zero, kept and shown as refunded; a partial one that equals the amount is
+  /// a full one. The expense's date and budget stay, so the refund reduces the month the expense was counted in.
+  @discardableResult
+  public static func refund(_ id: UUID, amount: RefundAmount, issuer: CommandIssuer, in transaction: inout WriteTransaction) throws(CommandIssueError) -> MemoirCommand {
+    let current = try present(id, in: transaction)
+    guard current.amountMinor > 0 else { throw .refused(.finance(.nothingToRefund(id))) }
+    let remaining: Int64
+    switch amount {
+    case .full:
+      remaining = 0
+    case .partial(let refunded):
+      guard refunded > 0 else { throw .refused(.finance(.refundNotPositive(refunded))) }
+      guard refunded <= current.amountMinor else { throw .refused(.finance(.refundExceedsAmount(refund: refunded, amount: current.amountMinor))) }
+      remaining = current.amountMinor - refunded
+    }
+    let command = try apply(id, reason: .refund, issuer: issuer, in: &transaction) { expense throws(MemoirRecordError) in
+      expense.amountMinor = remaining
+      guard let fromSavings = expense.fromSavingsMinor else { return }
+      let clamped = min(fromSavings, remaining)
+      expense.fromSavingsMinor = clamped > 0 ? clamped : nil
+    }
+    guard let command else { preconditionFailure("a refund of a positive amount moves the amount") }
+    return command
+  }
+
+  private static func apply(
+    _ id: UUID, reason: ExpenseChangeReason?, issuer: CommandIssuer, in transaction: inout WriteTransaction, _ change: (inout ExpenseRecord) throws(MemoirRecordError) -> Void
+  ) throws(CommandIssueError) -> MemoirCommand? {
     let current = try present(id, in: transaction)
     var edited = current
     try record { () throws(MemoirRecordError) in try change(&edited) }
@@ -62,7 +100,7 @@ public enum ExpenseEdits {
     let updated = edited
     try record { () throws(MemoirRecordError) in
       try ExpenseRecord.edit(id: id, in: &transaction) { $0 = updated }
-      try ExpenseChangeRecord(command: command.id, expense: id, changes: changes).append(in: &transaction)
+      try ExpenseChangeRecord(command: command.id, expense: id, changes: changes, reason: reason.map { .known($0) }).append(in: &transaction)
     }
     return command
   }

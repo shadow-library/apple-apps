@@ -158,9 +158,16 @@ final class ExpenseDetailModel {
     case .deleted: [String(localized: "Deleted", table: "Money")]
     case .cycleConfirmed: [String(localized: "Subscription charge confirmed", table: "Money")]
     case .receiptScanned: [String(localized: "Receipt scanned", table: "Money")]
+    case .refunded(let from, let to, let changes):
+      [String(localized: "Refund: \(Self.formatted(from, currency, locale)) → \(Self.formatted(to, currency, locale))", table: "Money")]
+        + changes.filter { if case .amount = $0 { false } else { true } }.map { describe($0, currency: currency, locale: locale) }
     case .updated(let changes?) where !changes.isEmpty: changes.map { describe($0, currency: currency, locale: locale) }
     case .updated: [String(localized: "Edited", table: "Money")]
     }
+  }
+
+  private static func formatted(_ minor: Int64, _ currency: CurrencyCode?, _ locale: Locale) -> String {
+    currency.map { MoneyText.formatted(minor, $0, locale: locale) } ?? String(minor)
   }
 
   /// memoir-web `describeAuditChange`.

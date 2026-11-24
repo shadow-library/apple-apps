@@ -15,13 +15,16 @@ public struct MoneyBook: Sendable, Equatable {
   public let subscriptions: [SubscriptionRecord]
   public let confirmations: [CycleConfirmation]
   public let categoryRecords: [ExpenseCategoryRecord]
+  /// Per expense whose latest amount-moving edit was a refund: the total refunded by the refunds since the amount was last set by anything else.
+  public let refundedMinor: [UUID: Int64]
   public let unreadable: Int
   /// The built-in categories in their order, then any other category a record names, by key.
   public let categoryKeys: [CategoryKey]
 
   public init(
     settings: AccountSettingsRecord?, expenses: [ExpenseRecord], rates: [FxRateRecord], subscriptions: [SubscriptionRecord] = [],
-    confirmations: [CycleConfirmation] = [], categoryRecords: [ExpenseCategoryRecord] = [], unreadable: Int = 0
+    confirmations: [CycleConfirmation] = [], categoryRecords: [ExpenseCategoryRecord] = [], refundedMinor: [UUID: Int64] = [:],
+    unreadable: Int = 0
   ) {
     self.settings = settings
     self.expenses = expenses
@@ -29,6 +32,7 @@ public struct MoneyBook: Sendable, Equatable {
     self.subscriptions = subscriptions
     self.confirmations = confirmations
     self.categoryRecords = categoryRecords
+    self.refundedMinor = refundedMinor
     self.unreadable = unreadable
     categoryKeys = Self.builtInCategories + Set(categoryRecords.map(\.categoryKey)).subtracting(Self.builtInCategories).sorted { $0.key < $1.key }
   }
@@ -48,9 +52,12 @@ public struct MoneyBook: Sendable, Equatable {
         guard case .subscriptionConfirmCycle(let confirmation) = body else { return nil }
         return confirmation
       }
+      let changes = try ExpenseChangeRecord.listing(in: transaction)
       return MoneyBook(
         settings: ledger.settings, expenses: ledger.expenses, rates: ledger.rates, subscriptions: subscriptions.records, confirmations: confirmations,
-        categoryRecords: categories.entries.map(\.record), unreadable: ledger.unreadable + subscriptions.unreadable + categories.unreadable + commands.unreadable)
+        categoryRecords: categories.entries.map(\.record),
+        refundedMinor: ExpenseRefundState.refunded(changes.entries),
+        unreadable: ledger.unreadable + subscriptions.unreadable + categories.unreadable + commands.unreadable + changes.unreadable)
     } catch {
       throw MemoirReadError(error)
     }

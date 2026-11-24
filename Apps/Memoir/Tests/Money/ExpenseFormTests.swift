@@ -234,6 +234,26 @@ struct ExpenseFormTests {
     #expect(lines.contains("Rate you entered removed (was 0.09)"))
   }
 
+  @Test("should describe a refund as one line with its amounts and the savings draw it returned, without a second amount line")
+  func describesARefund() async throws {
+    let context = try await MoneyFixture.context()
+    let expense = ExpenseRecord(
+      id: UUID.v7(at: context.clock.now()), amountMinor: 2000, currency: MoneyFixture.euro, occurredOn: TestClock.day0, category: MoneyFixture.food,
+      fromSavingsMinor: 1800, loggedAtMillis: MemoirClock.millis(context.clock.now()))
+    let id = expense.id
+    _ = try await context.writer.write { issuer, transaction in try ExpenseEdits.create(expense, issuer: issuer, in: &transaction) }
+    _ = try await context.writer.write { issuer, transaction in try ExpenseEdits.refund(id, amount: .partial(500), issuer: issuer, in: &transaction) }
+
+    let detail = ExpenseDetailModel(id: id, context: context)
+    let running = Task { await detail.run() }
+    defer { running.cancel() }
+    try await TestClock.until("the refunded detail") { detail.expense?.amountMinor == 1500 && detail.book.state.value != nil }
+    let lines = detail.historyLines(locale: MoneyFixture.english).map(\.text)
+    let refund = try #require(lines.firstIndex(of: "Refund: €20.00 → €15.00"))
+    #expect(lines[refund + 1] == "From savings €18.00 → €15.00")
+    #expect(!lines.contains { $0.hasPrefix("Amount") }, "the refund line already says the amount")
+  }
+
   @Test("should offer no rate for an expense in the home currency")
   func offersNoRateAtHome() async throws {
     let context = try await MoneyFixture.context()
