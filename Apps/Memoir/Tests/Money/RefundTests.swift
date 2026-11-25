@@ -18,7 +18,8 @@ struct RefundTests {
     let expense = ExpenseRecord(
       id: UUID.v7(at: context.clock.now()), amountMinor: amount, currency: MoneyFixture.euro, occurredOn: TestClock.day0, category: MoneyFixture.food,
       fromSavingsMinor: fromSavings, loggedAtMillis: MemoirClock.millis(context.clock.now()))
-    return try await context.writer.write { issuer, transaction in try ExpenseEdits.create(expense, issuer: issuer, in: &transaction).expense }
+    _ = try await context.writer.write { _, transaction in try expense.create(in: &transaction) }
+    return expense
   }
 
   private func current(_ id: UUID, _ context: MemoirScreenContext) async throws -> ExpenseRecord {
