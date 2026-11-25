@@ -8,6 +8,7 @@ import SwiftUI
 struct ExpenseDetailView: View {
   @State private var model: ExpenseDetailModel
   @State private var isEditing = false
+  @State private var isRefunding = false
   @State private var isConfirmingDelete = false
   @Environment(\.dismiss) private var dismiss
   @Environment(\.locale) private var locale
@@ -44,6 +45,17 @@ struct ExpenseDetailView: View {
           .keyboardShortcut("e", modifiers: [.command])
           .shadowBarItem()
         }
+        if model.canRefund {
+          ToolbarItem {
+            Button {
+              isRefunding = true
+            } label: {
+              Label(title: { Text("Refund", tableName: "Money") }, icon: { Image(systemName: "arrow.uturn.backward") })
+            }
+            .disabled(model.isWorking)
+            .shadowBarItem()
+          }
+        }
         ToolbarItem {
           Button(role: .destructive) {
             isConfirmingDelete = true
@@ -72,6 +84,11 @@ struct ExpenseDetailView: View {
     .sheet(isPresented: $isEditing) {
       if let expense = model.expense {
         NavigationStack { ExpenseFormScreen(editing: expense, context: model.context) }.shadowSheetStyle(.form)
+      }
+    }
+    .sheet(isPresented: $isRefunding) {
+      if let expense = model.expense {
+        NavigationStack { RefundSheet(expense: expense, context: model.context, locale: locale) }.shadowSheetStyle(.form)
       }
     }
     .shadowScreen(.pushed)
@@ -106,6 +123,10 @@ struct ExpenseDetailView: View {
     return ShadowCard {
       Text(verbatim: shown).shadowFont(.largeTitle).monospacedDigit().foregroundStyle(ShadowColor.textPrimary)
       MoneyProse(Text(verbatim: rateLine(expense, typed: typed)))
+      if let refund = model.refund, let before = model.amountBeforeRefund {
+        ShadowBadge(Text(verbatim: RefundLabels.badge(refund, currency: expense.currency, locale: locale)), systemImage: "arrow.uturn.backward")
+        MoneyProse(Text("Was \(MoneyText.formatted(before, expense.currency, locale: locale)), now \(typed).", tableName: "Money"))
+      }
       if model.isAwaitingRate {
         Button {
           isEditing = true

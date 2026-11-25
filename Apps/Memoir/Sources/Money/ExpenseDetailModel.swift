@@ -101,6 +101,23 @@ final class ExpenseDetailModel {
     return expense.receipt == nil && !isCycleExpense
   }
 
+  var refundedMinor: Int64? {
+    guard expense != nil, let refunded = book.state.value?.refundedMinor[id], refunded > 0 else { return nil }
+    return refunded
+  }
+
+  var refund: ExpenseRefundState? {
+    guard let expense else { return nil }
+    return ExpenseRefundState(expense, refundedMinor: refundedMinor)
+  }
+
+  var amountBeforeRefund: Int64? {
+    guard let expense, let refundedMinor else { return nil }
+    return expense.amountMinor + refundedMinor
+  }
+
+  var canRefund: Bool { (expense?.amountMinor ?? 0) > 0 }
+
   func categoryName(_ key: CategoryKey) -> String {
     MoneyLabels.categoryName(key, label: book.state.value?.categoryRecords.first { $0.categoryKey == key }?.label)
   }
@@ -162,11 +179,18 @@ final class ExpenseDetailModel {
     case .cycleConfirmed: [String(localized: "Subscription charge confirmed", table: "Money")]
     case .receiptScanned: [String(localized: "Receipt scanned", table: "Money")]
     case .refunded(let from, let to, let changes):
-      [String(localized: "Refund: \(Self.formatted(from, currency, locale)) → \(Self.formatted(to, currency, locale))", table: "Money")]
+      [Self.refundLine(from: from, to: to, currency: currency, locale: locale)]
         + changes.filter { if case .amount = $0 { false } else { true } }.map { describe($0, currency: currency, locale: locale) }
     case .updated(let changes?) where !changes.isEmpty: changes.map { describe($0, currency: currency, locale: locale) }
     case .updated: [String(localized: "Edited", table: "Money")]
     }
+  }
+
+  private static func refundLine(from: Int64, to: Int64, currency: CurrencyCode?, locale: Locale) -> String {
+    let before = formatted(from, currency, locale)
+    let after = formatted(to, currency, locale)
+    guard to > 0 else { return String(localized: "Refunded in full (\(before) → \(after))", table: "Money") }
+    return String(localized: "Refunded \(formatted(from - to, currency, locale)) (\(before) → \(after))", table: "Money")
   }
 
   private static func formatted(_ minor: Int64, _ currency: CurrencyCode?, _ locale: Locale) -> String {

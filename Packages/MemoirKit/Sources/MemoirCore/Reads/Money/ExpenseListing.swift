@@ -23,7 +23,7 @@ public enum ExpenseRefundState: Sendable, Hashable {
   case full
   case partial(refundedMinor: Int64)
 
-  init?(_ expense: ExpenseRecord, refundedMinor: Int64?) {
+  public init?(_ expense: ExpenseRecord, refundedMinor: Int64?) {
     guard let refundedMinor, refundedMinor > 0 else { return nil }
     self = expense.amountMinor == 0 ? .full : .partial(refundedMinor: refundedMinor)
   }

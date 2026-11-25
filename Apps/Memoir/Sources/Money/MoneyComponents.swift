@@ -80,6 +80,7 @@ struct ExpenseRowContent: Equatable {
   let secondary: String?
   let isRatePending: Bool
   let hasReceipt: Bool
+  let refund: String?
 
   init(_ row: ExpenseRow, home: CurrencyCode?, categoryName: (CategoryKey) -> String, locale: Locale) {
     let expense = row.expense
@@ -88,6 +89,7 @@ struct ExpenseRowContent: Equatable {
     title = expense.note ?? expense.merchant ?? category
     date = MoneyDates.text(expense.occurredOn, locale: locale)
     hasReceipt = expense.receipt != nil
+    refund = row.refund.map { RefundLabels.badge($0, currency: expense.currency, locale: locale) }
     let typed = MoneyText.formatted(expense.amountMinor, expense.currency, locale: locale)
     let foreign = home.map { $0 != expense.currency } ?? false
     switch (row.inHome, home) {
@@ -121,6 +123,9 @@ struct ExpenseRowView: View {
     } trailing: {
       VStack(alignment: .trailing, spacing: Spacing.space05) {
         Text(verbatim: content.amount).shadowFont(.body).monospacedDigit().foregroundStyle(ShadowColor.textPrimary)
+        if let refund = content.refund {
+          ShadowBadge(Text(verbatim: refund))
+        }
         if let secondary = content.secondary {
           Text(verbatim: secondary).shadowFont(.caption).monospacedDigit()
             .foregroundStyle(content.isRatePending ? ShadowColor.warningText : ShadowColor.textSecondary)

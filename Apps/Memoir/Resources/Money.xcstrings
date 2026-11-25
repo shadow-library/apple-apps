@@ -166,6 +166,17 @@
         }
       }
     },
+    "%@ goes back to savings.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ goes back to savings."
+          }
+        }
+      }
+    },
     "%@ is kept as typed. Its %@ value follows once the rate is known.": {
       "extractionState": "manual",
       "localizations": {
@@ -919,6 +930,17 @@
         }
       }
     },
+    "A refund has to be more than zero.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A refund has to be more than zero."
+          }
+        }
+      }
+    },
     "A saved expense keeps its currency. To use another, delete it and add it again.": {
       "extractionState": "manual",
       "localizations": {
@@ -1169,6 +1191,17 @@
           "stringUnit": {
             "state": "translated",
             "value": "Amount as entered"
+          }
+        }
+      }
+    },
+    "Amount refunded": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Amount refunded"
           }
         }
       }
@@ -1966,6 +1999,17 @@
         }
       }
     },
+    "Full refund": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Full refund"
+          }
+        }
+      }
+    },
     "Give Home a limit in Budgets.": {
       "extractionState": "manual",
       "localizations": {
@@ -2604,6 +2648,17 @@
         }
       }
     },
+    "Partial refund": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Partial refund"
+          }
+        }
+      }
+    },
     "Pause": {
       "extractionState": "manual",
       "localizations": {
@@ -2725,17 +2780,6 @@
         }
       }
     },
-    "Refund: %@ → %@": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Refund: %@ → %@"
-          }
-        }
-      }
-    },
     "Reference rate": {
       "extractionState": "manual",
       "localizations": {
@@ -2743,6 +2787,61 @@
           "stringUnit": {
             "state": "translated",
             "value": "Reference rate"
+          }
+        }
+      }
+    },
+    "Refund": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Refund"
+          }
+        }
+      }
+    },
+    "Refunded": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Refunded"
+          }
+        }
+      }
+    },
+    "Refunded %@": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Refunded %@"
+          }
+        }
+      }
+    },
+    "Refunded %@ (%@ → %@)": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Refunded %@ (%@ → %@)"
+          }
+        }
+      }
+    },
+    "Refunded in full (%@ → %@)": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Refunded in full (%@ → %@)"
           }
         }
       }
@@ -3177,6 +3276,17 @@
         }
       }
     },
+    "That is more than the %@ left on this expense.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "That is more than the %@ left on this expense."
+          }
+        }
+      }
+    },
     "That subscription is no longer here": {
       "extractionState": "manual",
       "localizations": {
@@ -3206,6 +3316,17 @@
           "stringUnit": {
             "state": "translated",
             "value": "The cycle of %@ is already confirmed, so the next one comes after it."
+          }
+        }
+      }
+    },
+    "The expense stays in your history with what was refunded.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The expense stays in your history with what was refunded."
           }
         }
       }
@@ -3558,6 +3679,17 @@
           "stringUnit": {
             "state": "translated",
             "value": "Waiting to be confirmed"
+          }
+        }
+      }
+    },
+    "Was %@, now %@.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Was %@, now %@."
           }
         }
       }

@@ -83,6 +83,20 @@
     MoneyPreviewHost { BudgetFormScreen(editing: nil, context: $0) }
   }
 
+  #Preview("Refund") {
+    MoneyPreviewHost { context in
+      let euro = CurrencyCode("EUR")
+      let food = CategoryKey("food")
+      let day = LocalDate(year: 2026, month: 1, day: 5)
+      return Group {
+        if let euro, let food, let day {
+          let expense = ExpenseRecord(id: UUID(), amountMinor: 2000, currency: euro, occurredOn: day, category: food, fromSavingsMinor: 1800, loggedAtMillis: 0)
+          NavigationStack { RefundSheet(expense: expense, context: context, locale: .current) }
+        }
+      }
+    }
+  }
+
   #Preview("Home budget") {
     MoneyPreviewHost { BudgetFormScreen(editing: HomeBudget.id, context: $0) }
   }

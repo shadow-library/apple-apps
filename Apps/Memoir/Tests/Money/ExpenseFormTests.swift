@@ -249,7 +249,7 @@ struct ExpenseFormTests {
     defer { running.cancel() }
     try await TestClock.until("the refunded detail") { detail.expense?.amountMinor == 1500 && detail.book.state.value != nil }
     let lines = detail.historyLines(locale: MoneyFixture.english).map(\.text)
-    let refund = try #require(lines.firstIndex(of: "Refund: €20.00 → €15.00"))
+    let refund = try #require(lines.firstIndex(of: "Refunded €5.00 (€20.00 → €15.00)"))
     #expect(lines[refund + 1] == "From savings €18.00 → €15.00")
     #expect(!lines.contains { $0.hasPrefix("Amount") }, "the refund line already says the amount")
   }

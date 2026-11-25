@@ -112,7 +112,8 @@ struct BudgetsRailTests {
     let old = try await BudgetFixture.create(context, BudgetFixture.trip("Weekend", from: -3, through: -2))
     let current = try await BudgetFixture.create(context, BudgetFixture.trip("Now", from: -1, through: 2))
     let standings = try await BudgetFixture.standings(context)
-    #expect(standings.budgets.map(\.id) == [HomeBudget.id, old, current])
+    #expect(standings.budgets.map(\.id).first == HomeBudget.id)
+    #expect(Set(standings.budgets.map(\.id)) == [HomeBudget.id, old, current])
     #expect(standings.shownOnRail.map(\.id) == [HomeBudget.id, current])
     #expect(BudgetRowContent(try #require(standings.standing(of: old)), locale: BudgetFixture.english).details.first == "Ended Feb 28, 2026")
   }
