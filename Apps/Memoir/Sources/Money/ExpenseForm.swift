@@ -7,7 +7,8 @@ import ShadowStore
 
 /// memoir-web `ExpenseEntryPanel` (`features/finance/expense-entry-panel.tsx`): the amount typed in the owner's locale and read exactly, the currency
 /// (fixed once saved), the category, the date, the note and the merchant, and, for a foreign currency, a rate the owner types for this expense alone,
-/// read exactly in their locale (`RateInput`), and the budget it counts in. Writes go only through `ExpenseEdits`.
+/// read exactly in their locale (`RateInput`), the budget it counts in, and the part paid from savings with the goal it buys. Writes go only through
+/// `ExpenseEdits`, which holds a draw on savings to the one-off rule, what is available and a goal's cooling-off.
 @MainActor
 @Observable
 final class ExpenseForm {
@@ -29,6 +30,9 @@ final class ExpenseForm {
   var merchant: String
   /// Nil before the vault has settings.
   var budget: BudgetPick?
+  /// Empty for nothing from savings; the part paid from savings in the expense's currency otherwise.
+  var fromSavingsText: String
+  var goal: UUID?
   private(set) var isSaving = false
   private(set) var failure: PresentedError?
   /// The receipt being added with a new expense; nil when editing, since a saved expense's receipt is fixed.
@@ -57,6 +61,8 @@ final class ExpenseForm {
       note = ""
       merchant = ""
       budget = BudgetPick(budgets: options.budgets, stored: nil)
+      fromSavingsText = ""
+      goal = nil
     case .edit(let expense):
       original = expense
       self.receipt = nil
@@ -71,6 +77,9 @@ final class ExpenseForm {
       note = expense.note ?? ""
       merchant = expense.merchant ?? ""
       budget = BudgetPick(budgets: options.budgets, stored: expense.budget)
+      let editableFormat = AmountFormat(locale: locale)
+      fromSavingsText = expense.fromSavingsMinor.map { MoneyText.editable($0, expense.currency, format: editableFormat) } ?? ""
+      goal = expense.goal
     }
   }
 
@@ -137,12 +146,14 @@ final class ExpenseForm {
   var hasChanges: Bool {
     guard let original else {
       return !amountText.isEmpty || !rateText.isEmpty || !note.isEmpty || !merchant.isEmpty || receipt?.hasPhoto == true || budget?.override != nil
+        || !fromSavingsText.isEmpty || goal != nil
     }
     return edited(original).map { $0 != original } ?? true
   }
 
   var canSave: Bool {
-    guard !isSaving, case .success = amount, case .success = manualRate, occurredOn <= latestDate, receipt?.blocksSave != true else { return false }
+    guard !isSaving, case .success = amount, case .success = manualRate, case .success = fromSavings, occurredOn <= latestDate, receipt?.blocksSave != true
+    else { return false }
     return original == nil || hasChanges
   }
 
@@ -169,13 +180,81 @@ final class ExpenseForm {
     return String(localized: "\(typed) is saved as typed. Its \(home.code) value uses the rate on \(day), once it is known.", table: "Money")
   }
 
+  var fromSavings: Result<Int64?, AmountInputRefusal> {
+    guard !fromSavingsText.trimmingCharacters(in: .whitespaces).isEmpty else { return .success(nil) }
+    do throws(AmountInputRefusal) {
+      return .success(try AmountInput.minorUnits(fromSavingsText, currency: currency, format: format))
+    } catch {
+      return .failure(error)
+    }
+  }
+
+  var fromSavingsIssue: String? {
+    guard case .failure(let refusal) = fromSavings else { return nil }
+    return MoneyLabels.amountIssue(refusal, currency: currency, format: format)
+  }
+
+  /// The active goals, and the one the expense already names when it no longer fills, so opening and saving never drops it.
+  var goalChoices: [GoalChoice] {
+    guard let savings = options.savings else { return [] }
+    var choices = savings.activeGoals.map { GoalChoice(id: $0.id, name: $0.name) }
+    if let stored = original?.goal, !choices.contains(where: { $0.id == stored }) {
+      let name = savings.goal(stored).map { String(localized: "\($0.name) (no longer filling)", table: "Money") }
+      choices.append(GoalChoice(id: stored, name: name ?? String(localized: "A deleted goal", table: "Money")))
+    }
+    return choices
+  }
+
+  /// The budget the expense counts in, as the chip assigns it, whose one-off threshold a draw that buys no goal must reach.
+  var assignedBudget: LiveBudget? {
+    guard let budget else { return nil }
+    let id = budget.assignment(currency: currency, on: occurredOn, subscriptionOverride: subscriptionOverride).budget
+    return options.budgets.budget(id) ?? (id == HomeBudget.id ? options.budgets.home : nil)
+  }
+
+  /// The currencies a refusal of the draw counts in: the budget's for the one-off threshold, home for what is available.
+  var savingsAmounts: SavingsAmounts? {
+    guard let home = options.savings?.home else { return nil }
+    return SavingsAmounts(budget: assignedBudget?.currency ?? home, home: home)
+  }
+
+  /// What the core holds a draw on savings to, said before saving: a goal's purchase needs no one-off but waits out the cooling-off, any other draw is a
+  /// one-off of the budget's threshold; what is available; and that a draw in a currency without a rate waits for it.
+  func savingsNotes(locale: Locale) -> [String] {
+    guard let savings = options.savings else { return [] }
+    var notes = [String]()
+    if goal != nil {
+      notes.append(
+        String(
+          localized: "Buying a goal needn’t be a one-off. A goal can be bought from \(SavingsRules.coolingOffDays) days after it was made.", table: "Money"))
+    } else if let budget = assignedBudget {
+      let name = BudgetCopy.name(of: budget)
+      if let threshold = savings.oneOffThreshold(of: budget, on: occurredOn).minor {
+        let amount = MoneyText.formatted(threshold, budget.currency, locale: locale)
+        notes.append(String(localized: "Only a one-off can be paid from savings: in \(name), \(amount) or more.", table: "Money"))
+      } else {
+        notes.append(String(localized: "\(name) has no one-off amount yet, so only a goal’s purchase can be paid from savings.", table: "Money"))
+      }
+    }
+    let available = SavingsCopy.available(savings.overview.balance, locale: locale)
+    notes.append(
+      (original?.fromSavingsMinor ?? 0) > 0
+        ? String(localized: "\(available), besides what this expense already draws.", table: "Money") : available)
+    if offersRate, case .success(nil) = manualRate, original?.rate == nil {
+      notes.append(String(localized: "A part from savings in \(currency.code) needs a rate: one you enter, or the day’s reference rate once it’s known.", table: "Money"))
+    }
+    return notes
+  }
+
   func edited() {
     failure = nil
   }
 
   /// The expense's id once written; `nil` when the amount does not read or the write failed, with the failure shown.
   func save() async -> UUID? {
-    guard canSave, case .success(let minor) = amount, case .success(let manualRate) = manualRate else { return nil }
+    guard canSave, case .success(let minor) = amount, case .success(let manualRate) = manualRate, case .success(let fromSavings) = fromSavings else {
+      return nil
+    }
     isSaving = true
     failure = nil
     defer { isSaving = false }
@@ -183,7 +262,7 @@ final class ExpenseForm {
       let moved = budget?.movedOverride
       if let original {
         let id = original.id
-        let fields = fields(minor: minor, manualRate: manualRate, budget: budget.map(\.written) ?? original.budget)
+        let fields = fields(minor: minor, manualRate: manualRate, fromSavings: fromSavings, budget: budget.map(\.written) ?? original.budget)
         _ = try await writer.write { issuer, transaction in
           try BudgetPick.requireLive(moved, in: transaction)
           return try ExpenseEdits.update(id, issuer: issuer, in: &transaction) { expense in fields.apply(to: &expense) }
@@ -193,7 +272,7 @@ final class ExpenseForm {
       let now = writer.clock.now()
       let expense = ExpenseRecord(
         id: UUID.v7(at: now), amountMinor: minor, currency: currency, occurredOn: occurredOn, category: category, merchant: Self.text(merchant), note: Self.text(note),
-        manualRate: manualRate, budget: budget?.override, loggedAtMillis: MemoirClock.millis(now))
+        manualRate: manualRate, budget: budget?.override, fromSavingsMinor: fromSavings, goal: goal, loggedAtMillis: MemoirClock.millis(now))
       guard let receipt else {
         return try await writer.write { issuer, transaction in
           try BudgetPick.requireLive(moved, in: transaction)
@@ -207,22 +286,23 @@ final class ExpenseForm {
         return nil
       }
     } catch {
-      failure = WritingErrors.presented(error)
+      failure = WritingErrors.presented(error, savings: savingsAmounts)
       if BudgetPick.isAbsentBudget(error), let budgets = try? await MoneyOptions.budgets(in: stores) { budget?.refresh(budgets) }
       return nil
     }
   }
 
   private func edited(_ expense: ExpenseRecord) -> ExpenseRecord? {
-    guard case .success(let minor) = amount, case .success(let manualRate) = manualRate else { return nil }
+    guard case .success(let minor) = amount, case .success(let manualRate) = manualRate, case .success(let fromSavings) = fromSavings else { return nil }
     var edited = expense
-    fields(minor: minor, manualRate: manualRate, budget: budget.map(\.written) ?? expense.budget).apply(to: &edited)
+    fields(minor: minor, manualRate: manualRate, fromSavings: fromSavings, budget: budget.map(\.written) ?? expense.budget).apply(to: &edited)
     return edited
   }
 
-  private func fields(minor: Int64, manualRate: ManualRate?, budget: UUID?) -> Fields {
+  private func fields(minor: Int64, manualRate: ManualRate?, fromSavings: Int64?, budget: UUID?) -> Fields {
     Fields(
-      minor: minor, category: category, occurredOn: occurredOn, note: Self.text(note), merchant: Self.text(merchant), manualRate: manualRate, budget: budget)
+      minor: minor, category: category, occurredOn: occurredOn, note: Self.text(note), merchant: Self.text(merchant), manualRate: manualRate, budget: budget,
+      fromSavings: fromSavings, goal: goal)
   }
 
   private static func text(_ value: String) -> String? {
@@ -238,6 +318,8 @@ final class ExpenseForm {
     let merchant: String?
     let manualRate: ManualRate?
     let budget: UUID?
+    let fromSavings: Int64?
+    let goal: UUID?
 
     func apply(to expense: inout ExpenseRecord) {
       expense.amountMinor = minor
@@ -247,6 +329,8 @@ final class ExpenseForm {
       expense.merchant = merchant
       expense.manualRate = manualRate
       expense.budget = budget
+      expense.fromSavingsMinor = fromSavings
+      expense.goal = goal
     }
   }
 }

@@ -230,11 +230,21 @@ struct TodayDayEndCard: View {
   }
 }
 
-/// Money in the game on Today: the closes not yet seen here, and "No spend" for the days the logging window still takes; nothing once neither is left.
+/// Money on Today: the closes not yet seen here, "No spend" for the days the logging window still takes, and the savings goals filling; nothing once
+/// none is left.
 struct TodayMoneyCards: View {
   let game: MoneyGameModel
+  let savings: SavingsSnapshot?
 
   var body: some View {
+    if let savings, !savings.active.isEmpty {
+      VStack(alignment: .leading, spacing: Spacing.space2) {
+        Text("Goals", tableName: "Today").shadowFont(.headline).foregroundStyle(ShadowColor.textPrimary).accessibilityAddTraits(.isHeader)
+        GoalChips(snapshot: savings)
+      }
+      .frame(maxWidth: .infinity, alignment: .leading)
+      .shadowCard()
+    }
     if !game.newCloses.isEmpty {
       MoneyCloseResults(model: game).frame(maxWidth: .infinity, alignment: .leading).shadowCard()
     }

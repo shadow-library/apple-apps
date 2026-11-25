@@ -90,6 +90,9 @@ private struct ExpenseFormFields: View {
           pick: Binding(get: { form.budget ?? pick }, set: { form.budget = $0 }), currency: form.currency, date: form.occurredOn,
           subscriptionOverride: form.subscriptionOverride)
       }
+      if form.options.savings != nil {
+        SavingsDrawSection(form: form)
+      }
       Section {
         TextField(text: $form.note, prompt: Text("What was it for?", tableName: "Money")) { Text("Note", tableName: "Money") }
         TextField(text: $form.merchant, prompt: Text("Optional", tableName: "Money")) { Text("Merchant", tableName: "Money") }
@@ -125,6 +128,8 @@ private struct ExpenseFormFields: View {
     .onChange(of: form.isSaving) { dismissGuard.isBusy = form.isSaving }
     .onChange(of: form.amountText) { form.edited() }
     .onChange(of: form.rateText) { form.edited() }
+    .onChange(of: form.fromSavingsText) { form.edited() }
+    .onChange(of: form.goal) { form.edited() }
   }
 
   private func requestDismiss() {

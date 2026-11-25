@@ -109,7 +109,10 @@ struct WritingErrorsTests {
         == PresentedError(
           headline: "Savings are for one-off purchases, and this expense is below this budget’s one-off amount.", detail: "memoir_finance.not_one_off"))
     #expect(refused(.savingsInsufficient(availableMinor: 0))?.headline == "Your savings can’t cover that much right now.")
-    #expect(refused(.coolingOffNotMet(buyFrom: TestClock.day(3)))?.headline == "A goal can be bought 3 days after it was made. Give it a little longer.")
+    let buyFrom = MoneyDates.text(TestClock.day(3), locale: .autoupdatingCurrent)
+    #expect(
+      refused(.coolingOffNotMet(buyFrom: TestClock.day(3)))?.headline
+        == String(localized: "This goal can be bought from \(buyFrom), a few days after it was made.", table: "Writing"))
     #expect(refused(.goalLimitReached(maximum: 3))?.headline == "You can have up to 3 goals at once. Finish or set one aside first.")
     #expect(refused(.goalAbsent(UUID()))?.headline == "That’s no longer available.")
     #expect(refused(.goalExists(UUID()))?.headline == "Some of the details weren’t valid.")

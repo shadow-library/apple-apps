@@ -77,13 +77,31 @@ public enum GoalEdits {
   /// the goal is already there.
   @discardableResult
   public static func reorder(_ id: UUID, toIndex index: Int, in transaction: inout WriteTransaction) throws(FinanceError) -> SavingsGoalRecord? {
+    try reorder(id, in: &transaction) { _ in index }
+  }
+
+  /// Moves an active goal right after `previous` in the fill order of the active goals, or first when it is nil, as `reorder(_:toIndex:)` does: a screen
+  /// that lists only some of the active goals (those in the home currency, say) places the goal by its neighbour, whatever lies between. Refused when
+  /// `previous` is not another active goal.
+  @discardableResult
+  public static func reorder(_ id: UUID, after previous: UUID?, in transaction: inout WriteTransaction) throws(FinanceError) -> SavingsGoalRecord? {
+    try reorder(id, in: &transaction) { others throws(FinanceError) in
+      guard let previous else { return 0 }
+      guard let index = others.firstIndex(where: { $0.id == previous }) else { throw .goalNotActive(previous) }
+      return index + 1
+    }
+  }
+
+  private static func reorder(_ id: UUID, in transaction: inout WriteTransaction, index: ([SavingsGoalRecord]) throws(FinanceError) -> Int) throws(FinanceError)
+    -> SavingsGoalRecord?
+  {
     let goal = try present(id, in: transaction)
     guard goal.state == .known(.active) else { throw .goalNotActive(id) }
     let active = try activeGoals(in: transaction)
     guard let from = active.firstIndex(where: { $0.id == id }) else { throw .goalNotActive(id) }
     var others = active
     others.remove(at: from)
-    let to = min(max(index, 0), others.count)
+    let to = min(max(try index(others), 0), others.count)
     guard to != from else { return nil }
     let lower = to > 0 ? others[to - 1].rank : nil
     let upper = to < others.count ? others[to].rank : nil

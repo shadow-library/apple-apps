@@ -20,6 +20,8 @@ final class WeeklyReviewModel {
   let day: ReflectDayFollower
   let review = ReadObserver<WeeklyReview>()
   let lookups = ReadObserver<ReflectLookups>()
+  /// Savings and goals on the account's day, read only while Money is on.
+  let savings = ReadObserver<SavingsSnapshot?>()
   private(set) var modules = ModuleSelection.all
   private(set) var step = ReviewStep.kept
   private(set) var furthest = ReviewStep.kept
@@ -72,6 +74,13 @@ final class WeeklyReviewModel {
   func observeLookups() async {
     let main = context.stores.main
     await lookups.run { main.observe(ReflectLookups.self, ReflectLookupsQuery(streaks: false)) }
+  }
+
+  func observeSavings() async {
+    guard modules.contains(.money) else { return }
+    let main = context.stores.main
+    let clock = context.clock
+    await savings.run { main.observeReads { transaction in try SavingsSnapshot.load(in: transaction, clock: clock) } }
   }
 
   func show(_ step: ReviewStep) async {

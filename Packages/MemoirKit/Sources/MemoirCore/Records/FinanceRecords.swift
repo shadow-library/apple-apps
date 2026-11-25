@@ -286,7 +286,8 @@ public struct SubscriptionRecord: IdentifiedRecord, RemovableMemoirRecord {
   }
 }
 
-/// Keyed by its category key, so two devices seeding the same built-in category create one record. `essential` is the owner's choice, nil until made.
+/// Keyed by its category key, so two devices seeding the same built-in category create one record. `essential` is the owner's choice, nil until made. A
+/// record written without `archived` (`CategoryEdits.setEssential` on a category this device had no record of) reads as unarchived.
 public struct ExpenseCategoryRecord: NaturalKeyRecord {
   public static let kind = MemoirKind.expenseCategory
 
@@ -304,7 +305,7 @@ public struct ExpenseCategoryRecord: NaturalKeyRecord {
 
   public init(key: MemoirKey, reading reader: MemberReader<ExpenseCategoryField>) throws(MemoirUnreadable) {
     guard case .expenseCategory(let categoryKey) = key else { throw .identity(key.ref) }
-    self.init(key: categoryKey, label: try reader.required(.label), archived: try reader.required(.archived), essential: try reader.optional(.essential))
+    self.init(key: categoryKey, label: try reader.required(.label), archived: try reader.optional(.archived) ?? false, essential: try reader.optional(.essential))
   }
 
   public var key: MemoirKey { .expenseCategory(categoryKey) }

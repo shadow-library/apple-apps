@@ -14,6 +14,10 @@ enum MoneyRoute: Hashable {
   case budgets
   case budget(UUID)
   case newBudget
+  case goals
+  case goal(UUID)
+  case newGoal
+  case editGoal(UUID)
 }
 
 struct MoneyRouteView: View {
@@ -32,6 +36,10 @@ struct MoneyRouteView: View {
     case .budgets: BudgetsView(context: context)
     case .budget(let id): BudgetFormScreen(editing: id, context: context)
     case .newBudget: BudgetFormScreen(editing: nil, context: context)
+    case .goals: GoalsView(context: context)
+    case .goal(let id): GoalView(id: id, context: context)
+    case .newGoal: GoalFormScreen(editing: nil, context: context)
+    case .editGoal(let id): GoalFormScreen(editing: id, context: context)
     }
   }
 }

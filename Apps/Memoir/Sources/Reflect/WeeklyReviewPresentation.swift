@@ -1,6 +1,18 @@
 import Foundation
 import MemoirCore
 
+/// The review's goal section: the goal savings fill first, how far along it is, how fast savings grow and what its forecast says.
+struct ReviewGoal: Equatable {
+  let name: String
+  let symbol: String
+  let thousandths: Int
+  let saved: String
+  let pace: String
+  let liveMonth: String?
+  let forecast: String?
+  let accessibilityLabel: String
+}
+
 struct ReviewFact: Identifiable, Equatable {
   let label: String
   let value: String
@@ -212,5 +224,24 @@ enum WeeklyReviewPresentation {
 
   private static func sentence(_ text: String) -> String {
     text.prefix(1).uppercased() + text.dropFirst()
+  }
+
+  /// Nil without an active goal: the section shows only once there is one to look at.
+  static func goal(_ snapshot: SavingsSnapshot?, locale: Locale) -> ReviewGoal? {
+    guard let snapshot, let share = snapshot.active.first else { return nil }
+    let overview = snapshot.overview
+    let forecast = overview.forecast(of: share.id)
+    let pace: String =
+      switch overview.pace.state {
+      case .known(let minor): String(localized: "Savings grow about \(ReflectFormat.money(minor, overview.home)) a month.", table: "Reflect")
+      case .calibrating: String(localized: "Savings have no monthly pace yet; it shows once a few more months have closed.", table: "Reflect")
+      }
+    return ReviewGoal(
+      name: share.goal.name, symbol: share.goal.symbol, thousandths: share.progressThousandths, saved: GoalCopy.saved(share, locale: locale), pace: pace,
+      liveMonth: overview.liveMonth.map {
+        String(localized: "This month is on pace to add \(ReflectFormat.money($0.projectedMinor, overview.home)).", table: "Reflect")
+      },
+      forecast: forecast.map { snapshot.forecastLine($0, locale: locale) },
+      accessibilityLabel: GoalCopy.accessibilityLabel(share, forecast: forecast, locale: locale))
   }
 }

@@ -148,6 +148,19 @@ extension MemoirRecord {
     }
   }
 
+  /// Writes every member but `omitted`, without marking the record present, so a device that has not received another's write of an omitted field
+  /// never reverts it, whichever clock is later; the record's reader takes an absent omitted field as its default.
+  @discardableResult
+  func createOmitting(_ omitted: [Field], in transaction: inout WriteTransaction) throws(MemoirRecordError) -> ChangeRecord {
+    var fields = members.values.merging(identityMembers) { $1 }
+    for field in omitted { fields[field.rawValue] = nil }
+    do throws(StoreError) {
+      return try transaction.set(ref, fields)
+    } catch {
+      throw .store(error)
+    }
+  }
+
   private func create(_ fields: [String: JSONValue], in transaction: inout WriteTransaction) throws(MemoirRecordError) -> [ChangeRecord] {
     do throws(StoreError) {
       var changes = [try transaction.set(ref, fields)]

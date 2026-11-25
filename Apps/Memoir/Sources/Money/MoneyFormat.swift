@@ -77,6 +77,13 @@ nonisolated enum MoneyDates {
     return instant(day).formatted(showsYear ? style.year() : style)
   }
 
+  /// A month and its year, as a goal's estimate names it.
+  static func month(_ day: LocalDate, locale: Locale) -> String {
+    var calendar = locale.calendar
+    calendar.timeZone = utc
+    return instant(day).formatted(Date.FormatStyle(locale: locale, calendar: calendar, timeZone: utc).month(.wide).year())
+  }
+
   /// When a command was issued, at the offset it recorded.
   static func moment(millis: Int64, offsetMinutes: Int, locale: Locale) -> String {
     let zone = TimeZone(secondsFromGMT: offsetMinutes * 60) ?? utc

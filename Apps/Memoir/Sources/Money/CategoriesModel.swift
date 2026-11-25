@@ -4,7 +4,8 @@ import Observation
 import ShadowAppShell
 import ShadowStore
 
-/// memoir-web `CategoriesScreen`: every category with this month's spending, archived and restored by hand; uncategorised and subscriptions always stay.
+/// memoir-web `CategoriesScreen`: every category with this month's spending, archived and restored by hand, and marked essential or not, which keeps a
+/// goal's lever off it; uncategorised and subscriptions always stay.
 @MainActor
 @Observable
 final class CategoriesModel {
@@ -75,6 +76,27 @@ final class CategoriesModel {
         archived
         ? String(localized: "Archived. It is hidden from new entries and kept in Insights.", table: "Money")
         : String(localized: "Restored.", table: "Money")
+    } catch {
+      failure = WritingErrors.presented(error)
+    }
+  }
+
+  /// Records the owner's choice through `CategoryEdits`, nil going back to the default; uncategorised is never a lever, so it is not offered.
+  func setEssential(_ key: CategoryKey, _ essential: Bool?) async {
+    guard !working.contains(key) else { return }
+    working.insert(key)
+    failure = nil
+    notice = nil
+    defer { working.remove(key) }
+    let label = MoneyLabels.storedLabel(key)
+    do {
+      try await context.writer.write { _, transaction in _ = try CategoryEdits.setEssential(key, essential, label: label, in: &transaction) }
+      notice =
+        switch essential {
+        case true?: String(localized: "Marked essential. Goal tips won’t suggest spending less on it.", table: "Money")
+        case false?: String(localized: "Not essential. Goal tips may suggest spending a little less on it.", table: "Money")
+        case nil: String(localized: "Back to the default.", table: "Money")
+        }
     } catch {
       failure = WritingErrors.presented(error)
     }

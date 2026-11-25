@@ -8,6 +8,14 @@ import ShadowStore
 /// shell's store headline when the store failed, and the code underneath. A cancelled write is nothing to show.
 enum WritingErrors {
   static func presented(_ error: any Error) -> PresentedError? {
+    presented(error, savings: nil)
+  }
+
+  /// With the currencies only the expense form knows, a refusal of a draw on savings names the one-off threshold and what is available.
+  static func presented(_ error: any Error, savings: SavingsAmounts?) -> PresentedError? {
+    if let savings, let headline = savingsHeadline(for: error, amounts: savings, locale: .autoupdatingCurrent) {
+      return PresentedError(headline: headline, detail: (error as? any ShadowError)?.code)
+    }
     guard !isCancellation(error) else { return nil }
     if let headline = headline(for: error) { return PresentedError(headline: headline, detail: (error as? any ShadowError)?.code) }
     if let store = storeFailure(of: error) { return PresentedError(store) }
@@ -66,7 +74,9 @@ enum WritingErrors {
       case .goalLimitReached: String(localized: "You can have up to 3 goals at once. Finish or set one aside first.", table: "Writing")
       case .goalNotActive: String(localized: "That goal is no longer active.", table: "Writing")
       case .goalNotPurchased: String(localized: "Pick this goal on the expense that bought it first.", table: "Writing")
-      case .coolingOffNotMet: String(localized: "A goal can be bought 3 days after it was made. Give it a little longer.", table: "Writing")
+      case .coolingOffNotMet(let buyFrom):
+        String(
+          localized: "This goal can be bought from \(MoneyDates.text(buyFrom, locale: .autoupdatingCurrent)), a few days after it was made.", table: "Writing")
       case .savingsNotPositive: String(localized: "The part from savings has to be more than zero.", table: "Writing")
       case .savingsExceedsAmount: String(localized: "The part from savings can’t be more than the expense.", table: "Writing")
       case .notOneOff: String(localized: "Savings are for one-off purchases, and this expense is below this budget’s one-off amount.", table: "Writing")
@@ -106,6 +116,27 @@ enum WritingErrors {
       String(localized: "The date on this device is outside the years Memoir can record. Check the device’s date and time.", table: "Writing")
     default:
       nil
+    }
+  }
+
+  static func savingsHeadline(for error: any Error, amounts: SavingsAmounts, locale: Locale) -> String? {
+    switch financeRefusal(error) {
+    case .notOneOff(let threshold?)?:
+      let amount = MoneyText.formatted(threshold, amounts.budget, locale: locale)
+      return String(localized: "Savings are for one-off purchases: in this budget, \(amount) or more.", table: "Writing")
+    case .savingsInsufficient(let available)?:
+      return String(localized: "Your savings can cover up to \(MoneyText.formatted(available, amounts.home, locale: locale)) right now.", table: "Writing")
+    default:
+      return nil
+    }
+  }
+
+  private static func financeRefusal(_ error: any Error) -> FinanceError? {
+    switch error {
+    case let error as FinanceError: error
+    case MemoirWriteError.command(.finance(let error)), MemoirWriteError.command(.refused(.finance(let error))): error
+    case CommandIssueError.finance(let error), CommandIssueError.refused(.finance(let error)): error
+    default: nil
     }
   }
 
@@ -155,6 +186,12 @@ enum WritingErrors {
     default: nil
     }
   }
+}
+
+/// The currencies a refused draw on savings counts in: the one-off threshold in the expense's budget's, what is available in the home currency.
+nonisolated struct SavingsAmounts: Equatable, Sendable {
+  let budget: CurrencyCode
+  let home: CurrencyCode
 }
 
 extension MemoirWriteError {

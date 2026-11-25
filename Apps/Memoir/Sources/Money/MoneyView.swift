@@ -6,16 +6,18 @@ import SwiftUI
 
 /// memoir-web `ExpensesScreen` (`features/finance/expenses-screen.tsx`): the range's spending, how the budgets stand, the subscriptions' monthly cost and
 /// the average day, the budgets, the expense list, where the money went, and the subscriptions and currencies rails; with Hero on, money in the game
-/// first.
+/// first, then the savings goals and what has been saved under budget.
 struct MoneyView: View {
   @State private var model: MoneyModel
   @State private var game: MoneyGameModel
+  @State private var savings: SavingsModel
   @Environment(\.locale) private var locale
   @Environment(MemoirModules.self) private var modules: MemoirModules?
 
   init(context: MemoirScreenContext) {
     _model = State(initialValue: MoneyModel(context: context))
     _game = State(initialValue: MoneyGameModel(context: context))
+    _savings = State(initialValue: SavingsModel(context: context))
   }
 
   private var showsGame: Bool { modules?.selection.contains(.hero) ?? true }
@@ -24,7 +26,7 @@ struct MoneyView: View {
     @Bindable var list = model.list
     MoneyLoadState(model.overview.state) { overview in
       if let overview {
-        MoneyOverviewContent(model: model, game: showsGame ? game : nil, overview: overview)
+        MoneyOverviewContent(model: model, game: showsGame ? game : nil, savings: savings.value, overview: overview)
       } else {
         MoneyNoCurrency()
       }
@@ -44,6 +46,7 @@ struct MoneyView: View {
     }
     .shadowScreen(.root)
     .task { await model.run() }
+    .task { await savings.run() }
     .task(id: showsGame) {
       guard showsGame else { return }
       await game.run()
@@ -75,6 +78,7 @@ private struct MoneyNoCurrency: View {
 private struct MoneyOverviewContent: View {
   let model: MoneyModel
   let game: MoneyGameModel?
+  let savings: SavingsSnapshot?
   let overview: MoneyOverview
   @Environment(\.locale) private var locale
 
@@ -101,6 +105,10 @@ private struct MoneyOverviewContent: View {
         }
         ShadowAdaptiveColumns {
           if let game { MoneyGameCard(model: game) }
+          if let savings {
+            GoalsCard(snapshot: savings)
+            SavingsCard(snapshot: savings)
+          }
           BudgetsRail(model: model, standings: overview.budgets)
           ExpensesCard(list: model.list, home: overview.home)
           BreakdownCard(spend: spend, home: overview.home)

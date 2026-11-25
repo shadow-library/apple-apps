@@ -430,13 +430,13 @@
         }
       }
     },
-    "A goal can be bought 3 days after it was made. Give it a little longer.": {
+    "This goal can be bought from %@, a few days after it was made.": {
       "extractionState": "manual",
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "A goal can be bought 3 days after it was made. Give it a little longer."
+            "value": "This goal can be bought from %@, a few days after it was made."
           }
         }
       }
@@ -474,6 +474,17 @@
         }
       }
     },
+    "Savings are for one-off purchases: in this budget, %@ or more.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Savings are for one-off purchases: in this budget, %@ or more."
+          }
+        }
+      }
+    },
     "Your savings can’t cover that much right now.": {
       "extractionState": "manual",
       "localizations": {
@@ -481,6 +492,17 @@
           "stringUnit": {
             "state": "translated",
             "value": "Your savings can’t cover that much right now."
+          }
+        }
+      }
+    },
+    "Your savings can cover up to %@ right now.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your savings can cover up to %@ right now."
           }
         }
       }

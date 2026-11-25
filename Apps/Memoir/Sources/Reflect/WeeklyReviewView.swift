@@ -48,6 +48,7 @@ private struct WeeklyReviewScreen: View {
     .onChange(of: moduleSelection, initial: true) { model.apply(moduleSelection) }
     .task { await model.followToday() }
     .task { await model.observeLookups() }
+    .task(id: model.modules.contains(.money)) { await model.observeSavings() }
     .task(id: ObservationKey(today: model.day.day?.today, generation: generation, readsBody: model.modules.contains(.body))) { await model.observe() }
   }
 
@@ -90,7 +91,7 @@ private struct WeeklyReviewScreen: View {
     }
     switch model.step {
     case .kept: ReviewKeptStep(review: review)
-    case .money: ReviewMoneyStep(review: review, lookups: model.lookups.state.value)
+    case .money: ReviewMoneyStep(review: review, lookups: model.lookups.state.value, savings: model.savings.state.value ?? nil)
     case .body: ReviewBodyStep(review: review, bodyClasses: model.bodyClasses)
     case .reflect: ReviewReflectStep(model: model)
     case .done: ReviewDoneStep(model: model, review: review)
@@ -281,6 +282,8 @@ private struct ReviewFacts: View {
 private struct ReviewMoneyStep: View {
   let review: WeeklyReview
   let lookups: ReflectLookups?
+  let savings: SavingsSnapshot?
+  @Environment(\.locale) private var locale
 
   var body: some View {
     InsightCard(title: Text("Money", tableName: "Reflect")) {
@@ -291,6 +294,34 @@ private struct ReviewMoneyStep: View {
       }
       if let pending = review.money.flatMap({ ReflectCopy.pending($0.spent.pending) }) {
         Text(verbatim: pending).shadowFont(.footnote).foregroundStyle(ShadowColor.textSecondary)
+      }
+    }
+    if let goal = WeeklyReviewPresentation.goal(savings, locale: locale) {
+      ReviewGoalCard(goal: goal)
+    }
+  }
+}
+
+private struct ReviewGoalCard: View {
+  let goal: ReviewGoal
+
+  var body: some View {
+    InsightCard(title: Text("Savings goal", tableName: "Reflect")) {
+      HStack(spacing: Spacing.space3) {
+        GoalRing(symbol: goal.symbol, thousandths: goal.thousandths)
+        VStack(alignment: .leading, spacing: Spacing.space05) {
+          Text(verbatim: goal.name).shadowFont(.headline).foregroundStyle(ShadowColor.textPrimary)
+          Text(verbatim: goal.saved).shadowFont(.subheadline).monospacedDigit().foregroundStyle(ShadowColor.textSecondary)
+        }
+      }
+      .accessibilityElement(children: .ignore)
+      .accessibilityLabel(Text(verbatim: goal.accessibilityLabel))
+      if let forecast = goal.forecast {
+        Text(verbatim: forecast).shadowFont(.body).foregroundStyle(ShadowColor.textPrimary).fixedSize(horizontal: false, vertical: true)
+      }
+      Text(verbatim: goal.pace).shadowFont(.subheadline).foregroundStyle(ShadowColor.textSecondary)
+      if let live = goal.liveMonth {
+        Text(verbatim: live).shadowFont(.subheadline).foregroundStyle(ShadowColor.textSecondary)
       }
     }
   }

@@ -7,23 +7,29 @@ import SwiftUI
 struct TodayView: View {
   @State private var model: TodayViewModel
   @State private var game: MoneyGameModel
+  @State private var savings: SavingsModel
   @State private var toasts = ShadowToastCenter()
   @Environment(MemoirModules.self) private var modules: MemoirModules?
 
   init(context: MemoirScreenContext) {
     _model = State(initialValue: TodayViewModel(context: context))
     _game = State(initialValue: MoneyGameModel(context: context))
+    _savings = State(initialValue: SavingsModel(context: context))
   }
 
   /// Today exists only with Quests, so Hero is on: money in the game needs only Money.
   private var showsMoney: Bool { modules?.selection.contains(.money) ?? true }
 
   var body: some View {
-    TodayScreen(model: model, game: showsMoney ? game : nil, toasts: toasts)
+    TodayScreen(model: model, game: showsMoney ? game : nil, savings: showsMoney ? savings : nil, toasts: toasts)
       .shadowToastPresenter(toasts)
       .task(id: showsMoney) {
         guard showsMoney else { return }
         await game.run()
+      }
+      .task(id: showsMoney) {
+        guard showsMoney else { return }
+        await savings.run()
       }
   }
 }
@@ -31,6 +37,7 @@ struct TodayView: View {
 private struct TodayScreen: View {
   let model: TodayViewModel
   let game: MoneyGameModel?
+  let savings: SavingsModel?
   let toasts: ShadowToastCenter
   @State private var presentation: QuestActionPresentation?
   @State private var isKeepingRecovery = false
@@ -94,7 +101,7 @@ private struct TodayScreen: View {
       ForEach(snapshot.notices, id: \.self) { TodayNoticeView(notice: $0) }
       TodayHeroCard(
         hero: snapshot.hero, summary: board.summary, comingBack: board.comingBack, showsCrown: snapshot.hasActiveQuests, money: game?.snapshot)
-      if let game { TodayMoneyCards(game: game) }
+      if let game { TodayMoneyCards(game: game, savings: savings?.value) }
       if let reason = board.comingBack, reason != .comeback, !ComingBackDismissal(defaults: model.context.defaults).isDismissed(on: snapshot.today.date) {
         TodayComingBack(reason: reason)
       }

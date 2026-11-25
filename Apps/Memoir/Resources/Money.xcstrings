@@ -12,6 +12,17 @@
         }
       }
     },
+    "%@ (no longer filling)": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ (no longer filling)"
+          }
+        }
+      }
+    },
     "%@ a day once it starts": {
       "extractionState": "manual",
       "localizations": {
@@ -177,6 +188,28 @@
         }
       }
     },
+    "%@ has no one-off amount yet, so only a goal’s purchase can be paid from savings.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ has no one-off amount yet, so only a goal’s purchase can be paid from savings."
+          }
+        }
+      }
+    },
+    "%@ held for it now; %@ already spent on it": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ held for it now; %@ already spent on it"
+          }
+        }
+      }
+    },
     "%@ is kept as typed. Its %@ value follows once the rate is known.": {
       "extractionState": "manual",
       "localizations": {
@@ -287,6 +320,17 @@
         }
       }
     },
+    "%@ of %@, %@ to go": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ of %@, %@ to go"
+          }
+        }
+      }
+    },
     "%@ over": {
       "extractionState": "manual",
       "localizations": {
@@ -327,6 +371,17 @@
           "stringUnit": {
             "state": "translated",
             "value": "%@ renew on %@. Nothing is wrong — it is worth knowing before the day."
+          }
+        }
+      }
+    },
+    "%@ saved": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ saved"
           }
         }
       }
@@ -463,6 +518,17 @@
         }
       }
     },
+    "%@, besides what this expense already draws.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@, besides what this expense already draws."
+          }
+        }
+      }
+    },
     "%lld active": {
       "extractionState": "manual",
       "localizations": {
@@ -512,6 +578,29 @@
                 "stringUnit": {
                   "state": "translated",
                   "value": "%lld budgets have no limit, so only their spending is counted."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld budgets wait for an exchange rate and aren’t in it yet.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld budget waits for an exchange rate and isn’t in it yet."
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld budgets wait for an exchange rate and aren’t in it yet."
                 }
               }
             }
@@ -614,6 +703,75 @@
                 "stringUnit": {
                   "state": "translated",
                   "value": "%lld days logged"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld deposits were made in another currency and are set aside.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld deposit was made in another currency and is set aside."
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld deposits were made in another currency and are set aside."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld draws can’t be converted and aren’t counted.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld draw can’t be converted and isn’t counted."
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld draws can’t be converted and aren’t counted."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld draws wait for an exchange rate and aren’t counted yet.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld draw waits for an exchange rate and isn’t counted yet."
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld draws wait for an exchange rate and aren’t counted yet."
                 }
               }
             }
@@ -736,6 +894,29 @@
                 "stringUnit": {
                   "state": "translated",
                   "value": "%lld limits wait for an exchange rate and are left out."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld more months": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld more month"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld more months"
                 }
               }
             }
@@ -909,6 +1090,28 @@
         }
       }
     },
+    "A deleted goal": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A deleted goal"
+          }
+        }
+      }
+    },
+    "A draw on savings this month moves it %@ later, to around %@.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A draw on savings this month moves it %@ later, to around %@."
+          }
+        }
+      }
+    },
     "A foreign expense keeps the amount you entered and the rate it converts at. Reports convert with that rate for good — a past month never re-prices itself.": {
       "extractionState": "manual",
       "localizations": {
@@ -916,6 +1119,50 @@
           "stringUnit": {
             "state": "translated",
             "value": "A foreign expense keeps the amount you entered and the rate it converts at. Reports convert with that rate for good — a past month never re-prices itself."
+          }
+        }
+      }
+    },
+    "A goal’s tips never suggest spending less on an essential category. Groceries, transport, bills, health and home are essential unless you say otherwise; mark any category from its menu.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A goal’s tips never suggest spending less on an essential category. Groceries, transport, bills, health and home are essential unless you say otherwise; mark any category from its menu."
+          }
+        }
+      }
+    },
+    "A monthly pace shows once %@ have closed": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A monthly pace shows once %@ have closed"
+          }
+        }
+      }
+    },
+    "A monthly pace shows once a few more months have closed": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A monthly pace shows once a few more months have closed"
+          }
+        }
+      }
+    },
+    "A part from savings in %@ needs a rate: one you enter, or the day’s reference rate once it’s known.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A part from savings in %@ needs a rate: one you enter, or the day’s reference rate once it’s known."
           }
         }
       }
@@ -1053,6 +1300,17 @@
         }
       }
     },
+    "About %@ a month over %@": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "About %@ a month over %@"
+          }
+        }
+      }
+    },
     "About the same as the same days last month": {
       "extractionState": "manual",
       "localizations": {
@@ -1097,6 +1355,17 @@
         }
       }
     },
+    "Add a goal": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Add a goal"
+          }
+        }
+      }
+    },
     "Add budget": {
       "extractionState": "manual",
       "localizations": {
@@ -1115,6 +1384,17 @@
           "stringUnit": {
             "state": "translated",
             "value": "Add expense"
+          }
+        }
+      }
+    },
+    "Add goal": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Add goal"
           }
         }
       }
@@ -1181,6 +1461,17 @@
           "stringUnit": {
             "state": "translated",
             "value": "Added up"
+          }
+        }
+      }
+    },
+    "Ahead of your date: around %@, before %@.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ahead of your date: around %@, before %@."
           }
         }
       }
@@ -1258,6 +1549,28 @@
           "stringUnit": {
             "state": "translated",
             "value": "An amount has only one decimal separator."
+          }
+        }
+      }
+    },
+    "An estimate comes once budgets have closed %@.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "An estimate comes once budgets have closed %@."
+          }
+        }
+      }
+    },
+    "An estimate comes once budgets have closed a few more months.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "An estimate comes once budgets have closed a few more months."
           }
         }
       }
@@ -1383,6 +1696,17 @@
         }
       }
     },
+    "Available to draw: %@": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Available to draw: %@"
+          }
+        }
+      }
+    },
     "Average day": {
       "extractionState": "manual",
       "localizations": {
@@ -1405,6 +1729,28 @@
         }
       }
     },
+    "Back to the default.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Back to the default."
+          }
+        }
+      }
+    },
+    "Bike": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bike"
+          }
+        }
+      }
+    },
     "Bills": {
       "extractionState": "manual",
       "localizations": {
@@ -1412,6 +1758,39 @@
           "stringUnit": {
             "state": "translated",
             "value": "Bills"
+          }
+        }
+      }
+    },
+    "Bought": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bought"
+          }
+        }
+      }
+    },
+    "Bought. Its rewards are on your hero.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bought. Its rewards are on your hero."
+          }
+        }
+      }
+    },
+    "Bought. What it didn’t use goes back to savings.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bought. What it didn’t use goes back to savings."
           }
         }
       }
@@ -1449,6 +1828,84 @@
         }
       }
     },
+    "Buying a goal needn’t be a one-off. A goal can be bought from %lld days after it was made.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Buying a goal needn’t be a one-off. A goal can be bought from %lld day after it was made."
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Buying a goal needn’t be a one-off. A goal can be bought from %lld days after it was made."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "Buying it": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Buying it"
+          }
+        }
+      }
+    },
+    "Buys a goal": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Buys a goal"
+          }
+        }
+      }
+    },
+    "By": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "By"
+          }
+        }
+      }
+    },
+    "By %@: %@ a month, about %@ a day": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "By %@: %@ a month, about %@ a day"
+          }
+        }
+      }
+    },
+    "Camera": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Camera"
+          }
+        }
+      }
+    },
     "Cancel": {
       "extractionState": "manual",
       "localizations": {
@@ -1478,6 +1935,17 @@
           "stringUnit": {
             "state": "translated",
             "value": "Can’t be converted to %@."
+          }
+        }
+      }
+    },
+    "Car": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Car"
           }
         }
       }
@@ -1544,6 +2012,17 @@
           "stringUnit": {
             "state": "translated",
             "value": "Coffee, eating out, takeaway"
+          }
+        }
+      }
+    },
+    "Computer": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Computer"
           }
         }
       }
@@ -1669,6 +2148,17 @@
         }
       }
     },
+    "Delete goal": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Delete goal"
+          }
+        }
+      }
+    },
     "Delete subscription": {
       "extractionState": "manual",
       "localizations": {
@@ -1702,6 +2192,17 @@
         }
       }
     },
+    "Delete this goal?": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Delete this goal?"
+          }
+        }
+      }
+    },
     "Delete this subscription?": {
       "extractionState": "manual",
       "localizations": {
@@ -1720,6 +2221,17 @@
           "stringUnit": {
             "state": "translated",
             "value": "Deleted"
+          }
+        }
+      }
+    },
+    "Deleted.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Deleted."
           }
         }
       }
@@ -1768,6 +2280,28 @@
         }
       }
     },
+    "Done and set aside": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Done and set aside"
+          }
+        }
+      }
+    },
+    "Earns a reward at each quarter of the way, and when it’s bought within its target.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Earns a reward at each quarter of the way, and when it’s bought within its target."
+          }
+        }
+      }
+    },
     "Edit": {
       "extractionState": "manual",
       "localizations": {
@@ -1786,6 +2320,17 @@
           "stringUnit": {
             "state": "translated",
             "value": "Edit expense"
+          }
+        }
+      }
+    },
+    "Edit goal": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Edit goal"
           }
         }
       }
@@ -1896,6 +2441,39 @@
           "stringUnit": {
             "state": "translated",
             "value": "Entered in your base currency."
+          }
+        }
+      }
+    },
+    "Essential": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Essential"
+          }
+        }
+      }
+    },
+    "Essential by default": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Essential by default"
+          }
+        }
+      }
+    },
+    "Essentials": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Essentials"
           }
         }
       }
@@ -2022,6 +2600,50 @@
         }
       }
     },
+    "Expenses that bought it keep their savings part, which then counts as any other draw. Rewards it earned stay.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Expenses that bought it keep their savings part, which then counts as any other draw. Rewards it earned stay."
+          }
+        }
+      }
+    },
+    "Fill later": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fill later"
+          }
+        }
+      }
+    },
+    "Fill sooner": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fill sooner"
+          }
+        }
+      }
+    },
+    "Filling now": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Filling now"
+          }
+        }
+      }
+    },
     "First day": {
       "extractionState": "manual",
       "localizations": {
@@ -2040,6 +2662,17 @@
           "stringUnit": {
             "state": "translated",
             "value": "Food"
+          }
+        }
+      }
+    },
+    "Forecast": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Forecast"
           }
         }
       }
@@ -2088,6 +2721,39 @@
         }
       }
     },
+    "Furniture": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Furniture"
+          }
+        }
+      }
+    },
+    "Games": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Games"
+          }
+        }
+      }
+    },
+    "Gift": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Gift"
+          }
+        }
+      }
+    },
     "Give Home a limit in Budgets.": {
       "extractionState": "manual",
       "localizations": {
@@ -2095,6 +2761,61 @@
           "stringUnit": {
             "state": "translated",
             "value": "Give Home a limit in Budgets."
+          }
+        }
+      }
+    },
+    "Goal": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Goal"
+          }
+        }
+      }
+    },
+    "Goals": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Goals"
+          }
+        }
+      }
+    },
+    "Goals earn rewards when Home had a monthly limit on the day they were made.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Goals earn rewards when Home had a monthly limit on the day they were made."
+          }
+        }
+      }
+    },
+    "Goals in another currency than %@ don’t earn rewards.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Goals in another currency than %@ don’t earn rewards."
+          }
+        }
+      }
+    },
+    "Goals of at least %@ earn rewards.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Goals of at least %@ earn rewards."
           }
         }
       }
@@ -2132,6 +2853,17 @@
         }
       }
     },
+    "Headphones": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Headphones"
+          }
+        }
+      }
+    },
     "Health": {
       "extractionState": "manual",
       "localizations": {
@@ -2165,6 +2897,17 @@
         }
       }
     },
+    "Home has no monthly limit, so nothing can be drawn beyond what’s saved.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Home has no monthly limit, so nothing can be drawn beyond what’s saved."
+          }
+        }
+      }
+    },
     "Home kept the currency it was first set up in on another device, so its limit and spending are in %@, not %@.": {
       "extractionState": "manual",
       "localizations": {
@@ -2187,6 +2930,39 @@
         }
       }
     },
+    "In %@, so it doesn’t fill": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "In %@, so it doesn’t fill"
+          }
+        }
+      }
+    },
+    "In %@. Savings fill your goals in order, after paying back anything borrowed. A date shows what it needs each month to arrive on time.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "In %@. Savings fill your goals in order, after paying back anything borrowed. A date shows what it needs each month to arrive on time."
+          }
+        }
+      }
+    },
+    "In another currency": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "In another currency"
+          }
+        }
+      }
+    },
     "It may have been deleted on another device.": {
       "extractionState": "manual",
       "localizations": {
@@ -2194,6 +2970,17 @@
           "stringUnit": {
             "state": "translated",
             "value": "It may have been deleted on another device."
+          }
+        }
+      }
+    },
+    "It needs about %@ more a month, about %@ a day.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "It needs about %@ more a month, about %@ a day."
           }
         }
       }
@@ -2308,6 +3095,17 @@
         }
       }
     },
+    "Learning": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Learning"
+          }
+        }
+      }
+    },
     "Leave it empty to use the European Central Bank’s rate for the expense’s date. A rate you enter converts this expense only.": {
       "extractionState": "manual",
       "localizations": {
@@ -2407,6 +3205,17 @@
         }
       }
     },
+    "Made in another currency while two devices disagreed on yours, so it doesn’t fill. It still counts as one of your goals; buy it or set it aside.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Made in another currency while two devices disagreed on yours, so it doesn’t fill. It still counts as one of your goals; buy it or set it aside."
+          }
+        }
+      }
+    },
     "Manage": {
       "extractionState": "manual",
       "localizations": {
@@ -2436,6 +3245,28 @@
           "stringUnit": {
             "state": "translated",
             "value": "Managed on the Subscriptions screen"
+          }
+        }
+      }
+    },
+    "Mark as bought": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mark as bought"
+          }
+        }
+      }
+    },
+    "Marked essential. Goal tips won’t suggest spending less on it.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Marked essential. Goal tips won’t suggest spending less on it."
           }
         }
       }
@@ -2529,6 +3360,17 @@
         }
       }
     },
+    "Music": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Music"
+          }
+        }
+      }
+    },
     "Name": {
       "extractionState": "manual",
       "localizations": {
@@ -2536,6 +3378,28 @@
           "stringUnit": {
             "state": "translated",
             "value": "Name"
+          }
+        }
+      }
+    },
+    "Name something to save towards, and what your budgets leave unspent fills it month by month.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Name something to save towards, and what your budgets leave unspent fills it month by month."
+          }
+        }
+      }
+    },
+    "New bike": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "New bike"
           }
         }
       }
@@ -2617,6 +3481,28 @@
         }
       }
     },
+    "No goal": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No goal"
+          }
+        }
+      }
+    },
+    "No goal is filling yet.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No goal is filling yet."
+          }
+        }
+      }
+    },
     "No limit set": {
       "extractionState": "manual",
       "localizations": {
@@ -2679,6 +3565,17 @@
           "stringUnit": {
             "state": "translated",
             "value": "None at risk"
+          }
+        }
+      }
+    },
+    "Not essential. Goal tips may suggest spending a little less on it.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Not essential. Goal tips may suggest spending a little less on it."
           }
         }
       }
@@ -2749,6 +3646,17 @@
         }
       }
     },
+    "Nothing put aside": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nothing put aside"
+          }
+        }
+      }
+    },
     "Nothing renews in the next month.": {
       "extractionState": "manual",
       "localizations": {
@@ -2756,6 +3664,17 @@
           "stringUnit": {
             "state": "translated",
             "value": "Nothing renews in the next month."
+          }
+        }
+      }
+    },
+    "Nothing was left under budget in recent months, so there’s no estimate yet. The next month that is starts it moving.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nothing was left under budget in recent months, so there’s no estimate yet. The next month that is starts it moving."
           }
         }
       }
@@ -2793,6 +3712,17 @@
         }
       }
     },
+    "On track for around %@.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "On track for around %@."
+          }
+        }
+      }
+    },
     "Once the trip has started, its limit can only go down.": {
       "extractionState": "manual",
       "localizations": {
@@ -2826,6 +3756,17 @@
         }
       }
     },
+    "Only a one-off can be paid from savings: in %@, %@ or more.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Only a one-off can be paid from savings: in %@, %@ or more."
+          }
+        }
+      }
+    },
     "Open Settings": {
       "extractionState": "manual",
       "localizations": {
@@ -2844,6 +3785,17 @@
           "stringUnit": {
             "state": "translated",
             "value": "Optional"
+          }
+        }
+      }
+    },
+    "Outdoors": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Outdoors"
           }
         }
       }
@@ -2925,6 +3877,39 @@
         }
       }
     },
+    "Pay part from savings": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pay part from savings"
+          }
+        }
+      }
+    },
+    "Pet": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pet"
+          }
+        }
+      }
+    },
+    "Phone": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Phone"
+          }
+        }
+      }
+    },
     "Power, water, phone": {
       "extractionState": "manual",
       "localizations": {
@@ -2932,6 +3917,17 @@
           "stringUnit": {
             "state": "translated",
             "value": "Power, water, phone"
+          }
+        }
+      }
+    },
+    "Progress": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Progress"
           }
         }
       }
@@ -2976,6 +3972,28 @@
           "stringUnit": {
             "state": "translated",
             "value": "Rate you entered"
+          }
+        }
+      }
+    },
+    "Reached. You can buy it from %@, after its cooling-off.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reached. You can buy it from %@, after its cooling-off."
+          }
+        }
+      }
+    },
+    "Reached. You can buy it whenever you’re ready.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reached. You can buy it whenever you’re ready."
           }
         }
       }
@@ -3178,6 +4196,17 @@
         }
       }
     },
+    "Rewards": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Rewards"
+          }
+        }
+      }
+    },
     "Save budget": {
       "extractionState": "manual",
       "localizations": {
@@ -3211,6 +4240,17 @@
         }
       }
     },
+    "Save goal": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Save goal"
+          }
+        }
+      }
+    },
     "Save subscription": {
       "extractionState": "manual",
       "localizations": {
@@ -3218,6 +4258,17 @@
           "stringUnit": {
             "state": "translated",
             "value": "Save subscription"
+          }
+        }
+      }
+    },
+    "Saved under budget": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Saved under budget"
           }
         }
       }
@@ -3245,6 +4296,28 @@
         }
       }
     },
+    "Savings are kept in your base currency. Choose it in Settings, under Day and money.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Savings are kept in your base currency. Choose it in Settings, under Day and money."
+          }
+        }
+      }
+    },
+    "Savings can go up to %@ below zero, as much as Home’s monthly limit; later months pay it back first.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Savings can go up to %@ below zero, as much as Home’s monthly limit; later months pay it back first."
+          }
+        }
+      }
+    },
     "Savings goal": {
       "extractionState": "manual",
       "localizations": {
@@ -3256,6 +4329,17 @@
         }
       }
     },
+    "Savings pay back %@ first, then this goal starts filling.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Savings pay back %@ first, then this goal starts filling."
+          }
+        }
+      }
+    },
     "Search notes and merchants": {
       "extractionState": "manual",
       "localizations": {
@@ -3263,6 +4347,39 @@
           "stringUnit": {
             "state": "translated",
             "value": "Search notes and merchants"
+          }
+        }
+      }
+    },
+    "Set aside": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Set aside"
+          }
+        }
+      }
+    },
+    "Set aside. What it held goes back to savings for the other goals.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Set aside. What it held goes back to savings for the other goals."
+          }
+        }
+      }
+    },
+    "Set this goal aside?": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Set this goal aside?"
           }
         }
       }
@@ -3340,6 +4457,39 @@
           "stringUnit": {
             "state": "translated",
             "value": "Some money records can’t be read"
+          }
+        }
+      }
+    },
+    "Something special": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Something special"
+          }
+        }
+      }
+    },
+    "Spending %@ less on %@ could bring it %@ sooner, to around %@.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Spending %@ less on %@ could bring it %@ sooner, to around %@."
+          }
+        }
+      }
+    },
+    "Spending %@ less on %@ could bring it %@ sooner.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Spending %@ less on %@ could bring it %@ sooner."
           }
         }
       }
@@ -3499,6 +4649,50 @@
         }
       }
     },
+    "Symbol": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Symbol"
+          }
+        }
+      }
+    },
+    "Target": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Target"
+          }
+        }
+      }
+    },
+    "Target date": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Target date"
+          }
+        }
+      }
+    },
+    "Target date %@": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Target date %@"
+          }
+        }
+      }
+    },
     "That amount is too large.": {
       "extractionState": "manual",
       "localizations": {
@@ -3583,6 +4777,17 @@
           "stringUnit": {
             "state": "translated",
             "value": "That expense is no longer here"
+          }
+        }
+      }
+    },
+    "That goal is no longer here": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "That goal is no longer here"
           }
         }
       }
@@ -3752,6 +4957,17 @@
         }
       }
     },
+    "This goal is no longer filling, so its target and date stay as they were.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This goal is no longer filling, so its target and date stay as they were."
+          }
+        }
+      }
+    },
     "This month": {
       "extractionState": "manual",
       "localizations": {
@@ -3759,6 +4975,17 @@
           "stringUnit": {
             "state": "translated",
             "value": "This month"
+          }
+        }
+      }
+    },
+    "This month is on pace to add %@.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This month is on pace to add %@."
           }
         }
       }
@@ -3840,6 +5067,28 @@
         }
       }
     },
+    "Three goals are filling": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Three goals are filling"
+          }
+        }
+      }
+    },
+    "To reach it by %@, it needs about %@ more a month, about %@ a day.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "To reach it by %@, it needs about %@ more a month, about %@ a day."
+          }
+        }
+      }
+    },
     "Today is logged as a day without spending.": {
       "extractionState": "manual",
       "localizations": {
@@ -3891,6 +5140,17 @@
           "stringUnit": {
             "state": "translated",
             "value": "Transport"
+          }
+        }
+      }
+    },
+    "Travel": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Travel"
           }
         }
       }
@@ -3983,6 +5243,40 @@
         }
       }
     },
+    "Up to %lld goals fill at once, in the order you put them. Buy or set one aside to start another.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Up to %lld goal fills at once. Buy it or set it aside to start another."
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Up to %lld goals fill at once, in the order you put them. Buy or set one aside to start another."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "Update Memoir to see this goal’s state": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Update Memoir to see this goal’s state"
+          }
+        }
+      }
+    },
     "Update the app to change it.": {
       "extractionState": "manual",
       "localizations": {
@@ -3990,6 +5284,17 @@
           "stringUnit": {
             "state": "translated",
             "value": "Update the app to change it."
+          }
+        }
+      }
+    },
+    "Use the default": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Use the default"
           }
         }
       }
@@ -4082,6 +5387,28 @@
         }
       }
     },
+    "What can be drawn beyond what’s saved waits for an exchange rate for Home’s limit.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "What can be drawn beyond what’s saved waits for an exchange rate for Home’s limit."
+          }
+        }
+      }
+    },
+    "What it holds goes back to savings for the goals after it. You can’t pick it up again.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "What it holds goes back to savings for the goals after it. You can’t pick it up again."
+          }
+        }
+      }
+    },
     "What was it for?": {
       "extractionState": "manual",
       "localizations": {
@@ -4089,6 +5416,17 @@
           "stringUnit": {
             "state": "translated",
             "value": "What was it for?"
+          }
+        }
+      }
+    },
+    "What your monthly budgets left unspent when each month closed. It’s a tally to plan with, not money in an account.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "What your monthly budgets left unspent when each month closed. It’s a tally to plan with, not money in an account."
           }
         }
       }
@@ -4115,6 +5453,17 @@
         }
       }
     },
+    "When you buy it, add the purchase as an expense and pick this goal on it, paying what you like from savings; goal purchases needn’t be one-offs. Then mark it bought here.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "When you buy it, add the purchase as an expense and pick this goal on it, paying what you like from savings; goal purchases needn’t be one-offs. Then mark it bought here."
+          }
+        }
+      }
+    },
     "Where an expense counts": {
       "extractionState": "manual",
       "localizations": {
@@ -4133,6 +5482,17 @@
           "stringUnit": {
             "state": "translated",
             "value": "Where it went"
+          }
+        }
+      }
+    },
+    "Whether this goal earns rewards waits for an exchange rate for Home’s limit.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Whether this goal earns rewards waits for an exchange rate for Home’s limit."
           }
         }
       }
@@ -4225,6 +5585,74 @@
         }
       }
     },
+    "You’ll pay back %@ first": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You’ll pay back %@ first"
+          }
+        }
+      }
+    },
+    "about %lld days": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "about %lld day"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "about %lld days"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "about %lld months": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "about %lld month"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "about %lld months"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "around %@": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "around %@"
+          }
+        }
+      }
+    },
     "next %@ on %@": {
       "extractionState": "manual",
       "localizations": {
@@ -4269,6 +5697,40 @@
         }
       }
     },
+    "reached": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "reached"
+          }
+        }
+      }
+    },
+    "the last %lld months": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "the last month"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "the last %lld months"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "“%@”": {
       "extractionState": "manual",
       "localizations": {
@@ -4298,6 +5760,17 @@
           "stringUnit": {
             "state": "translated",
             "value": "“%@” can’t be part of an amount."
+          }
+        }
+      }
+    },
+    "“%@” drew on savings this month, so it moves %@ later, to around %@.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "“%@” drew on savings this month, so it moves %@ later, to around %@."
           }
         }
       }

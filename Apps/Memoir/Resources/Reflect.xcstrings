@@ -2379,6 +2379,39 @@
         }
       }
     },
+    "Savings goal": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Savings goal"
+          }
+        }
+      }
+    },
+    "Savings grow about %@ a month.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Savings grow about %@ a month."
+          }
+        }
+      }
+    },
+    "Savings have no monthly pace yet; it shows once a few more months have closed.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Savings have no monthly pace yet; it shows once a few more months have closed."
+          }
+        }
+      }
+    },
     "Saving…": {
       "extractionState": "manual",
       "localizations": {
@@ -2694,6 +2727,17 @@
           "stringUnit": {
             "state": "translated",
             "value": "These numbers are yours alone"
+          }
+        }
+      }
+    },
+    "This month is on pace to add %@.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This month is on pace to add %@."
           }
         }
       }

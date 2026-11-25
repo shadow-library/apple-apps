@@ -129,6 +129,23 @@ struct GoalEditsTests {
     #expect(order.map(\.rank.text) == ["F", "V", "k"])
   }
 
+  @Test func shouldPlaceAGoalAfterItsNeighbourWhateverLiesBetween() async throws {
+    let stores = try await Self.stores([
+      S.goal(1, target: 1, rank: "F"), S.goal(2, target: 1, rank: "V", currency: S.usd), S.goal(3, target: 1, rank: "k"), S.goal(4, target: 1, rank: "q", state: .bought),
+    ])
+    _ = try await stores.main.write { transaction in try GoalEdits.reorder(S.goalID(1), after: S.goalID(3), in: &transaction) }
+    var order = try await Self.goals(in: stores).filter { $0.state == .known(.active) }.sorted(by: SavingsGoalRecord.precedes).map(\.id)
+    #expect(order == [S.goalID(2), S.goalID(3), S.goalID(1)], "the goal in another currency keeps its place before the neighbour")
+    _ = try await stores.main.write { transaction in try GoalEdits.reorder(S.goalID(1), after: nil, in: &transaction) }
+    order = try await Self.goals(in: stores).filter { $0.state == .known(.active) }.sorted(by: SavingsGoalRecord.precedes).map(\.id)
+    #expect(order == [S.goalID(1), S.goalID(2), S.goalID(3)])
+    #expect(
+      await Self.refusal(in: stores) { transaction in try GoalEdits.reorder(S.goalID(1), after: S.goalID(4), in: &transaction) } == .goalNotActive(S.goalID(4)))
+    #expect(
+      await Self.refusal(in: stores) { transaction in try GoalEdits.reorder(S.goalID(1), after: S.goalID(1), in: &transaction) } == .goalNotActive(S.goalID(1)),
+      "a goal is never its own neighbour")
+  }
+
   @Test func shouldRefuseToReorderAGoalThatIsNotActive() async throws {
     let stores = try await Self.stores([S.goal(1, target: 1, rank: "V", state: .bought)])
     #expect(await Self.refusal(in: stores) { transaction in try GoalEdits.reorder(S.goalID(1), toIndex: 0, in: &transaction) } == .goalNotActive(S.goalID(1)))
