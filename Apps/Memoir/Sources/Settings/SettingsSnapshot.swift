@@ -12,6 +12,14 @@ nonisolated enum AccountStanding: Sendable, Equatable {
     guard case .set(let record) = self else { return nil }
     return record
   }
+
+  static func load(in transaction: ReadTransaction) throws(StoreError) -> AccountStanding {
+    switch try AccountSettingsRecord.read(key: .accountSettings, in: transaction) {
+    case .absent: .unset
+    case .readable(let entry): .set(entry.record)
+    case .unreadable: .unreadable
+    }
+  }
 }
 
 /// `weekStart` 0 is Sunday and anything else Monday, as the core reads it (`QuestReadContext.weekStart`).
@@ -36,12 +44,7 @@ nonisolated struct SettingsSnapshot: Sendable, Equatable {
   let titles: [TitleStanding]
 
   static func load(in transaction: ReadTransaction) throws(StoreError) -> SettingsSnapshot {
-    let account: AccountStanding =
-      switch try AccountSettingsRecord.read(key: .accountSettings, in: transaction) {
-      case .absent: .unset
-      case .readable(let entry): .set(entry.record)
-      case .unreadable: .unreadable
-      }
+    let account = try AccountStanding.load(in: transaction)
     let comingBack = try ComingBack.load(ComingBackQuery(), in: transaction)
     let pending = comingBack.pendingIntensityMode.flatMap { $0 == comingBack.intensityMode ? nil : $0 }
     return SettingsSnapshot(

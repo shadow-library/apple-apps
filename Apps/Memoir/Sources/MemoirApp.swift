@@ -25,6 +25,7 @@ struct MemoirApp: App {
         .environment(settingsTabs)
         .environment(windows.isDemo ? nil : delegate.reminders)
         .environment(windows.isDemo ? nil : delegate.rates)
+        .environment(windows.isDemo ? nil : delegate.modules)
         .environment(active.insights)
         .environment(windows.isDemo ? nil : delegate.deletion)
         .diagnostics(.memoir(active.vault.opened, sync: active.sync, ai: active.ai))
@@ -43,7 +44,10 @@ struct MemoirApp: App {
     }
     #if os(macOS)
       Settings {
-        MemoirSettingsScene(vault: active.vault, services: active.ai, sync: active.sync, tabs: settingsTabs).demoOffer(delegate.demo)
+        MemoirSettingsScene(
+          vault: active.vault, services: active.ai, sync: active.sync, effects: windows.isDemo ? nil : delegate.modules, tabs: settingsTabs
+        )
+        .demoOffer(delegate.demo)
       }
     #endif
   }

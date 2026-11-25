@@ -77,6 +77,9 @@ final class SettingsModel {
 
   var account: AccountSettingsRecord? { snapshot.state.value?.account.record }
 
+  /// The displayed title and the intensity mean something only with Hero.
+  var showsHero: Bool { ModuleSelection(settings: account).contains(.hero) }
+
   /// The pair the pickers show: the draft while one is on screen, else the saved window.
   var shownSchedule: ScheduleDraft? {
     if let scheduleDraft { return scheduleDraft }
@@ -176,12 +179,17 @@ final class SettingsModel {
     defer { saving.remove(.homeCurrency) }
     failure = nil
     do {
-      try await context.writer.write { _, transaction in
-        guard case .absent = try AccountSettingsRecord.read(key: .accountSettings, in: transaction) else { throw SettingsRefusal.homeCurrencyFixed }
-        try AccountSettingsRecord(defaultCurrency: currency, enabledCurrencies: [currency]).create(in: &transaction)
-      }
+      try await Self.createSettings(currency, through: context.writer)
     } catch {
       failure = Self.presented(error).map { SettingsFailure(field: .homeCurrency, error: $0) }
+    }
+  }
+
+  /// Creates the settings record with its home currency, refused once another device has created it.
+  nonisolated static func createSettings(_ currency: CurrencyCode, through writer: MemoirWriter) async throws(MemoirWriteError) {
+    try await writer.write { _, transaction in
+      guard case .absent = try AccountSettingsRecord.read(key: .accountSettings, in: transaction) else { throw SettingsRefusal.homeCurrencyFixed }
+      try AccountSettingsRecord(defaultCurrency: currency, enabledCurrencies: [currency]).create(in: &transaction)
     }
   }
 
@@ -272,7 +280,7 @@ final class SettingsModel {
     }
   }
 
-  private static func presented(_ error: MemoirWriteError) -> PresentedError? {
+  static func presented(_ error: MemoirWriteError) -> PresentedError? {
     if case .store(.aborted(let inner)) = error, inner is SettingsRefusal {
       return PresentedError(headline: String(localized: "Your home currency is already set.", table: "Settings"), detail: nil)
     }

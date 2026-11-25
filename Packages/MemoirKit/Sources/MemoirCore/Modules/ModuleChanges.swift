@@ -171,7 +171,7 @@ public struct ModuleChanges: Sendable {
     var reader: HealthReaderDesignation?
     var activityLeavesICloud = false
     if !target.contains(.body) {
-      reader = try HealthSettings.designation(in: transaction)
+      reader = try readableReader(in: transaction)
       activityLeavesICloud = try HealthSettings.isActivityOnICloud(in: transaction)
     }
     let change = ModuleChange(
@@ -206,6 +206,17 @@ public struct ModuleChanges: Sendable {
     guard let millis = Int64(exactly: (now.timeIntervalSince1970 * 1000).rounded(.down)) else { throw .dateOutOfRange }
     let date = try issuer.clock.localDate(at: millis)
     return max(date, zone.openDay ?? date)
+  }
+
+  /// A Health settings record this build cannot read is left as it is, so it never blocks a change or the pausing of quests; Activity then reads as
+  /// off, and the build that wrote the record clears its reader itself.
+  private static func readableReader(in transaction: ReadTransaction) throws(MemoirRecordError) -> HealthReaderDesignation? {
+    do {
+      return try HealthSettings.designation(in: transaction)
+    } catch {
+      guard case .unreadable = error else { throw error }
+      return nil
+    }
   }
 
   private static func settings(in transaction: ReadTransaction) throws -> AccountSettingsRecord? {

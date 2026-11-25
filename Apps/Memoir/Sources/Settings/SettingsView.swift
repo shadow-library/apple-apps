@@ -25,11 +25,12 @@ struct SettingsView: View {
           ShadowCallout(Text("Your settings couldn’t be loaded", tableName: "Settings"), message: error.text, intent: .danger)
         }
       case .loaded(let snapshot):
-        SettingsProfileSection(model: model, snapshot: snapshot)
+        if model.showsHero { SettingsProfileSection(model: model, snapshot: snapshot) }
         SettingsDaySection(model: model, snapshot: snapshot)
         SettingsMoneySection(model: model, snapshot: snapshot)
       }
       Section {
+        MemoirFeaturesLink()
         MemoirSettingsLinks(stores: context.stores)
       }
       if ai?.isDemo != true { SettingsDataSection() }
@@ -116,7 +117,7 @@ private struct SettingsDaySection: View {
       .disabled(model.account == nil)
       SettingsFailureRow(error: model.failure(for: .weekStart))
       timeZone
-      intensity
+      if model.showsHero { intensity }
     } header: {
       Text("Day and money", tableName: "Settings")
     } footer: {
@@ -234,18 +235,7 @@ private struct SettingsMoneySection: View {
         Text("Home currency", tableName: "Settings")
       }
     case .unset:
-      Picker(selection: Binding(get: { CurrencyCode?.none }, set: { code in if let code { Task { await model.setHomeCurrency(code) } } })) {
-        Text("Choose…", tableName: "Settings").tag(CurrencyCode?.none)
-        ForEach(SettingsCurrencies.supported, id: \.self) { code in Text(verbatim: SettingsCurrencies.label(code)).tag(Optional(code)) }
-      } label: {
-        VStack(alignment: .leading, spacing: Spacing.space1) {
-          Text("Home currency", tableName: "Settings")
-          Text("Choose it once to set your day and budget. It stays fixed afterwards.", tableName: "Settings")
-            .shadowFont(.footnote)
-            .foregroundStyle(ShadowColor.textSecondary)
-        }
-      }
-      .disabled(model.saving.contains(.homeCurrency))
+      HomeCurrencyPicker(isSaving: model.saving.contains(.homeCurrency)) { code in Task { await model.setHomeCurrency(code) } }
       SettingsFailureRow(error: model.failure(for: .homeCurrency))
     case .unreadable:
       EmptyView()
@@ -341,6 +331,27 @@ private struct SettingsUnknownZone: View {
           tableName: "Settings")
       } ?? Text("Memoir counts the account’s days in this device’s time zone until its time zone data is updated.", tableName: "Settings"),
       intent: .neutral, systemImage: "globe")
+  }
+}
+
+/// The home currency of a vault without settings, chosen once.
+struct HomeCurrencyPicker: View {
+  let isSaving: Bool
+  let choose: (CurrencyCode) -> Void
+
+  var body: some View {
+    Picker(selection: Binding(get: { CurrencyCode?.none }, set: { code in if let code { choose(code) } })) {
+      Text("Choose…", tableName: "Settings").tag(CurrencyCode?.none)
+      ForEach(SettingsCurrencies.supported, id: \.self) { code in Text(verbatim: SettingsCurrencies.label(code)).tag(Optional(code)) }
+    } label: {
+      VStack(alignment: .leading, spacing: Spacing.space1) {
+        Text("Home currency", tableName: "Settings")
+        Text("Choose it once to set your day and budget. It stays fixed afterwards.", tableName: "Settings")
+          .shadowFont(.footnote)
+          .foregroundStyle(ShadowColor.textSecondary)
+      }
+    }
+    .disabled(isSaving)
   }
 }
 

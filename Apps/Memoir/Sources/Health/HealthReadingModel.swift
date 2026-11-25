@@ -59,10 +59,11 @@ final class HealthReadingModel {
     }
   }
 
+  /// A designation cleared while Body was off (`ModuleChanges`) leaves no metric read here once this device has forgotten them (`MemoirHealthImports`).
   private func follow(_ designation: HealthReaderDesignation?) {
-    guard let designation, let device = environment.device, designation.device != device.id, !reading.isEmpty else { return }
-    environment.preferences.metrics = []
-    reading = []
+    guard let device = environment.device, designation?.device != device.id else { return }
+    if designation != nil, !reading.isEmpty { environment.preferences.metrics = [] }
+    reading = environment.preferences.metrics
   }
 
   func set(_ metric: BuiltinMetric, reading isOn: Bool) async {

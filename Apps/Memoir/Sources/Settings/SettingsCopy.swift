@@ -39,4 +39,38 @@ nonisolated enum SettingsCopy {
   static func version(bundle: Bundle = .main) -> String {
     AppVersion(bundle: bundle).text
   }
+
+  /// The order Features lists the modules in.
+  static let moduleOrder: [MemoirModule] = [.quests, .hero, .money, .journal, .meals, .body]
+
+  static func module(_ module: MemoirModule) -> String {
+    switch module {
+    case .hero: String(localized: "Hero", table: "Settings")
+    case .quests: String(localized: "Quests", table: "Settings")
+    case .money: String(localized: "Money", table: "Settings")
+    case .journal: String(localized: "Journal", table: "Settings")
+    case .meals: String(localized: "Meals", table: "Settings")
+    case .body: String(localized: "Body", table: "Settings")
+    }
+  }
+
+  static func moduleDescription(_ module: MemoirModule) -> String {
+    switch module {
+    case .hero: String(localized: "Experience, levels, coins and titles for what you keep up. Needs Quests or Money.", table: "Settings")
+    case .quests:
+      String(localized: "Today, daily promises, your plan for the week, recovery and the weekly review. Turning it on turns Hero on too.", table: "Settings")
+    case .money: String(localized: "Budgets, expenses, subscriptions, receipts and savings.", table: "Settings")
+    case .journal: String(localized: "Entries in your own words.", table: "Settings")
+    case .meals: String(localized: "What you ate, in a line.", table: "Settings")
+    case .body: String(localized: "Weight, measurements, activity and Apple Health.", table: "Settings")
+    }
+  }
+
+  static func refusal(_ refusal: ModuleSelectionError) -> String {
+    switch refusal {
+    case .empty: String(localized: "Keep at least one feature on.", table: "Settings")
+    case .questsNeedHero: String(localized: "Quests need Hero. Turn Quests off first.", table: "Settings")
+    case .heroNeedsQuestsOrMoney: String(localized: "Hero needs Quests or Money to be on.", table: "Settings")
+    }
+  }
 }

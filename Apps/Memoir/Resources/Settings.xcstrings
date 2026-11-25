@@ -56,6 +56,17 @@
         }
       }
     },
+    "Another device saved your settings in a form this version can’t read. Update Memoir to change them here.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Another device saved your settings in a form this version can’t read. Update Memoir to change them here."
+          }
+        }
+      }
+    },
     "Asks Frankfurter for the European Central Bank’s daily rate of each currency you spend in, sending only the currencies and the date. A rate you enter on an expense is never replaced. This choice is kept on this device.": {
       "extractionState": "manual",
       "localizations": {
@@ -67,6 +78,39 @@
         }
       }
     },
+    "Body": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Body"
+          }
+        }
+      }
+    },
+    "Budgets, expenses, subscriptions, receipts and savings.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Budgets, expenses, subscriptions, receipts and savings."
+          }
+        }
+      }
+    },
+    "Cancel": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cancel"
+          }
+        }
+      }
+    },
     "Choose it once to set your day and budget. It stays fixed afterwards.": {
       "extractionState": "manual",
       "localizations": {
@@ -74,6 +118,28 @@
           "stringUnit": {
             "state": "translated",
             "value": "Choose it once to set your day and budget. It stays fixed afterwards."
+          }
+        }
+      }
+    },
+    "Choose your home currency first": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Choose your home currency first"
+          }
+        }
+      }
+    },
+    "Choose your home currency first.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Choose your home currency first."
           }
         }
       }
@@ -166,6 +232,50 @@
         }
       }
     },
+    "Entries in your own words.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Entries in your own words."
+          }
+        }
+      }
+    },
+    "Experience, levels, coins and titles for what you keep up. Needs Quests or Money.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Experience, levels, coins and titles for what you keep up. Needs Quests or Money."
+          }
+        }
+      }
+    },
+    "Features": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Features"
+          }
+        }
+      }
+    },
+    "Features are chosen once Memoir knows your home currency. It’s set once and stays fixed.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Features are chosen once Memoir knows your home currency. It’s set once and stays fixed."
+          }
+        }
+      }
+    },
     "Fetch exchange rates": {
       "extractionState": "manual",
       "localizations": {
@@ -199,6 +309,28 @@
         }
       }
     },
+    "Hero": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hero"
+          }
+        }
+      }
+    },
+    "Hero needs Quests or Money to be on.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Hero needs Quests or Money to be on."
+          }
+        }
+      }
+    },
     "Home currency": {
       "extractionState": "manual",
       "localizations": {
@@ -228,6 +360,39 @@
           "stringUnit": {
             "state": "translated",
             "value": "Intensity"
+          }
+        }
+      }
+    },
+    "Journal": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Journal"
+          }
+        }
+      }
+    },
+    "Keep at least one feature on.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Keep at least one feature on."
+          }
+        }
+      }
+    },
+    "Meals": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Meals"
           }
         }
       }
@@ -298,6 +463,50 @@
         }
       }
     },
+    "Pause %lld quests?": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pause %#@quests@?"
+          },
+          "substitutions": {
+            "quests": {
+              "argNum": 1,
+              "formatSpecifier": "lld",
+              "variations": {
+                "plural": {
+                  "one": {
+                    "stringUnit": {
+                      "state": "translated",
+                      "value": "%arg quest"
+                    }
+                  },
+                  "other": {
+                    "stringUnit": {
+                      "state": "translated",
+                      "value": "%arg quests"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "Pause and Turn Off": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pause and Turn Off"
+          }
+        }
+      }
+    },
     "Profile": {
       "extractionState": "manual",
       "localizations": {
@@ -305,6 +514,28 @@
           "stringUnit": {
             "state": "translated",
             "value": "Profile"
+          }
+        }
+      }
+    },
+    "Quests": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Quests"
+          }
+        }
+      }
+    },
+    "Quests need Hero. Turn Quests off first.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Quests need Hero. Turn Quests off first."
           }
         }
       }
@@ -419,6 +650,17 @@
         }
       }
     },
+    "Today, daily promises, your plan for the week, recovery and the weekly review. Turning it on turns Hero on too.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Today, daily promises, your plan for the week, recovery and the weekly review. Turning it on turns Hero on too."
+          }
+        }
+      }
+    },
     "Travel does not shift your day unless you change it here.": {
       "extractionState": "manual",
       "localizations": {
@@ -426,6 +668,28 @@
           "stringUnit": {
             "state": "translated",
             "value": "Travel does not shift your day unless you change it here."
+          }
+        }
+      }
+    },
+    "Turning Quests off pauses every active quest, and turning it back on doesn’t restart them. If today’s plan is locked, its reward for today is lost.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Turning Quests off pauses every active quest, and turning it back on doesn’t restart them. If today’s plan is locked, its reward for today is lost."
+          }
+        }
+      }
+    },
+    "Turning a feature off only hides it: nothing is deleted, and its data keeps syncing and stays in your exports. Turning Body off stops reading Apple Health and keeps Activity off iCloud.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Turning a feature off only hides it: nothing is deleted, and its data keeps syncing and stays in your exports. Turning Body off stops reading Apple Health and keeps Activity off iCloud."
           }
         }
       }
@@ -474,6 +738,17 @@
         }
       }
     },
+    "Weight, measurements, activity and Apple Health.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Weight, measurements, activity and Apple Health."
+          }
+        }
+      }
+    },
     "What leaves this device, and the notices of the third-party work Memoir includes.": {
       "extractionState": "manual",
       "localizations": {
@@ -481,6 +756,17 @@
           "stringUnit": {
             "state": "translated",
             "value": "What leaves this device, and the notices of the third-party work Memoir includes."
+          }
+        }
+      }
+    },
+    "What you ate, in a line.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "What you ate, in a line."
           }
         }
       }
@@ -503,6 +789,28 @@
           "stringUnit": {
             "state": "translated",
             "value": "Your day and money settings couldn’t be read"
+          }
+        }
+      }
+    },
+    "Your features couldn’t be loaded": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your features couldn’t be loaded"
+          }
+        }
+      }
+    },
+    "Your features couldn’t be read": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your features couldn’t be read"
           }
         }
       }

@@ -246,6 +246,19 @@ struct ModuleChangesTests {
     #expect(try await world.stores.main.read { transaction in try HealthSettingsRecord.read(key: .healthSettings, in: transaction) } == .absent)
   }
 
+  @Test func shouldTurnBodyOffAndPauseQuestsBesideAHealthSettingsRecordThisBuildCannotRead() async throws {
+    let world = try await Self.open(settings: try Self.settings(), quests: true)
+    let ref = MemoirKey.healthSettings.ref
+    _ = try await world.stores.main.write { transaction in try transaction.set(ref, ["natural_key": MemoirKey.healthSettings.stored, "activity_on_icloud": "yes"]) }
+
+    let change = try await world.changes.apply([.body: false, .quests: false])
+    #expect(change.clearedReader == nil && !change.activityLeavesICloud && change.turnedOff == [.body, .quests])
+    #expect(try await world.activeQuests().isEmpty)
+    #expect(try await world.changes.enforce() == nil)
+    let health = try await world.stores.main.read { transaction in try HealthSettingsRecord.read(key: .healthSettings, in: transaction) }
+    guard case .unreadable = health else { throw MemoirFixtureError(description: "the record was rewritten: \(health)") }
+  }
+
   @Test func shouldWriteBackAMergedSelectionAsItReadsBesideTheChange() async throws {
     let world = try await Self.open(
       settings: try Self.settings { settings in

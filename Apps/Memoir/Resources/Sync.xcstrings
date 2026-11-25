@@ -80,6 +80,16 @@
           }
         }
       }
+    },
+    "Activity syncs only while Body is on. Turn it on in Settings › Features.": {
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Activity syncs only while Body is on. Turn it on in Settings › Features."
+          }
+        }
+      }
     }
   },
   "version": "1.0"

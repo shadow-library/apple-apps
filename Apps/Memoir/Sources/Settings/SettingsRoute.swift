@@ -2,6 +2,7 @@ import ShadowAppShell
 import SwiftUI
 
 enum SettingsRoute: Hashable {
+  case features
   case timeZone
   case currencies
   case export
@@ -12,9 +13,11 @@ enum SettingsRoute: Hashable {
 struct SettingsRouteView: View {
   let route: SettingsRoute
   let context: MemoirScreenContext
+  @Environment(MemoirModuleEffects.self) private var effects: MemoirModuleEffects?
 
   var body: some View {
     switch route {
+    case .features: FeaturesView(context: context, effects: effects)
     case .timeZone: SettingsTimeZoneView(context: context)
     case .currencies: EnabledCurrenciesView(context: context)
     case .export: ExportView(context: context)

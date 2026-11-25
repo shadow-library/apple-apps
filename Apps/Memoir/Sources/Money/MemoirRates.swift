@@ -65,9 +65,10 @@ nonisolated struct RatePacing: Sendable, Equatable {
   }
 }
 
-/// Fills the owner's vault's missing exchange rates through `RateFiller`, only while the app is in the foreground and "Fetch exchange rates" is on,
-/// never for the demo. It follows what a fill would ask for, so a foreign expense or subscription saved here or synced in is asked about at once, and
-/// it paces itself through `RatePacing`; a fill runs off the main actor and never blocks a screen.
+/// Fills the owner's vault's missing exchange rates through `RateFiller`, only while the app is in the foreground, "Fetch exchange rates" is on and the
+/// vault shows Money, never for the demo; Money turned off stops a fill under way and asks nothing until it is on again. It follows what a fill would
+/// ask for, so a foreign expense or subscription saved here or synced in is asked about at once, and it paces itself through `RatePacing`; a fill runs
+/// off the main actor and never blocks a screen.
 @MainActor
 @Observable
 final class MemoirRates {
@@ -146,7 +147,7 @@ final class MemoirRates {
         for try await observed in reads {
           guard let self, !Task.isCancelled else { return }
           self.latest = observed
-          self.pump()
+          if observed.showsMoney { self.pump() } else { self.pause() }
         }
       } catch {
         guard !Task.isCancelled else { return }
@@ -155,8 +156,15 @@ final class MemoirRates {
     }
   }
 
+  private func pause() {
+    filling?.cancel()
+    waiting?.cancel()
+    filling = nil
+    waiting = nil
+  }
+
   private func pump() {
-    guard filling == nil, let latest, let context else { return }
+    guard filling == nil, let latest, latest.showsMoney, let context else { return }
     waiting?.cancel()
     waiting = nil
     switch pacing.decide(latest.requests, now: now()) {
@@ -203,13 +211,15 @@ final class MemoirRates {
     let clock = context.clock
     return context.stores.main.observeReads { transaction in
       let today = try clock.today(in: try AccountZone.load(in: transaction)).date
-      return Observed(today: today, requests: try RateFiller.requests(in: transaction, today: today))
+      guard try MemoirModules.selection(in: transaction).contains(.money) else { return Observed(today: today, requests: .none, showsMoney: false) }
+      return Observed(today: today, requests: try RateFiller.requests(in: transaction, today: today), showsMoney: true)
     }
   }
 
   nonisolated struct Observed: Sendable, Equatable {
     let today: LocalDate
     let requests: RateRequests
+    let showsMoney: Bool
   }
 }
 

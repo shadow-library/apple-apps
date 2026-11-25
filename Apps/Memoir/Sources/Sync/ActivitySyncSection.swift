@@ -25,6 +25,8 @@ struct ActivitySyncSection: View {
         switch model.state {
         case .loading:
           ProgressView().frame(maxWidth: .infinity)
+        case .bodyOff:
+          Text("Activity syncs only while Body is on. Turn it on in Settings › Features.", tableName: "Sync").foregroundStyle(ShadowColor.textSecondary)
         case .unreadable(let error):
           error.text.foregroundStyle(ShadowColor.textSecondary)
         case .loaded:

@@ -100,6 +100,9 @@ nonisolated struct MemoirWriter: Sendable {
   /// Metrics and their days in the store of each metric's class, with their commands stamped as each is written.
   var metrics: MetricCatalog { MetricCatalog(stores: stores, issuer: clock.issuerSource) }
 
+  /// The vault's modules, with quest pauses and `moneyScoredFrom` stamped by this clock.
+  var modules: ModuleChanges { ModuleChanges(stores: stores, issuer: clock.issuerSource, now: clock.now) }
+
   func accountZone() async throws(MemoirWriteError) -> AccountZone {
     do {
       return try await AccountZone.load(from: stores.main)
