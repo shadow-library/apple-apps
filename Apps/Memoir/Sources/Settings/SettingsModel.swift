@@ -11,7 +11,6 @@ nonisolated enum SettingsField: Hashable, Sendable {
   case timeZone
   case intensity
   case homeCurrency
-  case budget
   case currencies
 }
 
@@ -36,8 +35,9 @@ nonisolated enum SettingsRefusal: Error {
 }
 
 /// Settings' reads and writes (`features/settings/settings-screen.tsx`). The time zone, intensity and displayed title feed replay, so they are commands, and
-/// replay stages the zone and intensity for the next day; the day window, week start, budget and currencies are fields of the settings record. The home
-/// currency is set once, when the record is created, and never changed here: memoir-web locks it at onboarding so history stays comparable.
+/// replay stages the zone and intensity for the next day; the day window, week start and currencies are fields of the settings record. The home currency
+/// is set once, when the record is created, and never changed here: memoir-web locks it at onboarding so history stays comparable. Home's limit is a
+/// budget, edited in Money's Budgets.
 @MainActor
 @Observable
 final class SettingsModel {
@@ -46,19 +46,14 @@ final class SettingsModel {
   private(set) var saving: Set<SettingsField> = []
   var failure: SettingsFailure?
   private(set) var scheduleDraft: ScheduleDraft?
-  var budgetText = ""
-  private(set) var budgetProblem = false
-  private(set) var budgetSeed = ""
 
   private let context: MemoirScreenContext
-  let format: AmountFormat
   private let scheduleDelay: Duration
   private var scheduleGeneration = 0
 
   /// `scheduleDelay` is how long the pickers rest before the window is saved, so a time picker's every step is not a synced change.
-  init(context: MemoirScreenContext, format: AmountFormat = AmountFormat(locale: .current), scheduleDelay: Duration = .milliseconds(700)) {
+  init(context: MemoirScreenContext, scheduleDelay: Duration = .milliseconds(700)) {
     self.context = context
-    self.format = format
     self.scheduleDelay = scheduleDelay
   }
 
@@ -80,6 +75,8 @@ final class SettingsModel {
   /// The displayed title and the intensity mean something only with Hero.
   var showsHero: Bool { ModuleSelection(settings: account).contains(.hero) }
 
+  var showsMoney: Bool { ModuleSelection(settings: account).contains(.money) }
+
   /// The pair the pickers show: the draft while one is on screen, else the saved window.
   var shownSchedule: ScheduleDraft? {
     if let scheduleDraft { return scheduleDraft }
@@ -87,8 +84,6 @@ final class SettingsModel {
   }
 
   var scheduleProblem: SleepWindowProblem? { scheduleDraft?.problem }
-
-  var isBudgetDirty: Bool { !saving.contains(.budget) && budgetText != budgetSeed }
 
   var unknownZone: (identifier: String, fallbackOffsetMinutes: Int?)? {
     guard case .unknownZone(let identifier, let offset) = today?.source else { return nil }
@@ -203,49 +198,8 @@ final class SettingsModel {
     }
   }
 
-  /// Reads the field in the home currency's minor units exactly (`AmountInput`); an empty field clears the budget.
-  func commitBudget() async {
-    guard let account, !saving.contains(.budget) else { return }
-    let trimmed = budgetText.trimmingCharacters(in: .whitespacesAndNewlines)
-    let budget: MoneyAmount?
-    if trimmed.isEmpty {
-      budget = nil
-    } else {
-      do {
-        budget = MoneyAmount(amountMinor: try AmountInput.minorUnits(trimmed, currency: account.defaultCurrency, format: format), currency: account.defaultCurrency)
-      } catch {
-        budgetProblem = true
-        return
-      }
-    }
-    budgetProblem = false
-    guard budget != account.monthlyBudget else { return }
-    if await !edit(.budget, { $0.monthlyBudget = budget }) { budgetText = budgetSeed }
-  }
-
-  func clearBudget() async {
-    guard !saving.contains(.budget) else { return }
-    budgetText = ""
-    budgetProblem = false
-    guard account?.monthlyBudget != nil else { return }
-    if await !edit(.budget, { $0.monthlyBudget = nil }) { budgetText = budgetSeed }
-  }
-
-  func editBudget(_ text: String) {
-    budgetText = text
-    budgetProblem = false
-  }
-
   private func received(_ value: SettingsSnapshot) {
     if let draft = scheduleDraft, draft.window != nil, draft.window == value.account.record?.schedule { scheduleDraft = nil }
-    let seed =
-      value.account.record.flatMap { record in
-        record.monthlyBudget.map { SettingsCurrencies.text(minor: $0.amountMinor, currency: $0.currency, format: format) }
-      } ?? ""
-    guard seed != budgetSeed else { return }
-    budgetSeed = seed
-    budgetText = seed
-    budgetProblem = false
   }
 
   @discardableResult

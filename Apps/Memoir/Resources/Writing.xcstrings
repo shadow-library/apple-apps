@@ -320,13 +320,13 @@
         }
       }
     },
-    "A trip can start at most 3 days ago.": {
+    "A trip can start on %@ at the earliest.": {
       "extractionState": "manual",
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "A trip can start at most 3 days ago."
+            "value": "A trip can start on %@ at the earliest."
           }
         }
       }

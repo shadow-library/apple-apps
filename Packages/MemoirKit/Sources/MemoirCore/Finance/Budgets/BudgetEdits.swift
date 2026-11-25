@@ -25,6 +25,13 @@ public struct BudgetDraft: Hashable, Sendable {
   }
 }
 
+/// What an edit of a budget writes, and when its limit and one-off threshold take effect; nil for an amount the edit leaves as it was.
+public struct BudgetEditPreview: Hashable, Sendable {
+  public let record: BudgetRecord
+  public let limit: BudgetStagedChange?
+  public let oneOff: BudgetStagedChange?
+}
+
 /// The only writer of budgets, in the caller's main-store write. Budgets are settings: no command is issued. `today` is the account's day.
 public enum BudgetEdits {
   /// How many days before today a trip may start, so a trip made afterwards cannot take days already spent out of a month about to close.
@@ -57,9 +64,20 @@ public enum BudgetEdits {
     if id == HomeBudget.id { try HomeBudget.ensure(on: today, in: &transaction) }
     let current = try present(id, in: transaction)
     let budget = LiveBudget(record: current, settings: current.isHome ? try FinanceLedger.settings(in: transaction) : nil)
-    let opening = BudgetDraft(budget, on: today)
-    var draft = opening
+    var draft = BudgetDraft(budget, on: today)
     change(&draft)
+    guard let outcome = try preview(draft, of: budget, today: today) else { return nil }
+    if outcome.record.period != current.period { try checkConflicts(of: id, currency: current.currency, period: outcome.record.period, in: transaction) }
+    let edited = outcome.record
+    try written { () throws(MemoirRecordError) in try BudgetRecord.edit(id: id, in: &transaction) { $0 = edited } }
+    return edited
+  }
+
+  /// What `update` would write for `draft`, without reading the store: the record, and when the limit and the one-off threshold take effect. Refuses
+  /// as `update` does, except for the clashes with other budgets, which only the store can tell. Nil when the draft moves nothing.
+  public static func preview(_ draft: BudgetDraft, of budget: LiveBudget, today: LocalDate) throws(FinanceError) -> BudgetEditPreview? {
+    let current = budget.record
+    let opening = BudgetDraft(budget, on: today)
     guard draft != opening else { return nil }
     if current.isHome, draft.name != opening.name || draft.currency != opening.currency || draft.period != opening.period { throw .homeBudgetFixed }
     guard draft.currency == opening.currency else { throw .budgetFieldFixed(BudgetField.currency.rawValue) }
@@ -67,9 +85,9 @@ public enum BudgetEdits {
     if !current.isHome { updated.name = try requiredName(draft.name) }
     if draft.period != opening.period {
       try checkPeriodMove(from: opening.period, to: draft.period, today: today)
-      try checkConflicts(of: id, currency: current.currency, period: draft.period, in: transaction)
       updated.period = draft.period
     }
+    var limitChange: BudgetStagedChange?
     if draft.limitMinor != opening.limitMinor {
       guard let limit = draft.limitMinor else { throw .budgetLimitRequired }
       try checkAmount(limit)
@@ -80,17 +98,18 @@ public enum BudgetEdits {
       }
       updated.limitMinor = staging.base
       updated.stagedLimit = staging.staged
+      limitChange = BudgetStagedChange(from: budget.limitStaging, to: staging, today: today)
     }
+    var oneOffChange: BudgetStagedChange?
     if draft.oneOffFromMinor != opening.oneOffFromMinor {
       if let threshold = draft.oneOffFromMinor { try checkAmount(threshold) }
       let staging = try budget.oneOffStaging.oneOff(to: draft.oneOffFromMinor, today: today)
       updated.oneOffFromMinor = staging.base
       updated.stagedOneOff = staging.staged
+      oneOffChange = BudgetStagedChange(from: budget.oneOffStaging, to: staging, today: today)
     }
     guard updated != current else { return nil }
-    let edited = updated
-    try written { () throws(MemoirRecordError) in try BudgetRecord.edit(id: id, in: &transaction) { $0 = edited } }
-    return edited
+    return BudgetEditPreview(record: updated, limit: limitChange, oneOff: oneOffChange)
   }
 
   /// Expenses and subscriptions that named the budget count by the assignment rule again; nothing else is written.

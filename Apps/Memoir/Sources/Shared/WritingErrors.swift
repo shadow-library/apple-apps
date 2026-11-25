@@ -51,7 +51,8 @@ enum WritingErrors {
       case .tripsOverlap: String(localized: "Trips can’t share a day. Change the dates so they don’t overlap.", table: "Writing")
       case .tripLimitLocked: String(localized: "A trip’s limit can’t be raised once the trip has started.", table: "Writing")
       case .tripStartFixed: String(localized: "A trip that has started keeps its first day.", table: "Writing")
-      case .tripStartTooEarly: String(localized: "A trip can start at most 3 days ago.", table: "Writing")
+      case .tripStartTooEarly(let earliest):
+        String(localized: "A trip can start on \(MoneyDates.text(earliest, locale: .autoupdatingCurrent)) at the earliest.", table: "Writing")
       case .limitChangedThisMonth: String(localized: "This month’s limit has already changed. Raise it again next month.", table: "Writing")
       case .refundExceedsAmount: String(localized: "That refund is more than what’s left on the expense.", table: "Writing")
       case .refundNotPositive: String(localized: "A refund has to be more than zero.", table: "Writing")

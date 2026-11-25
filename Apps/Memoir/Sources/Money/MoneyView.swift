@@ -4,8 +4,8 @@ import ShadowAppShell
 import ShadowDesignSystem
 import SwiftUI
 
-/// memoir-web `ExpensesScreen` (`features/finance/expenses-screen.tsx`): the range's spending, this month's budget, the subscriptions' monthly cost and
-/// the average day, the expense list, where the money went, and the subscriptions and currencies rails.
+/// memoir-web `ExpensesScreen` (`features/finance/expenses-screen.tsx`): the range's spending, how the budgets stand, the subscriptions' monthly cost and
+/// the average day, the budgets, the expense list, where the money went, and the subscriptions and currencies rails.
 struct MoneyView: View {
   @State private var model: MoneyModel
   @Environment(\.locale) private var locale
@@ -40,19 +40,12 @@ struct MoneyView: View {
     .task { await model.run() }
   }
 
-  /// memoir-web `headerMeta`: the range and what it spent, against the budget in the month view.
+  /// memoir-web `headerMeta`: the range and what it spent; each budget's standing, in its own currency, is on the budgets rail.
   private var subtitle: Text {
     guard let overview = model.overview.state.value ?? nil else { return Text(verbatim: "") }
-    let spend = overview.spend(model.range)
-    let spent = MoneyText.formatted(spend.spent.totalMinor, overview.home, locale: locale)
-    let period = MoneyLabels.periodTitle(model.range)
-    guard model.range == .month, let budget = overview.homeBudget, let limit = budget.limitMinor else { return Text("\(period) · \(spent)", tableName: "Money") }
-    return Text("\(period) · \(spent) of \(MoneyText.formatted(limit, budget.budget.currency, locale: locale))", tableName: "Money")
+    let spent = MoneyText.formatted(overview.spend(model.range).spent.totalMinor, overview.home, locale: locale)
+    return Text("\(MoneyLabels.periodTitle(model.range)) · \(spent)", tableName: "Money")
   }
-}
-
-extension MoneyOverview {
-  var homeBudget: BudgetPeriodStanding? { budgets.homeBudget.flatMap { $0.limitMinor == nil ? nil : $0 } }
 }
 
 /// Before the vault has settings there is no home currency to total in.
@@ -89,13 +82,14 @@ private struct MoneyOverviewContent: View {
         ShadowStatisticGrid {
           ShadowStatistic(
             Text(verbatim: MoneyLabels.spentTitle(model.range)), value: money(spend.spent.totalMinor), caption: Text(verbatim: MoneyLabels.comparison(spend)))
-          budgetStatistic(spend)
+          budgetStatistic
           ShadowStatistic(
             Text("Subscriptions a month", tableName: "Money"), value: money(overview.subscriptions.monthlyMinor),
             caption: Text(verbatim: MoneyNotes.subscriptions(overview, name: model.subscriptionName, locale: locale)))
           ShadowStatistic(Text("Average day", tableName: "Money"), value: money(spend.averagePerDayMinor), caption: Text(verbatim: MoneyNotes.daysLogged(spend.daysLogged)))
         }
         ShadowAdaptiveColumns {
+          BudgetsRail(model: model, standings: overview.budgets)
           ExpensesCard(list: model.list, home: overview.home)
           BreakdownCard(spend: spend, home: overview.home)
           SubscriptionsRail(overview: overview)
@@ -110,35 +104,40 @@ private struct MoneyOverviewContent: View {
     Text(verbatim: MoneyText.formatted(minor, overview.home, locale: locale)).monospacedDigit()
   }
 
-  /// memoir-web `BudgetKpi`: what is left of the month's budget, or how far over it the month is, whichever range is shown.
-  @ViewBuilder
-  private func budgetStatistic(_ spend: RangeSpend) -> some View {
-    if let budget = overview.homeBudget, let left = budget.leftMinor {
-      let over = left < 0
-      let monthly = model.range == .month
-      let label: Text =
-        switch (over, monthly) {
-        case (true, true): Text("Over budget", tableName: "Money")
-        case (true, false): Text("Over this month’s budget", tableName: "Money")
-        case (false, true): Text("Left of budget", tableName: "Money")
-        case (false, false): Text("Left of this month’s budget", tableName: "Money")
-        }
-      ShadowStatistic(label, value: money(left == .min ? .max : abs(left)), caption: Text(verbatim: budgetNote(budget, monthly: monthly)))
-    } else {
-      ShadowStatistic(
-        Text("Monthly budget", tableName: "Money"), value: Text("No monthly budget", tableName: "Money"),
-        caption: Text("Set a budget in Settings, under Day and money.", tableName: "Money"))
-    }
+  /// memoir-web `BudgetKpi`, over every budget under way rather than one: how many are on track, at risk or over.
+  private var budgetStatistic: some View {
+    let summary = BudgetSummary(overview.budgets)
+    return ShadowStatistic(Text("Budgets", tableName: "Money"), value: Text(verbatim: summary.value), caption: Text(verbatim: summary.caption))
   }
+}
 
-  private func budgetNote(_ budget: BudgetPeriodStanding, monthly: Bool) -> String {
-    let days = MoneyNotes.daysLeft(budget.phase.daysLeft ?? 0)
-    let pending = MoneyNotes.leftOut(awaitingRate: budget.spend.pending.awaitingRate, unconvertible: budget.spend.pending.unconvertible)
-    guard monthly else { return ([String(localized: "Budget is monthly", table: "Money"), days] + pending).joined(separator: " · ") }
-    let currency = budget.budget.currency
-    let spent = MoneyText.formatted(budget.spend.spentMinor, currency, locale: locale)
-    let of = String(localized: "\(spent) of \(MoneyText.formatted(budget.limitMinor ?? 0, currency, locale: locale))", table: "Money")
-    return ([of, days] + pending).joined(separator: " · ")
+/// Each budget's current period in its own currency, or, with the toggle, every budget under way added up in the home currency.
+private struct BudgetsRail: View {
+  @Bindable var model: MoneyModel
+  let standings: BudgetStandings
+  @Environment(\.locale) private var locale
+
+  var body: some View {
+    MoneyCard(Text("Budgets", tableName: "Money")) {
+      NavigationLink(value: MemoirRoute.money(.budgets)) { Text("Manage", tableName: "Money") }
+    } content: {
+      if standings.unreadableBudgets > 0 {
+        Text("Some budgets can’t be read until Memoir is updated.", tableName: "Money").shadowFont(.caption).foregroundStyle(ShadowColor.warningText)
+      }
+      if standings.offersConsolidated {
+        Toggle(isOn: $model.showsConsolidated) { Text("Add up in \(standings.home.code)", tableName: "Money") }
+      }
+      if model.showsConsolidated && standings.offersConsolidated {
+        ConsolidatedView(content: ConsolidatedContent(standings.consolidated, locale: locale))
+      } else {
+        ForEach(standings.shownOnRail) { standing in
+          NavigationLink(value: MemoirRoute.money(.budget(standing.id))) {
+            BudgetRowView(content: BudgetRowContent(standing, locale: locale)).contentShape(Rectangle())
+          }
+          .buttonStyle(.plain)
+        }
+      }
+    }
   }
 }
 
@@ -166,75 +165,6 @@ private struct ExpensesCard: View {
       }
       .frame(minHeight: Spacing.space10)
     }
-  }
-}
-
-/// The rows of a listing and what to say when it is empty, shared by the Money screen and the full list.
-struct ExpenseRows: View {
-  let listing: ExpenseListing
-  let list: ExpenseListModel
-  let locale: Locale
-  @State private var rateEntry: ExpenseRecord?
-
-  var body: some View {
-    if listing.rows.items.isEmpty {
-      VStack(alignment: .leading, spacing: Spacing.space2) {
-        Text(verbatim: emptyTitle).shadowFont(.subheadline).foregroundStyle(ShadowColor.textPrimary)
-        MoneyProse(emptyMessage)
-        NavigationLink(value: MemoirRoute.money(.newExpense)) { Text("Add expense", tableName: "Money") }
-      }
-    } else {
-      VStack(spacing: 0) {
-        ForEach(listing.rows.items, id: \.expense.id) { row in
-          let content = ExpenseRowContent(row, home: listing.home, categoryName: { MoneyLabels.categoryName($0) }, locale: locale)
-          let link = NavigationLink(value: MemoirRoute.money(.expense(row.expense.id))) { ExpenseRowView(content: content) }.buttonStyle(.plain)
-          if content.isRatePending {
-            link.contextMenu {
-              Button {
-                rateEntry = row.expense
-              } label: {
-                Label(title: { Text("Enter the rate", tableName: "Money") }, icon: { Image(systemName: "arrow.left.arrow.right") })
-              }
-            }
-          } else {
-            link
-          }
-        }
-      }
-      .sheet(isPresented: Binding(get: { rateEntry != nil }, set: { if !$0 { rateEntry = nil } })) {
-        if let rateEntry {
-          NavigationStack { ExpenseFormScreen(editing: rateEntry, context: list.context) }.shadowSheetStyle(.form)
-        }
-      }
-      HStack {
-        Text("Showing \(listing.rows.items.count) of \(listing.rows.total)", tableName: "Money")
-          .shadowFont(.footnote).foregroundStyle(ShadowColor.textSecondary)
-        Spacer()
-        if listing.rows.hasMore {
-          if list.limit <= ExpenseListModel.overviewPageSize {
-            NavigationLink(value: MemoirRoute.money(.expenses(list.scope))) { Text("Show all", tableName: "Money") }
-          } else {
-            Button {
-              list.showMore()
-            } label: {
-              Text("Show more", tableName: "Money")
-            }
-          }
-        }
-      }
-    }
-  }
-
-  private var emptyTitle: String {
-    if !list.search.isEmpty { return String(localized: "Nothing matches “\(list.search)”", table: "Money") }
-    if let category = list.category { return String(localized: "No \(MoneyLabels.categoryName(category)) expenses in this range", table: "Money") }
-    return String(localized: "No expenses in this range", table: "Money")
-  }
-
-  private var emptyMessage: Text {
-    list.search.isEmpty
-      ? Text("Add one when you spend something. Ten seconds is the whole cost.", tableName: "Money")
-      : Text("Try a shorter word, or widen the range.", tableName: "Money")
   }
 }
 

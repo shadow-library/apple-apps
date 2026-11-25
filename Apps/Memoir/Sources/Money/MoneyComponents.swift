@@ -158,10 +158,11 @@ struct MoneyAmountField: View {
   @Binding var text: String
   let currency: CurrencyCode
   let issue: String?
+  var label = Text("Amount", tableName: "Money")
 
   var body: some View {
     VStack(alignment: .leading, spacing: Spacing.space1) {
-      TextField(text: $text, prompt: Text(verbatim: "0")) { Text("Amount", tableName: "Money") }
+      TextField(text: $text, prompt: Text(verbatim: "0")) { label }
         .monospacedDigit()
         .autocorrectionDisabled()
         #if os(iOS)

@@ -26,13 +26,4 @@ nonisolated enum SettingsCurrencies {
     let rest = others.subtracting(offered).sorted { $0.code < $1.code }
     return [home] + offered + rest
   }
-
-  /// The budget as the field shows it: the exact minor units with the currency's places and the locale's decimal separator, ungrouped.
-  static func text(minor: Int64, currency: CurrencyCode, format: AmountFormat) -> String {
-    guard let exponent = try? ISO4217.exponent(of: currency), exponent > 0 else { return String(minor) }
-    let digits = String(minor.magnitude)
-    let padded = String(repeating: "0", count: max(0, exponent + 1 - digits.count)) + digits
-    let split = padded.index(padded.endIndex, offsetBy: -exponent)
-    return (minor < 0 ? "-" : "") + padded[..<split] + String(format.decimalSeparator) + padded[split...]
-  }
 }

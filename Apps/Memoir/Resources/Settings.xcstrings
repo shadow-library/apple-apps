@@ -12,17 +12,6 @@
         }
       }
     },
-    "A soft ceiling for the calendar month — nothing here is blocked when you go over it.": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "A soft ceiling for the calendar month — nothing here is blocked when you go over it."
-          }
-        }
-      }
-    },
     "About": {
       "extractionState": "manual",
       "localizations": {
@@ -85,6 +74,17 @@
           "stringUnit": {
             "state": "translated",
             "value": "Body"
+          }
+        }
+      }
+    },
+    "Budgets": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Budgets"
           }
         }
       }
@@ -155,17 +155,6 @@
         }
       }
     },
-    "Clear": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Clear"
-          }
-        }
-      }
-    },
     "Currencies": {
       "extractionState": "manual",
       "localizations": {
@@ -206,28 +195,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "Displayed title"
-          }
-        }
-      }
-    },
-    "Done": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Done"
-          }
-        }
-      }
-    },
-    "Enter an amount of zero or more, for example 1500.": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Enter an amount of zero or more, for example 1500."
           }
         }
       }
@@ -342,6 +309,17 @@
         }
       }
     },
+    "Home’s monthly limit, budgets in other currencies and trips.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Home’s monthly limit, budgets in other currencies and trips."
+          }
+        }
+      }
+    },
     "How much a missed day costs. Lowering it is never punished.": {
       "extractionState": "manual",
       "localizations": {
@@ -426,17 +404,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "Money"
-          }
-        }
-      }
-    },
-    "Monthly budget": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Monthly budget"
           }
         }
       }
@@ -690,28 +657,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "Turning a feature off only hides it: nothing is deleted, and its data keeps syncing and stays in your exports. Turning Body off stops reading Apple Health and keeps Activity off iCloud."
-          }
-        }
-      }
-    },
-    "Unsaved — press Return or move out of the field to save.": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Unsaved — press Return or move out of the field to save."
-          }
-        }
-      }
-    },
-    "Unsaved — tap Done or move out of the field to save.": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Unsaved — tap Done or move out of the field to save."
           }
         }
       }

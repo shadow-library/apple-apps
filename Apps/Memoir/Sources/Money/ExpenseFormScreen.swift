@@ -85,6 +85,11 @@ private struct ExpenseFormFields: View {
       } footer: {
         if form.isEditing, let preview = form.preview(locale: locale) { Text(verbatim: preview) }
       }
+      if let pick = form.budget {
+        BudgetChipSection(
+          pick: Binding(get: { form.budget ?? pick }, set: { form.budget = $0 }), currency: form.currency, date: form.occurredOn,
+          subscriptionOverride: form.subscriptionOverride)
+      }
       Section {
         TextField(text: $form.note, prompt: Text("What was it for?", tableName: "Money")) { Text("Note", tableName: "Money") }
         TextField(text: $form.merchant, prompt: Text("Optional", tableName: "Money")) { Text("Merchant", tableName: "Money") }

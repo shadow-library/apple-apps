@@ -7,7 +7,7 @@ import ShadowStore
 
 /// memoir-web `ExpenseEntryPanel` (`features/finance/expense-entry-panel.tsx`): the amount typed in the owner's locale and read exactly, the currency
 /// (fixed once saved), the category, the date, the note and the merchant, and, for a foreign currency, a rate the owner types for this expense alone,
-/// read exactly in their locale (`RateInput`). Writes go only through `ExpenseEdits`.
+/// read exactly in their locale (`RateInput`), and the budget it counts in. Writes go only through `ExpenseEdits`.
 @MainActor
 @Observable
 final class ExpenseForm {
@@ -27,11 +27,14 @@ final class ExpenseForm {
   var occurredOn: LocalDate
   var note: String
   var merchant: String
+  /// Nil before the vault has settings.
+  var budget: BudgetPick?
   private(set) var isSaving = false
   private(set) var failure: PresentedError?
   /// The receipt being added with a new expense; nil when editing, since a saved expense's receipt is fixed.
   let receipt: ReceiptDraft?
   @ObservationIgnored private let writer: MemoirWriter
+  @ObservationIgnored private let stores: MemoirStores
   @ObservationIgnored private let original: ExpenseRecord?
   @ObservationIgnored private let originalRateText: String
 
@@ -39,6 +42,7 @@ final class ExpenseForm {
     self.mode = mode
     self.options = options
     writer = context.writer
+    stores = context.stores
     format = AmountFormat(locale: locale)
     switch mode {
     case .create:
@@ -52,6 +56,7 @@ final class ExpenseForm {
       occurredOn = options.today
       note = ""
       merchant = ""
+      budget = BudgetPick(budgets: options.budgets, stored: nil)
     case .edit(let expense):
       original = expense
       self.receipt = nil
@@ -65,7 +70,13 @@ final class ExpenseForm {
       occurredOn = expense.occurredOn
       note = expense.note ?? ""
       merchant = expense.merchant ?? ""
+      budget = BudgetPick(budgets: options.budgets, stored: expense.budget)
     }
+  }
+
+  /// A confirmed cycle's expense counts where its subscription's override says unless it has one of its own.
+  var subscriptionOverride: UUID? {
+    original?.cycle.flatMap { options.subscriptionBudgets[$0.subscription] }
   }
 
   var isEditing: Bool { original != nil }
@@ -124,7 +135,9 @@ final class ExpenseForm {
   }
 
   var hasChanges: Bool {
-    guard let original else { return !amountText.isEmpty || !rateText.isEmpty || !note.isEmpty || !merchant.isEmpty || receipt?.hasPhoto == true }
+    guard let original else {
+      return !amountText.isEmpty || !rateText.isEmpty || !note.isEmpty || !merchant.isEmpty || receipt?.hasPhoto == true || budget?.override != nil
+    }
     return edited(original).map { $0 != original } ?? true
   }
 
@@ -167,20 +180,25 @@ final class ExpenseForm {
     failure = nil
     defer { isSaving = false }
     do {
+      let moved = budget?.movedOverride
       if let original {
         let id = original.id
-        let fields = Fields(minor: minor, category: category, occurredOn: occurredOn, note: Self.text(note), merchant: Self.text(merchant), manualRate: manualRate)
+        let fields = fields(minor: minor, manualRate: manualRate, budget: budget.map(\.written) ?? original.budget)
         _ = try await writer.write { issuer, transaction in
-          try ExpenseEdits.update(id, issuer: issuer, in: &transaction) { expense in fields.apply(to: &expense) }
+          try BudgetPick.requireLive(moved, in: transaction)
+          return try ExpenseEdits.update(id, issuer: issuer, in: &transaction) { expense in fields.apply(to: &expense) }
         }
         return id
       }
       let now = writer.clock.now()
       let expense = ExpenseRecord(
         id: UUID.v7(at: now), amountMinor: minor, currency: currency, occurredOn: occurredOn, category: category, merchant: Self.text(merchant), note: Self.text(note),
-        manualRate: manualRate, loggedAtMillis: MemoirClock.millis(now))
+        manualRate: manualRate, budget: budget?.override, loggedAtMillis: MemoirClock.millis(now))
       guard let receipt else {
-        return try await writer.write { issuer, transaction in try ExpenseEdits.create(expense, issuer: issuer, in: &transaction).expense.id }
+        return try await writer.write { issuer, transaction in
+          try BudgetPick.requireLive(moved, in: transaction)
+          return try ExpenseEdits.create(expense, issuer: issuer, in: &transaction).expense.id
+        }
       }
       do throws(ReceiptWriteError) {
         return try await ReceiptWrites.create(expense, attaching: receipt.attachment, blobs: receipt.blobs, writer: writer).id
@@ -190,6 +208,7 @@ final class ExpenseForm {
       }
     } catch {
       failure = WritingErrors.presented(error)
+      if BudgetPick.isAbsentBudget(error), let budgets = try? await MoneyOptions.budgets(in: stores) { budget?.refresh(budgets) }
       return nil
     }
   }
@@ -197,8 +216,13 @@ final class ExpenseForm {
   private func edited(_ expense: ExpenseRecord) -> ExpenseRecord? {
     guard case .success(let minor) = amount, case .success(let manualRate) = manualRate else { return nil }
     var edited = expense
-    Fields(minor: minor, category: category, occurredOn: occurredOn, note: Self.text(note), merchant: Self.text(merchant), manualRate: manualRate).apply(to: &edited)
+    fields(minor: minor, manualRate: manualRate, budget: budget.map(\.written) ?? expense.budget).apply(to: &edited)
     return edited
+  }
+
+  private func fields(minor: Int64, manualRate: ManualRate?, budget: UUID?) -> Fields {
+    Fields(
+      minor: minor, category: category, occurredOn: occurredOn, note: Self.text(note), merchant: Self.text(merchant), manualRate: manualRate, budget: budget)
   }
 
   private static func text(_ value: String) -> String? {
@@ -213,6 +237,7 @@ final class ExpenseForm {
     let note: String?
     let merchant: String?
     let manualRate: ManualRate?
+    let budget: UUID?
 
     func apply(to expense: inout ExpenseRecord) {
       expense.amountMinor = minor
@@ -221,6 +246,7 @@ final class ExpenseForm {
       expense.note = note
       expense.merchant = merchant
       expense.manualRate = manualRate
+      expense.budget = budget
     }
   }
 }

@@ -2,7 +2,8 @@ import Foundation
 import MemoirCore
 import ShadowStore
 
-/// What the expense and subscription forms offer, read once when a form opens: the home currency, the currencies to pick from and the categories.
+/// What the expense and subscription forms offer, read once when a form opens: the home currency, the currencies to pick from, the categories, and the
+/// live budgets with each subscription's override, which the budget chip assigns from.
 nonisolated struct MoneyOptions: Sendable, Equatable {
   /// memoir-web `CURRENCIES` (`lib/data/finance.types.ts:16-36`), offered after the account's enabled currencies.
   static let referenceCurrencies: [CurrencyCode] = [
@@ -13,12 +14,25 @@ nonisolated struct MoneyOptions: Sendable, Equatable {
   let enabled: [CurrencyCode]
   let categories: [CategoryEntry]
   let today: LocalDate
+  let budgets: Budgets
+  /// Each subscription's budget override, deleted subscriptions included, since their cycle expenses keep counting where it says.
+  let subscriptionBudgets: [UUID: UUID]
 
   static func load(_ context: MemoirScreenContext) async throws -> MoneyOptions {
     let today = try await context.today().date
-    let book = try await context.stores.main.read { transaction in try MoneyBook.load(from: transaction) }
+    let (book, budgets, subscriptions) = try await context.stores.main.read { transaction in
+      (try MoneyBook.load(from: transaction), try Budgets.live(in: transaction), try SubscriptionRecord.listing(in: transaction).entries.map(\.record))
+    }
     let categories = try CategoriesOverview.make(book, today: today).categories
-    return MoneyOptions(home: book.settings?.defaultCurrency, enabled: book.settings?.enabledCurrencies ?? [], categories: categories, today: today)
+    var overrides = [UUID: UUID]()
+    for subscription in subscriptions { overrides[subscription.id] = subscription.budget }
+    return MoneyOptions(
+      home: book.settings?.defaultCurrency, enabled: book.settings?.enabledCurrencies ?? [], categories: categories, today: today, budgets: budgets,
+      subscriptionBudgets: overrides)
+  }
+
+  static func budgets(in stores: MemoirStores) async throws -> Budgets {
+    try await stores.main.read { transaction in try Budgets.live(in: transaction) }
   }
 
   /// The home currency first, then the other enabled ones, then memoir-web's list; `current` leads when it is in none of them.

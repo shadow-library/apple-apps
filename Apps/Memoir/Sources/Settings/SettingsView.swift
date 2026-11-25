@@ -199,13 +199,21 @@ private struct SettingsDaySection: View {
 private struct SettingsMoneySection: View {
   let model: SettingsModel
   let snapshot: SettingsSnapshot
-  @FocusState private var budgetFocused: Bool
 
   var body: some View {
     Section {
       homeCurrency
       if let account = model.account {
-        budget(account)
+        if model.showsMoney {
+          NavigationLink(value: MemoirRoute.money(.budgets)) {
+            VStack(alignment: .leading, spacing: Spacing.space1) {
+              Text("Budgets", tableName: "Settings")
+              Text("Home’s monthly limit, budgets in other currencies and trips.", tableName: "Settings")
+                .shadowFont(.footnote)
+                .foregroundStyle(ShadowColor.textSecondary)
+            }
+          }
+        }
         NavigationLink(value: MemoirRoute.settings(.currencies)) {
           LabeledContent {
             Text(verbatim: account.enabledCurrencies.map(\.code).joined(separator: ", "))
@@ -240,60 +248,6 @@ private struct SettingsMoneySection: View {
     case .unreadable:
       EmptyView()
     }
-  }
-
-  @ViewBuilder
-  private func budget(_ account: AccountSettingsRecord) -> some View {
-    VStack(alignment: .leading, spacing: Spacing.space2) {
-      Text("Monthly budget", tableName: "Settings")
-      HStack(spacing: Spacing.space3) {
-        TextField(text: Binding(get: { model.budgetText }, set: { model.editBudget($0) }), prompt: Text(verbatim: "1500")) {
-          Text("Monthly budget", tableName: "Settings")
-        }
-        .labelsHidden()
-        #if os(iOS)
-          .keyboardType(.decimalPad)
-        #endif
-        .focused($budgetFocused)
-        .onSubmit { Task { await model.commitBudget() } }
-        #if os(iOS)
-          .toolbar {
-            ToolbarItemGroup(placement: .keyboard) {
-              Spacer()
-              Button {
-                budgetFocused = false
-              } label: {
-                Text("Done", tableName: "Settings")
-              }
-            }
-          }
-        #endif
-        .disabled(model.saving.contains(.budget))
-        Text(verbatim: account.defaultCurrency.code).foregroundStyle(ShadowColor.textSecondary)
-        Button {
-          Task { await model.clearBudget() }
-        } label: {
-          Text("Clear", tableName: "Settings")
-        }
-        .buttonStyle(.borderless)
-        .disabled(model.saving.contains(.budget) || (account.monthlyBudget == nil && model.budgetText.isEmpty))
-      }
-      budgetHelp.shadowFont(.footnote).foregroundStyle(model.budgetProblem ? ShadowColor.dangerText : ShadowColor.textSecondary)
-      SettingsFailureRow(error: model.failure(for: .budget))
-    }
-    .onChange(of: budgetFocused) { _, focused in
-      if !focused { Task { await model.commitBudget() } }
-    }
-  }
-
-  private var budgetHelp: Text {
-    if model.budgetProblem { return Text("Enter an amount of zero or more, for example 1500.", tableName: "Settings") }
-    #if os(iOS)
-      if model.isBudgetDirty { return Text("Unsaved — tap Done or move out of the field to save.", tableName: "Settings") }
-    #else
-      if model.isBudgetDirty { return Text("Unsaved — press Return or move out of the field to save.", tableName: "Settings") }
-    #endif
-    return Text("A soft ceiling for the calendar month — nothing here is blocked when you go over it.", tableName: "Settings")
   }
 }
 

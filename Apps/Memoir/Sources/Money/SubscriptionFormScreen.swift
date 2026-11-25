@@ -100,6 +100,13 @@ private struct SubscriptionFormFields: View {
         }
       }
       .disabled(form.isReadOnly)
+      if let pick = form.budget {
+        BudgetChipSection(
+          pick: Binding(get: { form.budget ?? pick }, set: { form.budget = $0 }), currency: form.currency, date: form.nextDue,
+          footnote: Text("Every charge it writes counts in this budget.", tableName: "Money")
+        )
+        .disabled(form.isReadOnly)
+      }
       Section {
         Toggle(isOn: $form.reminderEnabled) { Text("Remind me", tableName: "Money") }
         if form.reminderEnabled {

@@ -25,6 +25,8 @@ final class ExpenseDetailModel {
   let id: UUID
   let history = MoneyFeed<ExpenseHistory>()
   let book = MoneyFeed<MoneyBook>()
+  /// Every budget record, deleted ones included, so a change of budget in the history names the budget it left.
+  let budgets = MoneyFeed<[BudgetRecord]>()
   private var recordedDeletion: Deletion?
   /// Set while an undo is written; the read showing the expense again ends the deletion, so a later delete elsewhere shows as gone, never undoable.
   private var isRestoring = false
@@ -41,7 +43,8 @@ final class ExpenseDetailModel {
     let stores = context.stores
     async let expense: Void = history.consume(MoneyReads.observeHistory(of: id, in: stores)) { [weak self] history in self?.settle(history) }
     async let money: Void = book.consume(stores.main.observeReads { transaction in try MoneyBook.load(from: transaction) })
-    _ = await (expense, money)
+    async let budgetRecords: Void = budgets.consume(stores.main.observeReads { transaction in try BudgetRecord.listing(in: transaction).entries.map(\.record) })
+    _ = await (expense, money, budgetRecords)
   }
 
   /// The deletion made here, until the read shows the expense again, so neither the delete nor its undo flashes "no longer here".
@@ -184,10 +187,17 @@ final class ExpenseDetailModel {
     case .manualRate(let from, let to):
       let rate = { (manual: ManualRate) in MoneyText.rate(manual.rate, locale: locale) }
       return Self.moved(String(localized: "Rate you entered", table: "Money"), from.map(rate), to.map(rate))
-    case .budget: return Self.moved(String(localized: "Budget", table: "Money"), nil, nil)
+    case .budget(let from, let to): return Self.moved(String(localized: "Budget", table: "Money"), from.map(budgetName), to.map(budgetName))
     case .fromSavings(let from, let to): return Self.moved(String(localized: "From savings", table: "Money"), from.map(amount), to.map(amount))
     case .goal: return Self.moved(String(localized: "Savings goal", table: "Money"), nil, nil)
     }
+  }
+
+  func budgetName(_ id: UUID) -> String {
+    guard let record = budgets.state.value?.first(where: { $0.id == id }) else {
+      return id == HomeBudget.id ? BudgetCopy.home : String(localized: "A budget not on this device", table: "Money")
+    }
+    return BudgetCopy.name(id: id, stored: record.name)
   }
 
   private static func moved(_ field: String, _ from: String?, _ to: String?) -> String {

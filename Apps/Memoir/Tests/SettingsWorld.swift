@@ -33,8 +33,8 @@ final class SettingsWorld {
     }
   }
 
-  func settingsModel(format: AmountFormat = SettingsWorld.english, scheduleDelay: Duration = .zero) async throws -> SettingsModel {
-    let model = SettingsModel(context: context, format: format, scheduleDelay: scheduleDelay)
+  func settingsModel(scheduleDelay: Duration = .zero) async throws -> SettingsModel {
+    let model = SettingsModel(context: context, scheduleDelay: scheduleDelay)
     tasks.append(Task { await model.run() })
     try await until("the settings") { model.snapshot.state.value != nil && model.today != nil }
     return model

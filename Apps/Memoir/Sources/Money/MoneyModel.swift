@@ -94,13 +94,15 @@ final class ExpenseListModel {
   }
 }
 
-/// The Money screen: the three ranges' spending, this month's budget, the subscriptions' monthly cost and the expense list, all for the account's day.
+/// The Money screen: the three ranges' spending, every budget's standing, the subscriptions' monthly cost and the expense list, all for the account's day.
 @MainActor
 @Observable
 final class MoneyModel {
   let overview = MoneyFeed<MoneyOverview?>()
   let subscriptions = MoneyFeed<SubscriptionsOverview?>()
   let list: ExpenseListModel
+  /// The budgets rail shows every budget under way added up in the home currency instead of one by one.
+  var showsConsolidated = false
   @ObservationIgnored let context: MemoirScreenContext
 
   init(context: MemoirScreenContext) {

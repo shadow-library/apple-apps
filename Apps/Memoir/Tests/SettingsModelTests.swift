@@ -120,60 +120,6 @@ struct SettingsModelTests {
     #expect(model.snapshot.state.value?.chosenIntensity == .lowIntensity)
   }
 
-  @Test("should save the monthly budget in exact minor units read with the locale's separators")
-  func savesTheBudget() async throws {
-    let world = try await SettingsWorld()
-    defer { world.stop() }
-    let model = try await world.settingsModel(format: SettingsWorld.german)
-
-    model.editBudget("1.234,56")
-    await model.commitBudget()
-
-    #expect(try await world.record()?.monthlyBudget == MoneyAmount(amountMinor: 123_456, currency: eur))
-    try await until("the saved budget shown") { model.budgetSeed == "1234,56" }
-    #expect(model.budgetText == "1234,56" && !model.isBudgetDirty && !model.budgetProblem)
-  }
-
-  @Test("should read a budget in a currency without minor units exactly")
-  func savesABudgetInYen() async throws {
-    let world = try await SettingsWorld(currency: "JPY")
-    defer { world.stop() }
-    let model = try await world.settingsModel()
-
-    model.editBudget("150,000")
-    await model.commitBudget()
-
-    #expect(try await world.record()?.monthlyBudget == MoneyAmount(amountMinor: 150_000, currency: CurrencyCode("JPY")!))
-  }
-
-  @Test("should refuse a budget the currency cannot hold and write nothing", arguments: ["12.345", "-5", "1,5", "12a"])
-  func refusesABudget(_ text: String) async throws {
-    let world = try await SettingsWorld()
-    defer { world.stop() }
-    let model = try await world.settingsModel()
-
-    model.editBudget(text)
-    await model.commitBudget()
-
-    #expect(model.budgetProblem)
-    #expect(try await world.record()?.monthlyBudget == nil)
-  }
-
-  @Test("should clear the budget, and treat an empty field as no budget")
-  func clearsTheBudget() async throws {
-    let world = try await SettingsWorld()
-    defer { world.stop() }
-    let model = try await world.settingsModel()
-    model.editBudget("1500")
-    await model.commitBudget()
-    #expect(try await world.record()?.monthlyBudget?.amountMinor == 150_000)
-
-    await model.clearBudget()
-
-    #expect(try await world.record()?.monthlyBudget == nil)
-    #expect(model.budgetText.isEmpty)
-  }
-
   @Test("should set the week start")
   func setsTheWeekStart() async throws {
     let world = try await SettingsWorld()

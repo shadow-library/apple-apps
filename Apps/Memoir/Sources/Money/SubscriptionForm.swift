@@ -5,7 +5,8 @@ import ShadowAppShell
 import ShadowCore
 import ShadowStore
 
-/// memoir-web `SubscriptionEntryPanel`: name, amount, currency, frequency, next due date, category and the reminder; editing and deleting are native.
+/// memoir-web `SubscriptionEntryPanel`: name, amount, currency, frequency, next due date, category and the reminder; editing and deleting are native, as
+/// is the budget every cycle's expense counts in.
 @MainActor
 @Observable
 final class SubscriptionForm {
@@ -24,6 +25,8 @@ final class SubscriptionForm {
   var category: CategoryKey
   var reminderEnabled: Bool
   var reminderLead: SubscriptionReminderLead
+  /// Nil before the vault has settings.
+  var budget: BudgetPick?
   private(set) var isSaving = false
   private(set) var failure: PresentedError?
   @ObservationIgnored let original: SubscriptionRecord?
@@ -31,6 +34,7 @@ final class SubscriptionForm {
   @ObservationIgnored let lastConfirmed: LocalDate?
   @ObservationIgnored private let opening: Terms?
   @ObservationIgnored private let writer: MemoirWriter
+  @ObservationIgnored private let stores: MemoirStores
 
   /// A new subscription, or `original` with the next due date and latest confirmation its schedule derives from the confirmed cycles.
   init(
@@ -41,8 +45,10 @@ final class SubscriptionForm {
     self.lastConfirmed = lastConfirmed
     self.options = options
     writer = context.writer
+    stores = context.stores
     format = AmountFormat(locale: locale)
     self.locale = locale
+    budget = BudgetPick(budgets: options.budgets, stored: original?.budget)
     guard let original else {
       opening = nil
       name = ""
@@ -60,7 +66,7 @@ final class SubscriptionForm {
       name: original.name, amountMinor: original.amountMinor, currency: original.currency, frequency: original.frequency.known ?? .monthly,
       customIntervalDays: original.frequency.known == .custom ? original.customIntervalDays ?? SubscriptionCycle.defaultCustomIntervalDays : nil,
       nextDue: derivedDue ?? original.anchorOn, category: original.category, reminderEnabled: original.reminderEnabled,
-      reminderLead: original.reminderLead.known ?? .oneDay)
+      reminderLead: original.reminderLead.known ?? .oneDay, budget: original.budget)
     opening = terms
     name = terms.name
     amountText = MoneyText.editable(original.amountMinor, original.currency, format: format)
@@ -131,7 +137,7 @@ final class SubscriptionForm {
   }
 
   var hasChanges: Bool {
-    guard let opening else { return !name.isEmpty || !amountText.isEmpty }
+    guard let opening else { return !name.isEmpty || !amountText.isEmpty || budget?.override != nil }
     return terms != opening
   }
 
@@ -147,19 +153,25 @@ final class SubscriptionForm {
     isSaving = true
     failure = nil
     defer { isSaving = false }
+    let moved = budget?.movedOverride
     do {
       if let original, let opening {
         let id = original.id
         _ = try await writer.write { issuer, transaction in
-          try SubscriptionWrites.update(id, issuer: issuer, in: &transaction) { terms.apply(changedFrom: opening, to: &$0) }
+          try BudgetPick.requireLive(moved, in: transaction)
+          return try SubscriptionWrites.update(id, issuer: issuer, in: &transaction) { terms.apply(changedFrom: opening, to: &$0) }
         }
         return id
       }
       let subscription = terms.record(id: UUID.v7(at: writer.clock.now()))
-      try await writer.write { issuer, transaction in try SubscriptionWrites.create(subscription, issuer: issuer, in: &transaction) }
+      try await writer.write { issuer, transaction in
+        try BudgetPick.requireLive(moved, in: transaction)
+        try SubscriptionWrites.create(subscription, issuer: issuer, in: &transaction)
+      }
       return subscription.id
     } catch {
       failure = WritingErrors.presented(error)
+      if BudgetPick.isAbsentBudget(error), let budgets = try? await MoneyOptions.budgets(in: stores) { budget?.refresh(budgets) }
       return nil
     }
   }
@@ -186,7 +198,7 @@ final class SubscriptionForm {
     guard case .success(let minor) = amount else { return nil }
     return Terms(
       name: trimmedName, amountMinor: minor, currency: currency, frequency: frequency, customIntervalDays: frequency == .custom ? customIntervalDays : nil,
-      nextDue: nextDue, category: category, reminderEnabled: reminderEnabled, reminderLead: reminderLead)
+      nextDue: nextDue, category: category, reminderEnabled: reminderEnabled, reminderLead: reminderLead, budget: budget.map(\.written) ?? original?.budget)
   }
 
   /// What the form edits. An edit writes only the terms the owner moved, so a pause or a note written elsewhere while the form is open stays.
@@ -200,12 +212,13 @@ final class SubscriptionForm {
     let category: CategoryKey
     let reminderEnabled: Bool
     let reminderLead: SubscriptionReminderLead
+    let budget: UUID?
 
     /// memoir-web takes the billing day from the next due date (`finance.provider.ts:284`).
     func record(id: UUID) -> SubscriptionRecord {
       SubscriptionRecord(
         id: id, name: name, amountMinor: amountMinor, currency: currency, frequency: .known(frequency), customIntervalDays: customIntervalDays,
-        billingDay: nextDue.day, anchorOn: nextDue, category: category, reminderEnabled: reminderEnabled, reminderLead: .known(reminderLead))
+        billingDay: nextDue.day, anchorOn: nextDue, category: category, reminderEnabled: reminderEnabled, reminderLead: .known(reminderLead), budget: budget)
     }
 
     func apply(changedFrom opening: Terms, to subscription: inout SubscriptionRecord) {
@@ -223,6 +236,7 @@ final class SubscriptionForm {
       if category != opening.category { subscription.category = category }
       if reminderEnabled != opening.reminderEnabled { subscription.reminderEnabled = reminderEnabled }
       if reminderLead != opening.reminderLead { subscription.reminderLead = .known(reminderLead) }
+      if budget != opening.budget { subscription.budget = budget }
     }
   }
 }

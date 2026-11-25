@@ -18,11 +18,11 @@ struct MoneyModelTests {
 
     let empty = try await MoneyFixture.loaded(model.overview, "the empty overview") { $0 != nil }
     #expect(empty?.month.spent.totalMinor == 0)
-    #expect(empty?.homeBudget?.leftMinor == 50_000)
+    #expect(empty?.budgets.homeBudget?.leftMinor == 50_000)
 
     try await MoneyFixture.expense(context, 1840, note: "Lunch")
     let spent = try await MoneyFixture.loaded(model.overview, "the overview with the lunch") { $0?.month.spent.totalMinor == 1840 }
-    #expect(spent?.homeBudget?.leftMinor == 48_160)
+    #expect(spent?.budgets.homeBudget?.leftMinor == 48_160)
     #expect(spent?.week.daysLogged == 1)
     let listing = try await MoneyFixture.loaded(model.list.listing, "the list with the lunch") { $0.rows.total == 1 }
     #expect(listing.rows.items.map(\.expense.note) == ["Lunch"])
@@ -58,7 +58,7 @@ struct MoneyModelTests {
     let note = try #require(MoneyNotes.pending(overview.month.spent.pending))
     #expect(note.contains("1"))
     #expect(MoneyNotes.pending(.none) == nil)
-    #expect(overview.homeBudget == nil)
+    #expect(overview.budgets.homeBudget?.limitMinor == nil)
     #expect(overview.month.categories.first { $0.category == MoneyFixture.food }?.pending.awaitingRate == 1)
     #expect(MoneyNotes.leftOut(overview.month.spent.pending) == [String(localized: "\(1) rate pending", table: "Money")])
 

@@ -89,7 +89,8 @@ struct WritingErrorsTests {
     #expect(WritingErrors.presented(FinanceError.budgetAbsent(UUID()))?.headline == "That’s no longer available.")
     #expect(WritingErrors.presented(FinanceError.negativeLimit(-1))?.headline == "Some of the details weren’t valid.")
     #expect(WritingErrors.presented(FinanceError.limitChangedThisMonth)?.headline == "This month’s limit has already changed. Raise it again next month.")
-    #expect(WritingErrors.presented(FinanceError.tripStartTooEarly(earliest: TestClock.day(0)))?.headline == "A trip can start at most 3 days ago.")
+    let earliest = MoneyDates.text(TestClock.day(0), locale: .autoupdatingCurrent)
+    #expect(WritingErrors.presented(FinanceError.tripStartTooEarly(earliest: TestClock.day(0)))?.headline == "A trip can start on \(earliest) at the earliest.")
   }
 
   @Test("should fall back to the generic headline for an error it does not know")

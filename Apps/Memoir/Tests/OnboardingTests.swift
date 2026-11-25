@@ -175,19 +175,6 @@ struct OnboardingDraftTests {
     #expect(SleepWindowProblem(wake: 7 * 60, sleep: 0) == nil, "00:00 to 07:00 is seven hours")
   }
 
-  @Test("should show a saved budget so it reads back to the same minor units")
-  func formatsTheBudget() throws {
-    let eur = CurrencyCode("EUR")!
-    let jpy = CurrencyCode("JPY")!
-    #expect(SettingsCurrencies.text(minor: 123_456, currency: eur, format: SettingsWorld.german) == "1234,56")
-    #expect(SettingsCurrencies.text(minor: 5, currency: eur, format: SettingsWorld.english) == "0.05")
-    #expect(SettingsCurrencies.text(minor: 1_500, currency: jpy, format: SettingsWorld.english) == "1500")
-    for minor: Int64 in [0, 1, 99, 100, 123_456, 9_999_999_999] {
-      let text = SettingsCurrencies.text(minor: minor, currency: eur, format: SettingsWorld.german)
-      #expect(try AmountInput.minorUnits(text, currency: eur, format: SettingsWorld.german) == minor)
-    }
-  }
-
   @Test("should default the home currency to the locale's when the reference offers it")
   func picksTheStandardCurrency() {
     #expect(SettingsCurrencies.standard(for: Locale(identifier: "en_GB")) == CurrencyCode("GBP"))

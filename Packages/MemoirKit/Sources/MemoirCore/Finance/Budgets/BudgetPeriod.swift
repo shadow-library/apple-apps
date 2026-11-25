@@ -20,6 +20,21 @@ public struct BudgetPeriod: Hashable, Sendable {
   public var end: LocalDate { span.end }
 }
 
+/// When an edited amount takes effect: at once, for the whole of the current period (dropping a change that was waiting), or from a later day, the
+/// amount in force until then kept.
+public enum BudgetStagedChange: Hashable, Sendable {
+  case applies(dropping: StagedAmount?)
+  case staged(StagedAmount, keeping: Int64?)
+
+  init(from old: BudgetStaging, to new: BudgetStaging, today: LocalDate) {
+    if let pending = new.pending(on: today) {
+      self = .staged(pending, keeping: new.value(on: today))
+    } else {
+      self = .applies(dropping: old.pending(on: today))
+    }
+  }
+}
+
 /// The two slots a staged amount lives in: the amount in force and one change that takes effect from a later day. A staged change whose day has come
 /// is applied when read, never by a write.
 struct BudgetStaging: Hashable, Sendable {
