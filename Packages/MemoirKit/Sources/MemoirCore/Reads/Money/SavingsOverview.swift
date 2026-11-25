@@ -6,7 +6,12 @@ extension BudgetPeriodStanding {
   /// What a monthly budget's month is measured against for its deposit: the limit, or the typical month times `SavingsRules.referenceThousandths`
   /// (halves up) when that is lower. Nil for a trip, a budget without a limit and a calibrating one, which deposit nothing.
   public var depositReferenceMinor: Int64? {
-    guard budget.record.period == .monthly, let limit = limitMinor, case .known(let typical, _)? = history?.typical else { return nil }
+    guard budget.record.period == .monthly else { return nil }
+    return Self.depositReference(limitMinor: limitMinor, history: history)
+  }
+
+  static func depositReference(limitMinor: Int64?, history: BudgetHistory?) -> Int64? {
+    guard let limit = limitMinor, case .known(let typical, _)? = history?.typical else { return nil }
     return min(limit, Int64(clamping: Exact.roundHalfUp(Int128(typical) * Int128(SavingsRules.referenceThousandths), 1000)))
   }
 

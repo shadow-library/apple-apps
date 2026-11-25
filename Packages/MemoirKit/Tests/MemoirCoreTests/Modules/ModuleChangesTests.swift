@@ -215,6 +215,45 @@ struct ModuleChangesTests {
     #expect(try await world.changes.apply(.hero, enabled: true).moneyScoredFrom == Device.day(4))
   }
 
+  @Test func shouldStartScoringAVaultThatHadHeroAndMoneyOnBeforeMoneyWasScored() async throws {
+    let world = try await Self.open(settings: try Self.settings())
+    world.now.set(Device.day(5))
+    let before = try await world.settings()
+
+    #expect(try await world.changes.startScoring() == Device.day(5))
+    let settings = try #require(try await world.settings())
+    #expect(settings.moneyScoredFrom == Device.day(5))
+    #expect(settings.moduleHero == before?.moduleHero && settings.moduleMoney == before?.moduleMoney, "only the scored-from day moves")
+
+    world.now.set(Device.day(9))
+    #expect(try await world.changes.startScoring() == nil)
+    #expect(try await world.settings()?.moneyScoredFrom == Device.day(5), "set once")
+  }
+
+  @Test func shouldNotStartScoringWithoutSettingsHeroOrMoney() async throws {
+    let empty = try await Self.open()
+    #expect(try await empty.changes.startScoring() == nil)
+    #expect(try await empty.settings() == nil)
+
+    for module in [MemoirModule.hero, .money] {
+      let world = try await Self.open(
+        settings: try Self.settings { settings in
+          settings.setModule(module, enabled: false)
+          if module == .hero { settings.setModule(.quests, enabled: false) }
+        })
+      #expect(try await world.changes.startScoring() == nil)
+      #expect(try await world.settings()?.moneyScoredFrom == nil, "\(module) is off")
+    }
+  }
+
+  @Test func shouldStartScoringFromTheOpenDayWhenItRunsAheadOfTheZoneDate() async throws {
+    let world = try await Self.open(settings: try Self.settings())
+    try await world.device.create(Device.routine, nil, schedule: try Device.schedule(.routine, start: 480))
+    try await world.device.walk(to: Device.day(4))
+    world.now.set(Device.day(3))
+    #expect(try await world.changes.startScoring() == Device.day(4))
+  }
+
   @Test func shouldLeaveMoneyScoredFromUnsetWhenHeroAndMoneyWereAlreadyOn() async throws {
     let world = try await Self.open(settings: try Self.settings())
     let change = try await world.changes.apply(.journal, enabled: false)

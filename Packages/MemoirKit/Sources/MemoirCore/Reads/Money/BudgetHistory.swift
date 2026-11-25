@@ -49,21 +49,18 @@ public struct BudgetHistory: Sendable, Hashable {
     while months.count < BudgetThresholds.typicalMonths, let monthStart = start, monthStart >= budget.record.createdOn, let span = DateSpan.month(of: monthStart) {
       let month = BudgetPeriod(span: span)
       let key = MoneyCloseKey(budget: budget.id, periodStart: month.start)
-      let cutoff = book.cutoffMillis(of: budget.id, period: month)
-      let logged = book.expenses(of: budget.id, in: month).filter { expense in cutoff.map { expense.loggedAtMillis < $0 } ?? true }
-      let isClosed = book.closeInstants[key] != nil || book.deposits[key] != nil
+      let isClosed = book.closedPeriods.contains(key) || book.deposits[key] != nil
       if let deposit = book.deposits[key] {
         months.append(
           RecordedMonth(
             period: month, isClosed: isClosed, source: .closeSnapshot(deposit), spentMinor: deposit.spentMinor, limitMinor: deposit.limitMinor,
             medianExpenseMinor: deposit.medianExpenseMinor))
       } else {
-        let spend = BudgetSpend.tally(logged) { converter.amount(of: $0, in: budget.currency) }
+        let logged = book.logged(budget, in: month, converter: converter)
         months.append(
           RecordedMonth(
-            period: month, isClosed: isClosed, source: .logged(cutoffMillis: cutoff, spend: spend), spentMinor: spend.spentMinor,
-            limitMinor: budget.limitMinor(for: month),
-            medianExpenseMinor: median(logged.compactMap { expense in converter.amount(of: expense, in: budget.currency).minor.flatMap { $0 > 0 ? $0 : nil } })))
+            period: month, isClosed: isClosed, source: .logged(cutoffMillis: logged.cutoffMillis, spend: logged.spend), spentMinor: logged.spend.spentMinor,
+            limitMinor: budget.limitMinor(for: month), medianExpenseMinor: logged.medianExpenseMinor))
       }
       start = monthStart.adding(months: -1)
     }

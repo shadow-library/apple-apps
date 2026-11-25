@@ -72,6 +72,7 @@ enum WritingErrors {
       case .notOneOff: String(localized: "Savings are for one-off purchases, and this expense is below this budget’s one-off amount.", table: "Writing")
       case .savingsInsufficient: String(localized: "Your savings can’t cover that much right now.", table: "Writing")
       case .savingsAwaitingRate: String(localized: "This needs an exchange rate before it can be paid from savings.", table: "Writing")
+      case .replayHalted: String(localized: "Update Memoir on this device to finish this.", table: "Writing")
       case .goalAbsent: String(localized: "That’s no longer available.", table: "Writing")
       case .unreadable, .store, .recordWrite: PresentedError.storeHeadline
       case .unknownCurrency, .currencyMismatch, .overflow, .rateNotPositive, .rateOutOfRange, .negativeBudget, .unknownFrequency, .customIntervalNotPositive,

@@ -35,7 +35,7 @@ enum SavingsWithdrawals {
     do throws(MemoirReadError) {
       book = try SavingsBook.load(from: source)
     } catch {
-      throw issueError(error)
+      throw CommandIssueError(reading: error)
     }
     do throws(StoreError) {
       subscriptions = Dictionary(try ReadSources.listing(SubscriptionRecord.self, in: source).records.map { ($0.id, $0) }) { first, _ in first }
@@ -89,14 +89,6 @@ enum SavingsWithdrawals {
       throw .savingsAwaitingRate
     case .unconvertible(let error):
       throw error
-    }
-  }
-
-  private static func issueError(_ error: MemoirReadError) -> CommandIssueError {
-    switch error {
-    case .store(let store): .record(.store(store))
-    case .finance(let finance): .refused(.finance(finance))
-    case .invalidPage: .refused(.finance(.store(error.code)))
     }
   }
 }

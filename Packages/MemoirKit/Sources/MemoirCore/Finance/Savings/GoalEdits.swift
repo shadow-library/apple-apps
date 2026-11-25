@@ -96,10 +96,12 @@ public enum GoalEdits {
     return try present(id, in: transaction)
   }
 
-  /// Marks an active goal bought and, when the goal earns rewards (`GoalRewardEligibility`), issues `goal.bought` in the same write; a goal too small for
-  /// rewards is only marked, and nil is returned. Its purchase is every live expense naming it: `within` when their whole amounts add up, in home, to at
-  /// most the target. Refused while no expense names the goal (`goalNotPurchased`), so a goal is bought by recording what bought it, and, for a goal that
-  /// earns rewards, while one of them waits for a rate (`savingsAwaitingRate`). Whatever the goal's share held beyond its draws returns to savings.
+  /// Marks an active goal bought and, when the goal earns rewards (`GoalRewardEligibility`), issues the milestones it has reached and not been given
+  /// (`GoalMilestones`), then `goal.bought`, in the same write, so its rewards never depend on whether the closer ran first; a goal too small for rewards
+  /// is only marked, and nil is returned. Its purchase is every live expense naming it: `within` when their whole amounts add up, in home, to at most the
+  /// target. Refused while no expense names the goal (`goalNotPurchased`), so a goal is bought by recording what bought it, and, for a goal that earns
+  /// rewards, while one of them waits for a rate (`savingsAwaitingRate`) or while replay is halted (`replayHalted`), which would leave its milestones
+  /// unpaid. Whatever the goal's share held beyond its draws returns to savings.
   @discardableResult
   public static func markBought(_ id: UUID, issuer: CommandIssuer, in transaction: inout WriteTransaction) throws(CommandIssueError) -> MemoirCommand? {
     let outcome: GoalPurchaseOutcome?
@@ -116,6 +118,12 @@ public enum GoalEdits {
           record: BudgetRecord(id: HomeBudget.id, currency: settings.defaultCurrency, period: .monthly, createdOn: goal.createdOn), settings: settings)
       let eligibility = GoalRewardEligibility.of(goal, home: home, converter: BudgetConverter(home: settings.defaultCurrency, rates: ledger.rates))
       outcome = eligibility.isEligible ? try purchaseOutcome(of: goal, purchase: purchase, converter: converter) : nil
+      if outcome != nil, try replayHalted(in: transaction) { throw .replayHalted }
+    } catch {
+      throw .refused(.finance(error))
+    }
+    if outcome != nil { _ = try GoalMilestones.issue(of: id, issuer: issuer, in: &transaction) }
+    do throws(FinanceError) {
       try written { () throws(MemoirRecordError) in try SavingsGoalRecord.edit(id: id, in: &transaction) { $0.state = .known(.bought) } }
     } catch {
       throw .refused(.finance(error))
@@ -137,6 +145,14 @@ public enum GoalEdits {
   public static func delete(_ id: UUID, in transaction: inout WriteTransaction) throws(FinanceError) {
     _ = try present(id, in: transaction)
     try written { () throws(MemoirRecordError) in _ = try SavingsGoalRecord.remove(SavingsGoalRecord.ref(id), in: &transaction) }
+  }
+
+  private static func replayHalted(in transaction: borrowing WriteTransaction) throws(FinanceError) -> Bool {
+    do throws(StoreError) {
+      return try MemoirDerived.hero(in: ReadTransaction(database: transaction.database, registry: MemoirSchema.mainRegistry))?.needsAppUpdate ?? false
+    } catch {
+      throw FinanceError(error)
+    }
   }
 
   private static func purchaseOutcome(of goal: SavingsGoalRecord, purchase: [ExpenseRecord], converter: HomeConverter) throws(FinanceError) -> GoalPurchaseOutcome {

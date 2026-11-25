@@ -132,6 +132,8 @@ public struct BudgetRecord: IdentifiedRecord, RemovableMemoirRecord, Hashable {
 public struct SavingsDeposit: Hashable, Sendable, StoredValue {
   public let amountMinor: Int64
   public let currency: CurrencyCode
+  /// The price of one unit of the budget's currency in home that converted the deposit: the newest recorded on or before `closedOn`; nil for a budget in
+  /// the home currency or a close that deposited nothing.
   public let rate: DecimalText?
   public let closedOn: LocalDate
   public let command: UUID

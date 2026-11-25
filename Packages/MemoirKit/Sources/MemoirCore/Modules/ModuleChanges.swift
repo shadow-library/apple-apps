@@ -66,8 +66,9 @@ public struct ModuleChange: Sendable, Equatable {
 ///
 /// While Quests is off every quest replay holds active is paused (`quest.update` with `active` false); turning Quests on reactivates nothing. While Body
 /// is off the Health reader is cleared, whichever device holds it, and Activity stays off iCloud. `enforce` applies both to what arrived from a device
-/// that had not yet seen the change. Turning Hero and Money on together for the first time sets `moneyScoredFrom` to the account's day, once. Quests are
-/// those of the projection as the last commit left it, so after a replay halt the quests of commands past it are not seen.
+/// that had not yet seen the change. Turning Hero and Money on together for the first time sets `moneyScoredFrom` to the account's day, once, as
+/// `startScoring` does for a vault that had both on before money was scored. Quests are those of the projection as the last commit left it, so after a
+/// replay halt the quests of commands past it are not seen.
 public struct ModuleChanges: Sendable {
   public let stores: MemoirStores
   public let issuer: CommandIssuerSource
@@ -116,6 +117,31 @@ public struct ModuleChanges: Sendable {
     guard needed else { return nil }
     let change = try await write(.enforce)
     return change.pausedQuests.isEmpty && change.clearedReader == nil && !change.activityLeavesICloud ? nil : change
+  }
+
+  /// Sets `moneyScoredFrom` to the account's day while Hero and Money are both on and it is still unset, as on a vault from before money was scored, so
+  /// no period that ended earlier is ever closed (D23); nil, writing nothing, otherwise. The closer calls it before it looks for periods to close.
+  @discardableResult
+  public func startScoring() async throws(ModuleChangeError) -> LocalDate? {
+    let main = stores.main
+    let source = issuer
+    let now = now
+    let needed = try await call { () async throws(StoreError) in
+      try await main.read { transaction in try Self.scoringDay(in: transaction, issuer: source, now: now) != nil }
+    }
+    guard needed else { return nil }
+    return try await call { () async throws(StoreError) in
+      try await main.write { transaction -> LocalDate? in
+        guard let day = try Self.scoringDay(in: ReadTransaction(database: transaction.database, registry: main.registry), issuer: source, now: now) else { return nil }
+        try AccountSettingsRecord.edit(MemoirKey.accountSettings.ref, in: &transaction) { $0.moneyScoredFrom = day }
+        return day
+      }
+    }
+  }
+
+  private static func scoringDay(in transaction: ReadTransaction, issuer source: CommandIssuerSource, now: () -> Date) throws -> LocalDate? {
+    guard let settings = try settings(in: transaction), settings.moneyScoredFrom == nil, scoresMoney(ModuleSelection(settings: settings)) else { return nil }
+    return try accountDay(try source.issuer(in: transaction), zone: try AccountZone.load(in: transaction), now: now())
   }
 
   private enum Request {

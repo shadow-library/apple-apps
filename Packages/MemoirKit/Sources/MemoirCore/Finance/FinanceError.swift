@@ -50,6 +50,8 @@ public enum FinanceError: ShadowError, Equatable, Hashable {
   case notOneOff(thresholdMinor: Int64?)
   case savingsInsufficient(availableMinor: Int64)
   case savingsAwaitingRate
+  /// Replay stopped at a command this build cannot read, so what it would reward cannot be known yet.
+  case replayHalted
   case unreadable(EntityRef)
   case store(String)
   case recordWrite(String)
@@ -102,6 +104,7 @@ public enum FinanceError: ShadowError, Equatable, Hashable {
     case .notOneOff: "memoir_finance.not_one_off"
     case .savingsInsufficient: "memoir_finance.savings_insufficient"
     case .savingsAwaitingRate: "memoir_finance.savings_awaiting_rate"
+    case .replayHalted: "memoir_finance.replay_halted"
     case .unreadable: "memoir_finance.unreadable"
     case .store: "memoir_finance.store"
     case .recordWrite: "memoir_finance.record_write"
@@ -158,6 +161,7 @@ public enum FinanceError: ShadowError, Equatable, Hashable {
     case .notOneOff(nil): "Only a one-off can be paid from savings, and this budget has no one-off threshold yet."
     case .savingsInsufficient(let available): "Savings can cover at most \(available) now."
     case .savingsAwaitingRate: "The amount paid from savings waits for an exchange rate."
+    case .replayHalted: "This build cannot read every command in the vault; update the app to finish this."
     case .unreadable(let ref): "\(ref.kind)/\(ref.key) cannot be read."
     case .store(let reason): "The store failed: \(reason)"
     case .recordWrite(let reason): "The record write was refused: \(reason)"

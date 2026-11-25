@@ -93,6 +93,13 @@ struct WritingErrorsTests {
     #expect(WritingErrors.presented(FinanceError.tripStartTooEarly(earliest: TestClock.day(0)))?.headline == "A trip can start on \(earliest) at the earliest.")
   }
 
+  @Test("should ask for an update when a goal cannot be marked bought while replay is halted")
+  func presentsReplayHalted() {
+    #expect(
+      WritingErrors.presented(MemoirWriteError.command(.refused(.finance(.replayHalted))))
+        == PresentedError(headline: "Update Memoir on this device to finish this.", detail: "memoir_finance.replay_halted"))
+  }
+
   @Test("should give a savings or goal refusal the owner's words, with its code underneath")
   func presentsSavingsRefusals() {
     let refused = { (error: FinanceError) in WritingErrors.presented(MemoirWriteError.command(.refused(.finance(error)))) }
