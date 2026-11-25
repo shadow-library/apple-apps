@@ -42,7 +42,7 @@ struct MemoirDemoTests {
     #expect(hero.halt == nil)
 
     let (book, budgets) = try await stores.main.read { transaction in (try MoneyBook.load(from: transaction), try BudgetBook.load(from: transaction)) }
-    #expect(book.expenses.count == 6)
+    #expect(book.expenses.count > 40)
     #expect(book.settings?.defaultCurrency == Self.euro)
     let overview = try #require(try MoneyOverview.make(book, budgets: budgets, today: today))
     #expect(overview.spend(.month).spentSoFarMinor > 0 || overview.spend(.week).spentSoFarMinor > 0)

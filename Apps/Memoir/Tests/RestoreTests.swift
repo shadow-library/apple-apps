@@ -19,7 +19,7 @@ struct RestoreTests {
     let source = try DataWorld()
     defer { source.remove() }
     let opened = try await source.open()
-    try await RestoreWorld.fill(opened, world: source)
+    let filled = try await RestoreWorld.fill(opened, world: source)
     let archive = try await MemoirExporter.archive(of: opened.stores, at: Date(), appVersion: "1", into: source.exports)
     let target = try DataWorld()
     defer { target.remove() }
@@ -33,7 +33,7 @@ struct RestoreTests {
     await model.picked(.success(archive.url))
     guard case .confirming(let preview) = model.stage else { throw RestoreTestFailure("expected a confirmation, got \(model.stage)") }
     #expect(preview.receiptImages == 1 && preview.receiptsWithoutImage == 1 && preview.weeklyReviews == 1 && preview.appVersion == "1")
-    #expect(preview.vaultContents.count(.expenses) == 7 && preview.vaultContents.count(.weights) == 1, "the demo's six expenses and the filled one")
+    #expect(preview.vaultContents.count(.expenses) == filled.demoExpenses + 1 && preview.vaultContents.count(.weights) == 1, "the demo's expenses and the filled one")
     #expect(try await model.confirm())
 
     #expect(model.stage == .idle && !model.isOffered)
@@ -439,6 +439,7 @@ private enum RestoreWorld {
   struct Filled {
     let heldBlob: BlobID
     let journal: UUID
+    let demoExpenses: Int
   }
 
   static var issuer: CommandIssuerSource {
@@ -492,11 +493,12 @@ private enum RestoreWorld {
   @discardableResult
   static func fill(_ opened: MemoirOpenedVault, world: DataWorld) async throws -> Filled {
     try await MemoirDemo.seed(opened.stores, now: Date(), zone: .gmt, currency: try #require(CurrencyCode("EUR")))
+    let demoExpenses = try await opened.stores.main.read { transaction in try MoneyBook.load(from: transaction) }.expenses.count
     let fill = try await world.fill(opened)
     for text in ["Walked home the long way, twice.", "Walked home the long way, three times."] {
       try await opened.stores.main.write { transaction in _ = try JournalEntryRecord.edit(JournalEntryRecord.ref(fill.journal), in: &transaction) { $0.text = text } }
     }
-    return Filled(heldBlob: fill.heldBlob, journal: fill.journal)
+    return Filled(heldBlob: fill.heldBlob, journal: fill.journal, demoExpenses: demoExpenses)
   }
 
   static func manifestData(of archive: URL) throws -> Data {
