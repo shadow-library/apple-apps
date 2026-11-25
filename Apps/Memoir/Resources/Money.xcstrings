@@ -331,6 +331,17 @@
         }
       }
     },
+    "%@ saved under budget": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@ saved under budget"
+          }
+        }
+      }
+    },
     "%@ spent": {
       "extractionState": "manual",
       "localizations": {
@@ -794,6 +805,40 @@
           "stringUnit": {
             "state": "translated",
             "value": "%lld this month"
+          }
+        }
+      }
+    },
+    "+%lld XP": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "+%lld XP"
+          }
+        }
+      }
+    },
+    "+%lld coins": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "+%lld coin"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "+%lld coins"
+                }
+              }
+            }
           }
         }
       }
@@ -1393,6 +1438,17 @@
         }
       }
     },
+    "Budgets closed": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Budgets closed"
+          }
+        }
+      }
+    },
     "Cancel": {
       "extractionState": "manual",
       "localizations": {
@@ -1510,6 +1566,17 @@
           "stringUnit": {
             "state": "translated",
             "value": "Converted"
+          }
+        }
+      }
+    },
+    "Couldn’t log the day: %@": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Couldn’t log the day: %@"
           }
         }
       }
@@ -1988,6 +2055,17 @@
         }
       }
     },
+    "From %@ · closed %@": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "From %@ · closed %@"
+          }
+        }
+      }
+    },
     "From savings": {
       "extractionState": "manual",
       "localizations": {
@@ -2017,6 +2095,17 @@
           "stringUnit": {
             "state": "translated",
             "value": "Give Home a limit in Budgets."
+          }
+        }
+      }
+    },
+    "Got it": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Got it"
           }
         }
       }
@@ -2083,6 +2172,17 @@
           "stringUnit": {
             "state": "translated",
             "value": "Home kept the currency it was first set up in on another device, so its limit and spending are in %@, not %@."
+          }
+        }
+      }
+    },
+    "Home: %@": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Home: %@"
           }
         }
       }
@@ -2186,6 +2286,28 @@
         }
       }
     },
+    "Last week counts: %lld of %lld days logged": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Last week counts: %lld of %lld days logged"
+          }
+        }
+      }
+    },
+    "Last week: %lld of %lld days logged, still open": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Last week: %lld of %lld days logged, still open"
+          }
+        }
+      }
+    },
     "Leave it empty to use the European Central Bank’s rate for the expense’s date. A rate you enter converts this expense only.": {
       "extractionState": "manual",
       "localizations": {
@@ -2241,6 +2363,39 @@
         }
       }
     },
+    "Log %@ as no spend": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Log %@ as no spend"
+          }
+        }
+      }
+    },
+    "Log a day’s spending, or say you spent nothing, to start a money streak.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Log a day’s spending, or say you spent nothing, to start a money streak."
+          }
+        }
+      }
+    },
+    "Log yesterday as no spend": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Log yesterday as no spend"
+          }
+        }
+      }
+    },
     "Lowering a limit counts at once. Raising it waits for next month, unless it goes back up to the limit the month started with.": {
       "extractionState": "manual",
       "localizations": {
@@ -2292,6 +2447,40 @@
           "stringUnit": {
             "state": "translated",
             "value": "Merchant"
+          }
+        }
+      }
+    },
+    "Money streak": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Money streak"
+          }
+        }
+      }
+    },
+    "Money streak: %lld weeks": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Money streak: %lld week"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Money streak: %lld weeks"
+                }
+              }
+            }
           }
         }
       }
@@ -2406,6 +2595,17 @@
         }
       }
     },
+    "No coins left to fine": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No coins left to fine"
+          }
+        }
+      }
+    },
     "No expenses in this range": {
       "extractionState": "manual",
       "localizations": {
@@ -2435,6 +2635,17 @@
           "stringUnit": {
             "state": "translated",
             "value": "No limits set"
+          }
+        }
+      }
+    },
+    "No spend today": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No spend today"
           }
         }
       }
@@ -2644,6 +2855,28 @@
           "stringUnit": {
             "state": "translated",
             "value": "Over by %@"
+          }
+        }
+      }
+    },
+    "Over its limit by more than %@": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Over its limit by more than %@"
+          }
+        }
+      }
+    },
+    "Over its limit by up to %@": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Over its limit by up to %@"
           }
         }
       }
@@ -2989,6 +3222,29 @@
         }
       }
     },
+    "Saving streak: %lld closes": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Saving streak: %lld close"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Saving streak: %lld closes"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "Savings goal": {
       "extractionState": "manual",
       "localizations": {
@@ -3265,6 +3521,61 @@
         }
       }
     },
+    "That day already has an expense logged.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "That day already has an expense logged."
+          }
+        }
+      }
+    },
+    "That day can’t be logged now.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "That day can’t be logged now."
+          }
+        }
+      }
+    },
+    "That day hasn’t started yet.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "That day hasn’t started yet."
+          }
+        }
+      }
+    },
+    "That day is already logged as no spend.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "That day is already logged as no spend."
+          }
+        }
+      }
+    },
+    "That day is too long ago to log.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "That day is too long ago to log."
+          }
+        }
+      }
+    },
     "That expense is no longer here": {
       "extractionState": "manual",
       "localizations": {
@@ -3507,6 +3818,17 @@
         }
       }
     },
+    "This week: %lld of %lld days logged": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This week: %lld of %lld days logged"
+          }
+        }
+      }
+    },
     "This year": {
       "extractionState": "manual",
       "localizations": {
@@ -3514,6 +3836,39 @@
           "stringUnit": {
             "state": "translated",
             "value": "This year"
+          }
+        }
+      }
+    },
+    "Today is logged as a day without spending.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Today is logged as a day without spending."
+          }
+        }
+      }
+    },
+    "Today’s spending is logged.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Today’s spending is logged."
+          }
+        }
+      }
+    },
+    "Too few days logged to judge": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Too few days logged to judge"
           }
         }
       }
@@ -3782,6 +4137,39 @@
         }
       }
     },
+    "Within its limit": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Within its limit"
+          }
+        }
+      }
+    },
+    "Within its limit and under a typical month": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Within its limit and under a typical month"
+          }
+        }
+      }
+    },
+    "XP −%@ until %@": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "XP −%@ until %@"
+          }
+        }
+      }
+    },
     "Year": {
       "extractionState": "manual",
       "localizations": {
@@ -3910,6 +4298,29 @@
           "stringUnit": {
             "state": "translated",
             "value": "“%@” can’t be part of an amount."
+          }
+        }
+      }
+    },
+    "−%lld coins": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "−%lld coin"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "−%lld coins"
+                }
+              }
+            }
           }
         }
       }

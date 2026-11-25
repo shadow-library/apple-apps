@@ -142,7 +142,7 @@ struct ComingBackView: View {
             Text(verbatim: copy.title).shadowFont(.subheadline).fontWeight(.semibold).foregroundStyle(ShadowColor.textPrimary)
             Text(verbatim: copy.body).shadowFont(.subheadline).foregroundStyle(ShadowColor.textSecondary)
             Text("Effect: \(copy.effect)", tableName: "Hero").shadowFont(.caption).foregroundStyle(ShadowColor.textSecondary)
-            NavigationLink(value: MemoirRoute.destination(copy.destination)) {
+            ModuleLink(MemoirRoute.destination(copy.destination)) {
               Text(verbatim: copy.action)
             }
             .buttonStyle(.shadowBordered)

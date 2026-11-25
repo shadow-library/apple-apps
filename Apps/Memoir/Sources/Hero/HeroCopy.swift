@@ -104,11 +104,11 @@ nonisolated enum HeroCopy {
     case .crownInit: return String(localized: "Crown period opened", table: "Hero")
     case .crownForfeit: return String(localized: "Crown share lost on \(quest ?? String(localized: "a quest", table: "Hero"))", table: "Hero")
     case .returnerFired: return String(localized: "Welcome back", table: "Hero")
-    case .moneyFine: return String(localized: "Budget overspent", table: "Hero")
-    case .moneyReward: return String(localized: "Budget kept", table: "Hero")
-    case .moneyLog: return String(localized: "Spending logged", table: "Hero")
-    case .goalMilestone: return String(localized: "Savings goal milestone reached", table: "Hero")
-    case .goalBought: return String(localized: "Savings goal bought", table: "Hero")
+    case .moneyFine: return String(localized: "A budget closed over its limit", table: "Hero")
+    case .moneyReward: return String(localized: "A budget closed within its limit", table: "Hero")
+    case .moneyLog: return String(localized: "A day’s spending logged", table: "Hero")
+    case .goalMilestone: return String(localized: "A savings goal passed a milestone", table: "Hero")
+    case .goalBought: return String(localized: "A savings goal bought within its target", table: "Hero")
     }
   }
 
@@ -159,6 +159,39 @@ nonisolated enum HeroCopy {
 
   static func shields(_ shields: ShieldStanding) -> String {
     String(localized: "\(shields.available) of \(shields.cap)", table: "Hero")
+  }
+}
+
+/// The Hero screen's money lines.
+nonisolated enum HeroMoneyCopy {
+  static func streak(_ weeks: Int) -> String {
+    String(localized: "\(weeks) weeks in a row", table: "Hero")
+  }
+
+  static var notStarted: String {
+    String(localized: "No money streak yet. Log a day’s spending, or say you spent nothing, to start one.", table: "Hero")
+  }
+
+  static func week(_ week: MoneyWeekProgress) -> String {
+    String(localized: "This week: \(week.covered.count) of \(week.required) days logged", table: "Hero")
+  }
+
+  static func settling(_ week: MoneyWeekProgress) -> String {
+    guard !week.isAccounted else { return String(localized: "Last week counts: \(week.covered.count) of \(week.required) days logged", table: "Hero") }
+    return String(localized: "Last week: \(week.covered.count) of \(week.required) days logged, still open", table: "Hero")
+  }
+
+  static func savingStreak(_ closes: Int) -> String {
+    String(localized: "Saving streak: \(closes) closes in a row put money aside", table: "Hero")
+  }
+
+  static func debuff(_ debuff: MoneyRow.Debuff, locale: Locale) -> String {
+    let penalty = (Double(1000 - debuff.multiplier.thousandths) / 1000).formatted(.percent.precision(.fractionLength(0...1)).locale(locale))
+    return String(localized: "XP −\(penalty) until \(HeroDates.text(debuff.through, year: false))", table: "Hero")
+  }
+
+  static func home(_ status: String) -> String {
+    String(localized: "Home: \(status)", table: "Hero")
   }
 }
 

@@ -5,20 +5,26 @@ import ShadowDesignSystem
 import SwiftUI
 
 /// memoir-web `ExpensesScreen` (`features/finance/expenses-screen.tsx`): the range's spending, how the budgets stand, the subscriptions' monthly cost and
-/// the average day, the budgets, the expense list, where the money went, and the subscriptions and currencies rails.
+/// the average day, the budgets, the expense list, where the money went, and the subscriptions and currencies rails; with Hero on, money in the game
+/// first.
 struct MoneyView: View {
   @State private var model: MoneyModel
+  @State private var game: MoneyGameModel
   @Environment(\.locale) private var locale
+  @Environment(MemoirModules.self) private var modules: MemoirModules?
 
   init(context: MemoirScreenContext) {
     _model = State(initialValue: MoneyModel(context: context))
+    _game = State(initialValue: MoneyGameModel(context: context))
   }
+
+  private var showsGame: Bool { modules?.selection.contains(.hero) ?? true }
 
   var body: some View {
     @Bindable var list = model.list
     MoneyLoadState(model.overview.state) { overview in
       if let overview {
-        MoneyOverviewContent(model: model, overview: overview)
+        MoneyOverviewContent(model: model, game: showsGame ? game : nil, overview: overview)
       } else {
         MoneyNoCurrency()
       }
@@ -38,6 +44,10 @@ struct MoneyView: View {
     }
     .shadowScreen(.root)
     .task { await model.run() }
+    .task(id: showsGame) {
+      guard showsGame else { return }
+      await game.run()
+    }
   }
 
   /// memoir-web `headerMeta`: the range and what it spent; each budget's standing, in its own currency, is on the budgets rail.
@@ -64,6 +74,7 @@ private struct MoneyNoCurrency: View {
 
 private struct MoneyOverviewContent: View {
   let model: MoneyModel
+  let game: MoneyGameModel?
   let overview: MoneyOverview
   @Environment(\.locale) private var locale
 
@@ -89,6 +100,7 @@ private struct MoneyOverviewContent: View {
           ShadowStatistic(Text("Average day", tableName: "Money"), value: money(spend.averagePerDayMinor), caption: Text(verbatim: MoneyNotes.daysLogged(spend.daysLogged)))
         }
         ShadowAdaptiveColumns {
+          if let game { MoneyGameCard(model: game) }
           BudgetsRail(model: model, standings: overview.budgets)
           ExpensesCard(list: model.list, home: overview.home)
           BreakdownCard(spend: spend, home: overview.home)

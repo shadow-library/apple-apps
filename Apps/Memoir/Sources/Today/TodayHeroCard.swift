@@ -2,7 +2,8 @@ import MemoirCore
 import ShadowDesignSystem
 import SwiftUI
 
-/// `features/today/hero-card.tsx`: level and experience to the next, coins, HP, the Crown's period and momentum.
+/// `features/today/hero-card.tsx`: level and experience to the next, coins, HP, the Crown's period and momentum; with Money on, the money streak and this
+/// week's logging (once there is any money activity), the saving streak, a debuff in force and Home's danger badge.
 struct TodayHeroCard: View {
   private static let pipLimit = 10
 
@@ -10,6 +11,8 @@ struct TodayHeroCard: View {
   let summary: DaySummary?
   let comingBack: ComingBackReason?
   let showsCrown: Bool
+  var money: MoneyGameSnapshot?
+  @Environment(\.locale) private var locale
 
   var body: some View {
     VStack(alignment: .leading, spacing: Spacing.space3) {
@@ -34,8 +37,9 @@ struct TodayHeroCard: View {
       ShadowFlowLayout(spacing: Spacing.space3) {
         if let hp = summary?.hp, hp.hpMax > 0 { hpMeter(hp) }
         if showsCrown, let crown = summary?.crown { crownText(crown) }
-        Text("Momentum \(momentum)", tableName: "Today").shadowFont(.footnote).foregroundStyle(ShadowColor.textSecondary)
-        NavigationLink(value: MemoirRoute.destination(.hero)) {
+        if let momentum { Text("Momentum \(momentum)", tableName: "Today").shadowFont(.footnote).foregroundStyle(ShadowColor.textSecondary) }
+        if let money { moneyLines(money) }
+        ModuleLink(MemoirRoute.destination(.hero)) {
           Text("Hero", tableName: "Today")
         }
         .buttonStyle(.shadowPlain)
@@ -115,14 +119,40 @@ struct TodayHeroCard: View {
     .foregroundStyle(ShadowColor.textSecondary)
   }
 
-  /// `momentumLabel` (`hero-card.tsx:18-22`): a day not yet opened is a start, and a return is framed as one.
-  private var momentum: String {
-    guard let summary else { return String(localized: "starting", table: "Today") }
-    if comingBack == .returner || comingBack == .recovery { return String(localized: "returning", table: "Today") }
-    return switch summary.momentum {
-    case .cold: String(localized: "settling", table: "Today")
-    case .steady: String(localized: "steady", table: "Today")
-    case .warm: String(localized: "warm", table: "Today")
+  /// `momentumLabel` (`hero-card.tsx:18-22`): a day not yet opened is a start, and a return is framed as one; without an active quest none is shown,
+  /// since momentum measures how quests are kept.
+  private var momentum: String? {
+    switch hero.momentum {
+    case .notStarted: return String(localized: "starting", table: "Today")
+    case .noActiveQuest: return nil
+    case .measured(let bucket):
+      if comingBack == .returner || comingBack == .recovery { return String(localized: "returning", table: "Today") }
+      return switch bucket {
+      case .cold: String(localized: "settling", table: "Today")
+      case .steady: String(localized: "steady", table: "Today")
+      case .warm: String(localized: "warm", table: "Today")
+      }
+    }
+  }
+
+  @ViewBuilder
+  private func moneyLines(_ money: MoneyGameSnapshot) -> some View {
+    let standing = money.standing
+    if money.hasActivity {
+      Text(verbatim: TodayMoneyCopy.streak(standing.weekStreak, week: standing.week)).shadowFont(.footnote).foregroundStyle(ShadowColor.textSecondary)
+      if let settling = standing.settlingWeek, !settling.isAccounted {
+        Text(verbatim: TodayMoneyCopy.settling(settling)).shadowFont(.footnote).foregroundStyle(ShadowColor.textSecondary)
+      }
+    }
+    if standing.savingStreak > 0 {
+      Text(verbatim: TodayMoneyCopy.savingStreak(standing.savingStreak)).shadowFont(.footnote).foregroundStyle(ShadowColor.textSecondary)
+    }
+    if let debuff = standing.debuff {
+      ShadowBadge(Text(verbatim: TodayMoneyCopy.debuff(debuff, locale: locale)), intent: .warning, systemImage: "arrow.down.circle")
+    }
+    if let home = money.homeInDanger {
+      let content = BudgetRowContent(home, locale: locale)
+      ShadowBadge(Text(verbatim: TodayMoneyCopy.home(content.status)), intent: content.tone.badgeIntent, systemImage: content.tone.symbol)
     }
   }
 

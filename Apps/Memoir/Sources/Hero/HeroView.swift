@@ -23,18 +23,30 @@ enum HeroTab: String, CaseIterable, Hashable, Identifiable {
 
 struct HeroView: View {
   @State private var model: HeroModel
+  @State private var game: MoneyGameModel
   @State private var tab = HeroTab.overview
   @State private var generation = 0
   @Environment(\.horizontalSizeClass) private var sizeClass
+  @Environment(MemoirModules.self) private var modules: MemoirModules?
 
   init(context: MemoirScreenContext) {
     _model = State(initialValue: HeroModel(context: context))
+    _game = State(initialValue: MoneyGameModel(context: context))
   }
+
+  private var showsMoney: Bool { modules?.selection.contains(.money) ?? true }
+
+  /// Every choice Coming back offers is kept on Today or the Planning Board, so it goes with Quests.
+  private var offersComingBack: Bool { modules?.shows(.destination(.today)) ?? true }
 
   var body: some View {
     content
       .navigationTitle(Text("Hero", tableName: "Hero"))
       .task(id: generation) { await model.run() }
+      .task(id: showsMoney) {
+        guard showsMoney else { return }
+        await game.run()
+      }
       .toolbar { comingBackLink }
       .alert(
         failureTitle, isPresented: Binding(get: { model.failure != nil }, set: { if !$0 { model.failure = nil } }), presenting: model.failure
@@ -85,7 +97,7 @@ struct HeroView: View {
         HeroStatsGrid(stats: deck.stats)
         HeroTabPicker(tab: $tab)
         switch tab {
-        case .overview: HeroOverviewSection(deck: deck, today: model.today)
+        case .overview: HeroOverviewSection(deck: deck, today: model.today, money: showsMoney ? game.snapshot : nil)
         case .achievements: HeroAchievementsSection(achievements: deck.achievements)
         case .titles: HeroTitlesSection(deck: deck, model: model)
         case .cosmetics: HeroCosmeticsSection(deck: deck, model: model)
@@ -99,7 +111,7 @@ struct HeroView: View {
 
   @ToolbarContentBuilder
   private var comingBackLink: some ToolbarContent {
-    if model.deck.state.value?.comingBack != nil {
+    if model.deck.state.value?.comingBack != nil, offersComingBack {
       ToolbarItem {
         NavigationLink(value: MemoirRoute.hero(.comingBack)) {
           Label(title: { Text("Coming back", tableName: "Hero") }, icon: { Image(systemName: "arrow.uturn.backward.circle") })

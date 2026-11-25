@@ -315,6 +315,29 @@
         }
       }
     },
+    "%lld weeks in a row": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld week in a row"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld weeks in a row"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "%lld%%": {
       "extractionState": "manual",
       "localizations": {
@@ -371,6 +394,28 @@
         }
       }
     },
+    "A budget closed over its limit": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A budget closed over its limit"
+          }
+        }
+      }
+    },
+    "A budget closed within its limit": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A budget closed within its limit"
+          }
+        }
+      }
+    },
     "A change from another device needs a newer version of Memoir. Your hero shows everything up to it until you update.": {
       "extractionState": "manual",
       "localizations": {
@@ -400,6 +445,17 @@
           "stringUnit": {
             "state": "translated",
             "value": "A comeback bonus is ready"
+          }
+        }
+      }
+    },
+    "A day’s spending logged": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A day’s spending logged"
           }
         }
       }
@@ -591,6 +647,28 @@
         }
       }
     },
+    "A savings goal bought within its target": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A savings goal bought within its target"
+          }
+        }
+      }
+    },
+    "A savings goal passed a milestone": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A savings goal passed a milestone"
+          }
+        }
+      }
+    },
     "A seven-day run on any quest.": {
       "extractionState": "manual",
       "localizations": {
@@ -642,6 +720,17 @@
           "stringUnit": {
             "state": "translated",
             "value": "A warm edge on the hero card."
+          }
+        }
+      }
+    },
+    "A week counts once %lld of its days are logged, by an expense or by saying you spent nothing.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A week counts once %lld of its days are logged, by an expense or by saying you spent nothing."
           }
         }
       }
@@ -818,28 +907,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "Bronze badge"
-          }
-        }
-      }
-    },
-    "Budget kept": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Budget kept"
-          }
-        }
-      }
-    },
-    "Budget overspent": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Budget overspent"
           }
         }
       }
@@ -1625,6 +1692,17 @@
         }
       }
     },
+    "Home: %@": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Home: %@"
+          }
+        }
+      }
+    },
     "Honest Ledger": {
       "extractionState": "manual",
       "localizations": {
@@ -1731,6 +1809,28 @@
           "stringUnit": {
             "state": "translated",
             "value": "Keep the recovery quest"
+          }
+        }
+      }
+    },
+    "Last week counts: %lld of %lld days logged": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Last week counts: %lld of %lld days logged"
+          }
+        }
+      }
+    },
+    "Last week: %lld of %lld days logged, still open": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Last week: %lld of %lld days logged, still open"
           }
         }
       }
@@ -1922,6 +2022,17 @@
         }
       }
     },
+    "Money": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Money"
+          }
+        }
+      }
+    },
     "Movement, sleep, food, strength": {
       "extractionState": "manual",
       "localizations": {
@@ -1973,6 +2084,17 @@
           "stringUnit": {
             "state": "translated",
             "value": "No HP yet"
+          }
+        }
+      }
+    },
+    "No money streak yet. Log a day’s spending, or say you spent nothing, to start one.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No money streak yet. Log a day’s spending, or say you spent nothing, to start one."
           }
         }
       }
@@ -2318,24 +2440,25 @@
         }
       }
     },
-    "Savings goal bought": {
+    "Saving streak: %lld closes in a row put money aside": {
       "extractionState": "manual",
       "localizations": {
         "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Savings goal bought"
-          }
-        }
-      }
-    },
-    "Savings goal milestone reached": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Savings goal milestone reached"
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Saving streak: %lld close in a row put money aside"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "Saving streak: %lld closes in a row put money aside"
+                }
+              }
+            }
           }
         }
       }
@@ -2637,17 +2760,6 @@
         }
       }
     },
-    "Spending logged": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Spending logged"
-          }
-        }
-      }
-    },
     "Spending, saving, admin": {
       "extractionState": "manual",
       "localizations": {
@@ -2945,6 +3057,17 @@
         }
       }
     },
+    "This week: %lld of %lld days logged": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This week: %lld of %lld days logged"
+          }
+        }
+      }
+    },
     "Three Days": {
       "extractionState": "manual",
       "localizations": {
@@ -3161,6 +3284,17 @@
           "stringUnit": {
             "state": "translated",
             "value": "Whole Day"
+          }
+        }
+      }
+    },
+    "XP −%@ until %@": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "XP −%@ until %@"
           }
         }
       }

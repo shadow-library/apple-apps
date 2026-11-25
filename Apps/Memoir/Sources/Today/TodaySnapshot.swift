@@ -6,6 +6,7 @@ nonisolated struct TodayHero: Sendable, Equatable {
   let name: HeroName
   let level: LevelProgress
   let coins: Int
+  let momentum: HeroMomentum
 }
 
 /// What the Today screen shows, read in one transaction so the account's day, its board and the hero always agree; a projection refresh at the day turn
@@ -34,7 +35,8 @@ nonisolated struct TodaySnapshot: Sendable, Equatable {
       tomorrow = Array(try TodayBoard.load(TodayBoardQuery(date: next), in: transaction).occurrences.filter(\.isScheduled).prefix(tomorrowLimit))
     }
     return TodaySnapshot(
-      today: today, zone: zone, board: board, hero: TodayHero(name: deck.name, level: deck.level, coins: deck.coins), streaks: streaks, tomorrow: tomorrow)
+      today: today, zone: zone, board: board, hero: TodayHero(name: deck.name, level: deck.level, coins: deck.coins, momentum: deck.momentum),
+      streaks: streaks, tomorrow: tomorrow)
   }
 }
 

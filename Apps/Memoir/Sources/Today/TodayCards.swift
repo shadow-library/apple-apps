@@ -41,8 +41,8 @@ struct TodayComingBack: View {
   var body: some View {
     ShadowCallout(title, message: message, intent: .info, systemImage: "arrow.uturn.left.circle") {
       HStack(spacing: Spacing.space2) {
-        NavigationLink(value: MemoirRoute.hero(.comingBack)) { Text("See recovery choices", tableName: "Today") }.buttonStyle(.shadowBordered)
-        NavigationLink(value: MemoirRoute.destination(.planningBoard)) { Text("See the week", tableName: "Today") }.buttonStyle(.shadowPlain)
+        ModuleLink(MemoirRoute.hero(.comingBack)) { Text("See recovery choices", tableName: "Today") }.buttonStyle(.shadowBordered)
+        ModuleLink(MemoirRoute.destination(.planningBoard)) { Text("See the week", tableName: "Today") }.buttonStyle(.shadowPlain)
       }
     }
   }
@@ -168,7 +168,7 @@ struct TodayNothingDue: View {
         }
       }
       .todayNote()
-      NavigationLink(value: MemoirRoute.destination(.planningBoard)) { Text("See the week", tableName: "Today") }.buttonStyle(.shadowPlain)
+      ModuleLink(MemoirRoute.destination(.planningBoard)) { Text("See the week", tableName: "Today") }.buttonStyle(.shadowPlain)
     }
     .frame(maxWidth: .infinity, alignment: .leading)
     .shadowCard()
@@ -185,7 +185,7 @@ struct TodayFirstDay: View {
           "A quest is a promise you keep to yourself, not a task. Start with one that takes ten minutes — it is easier to keep a small promise every day than a large one twice.",
           tableName: "Today")
       ) {
-        NavigationLink(value: MemoirRoute.quest(.new)) { Text("Create your first quest", tableName: "Today") }.buttonStyle(.shadowFilled)
+        ModuleLink(MemoirRoute.quest(.new)) { Text("Create your first quest", tableName: "Today") }.buttonStyle(.shadowFilled)
       }
       .frame(maxWidth: .infinity)
       .shadowCard()
@@ -195,7 +195,7 @@ struct TodayFirstDay: View {
           "Expenses, meals, weight and journal entries all work before your first quest exists. Side quests earn XP on their own.", tableName: "Today"
         )
         .todayNote()
-        NavigationLink(value: MemoirRoute.destination(.sideQuests)) { Text("Log a side quest", tableName: "Today") }.buttonStyle(.shadowPlain)
+        ModuleLink(MemoirRoute.destination(.sideQuests)) { Text("Log a side quest", tableName: "Today") }.buttonStyle(.shadowPlain)
       }
       .frame(maxWidth: .infinity, alignment: .leading)
       .shadowCard()
@@ -212,8 +212,8 @@ struct TodayDayEndCard: View {
       Text("End of day", tableName: "Today").shadowFont(.headline).foregroundStyle(ShadowColor.textPrimary)
       Text(verbatim: detail).todayNote()
       HStack(spacing: Spacing.space2) {
-        NavigationLink(value: MemoirRoute.destination(.journal)) { Text("Write a line about today", tableName: "Today") }.buttonStyle(.shadowBordered)
-        NavigationLink(value: MemoirRoute.destination(.planningBoard)) { Text("Plan tomorrow", tableName: "Today") }.buttonStyle(.shadowPlain)
+        ModuleLink(MemoirRoute.destination(.journal)) { Text("Write a line about today", tableName: "Today") }.buttonStyle(.shadowBordered)
+        ModuleLink(MemoirRoute.destination(.planningBoard)) { Text("Plan tomorrow", tableName: "Today") }.buttonStyle(.shadowPlain)
       }
     }
     .frame(maxWidth: .infinity, alignment: .leading)
@@ -227,5 +227,19 @@ struct TodayDayEndCard: View {
       : String(localized: "\(end.kept) of \(end.scheduled) quests completed.", table: "Today")
     guard end.skipped > 0 else { return completed }
     return [completed, String(localized: "\(end.skipped) skipped.", table: "Today")].joined(separator: " ")
+  }
+}
+
+/// Money in the game on Today: the closes not yet seen here, and "No spend" for the days the logging window still takes; nothing once neither is left.
+struct TodayMoneyCards: View {
+  let game: MoneyGameModel
+
+  var body: some View {
+    if !game.newCloses.isEmpty {
+      MoneyCloseResults(model: game).frame(maxWidth: .infinity, alignment: .leading).shadowCard()
+    }
+    if let snapshot = game.snapshot, snapshot.offersNoSpend || game.problem != nil {
+      NoSpendControl(model: game, snapshot: snapshot, showsCovered: false).frame(maxWidth: .infinity, alignment: .leading).shadowCard()
+    }
   }
 }

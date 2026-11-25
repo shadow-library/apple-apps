@@ -35,6 +35,7 @@ final class DataWorld {
   let insights: MemoirInsights
   let health = LogTesting.environment()
   let modules: MemoirModuleEffects
+  let closer = BudgetPeriodCloser()
   let suite: String
   let defaults: UserDefaults
   let exports: MemoirExports
@@ -82,7 +83,8 @@ final class DataWorld {
   func deletion(location: (@Sendable () throws(MemoirVaultOpenError) -> MemoirVaultLocation)? = nil) -> MemoirVaultDeletion {
     let fixed = self.location
     return MemoirVaultDeletion(
-      vault: vault, sync: runtimes, dayTurns: dayTurns, reminders: reminders, insights: insights, rates: rates, modules: modules, location: location ?? { fixed },
+      vault: vault, sync: runtimes, dayTurns: dayTurns, reminders: reminders, insights: insights, rates: rates, modules: modules, closer: closer,
+      location: location ?? { fixed },
       defaults: defaults, exports: exports
     ) { [weak self] in await self?.vaultChanged() }
   }

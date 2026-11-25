@@ -33,10 +33,10 @@ nonisolated enum VaultDeletionError: ShadowError, Equatable {
 
 /// Deletes the vault on this device and starts it again empty, so the app returns to onboarding. Sync is turned off first (`SyncRuntime.detach()`,
 /// which keeps a later launch from attaching the old location on its own) and every runtime stops; a failure there erases nothing. Then the day turns,
-/// reminders (pending and delivered), insights, exchange rates and the modules' effects (an enforce under way included) stop, the vault closes while
-/// its three store directories (blobs included), the waiting export archives and this device's Memoir defaults are removed, and it opens again. What
-/// sync already sent stays at its location and on the other devices, since nothing in the sync kernel deletes a vault there, and the keychain keeps
-/// the vault's synced keys, which those devices still use.
+/// reminders (pending and delivered), insights, exchange rates, the modules' effects and the budget closes (an enforce or a close under way included)
+/// stop, the vault closes while its three store directories (blobs included), the waiting export archives and this device's Memoir defaults are
+/// removed, and it opens again. What sync already sent stays at its location and on the other devices, since nothing in the sync kernel deletes a vault
+/// there, and the keychain keeps the vault's synced keys, which those devices still use.
 @MainActor
 @Observable
 final class MemoirVaultDeletion {
@@ -57,6 +57,7 @@ final class MemoirVaultDeletion {
   @ObservationIgnored private let insights: MemoirInsights
   @ObservationIgnored private let rates: MemoirRates?
   @ObservationIgnored private let modules: MemoirModuleEffects?
+  @ObservationIgnored private let closer: BudgetPeriodCloser?
   @ObservationIgnored private let location: @Sendable () throws(MemoirVaultOpenError) -> MemoirVaultLocation
   @ObservationIgnored private let defaults: MemoirDeviceDefaults
   @ObservationIgnored private let exports: MemoirExports
@@ -65,7 +66,7 @@ final class MemoirVaultDeletion {
 
   init(
     vault: MemoirVaultModel, sync: SyncRuntimes, dayTurns: MemoirDayTurns, reminders: ReminderScheduler, insights: MemoirInsights,
-    rates: MemoirRates? = nil, modules: MemoirModuleEffects? = nil,
+    rates: MemoirRates? = nil, modules: MemoirModuleEffects? = nil, closer: BudgetPeriodCloser? = nil,
     location: @escaping @Sendable () throws(MemoirVaultOpenError) -> MemoirVaultLocation = MemoirVaultOpener.appLocation,
     defaults: UserDefaults = .standard, exports: MemoirExports = .live, vaultChanged: @escaping @MainActor () async -> Void
   ) {
@@ -76,6 +77,7 @@ final class MemoirVaultDeletion {
     self.insights = insights
     self.rates = rates
     self.modules = modules
+    self.closer = closer
     self.location = location
     self.defaults = MemoirDeviceDefaults(defaults: defaults)
     self.exports = exports
@@ -112,6 +114,7 @@ final class MemoirVaultDeletion {
     await insights.follow(nil)
     rates?.follow(nil)
     await modules?.stop()
+    await closer?.stop()
     await Self.clearLocalTables(in: stores)
     do {
       let exports = exports

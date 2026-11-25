@@ -157,10 +157,14 @@ struct HeroStatsGrid: View {
 struct HeroOverviewSection: View {
   let deck: HeroDeck
   let today: LocalDate?
+  /// Nil while Money is off.
+  var money: MoneyGameSnapshot?
+  @Environment(\.locale) private var locale
 
   var body: some View {
     ShadowAdaptiveColumns {
       progression
+      if let money { moneyCard(money) }
       if let crown = deck.crown { crownCard(crown) }
       if let momentum = HeroCopy.momentum(deck.momentum, comingBack: deck.comingBack) { momentumCard(momentum) }
       ShadowCallout(
@@ -227,6 +231,50 @@ struct HeroOverviewSection: View {
           .shadowFont(.headline)
         }
       }
+    }
+  }
+
+  /// The money streak once there is money activity, with this week's logging and last week's while it is still open, the saving streak, a debuff in
+  /// force and Home's danger badge.
+  private func moneyCard(_ money: MoneyGameSnapshot) -> some View {
+    let standing = money.standing
+    return ShadowCard {
+      VStack(alignment: .leading, spacing: Spacing.space3) {
+        HeroCardTitle(Text("Money", tableName: "Hero"))
+        if money.hasActivity {
+          Text(verbatim: HeroMoneyCopy.streak(standing.weekStreak)).shadowFont(.title3).foregroundStyle(ShadowColor.textPrimary)
+          if let week = standing.week { weekProgress(week, text: HeroMoneyCopy.week(week)) }
+          if let settling = standing.settlingWeek { weekProgress(settling, text: HeroMoneyCopy.settling(settling)) }
+        } else {
+          Text(verbatim: HeroMoneyCopy.notStarted).shadowFont(.subheadline).foregroundStyle(ShadowColor.textSecondary)
+        }
+        if standing.savingStreak > 0 {
+          Text(verbatim: HeroMoneyCopy.savingStreak(standing.savingStreak)).shadowFont(.subheadline).foregroundStyle(ShadowColor.textSecondary)
+        }
+        ShadowFlowLayout(spacing: Spacing.space2) {
+          if let debuff = standing.debuff {
+            ShadowBadge(Text(verbatim: HeroMoneyCopy.debuff(debuff, locale: locale)), intent: .warning, systemImage: "arrow.down.circle")
+          }
+          if let home = money.homeInDanger {
+            let content = BudgetRowContent(home, locale: locale)
+            ShadowBadge(Text(verbatim: HeroMoneyCopy.home(content.status)), intent: content.tone.badgeIntent, systemImage: content.tone.symbol)
+          }
+        }
+        if let week = standing.week {
+          Text("A week counts once \(week.required) of its days are logged, by an expense or by saying you spent nothing.", tableName: "Hero")
+            .shadowFont(.caption)
+            .foregroundStyle(ShadowColor.textSecondary)
+        }
+      }
+    }
+  }
+
+  private func weekProgress(_ week: MoneyWeekProgress, text: String) -> some View {
+    VStack(alignment: .leading, spacing: Spacing.space1) {
+      ProgressView(value: Double(min(week.covered.count, week.required)), total: Double(max(week.required, 1)))
+        .progressViewStyle(.shadowLinear)
+        .accessibilityHidden(true)
+      Text(verbatim: text).shadowFont(.caption).foregroundStyle(ShadowColor.textSecondary)
     }
   }
 

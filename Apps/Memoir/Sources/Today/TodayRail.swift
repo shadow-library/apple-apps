@@ -64,7 +64,7 @@ struct TodayRail: View {
       HStack {
         Text("Streaks", tableName: "Today").shadowFont(.headline).foregroundStyle(ShadowColor.textPrimary).accessibilityAddTraits(.isHeader)
         Spacer()
-        NavigationLink(value: MemoirRoute.destination(.insights)) { Text("All", tableName: "Today") }.buttonStyle(.shadowPlain)
+        ModuleLink(MemoirRoute.destination(.insights)) { Text("All", tableName: "Today") }.buttonStyle(.shadowPlain)
       }
       if snapshot.streaks.entries.isEmpty {
         Text("No streaks yet. One starts the first day you keep a quest.", tableName: "Today").todayNote()

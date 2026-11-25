@@ -245,6 +245,17 @@
         }
       }
     },
+    "%lld of %lld days this week": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld of %lld days this week"
+          }
+        }
+      }
+    },
     "%lld of %lld done": {
       "extractionState": "manual",
       "localizations": {
@@ -374,6 +385,29 @@
           "stringUnit": {
             "state": "translated",
             "value": "%lld skipped."
+          }
+        }
+      }
+    },
+    "%lld weeks": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld week"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld weeks"
+                }
+              }
+            }
           }
         }
       }
@@ -1193,6 +1227,17 @@
         }
       }
     },
+    "Home: %@": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Home: %@"
+          }
+        }
+      }
+    },
     "Honest Planner": {
       "extractionState": "manual",
       "localizations": {
@@ -1310,6 +1355,17 @@
           "stringUnit": {
             "state": "translated",
             "value": "Kept — a move inside the cap does not break it"
+          }
+        }
+      }
+    },
+    "Last week %lld of %lld days, still open": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Last week %lld of %lld days, still open"
           }
         }
       }
@@ -1475,6 +1531,17 @@
           "stringUnit": {
             "state": "translated",
             "value": "Momentum %@"
+          }
+        }
+      }
+    },
+    "Money streak %@": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Money streak %@"
           }
         }
       }
@@ -2106,6 +2173,17 @@
         }
       }
     },
+    "Saving streak %lld": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Saving streak %lld"
+          }
+        }
+      }
+    },
     "See recovery choices": {
       "extractionState": "manual",
       "localizations": {
@@ -2652,6 +2730,17 @@
           "stringUnit": {
             "state": "translated",
             "value": "Write a line about today"
+          }
+        }
+      }
+    },
+    "XP −%@ until %@": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "XP −%@ until %@"
           }
         }
       }
