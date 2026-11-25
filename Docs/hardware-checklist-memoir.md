@@ -2,7 +2,8 @@
 
 Checks that need a signed build on real devices and cannot be simulated: onboarding with sync, the store routes on iCloud and on an unrestricted
 provider, Apple Health, local notifications, the document camera and Vision, insights against a real provider, the export sheets, deleting the
-vault and the exchange-rates service. The package suites (`MemoirKit`, `ShadowKit`) and the Memoir app tests cover the logic with fakes and in-memory stores; this list covers what
+vault, the exchange-rates service, and the money features (modules, budgets, refunds, savings and goals, the period closer and the schema floor)
+across devices and on a large vault. The package suites (`MemoirKit`, `ShadowKit`) and the Memoir app tests cover the logic with fakes and in-memory stores; this list covers what
 only the system does.
 
 Run the sections in order; each one leaves the devices ready for the next. Write the result of each check in its last column (pass, fail, or what
@@ -43,7 +44,7 @@ with a week or more of Health data (steps, active energy, water, weight, resting
 | # | Step | Expected | Result |
 | - | ---- | -------- | ------ |
 | 2.1 | Launch Memoir on the iPhone for the first time, with no sync set up. | Onboarding shows instead of Today; nothing is written until the last step. | |
-| 2.2 | Walk the five steps (day, first quest, schedule, strictness, ready); pick a home currency and a time zone other than the device's. | Each step refuses an invalid value inline (a sleep window under 3 or over 14 hours, an anchor without a time); Ready finishes; Today shows the first quest in the chosen zone's day. | |
+| 2.2 | Choose the purpose that covers both habits and spending on the first step, then walk the steps (day, home currency, first quest, schedule, strictness, Home's limit, ready); pick a home currency and a time zone other than the device's. | Each step refuses an invalid value inline (a sleep window under 3 or over 14 hours, an anchor without a time, a zero or malformed limit); Ready finishes; Today shows the first quest in the chosen zone's day and Money shows Home with the limit. | |
 | 2.3 | Relaunch the app. | Today opens directly; onboarding never comes back. | |
 | 2.4 | In Settings, check the home currency. | It is shown and cannot be changed. | |
 | 2.5 | Turn sync on with iCloud on the iPhone (Settings, Sync). | The vault is created at iCloud; the indicator reads up to date. | |
@@ -197,11 +198,127 @@ Bank's reference rates for that day (`https://api.frankfurter.dev/v2/providers/e
 | 11.8 | Turn on airplane mode, add a krone expense, then turn it off with the app open. | Nothing blocks the form; the expense converts within a few minutes (the retry waits 1, 2, 4… minutes, at most an hour). | |
 | 11.9 | Open the demo. | No request leaves (11.3's proxy stays quiet); the demo's Settings show no "Fetch exchange rates". | |
 
+## 12. Purposes and Features
+
+Start from a fresh vault on the iPhone for each purpose (Settings, Data and privacy, delete the vault, or reinstall). Each path ends in one write, so
+a failure on the last step leaves nothing.
+
+| # | Step | Expected | Result |
+| - | ---- | -------- | ------ |
+| 12.1 | On the first step choose the spending-only purpose (Money). Walk it. | The steps are day, home currency, Home's limit, ready; there is no quest step. Ready finishes with no tab bar: Money is the root and Settings is in its toolbar. | |
+| 12.2 | Repeat with the habits-only purpose (Hero and Quests). | The steps are day, home currency, the quest's three steps, ready; no limit step. Today, Plan, Log, Hero show; Money does not. | |
+| 12.3 | Repeat with everything, leaving Home's limit empty. | Ready finishes; Money shows Home with no limit and asks for one; no period closes later because of it. | |
+| 12.4 | Repeat with custom modules: Journal alone, then Hero alone, then Quests without Hero. | Journal alone is accepted; Hero alone and Quests without Hero are refused inline with the reason; an empty choice is refused. | |
+| 12.5 | In Settings, Features, turn Meals off, then on. | Meals leaves the tabs, Log, History and Insights and returns with its data intact. | |
+| 12.6 | Turn Quests off with active quests. | The confirmation says how many quests will pause ("Pause N quests?"); after confirming Today and Plan disappear, the quests are inactive in Quests' history, and turning Quests on again reactivates none. | |
+| 12.7 | With Hero and Quests on, turn Hero off; then turn Quests off and Hero off with Money on. | The first is refused (Quests need Hero); the second is accepted. With Hero off and Quests off, turning Quests on turns Hero on with it. | |
+| 12.8 | Turn Body off on the iPhone that reads Health. | The reader designation clears, Activity leaves iCloud (if it was on), Body & health and Weight disappear, and no Health import runs on foregrounding (check the Health app's sources for new reads). | |
+| 12.9 | With Body off on the iPhone, open Sync Settings. | Activity's iCloud switch is off and not offered. Turn Body on again: the switch returns off. | |
+| 12.10 | Turn Body off on the iPhone while the second device still shows it on and has not synced; then sync it. | The second device follows at its next foreground (`enforce`): its Health reader claim, if it held one, is cleared and Body is hidden. | |
+| 12.11 | With one module only, check the iPad's sidebar and the Mac. | The sidebar lists only visible sections; with one tab destination the iPhone and compact iPad show no tab bar. The Mac's Settings window has a Features tab. | |
+| 12.12 | Turn Money off. | Money, Budgets and Weekly Review's money section disappear; no exchange-rate request leaves (watch with a proxy as in 11.3) and no period closes; subscription reminders stop. | |
+
+## 13. Budgets, trips and refunds
+
+Needs Money on, a home currency (euro), a second currency enabled (kroner) and a network for the rates.
+
+| # | Step | Expected | Result |
+| - | ---- | -------- | ------ |
+| 13.1 | Set Home's limit in Money, Budgets. Raise it. | The form says the raise applies next month; this month's limit is unchanged. Lower it: it applies at once and the pending raise is dropped. | |
+| 13.2 | Change Home's limit twice in one month in the direction that rewrites last month's limit. | The second change is refused with "This month’s limit has already changed. Raise it again next month." | |
+| 13.3 | Add a monthly budget in kroner, then try a second one in kroner. | The second is refused with "There’s already a monthly budget in that currency." | |
+| 13.4 | Create a trip starting four days ago, then one starting three days ago. | The first is refused with the earliest start allowed; the second is accepted. | |
+| 13.5 | Create a second trip overlapping the first. | Refused, naming the trip it shares a day with. | |
+| 13.6 | With a trip in kroner, add an expense dated inside it in kroner, then one in euros. | The chip prefills the trip for both; the trip's total counts each in its own currency (the euro one through the kroner rate of its day), and Home no longer counts them. | |
+| 13.7 | Override the chip to Home on one of them, save and reopen. | The override is kept; opening and saving an expense whose override names a deleted budget never rewrites it. | |
+| 13.8 | Delete the trip. | Its expenses count in the monthly budget of their currency or Home again; Home cannot be deleted or renamed. | |
+| 13.9 | Spend to 80 percent, then past the limit, of a monthly budget. | The pace moves from on track to at risk to over, shown by symbol and words, with "safe to spend a day" for the days left. | |
+| 13.10 | Turn on the consolidated view with a kroner budget. | It adds the budgets in euros, labelled approximate; a budget whose rate is pending does not reduce what is left. | |
+| 13.11 | Refund part of an expense from its detail, then the rest from its row's menu. | Each is one history line "refunded"; the amount falls, the month's total falls with it; after the full refund the expense shows "Refunded" and offers no refund. | |
+| 13.12 | Refund more than the amount; refund zero. | Refused inline in the app's words. | |
+| 13.13 | Refund the same expense on two devices while both are offline, then sync. | Both refunds appear in its history; the amount follows one of them and the history reads without error. | |
+| 13.14 | Confirm a subscription's cycle on one device while a second, which has not received that cycle's expense, confirms it too; delete the expense on the first before syncing. | After syncing the expense stays deleted and is not restored; edits made on the first device are not reverted. | |
+| 13.15 | Set a budget override on a subscription, then confirm a cycle. | The cycle's expense counts in that budget, also after the subscription is deleted. | |
+
+## 14. Savings, goals and paying from savings
+
+Needs a vault with at least three closed months of one monthly budget (the demo's seeded history shows the screens, but run the writes here on
+the owner's vault after sections 13 and 15, or on a vault restored from an export that has them).
+
+| # | Step | Expected | Result |
+| - | ---- | -------- | ------ |
+| 14.1 | Open Money's savings card in a vault with deposits. | "Saved under budget" shows what can be drawn, the pace, this month as it is going and the last months' deposits; nothing reads as a real balance. | |
+| 14.2 | Create three goals, then a fourth. | The fourth is refused (at most three active); the goals list in fill order and a drag or the row's menu reorders them. | |
+| 14.3 | Open a goal with a pace. | The forecast says when, or what would help, in words that blame nothing; with VoiceOver the ring reads the goal's progress. | |
+| 14.4 | Set a goal's target date in the past. | Refused with "A goal’s target date can’t be in the past." | |
+| 14.5 | Add an expense of at least ten times the typical expense and use "Pay part from savings". | The form shows the most that can be drawn and the one-off threshold; saving writes the draw, the budget counts the expense without the part drawn, and the savings card falls by it. | |
+| 14.6 | Try to draw on a smaller expense. | Refused: only a one-off can draw on savings; a goal purchase is exempt. | |
+| 14.7 | Buy a goal created less than three days ago, dating the purchase ahead. | Refused with the date it can be bought from, counted from today as well as from the purchase date. | |
+| 14.8 | Name a goal on an expense after the cooling-off, then mark the goal bought from its screen. | The goal moves to bought, due milestones are paid in the same write, the goal reward shows once, and the goal's leftover returns to savings. | |
+| 14.9 | Mark a goal bought with no expense naming it. | Refused: no expense buys it yet. | |
+| 14.10 | Refund an expense that drew on savings. | The part that no longer fits returns to savings in the same write. | |
+| 14.11 | Set a category's Essential toggle and open a goal's forecast. | A lever never names an essential category; clearing the toggle returns the built-in default. | |
+| 14.12 | Create a goal below a quarter of Home's limit and cross 25 percent. | No milestone reward is issued for it; the goal screen says it earns no rewards. | |
+| 14.13 | Open the weekly review with an active goal. | The goal section shows its progress, pace and forecast. | |
+
+## 15. Closing a period and money in the game
+
+Needs Hero and Money on, a Home limit, a vault whose `moneyScoredFrom` is set (turning Hero and Money on together sets it) and the ability to set the
+device's date forward (or wait for a month end). Never run it against the demo, which has no closer.
+
+| # | Step | Expected | Result |
+| - | ---- | -------- | ------ |
+| 15.1 | Log an expense or "No spend" for today, then for each of the two days before. | Each day reads as covered once; "No spend" is offered for the open day and the days the late window still takes, and refused for older days. | |
+| 15.2 | Log expenses on at least five days of a Monday-to-Sunday week and let the week settle (two days after it). | The money streak grows by one; a week with fewer days resets it; a gap week resets it. | |
+| 15.3 | Move the date past a month's end plus three days with the app in front. | Within seconds the closer closes the month: a result card shows the outcome and the reward or fine, the deposit shows in savings, and the card does not return after dismissing it. | |
+| 15.4 | Do the same with the app in the background, then bring it to the front. | Nothing closes in the background; the next foreground closes it. | |
+| 15.5 | Leave a month with no logging and let it close. | It closes as unscored with the worst penalty and no deposit; coins never go below zero. | |
+| 15.6 | Overspend by 5, 20 and 30 percent in three months. | Each closes as over by at most 10, 25 and more percent, with the stated fine and an XP multiplier for 7, 14 and 30 days; the badge on Hero shows the debuff. | |
+| 15.7 | With an expense waiting for a rate at the close, close the period. | The close waits up to seven days for the rate, then closes without that expense. | |
+| 15.8 | Close a month in which a refund was entered afterwards. | The closed month's score and deposit do not change. | |
+| 15.9 | Turn Quests off and watch Hero's momentum and Today. | Momentum is not shown without an active quest; money activity keeps a former quest keeper from being treated as returning every day. | |
+| 15.10 | Delete the vault while the closer runs a close. | It stops before its next write; nothing is written to the deleted vault. | |
+| 15.11 | Close the app during a run with two periods due. | The next launch finishes the remaining closes in order; none closes twice. | |
+
+### 15.A Two devices closing at once
+
+| # | Step | Expected | Result |
+| - | ---- | -------- | ------ |
+| 15.12 | Take both devices offline with a period due; open both in the foreground so each closes it; then sync. | One close counts: the hero shows one reward or fine, one deposit record exists (the first writer's), and the other close shows as superseded. | |
+| 15.13 | Repeat with a milestone due on both. | The goal's milestone is paid once. | |
+| 15.14 | Repeat with a second device on the same close but a different outcome (an expense edited offline on one). | Replay keeps the earliest close by clock; savings read the deposit record, whose amount and frozen spending are the first writer's; the other device's result card shows once for its own key. | |
+
+## 16. Sync schema floor
+
+Needs one device on a build before the money release (registry v5; keep an older signed build for this) and one on this build.
+
+| # | Step | Expected | Result |
+| - | ---- | -------- | ------ |
+| 16.1 | Sync the old device from a vault, then open this build on the other device and upload. | The old device stops syncing once it reads the floor; Sync Settings says "A newer version of Memoir wrote the vault here. Update Memoir to use it."; it keeps its local data. | |
+| 16.2 | Update the old device. | Sync resumes and the money data arrives. | |
+| 16.3 | On the old device, before updating, note what it shows of the new data. | It may show part of the first newer batch it applied before reading the floor, never uploads afterwards, and its Hero shows "A change from another device needs a newer version of Memoir. Your hero shows everything up to it until you update." at the new command types. | |
+| 16.4 | On the new build, open a routed store (Activity on a folder or S3) beside the main one. | The routed store syncs without a floor; the floor applies to the main store. | |
+
+## 17. Performance on a large vault
+
+Several money observers (the overview, budget standings, the savings overview, the money game and the closer) re-read the ledger after every main-store
+commit. Use a vault restored from an export with at least two years of daily expenses (thousands of records), several budgets and trips, and goals.
+
+| # | Step | Expected | Result |
+| - | ---- | -------- | ------ |
+| 17.1 | Open Money, Today and Hero cold on the iPhone. | Each shows its content within about a second; no screen waits on another's read. | |
+| 17.2 | Save an expense and watch Money, Today and the savings card. | The screens update within about a second of the save; typing in a form stays smooth. | |
+| 17.3 | Type in a note field while a sync download brings many records. | The UI stays responsive; no stall of more than a moment. | |
+| 17.4 | Watch battery and temperature across ten minutes of foregrounding with sync on. | No sustained CPU use while idle. | |
+| 17.5 | Record the time of the first launch after a ruleset move (a build that changed `Ruleset.current`). | The projection rebuilds once; note how long Today shows its loading state. | |
+
 ## Known follow-ups
 
 Open behaviour that these checks may run into; none blocks these checks.
 
 - A vault that syncs its activity and health stores cannot move to another storage yet: a move would carry only the main store.
+- A build below the schema floor applies the first newer batch it downloads before it has read the floor, then never uploads.
+- "No spend" has no confirmation or undo; a period of a budget with no logging closes as unscored; a first limit set mid-month blocks a raise until next month; the closer has no cap on rewarded closes per month across several budgets or trips.
 - Stopping a route waits for a download pass in flight to finish; the engine's halt has no unit test of its own.
 - Every write and each midnight rebuilds and compares all derived rows (about 2.8 s in a debug build for two years of data); an incremental diff and
   a release-build measurement are pending.

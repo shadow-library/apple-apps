@@ -134,8 +134,8 @@ anywhere, and the owner's own data untouched. Draft for the review notes, to adj
 >
 > **Memoir.** On first launch Memoir shows its setup. Tap **Try the Demo** on the first step, under "Just looking?"; nothing needs to be set up
 > first. (Settings and Ask offer it too once set up, and on the Mac the Settings window's AI tab at any time.) A "Demo" badge appears at the top.
-> The demo opens a sample week of quests, expenses, journal entries and meals; Ask and receipt reading answer from a script on the device, and
-> Health, reminders and sync are off in it. Nothing is sent anywhere. **Leave Demo** deletes the demo's data and returns to setup, since no data
+> The demo opens a sample week of quests, journal entries and meals and five months of money (Home's limit with closed months and savings, a foreign trip, a partial refund and a goal); Ask and receipt reading answer from a script on the device, and
+> Health, reminders, sync and closing budget periods are off in it. Nothing is sent anywhere. **Leave Demo** deletes the demo's data and returns to setup, since no data
 > of your own was made.
 
 The `-ShadowDemo` launch argument enters the demo too, but only for UI tests and local runs; App Review launches the app from the home screen.
