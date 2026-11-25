@@ -58,9 +58,24 @@ enum WritingErrors {
       case .refundNotPositive: String(localized: "A refund has to be more than zero.", table: "Writing")
       case .nothingToRefund: String(localized: "There’s nothing left to refund on this expense.", table: "Writing")
       case .currencyTaken: String(localized: "There’s already a monthly budget in that currency.", table: "Writing")
+      case .settingsAbsent: String(localized: "Choose your home currency first.", table: "Writing")
+      case .goalNameRequired: String(localized: "Give the goal a name.", table: "Writing")
+      case .goalSymbolRequired: String(localized: "Pick a symbol for the goal.", table: "Writing")
+      case .goalTargetNotPositive: String(localized: "A goal’s target has to be more than zero.", table: "Writing")
+      case .goalTargetDatePassed: String(localized: "A goal’s target date can’t be in the past.", table: "Writing")
+      case .goalLimitReached: String(localized: "You can have up to 3 goals at once. Finish or set one aside first.", table: "Writing")
+      case .goalNotActive: String(localized: "That goal is no longer active.", table: "Writing")
+      case .goalNotPurchased: String(localized: "Pick this goal on the expense that bought it first.", table: "Writing")
+      case .coolingOffNotMet: String(localized: "A goal can be bought 3 days after it was made. Give it a little longer.", table: "Writing")
+      case .savingsNotPositive: String(localized: "The part from savings has to be more than zero.", table: "Writing")
+      case .savingsExceedsAmount: String(localized: "The part from savings can’t be more than the expense.", table: "Writing")
+      case .notOneOff: String(localized: "Savings are for one-off purchases, and this expense is below this budget’s one-off amount.", table: "Writing")
+      case .savingsInsufficient: String(localized: "Your savings can’t cover that much right now.", table: "Writing")
+      case .savingsAwaitingRate: String(localized: "This needs an exchange rate before it can be paid from savings.", table: "Writing")
+      case .goalAbsent: String(localized: "That’s no longer available.", table: "Writing")
       case .unreadable, .store, .recordWrite: PresentedError.storeHeadline
       case .unknownCurrency, .currencyMismatch, .overflow, .rateNotPositive, .rateOutOfRange, .negativeBudget, .unknownFrequency, .customIntervalNotPositive,
-        .billingDayOutOfRange, .dateOutOfRange, .expenseExists, .budgetExists, .negativeLimit:
+        .billingDayOutOfRange, .dateOutOfRange, .expenseExists, .budgetExists, .negativeLimit, .goalExists:
         invalidDetails
       }
     case let error as MemoirRecordError:

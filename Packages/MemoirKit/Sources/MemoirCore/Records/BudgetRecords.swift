@@ -250,7 +250,7 @@ public struct SavingsGoalRank: Hashable, Sendable, Comparable, StoredValue, Cust
 }
 
 /// Something the owner saves towards, in the home currency, which is written once with the day the goal was created.
-public struct SavingsGoalRecord: IdentifiedRecord, RemovableMemoirRecord {
+public struct SavingsGoalRecord: IdentifiedRecord, RemovableMemoirRecord, Hashable {
   public static let kind = MemoirKind.savingsGoal
 
   public let id: UUID

@@ -7,6 +7,7 @@ public struct CategoryEntry: Sendable, Hashable {
   /// The label its record holds, if any.
   public let label: String?
   public let isArchived: Bool
+  public let essential: CategoryEssential
 }
 
 /// memoir-web `financeCategoriesView` (`lib/data/finance.provider.ts:576-581`): every category and its share of this month's spending.
@@ -18,10 +19,12 @@ public struct CategoriesOverview: Sendable, Hashable {
 
   public static func make(_ book: MoneyBook, today: LocalDate) throws(FinanceError) -> CategoriesOverview {
     let records = Dictionary(book.categoryRecords.map { ($0.categoryKey, $0) }) { first, _ in first }
+    let essentials = book.essentials
     let entries = book.categoryKeys.map { key in
       CategoryEntry(
         key: key, isBuiltIn: MoneyBook.builtInCategories.contains(key), isPermanent: CategoryArchival.permanentCategories.contains(key.key),
-        label: records[key]?.label, isArchived: records[key]?.archived ?? false)
+        label: records[key]?.label, isArchived: records[key]?.archived ?? false,
+        essential: essentials.essential(key))
     }
     guard let converter = book.converter else { return CategoriesOverview(categories: entries, thisMonth: nil, uncategorised: nil) }
     guard let month = DateSpan.month(of: today) else { throw .dateOutOfRange }

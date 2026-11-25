@@ -93,6 +93,21 @@ struct WritingErrorsTests {
     #expect(WritingErrors.presented(FinanceError.tripStartTooEarly(earliest: TestClock.day(0)))?.headline == "A trip can start on \(earliest) at the earliest.")
   }
 
+  @Test("should give a savings or goal refusal the owner's words, with its code underneath")
+  func presentsSavingsRefusals() {
+    let refused = { (error: FinanceError) in WritingErrors.presented(MemoirWriteError.command(.refused(.finance(error)))) }
+
+    #expect(
+      refused(.notOneOff(thresholdMinor: 5_000))
+        == PresentedError(
+          headline: "Savings are for one-off purchases, and this expense is below this budget’s one-off amount.", detail: "memoir_finance.not_one_off"))
+    #expect(refused(.savingsInsufficient(availableMinor: 0))?.headline == "Your savings can’t cover that much right now.")
+    #expect(refused(.coolingOffNotMet(buyFrom: TestClock.day(3)))?.headline == "A goal can be bought 3 days after it was made. Give it a little longer.")
+    #expect(refused(.goalLimitReached(maximum: 3))?.headline == "You can have up to 3 goals at once. Finish or set one aside first.")
+    #expect(refused(.goalAbsent(UUID()))?.headline == "That’s no longer available.")
+    #expect(refused(.goalExists(UUID()))?.headline == "Some of the details weren’t valid.")
+  }
+
   @Test("should fall back to the generic headline for an error it does not know")
   func fallsBack() {
     #expect(WritingErrors.presented(Unknown()) == PresentedError(headline: PresentedError.genericHeadline, detail: nil))

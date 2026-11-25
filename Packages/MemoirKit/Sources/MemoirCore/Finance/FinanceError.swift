@@ -34,6 +34,22 @@ public enum FinanceError: ShadowError, Equatable, Hashable {
   case tripStartTooEarly(earliest: LocalDate)
   case limitChangedThisMonth
   case currencyTaken(CurrencyCode)
+  case settingsAbsent
+  case goalAbsent(UUID)
+  case goalExists(UUID)
+  case goalNameRequired
+  case goalSymbolRequired
+  case goalTargetNotPositive(Int64)
+  case goalTargetDatePassed(earliest: LocalDate)
+  case goalLimitReached(maximum: Int)
+  case goalNotActive(UUID)
+  case goalNotPurchased(UUID)
+  case coolingOffNotMet(buyFrom: LocalDate)
+  case savingsNotPositive(Int64)
+  case savingsExceedsAmount(savings: Int64, amount: Int64)
+  case notOneOff(thresholdMinor: Int64?)
+  case savingsInsufficient(availableMinor: Int64)
+  case savingsAwaitingRate
   case unreadable(EntityRef)
   case store(String)
   case recordWrite(String)
@@ -70,6 +86,22 @@ public enum FinanceError: ShadowError, Equatable, Hashable {
     case .tripStartTooEarly: "memoir_finance.trip_start_too_early"
     case .limitChangedThisMonth: "memoir_finance.limit_changed_this_month"
     case .currencyTaken: "memoir_finance.currency_taken"
+    case .settingsAbsent: "memoir_finance.settings_absent"
+    case .goalAbsent: "memoir_finance.goal_absent"
+    case .goalExists: "memoir_finance.goal_exists"
+    case .goalNameRequired: "memoir_finance.goal_name_required"
+    case .goalSymbolRequired: "memoir_finance.goal_symbol_required"
+    case .goalTargetNotPositive: "memoir_finance.goal_target_not_positive"
+    case .goalTargetDatePassed: "memoir_finance.goal_target_date_passed"
+    case .goalLimitReached: "memoir_finance.goal_limit_reached"
+    case .goalNotActive: "memoir_finance.goal_not_active"
+    case .goalNotPurchased: "memoir_finance.goal_not_purchased"
+    case .coolingOffNotMet: "memoir_finance.cooling_off_not_met"
+    case .savingsNotPositive: "memoir_finance.savings_not_positive"
+    case .savingsExceedsAmount: "memoir_finance.savings_exceeds_amount"
+    case .notOneOff: "memoir_finance.not_one_off"
+    case .savingsInsufficient: "memoir_finance.savings_insufficient"
+    case .savingsAwaitingRate: "memoir_finance.savings_awaiting_rate"
     case .unreadable: "memoir_finance.unreadable"
     case .store: "memoir_finance.store"
     case .recordWrite: "memoir_finance.record_write"
@@ -109,6 +141,23 @@ public enum FinanceError: ShadowError, Equatable, Hashable {
     case .tripStartTooEarly(let earliest): "A trip starts on \(earliest) or later."
     case .limitChangedThisMonth: "This month's limit has already changed; a raise waits until next month."
     case .currencyTaken(let code): "There is already a monthly budget in \(code)."
+    case .settingsAbsent: "The vault has no account settings yet, so it has no home currency."
+    case .goalAbsent(let id): "Savings goal \(id.lowercasedString) is not in the vault."
+    case .goalExists(let id): "Savings goal \(id.lowercasedString) already exists."
+    case .goalNameRequired: "A savings goal needs a name."
+    case .goalSymbolRequired: "A savings goal needs a symbol."
+    case .goalTargetNotPositive(let amount): "A savings goal's target is above zero, not \(amount)."
+    case .goalTargetDatePassed(let earliest): "A savings goal's target date is \(earliest) or later."
+    case .goalLimitReached(let maximum): "At most \(maximum) savings goals can be active at once."
+    case .goalNotActive(let id): "Savings goal \(id.lowercasedString) is no longer active."
+    case .goalNotPurchased(let id): "No expense buys savings goal \(id.lowercasedString) yet."
+    case .coolingOffNotMet(let buyFrom): "A savings goal can be bought from \(buyFrom), once its cooling-off has passed."
+    case .savingsNotPositive(let amount): "The part paid from savings is above zero, not \(amount)."
+    case .savingsExceedsAmount(let savings, let amount): "\(savings) from savings is more than the expense's \(amount)."
+    case .notOneOff(let threshold?): "Only a one-off of at least \(threshold) can be paid from savings."
+    case .notOneOff(nil): "Only a one-off can be paid from savings, and this budget has no one-off threshold yet."
+    case .savingsInsufficient(let available): "Savings can cover at most \(available) now."
+    case .savingsAwaitingRate: "The amount paid from savings waits for an exchange rate."
     case .unreadable(let ref): "\(ref.kind)/\(ref.key) cannot be read."
     case .store(let reason): "The store failed: \(reason)"
     case .recordWrite(let reason): "The record write was refused: \(reason)"

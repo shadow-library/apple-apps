@@ -45,6 +45,16 @@ public struct CommandIssuer: Sendable {
     self.wallClock = wallClock
   }
 
+  /// The account's day at this issuer's instant: the zone's date, or the open day while a backward zone change keeps it ahead.
+  public func accountToday(openDay: LocalDate?) throws(CommandIssueError) -> LocalDate {
+    guard let instant = Int64(exactly: (wallClock().timeIntervalSince1970 * 1000).rounded(.down)) else { throw .clock(.dateOutOfRange) }
+    do throws(CalendarError) {
+      return try clock.accountToday(at: instant, openDay: openDay)
+    } catch {
+      throw .clock(error)
+    }
+  }
+
   public func command(_ body: MemoirCommandBody) throws(CommandIssueError) -> MemoirCommand {
     guard body.minimumRulesetVersion <= Ruleset.current.version else { throw .refused(.needsNewerRuleset(body.kind, minimum: body.minimumRulesetVersion)) }
     let now = wallClock()

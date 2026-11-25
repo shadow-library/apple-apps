@@ -241,7 +241,7 @@ struct ExpenseFormTests {
       id: UUID.v7(at: context.clock.now()), amountMinor: 2000, currency: MoneyFixture.euro, occurredOn: TestClock.day0, category: MoneyFixture.food,
       fromSavingsMinor: 1800, loggedAtMillis: MemoirClock.millis(context.clock.now()))
     let id = expense.id
-    _ = try await context.writer.write { issuer, transaction in try ExpenseEdits.create(expense, issuer: issuer, in: &transaction) }
+    _ = try await context.writer.write { _, transaction in try expense.create(in: &transaction) }
     _ = try await context.writer.write { issuer, transaction in try ExpenseEdits.refund(id, amount: .partial(500), issuer: issuer, in: &transaction) }
 
     let detail = ExpenseDetailModel(id: id, context: context)

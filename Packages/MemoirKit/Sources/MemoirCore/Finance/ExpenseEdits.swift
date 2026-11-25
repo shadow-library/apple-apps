@@ -13,15 +13,17 @@ public enum RefundAmount: Sendable, Hashable {
 /// on every device; a creation or a deletion purges the expense's change records, which hold its old notes and merchants
 /// (`ExpenseAuditRepository.removeForExpense`).
 public enum ExpenseEdits {
-  /// Creates the expense with its rate captured. An id already held as a deleted expense is created again: its fields take the new values, but the
-  /// currency must be the one it was first written with (`FIN_006`), and it keeps its first rate, logging time and cycle seed, which never change. It
-  /// comes back without the receipt it had: the deletion purged that receipt's record.
+  /// Creates the expense with its rate captured, refusing a part paid from savings or a goal `SavingsWithdrawals` does not admit. An id already held as a
+  /// deleted expense is created again: its fields take the new values, but the currency must be the one it was first written with (`FIN_006`), and it
+  /// keeps its first rate, logging time and cycle seed, which never change. It comes back without the receipt it had: the deletion purged that receipt's
+  /// record.
   @discardableResult
   public static func create(_ expense: ExpenseRecord, source: ExpenseSource = .manual, issuer: CommandIssuer, in transaction: inout WriteTransaction)
     throws(CommandIssueError) -> (command: MemoirCommand, expense: ExpenseRecord)
   {
     let ref = ExpenseRecord.ref(expense.id)
     let written: ExpenseRecord
+    try SavingsWithdrawals.check(expense, replacing: nil, issuer: issuer, in: transaction)
     switch try reading(ref, in: transaction) {
     case .absent:
       do throws(FinanceError) {
@@ -51,7 +53,8 @@ public enum ExpenseEdits {
     return (try issuer.issue(.expenseCreate(ExpenseCreation(id: expense.id, source: source, occurredOn: occurredOn)), in: &transaction), written)
   }
 
-  /// `nil`, writing nothing, when the edit moves no field the owner sees. Moving the currency, rate, receipt, logging time or cycle seed is refused
+  /// `nil`, writing nothing, when the edit moves no field the owner sees. A new or larger part paid from savings, or a goal named afresh, is checked as
+  /// `SavingsWithdrawals` says; one that stays or falls is not. Moving the currency, rate, receipt, logging time or cycle seed is refused
   /// (`expenseFieldFixed`, the reference's `FIN_006` for the currency) before anything is written. Only the fields it moves are written, so a cycle's
   /// expense keeps following its seed in every other field.
   @discardableResult
@@ -96,6 +99,7 @@ public enum ExpenseEdits {
     if let field = fixedField(moved: current, to: edited) { throw .refused(.finance(.expenseFieldFixed(field.rawValue))) }
     let changes = ExpenseFieldChange.changes(from: current, to: edited)
     guard !changes.isEmpty else { return nil }
+    try SavingsWithdrawals.check(edited, replacing: current, issuer: issuer, in: transaction)
     let command = try issuer.issue(.expenseUpdate(RecordReference(id: id)), in: &transaction)
     let updated = edited
     try record { () throws(MemoirRecordError) in

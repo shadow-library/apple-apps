@@ -341,6 +341,160 @@
           }
         }
       }
+    },
+    "Choose your home currency first.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Choose your home currency first."
+          }
+        }
+      }
+    },
+    "Give the goal a name.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Give the goal a name."
+          }
+        }
+      }
+    },
+    "Pick a symbol for the goal.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pick a symbol for the goal."
+          }
+        }
+      }
+    },
+    "A goal’s target has to be more than zero.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A goal’s target has to be more than zero."
+          }
+        }
+      }
+    },
+    "A goal’s target date can’t be in the past.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A goal’s target date can’t be in the past."
+          }
+        }
+      }
+    },
+    "You can have up to 3 goals at once. Finish or set one aside first.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "You can have up to 3 goals at once. Finish or set one aside first."
+          }
+        }
+      }
+    },
+    "That goal is no longer active.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "That goal is no longer active."
+          }
+        }
+      }
+    },
+    "Pick this goal on the expense that bought it first.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pick this goal on the expense that bought it first."
+          }
+        }
+      }
+    },
+    "A goal can be bought 3 days after it was made. Give it a little longer.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A goal can be bought 3 days after it was made. Give it a little longer."
+          }
+        }
+      }
+    },
+    "The part from savings has to be more than zero.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The part from savings has to be more than zero."
+          }
+        }
+      }
+    },
+    "The part from savings can’t be more than the expense.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The part from savings can’t be more than the expense."
+          }
+        }
+      }
+    },
+    "Savings are for one-off purchases, and this expense is below this budget’s one-off amount.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Savings are for one-off purchases, and this expense is below this budget’s one-off amount."
+          }
+        }
+      }
+    },
+    "Your savings can’t cover that much right now.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your savings can’t cover that much right now."
+          }
+        }
+      }
+    },
+    "This needs an exchange rate before it can be paid from savings.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "This needs an exchange rate before it can be paid from savings."
+          }
+        }
+      }
     }
   },
   "version": "1.0"
