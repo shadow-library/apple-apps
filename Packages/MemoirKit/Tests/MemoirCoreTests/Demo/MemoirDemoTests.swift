@@ -41,10 +41,10 @@ struct MemoirDemoTests {
     #expect(hero.questsCompleted > 15)
     #expect(hero.halt == nil)
 
-    let book = try await stores.main.read { transaction in try MoneyBook.load(from: transaction) }
+    let (book, budgets) = try await stores.main.read { transaction in (try MoneyBook.load(from: transaction), try BudgetBook.load(from: transaction)) }
     #expect(book.expenses.count == 6)
     #expect(book.settings?.defaultCurrency == Self.euro)
-    let overview = try #require(try MoneyOverview.make(book, today: today))
+    let overview = try #require(try MoneyOverview.make(book, budgets: budgets, today: today))
     #expect(overview.spend(.month).spentSoFarMinor > 0 || overview.spend(.week).spentSoFarMinor > 0)
 
     let history = try await ReflectReads.history(in: stores, matching: HistoryQuery(page: .all), bodyClasses: [], today: today)

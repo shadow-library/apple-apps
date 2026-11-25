@@ -3,7 +3,7 @@ import ShadowStore
 
 /// A budget that counts: a readable one not deleted, or Home, which cannot be deleted. Amounts are read with any staged change whose day has come, and
 /// clamped at zero, since a merge can combine values no single write made.
-public struct LiveBudget: Equatable, Sendable, Identifiable {
+public struct LiveBudget: Hashable, Sendable, Identifiable {
   public let record: BudgetRecord
   let accountLimitMinor: Int64?
 

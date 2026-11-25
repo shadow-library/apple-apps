@@ -41,10 +41,10 @@ struct MoneyReadsTests {
     #expect(overview.month.comparison == DateSpan(start: MoneyReadsFixture.date("2026-10-01"), end: MoneyReadsFixture.date("2026-10-21")))
     #expect(overview.month.previousMinor == 400)
     #expect(overview.month.delta == Fraction(numerator: 6500 - 400, denominator: 400))
-    #expect(overview.budget?.spend.spentMinor == 6500)
-    #expect(overview.budget?.spend.awaitingRate == 2)
-    #expect(overview.budget?.leftMinor == 13_500)
-    #expect(overview.budget?.daysLeft == 10)
+    #expect(overview.budgets.homeBudget?.spend.spentMinor == 6500)
+    #expect(overview.budgets.homeBudget?.spend.pending.awaitingRate == 2)
+    #expect(overview.budgets.homeBudget?.leftMinor == 13_500)
+    #expect(overview.budgets.homeBudget?.phase.daysLeft == 10)
     #expect(overview.expensesThisMonth == 5)
 
     let currencies = overview.week.currencies

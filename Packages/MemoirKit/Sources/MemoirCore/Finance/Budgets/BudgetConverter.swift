@@ -27,6 +27,7 @@ public struct BudgetConverter: Sendable {
   public let homeConverter: HomeConverter
 
   private let rates: [RateKey: DecimalText]
+  private let history: [CurrencyCode: [FxRateRecord]]
 
   public init(home: CurrencyCode, rates: some Sequence<FxRateRecord>) {
     let records = Array(rates)
@@ -34,6 +35,7 @@ public struct BudgetConverter: Sendable {
     var table = [RateKey: DecimalText]()
     for record in records where record.quote == home { table[RateKey(base: record.base, date: record.date)] = record.rate }
     self.rates = table
+    history = Dictionary(grouping: records.filter { $0.quote == home }, by: \.base).mapValues { $0.sorted { $0.date < $1.date } }
   }
 
   public var home: CurrencyCode { homeConverter.home }
@@ -41,6 +43,11 @@ public struct BudgetConverter: Sendable {
   /// The recorded price of one unit of `currency` in home on `date`.
   public func recordedRate(of currency: CurrencyCode, on date: LocalDate) -> DecimalText? {
     rates[RateKey(base: currency, date: date)]
+  }
+
+  /// The newest recorded price of one unit of `currency` in home dated on or before `date`, never a later day's.
+  public func latestRate(of currency: CurrencyCode, onOrBefore date: LocalDate) -> FxRateRecord? {
+    history[currency]?.last { $0.date <= date }
   }
 
   public func amount(of expense: ExpenseRecord, in budget: LiveBudget) -> BudgetAmount {

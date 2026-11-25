@@ -39,7 +39,7 @@ public struct BudgetStanding: Hashable, Sendable {
   public let daysLeft: Int
 
   /// `nil` when no budget is set, or when the budget is not in the default currency (a currency change merged with a budget set elsewhere).
-  public init?(settings: AccountSettingsRecord, expenses: some Sequence<ExpenseRecord>, converter: HomeConverter, today: LocalDate) throws(FinanceError) {
+  init?(settings: AccountSettingsRecord, expenses: some Sequence<ExpenseRecord>, converter: HomeConverter, today: LocalDate) throws(FinanceError) {
     guard let budget = settings.effectiveMonthlyBudget else { return nil }
     guard converter.home == budget.currency else { throw .currencyMismatch(converter.home, budget.currency) }
     let spend = try MonthSpend(monthOf: today, expenses: expenses, converter: converter)
@@ -51,7 +51,7 @@ public struct BudgetStanding: Hashable, Sendable {
 }
 
 extension AccountSettingsRecord {
-  public var effectiveMonthlyBudget: MoneyAmount? {
+  var effectiveMonthlyBudget: MoneyAmount? {
     guard let budget = monthlyBudget, budget.currency == defaultCurrency, budget.amountMinor >= 0 else { return nil }
     return budget
   }

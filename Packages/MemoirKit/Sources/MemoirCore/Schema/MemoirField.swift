@@ -176,6 +176,9 @@ public enum SavingsDepositMember: String, MemoirField {
   case rate
   case closedOn = "closed_on"
   case command
+  case spentMinor = "spent_minor"
+  case limitMinor = "limit_minor"
+  case medianExpenseMinor = "median_expense_minor"
 }
 
 public enum SavingsGoalField: String, MemoirField {

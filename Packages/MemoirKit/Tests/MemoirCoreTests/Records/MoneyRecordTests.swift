@@ -52,10 +52,15 @@ struct MoneyRecordTests {
     try await roundTrip(
       SavingsDepositRecord(
         budget: Self.budget, periodStart: december,
-        deposit: SavingsDeposit(amountMinor: 1_250, currency: eur, rate: try MemoirStoreFixture.decimal("0.0061"), closedOn: day, command: Self.command)), in: store)
+        deposit: SavingsDeposit(
+          amountMinor: 1_250, currency: eur, rate: try MemoirStoreFixture.decimal("0.0061"), closedOn: day, command: Self.command, spentMinor: 8_000_000,
+          limitMinor: 9_000_000, medianExpenseMinor: 450_000)), in: store)
     try await roundTrip(
       SavingsDepositRecord(
-        budget: BudgetRecord.homeID, periodStart: december, deposit: SavingsDeposit(amountMinor: 0, currency: eur, closedOn: day, command: Self.command)), in: store)
+        budget: BudgetRecord.homeID, periodStart: december,
+        deposit: SavingsDeposit(
+          amountMinor: 0, currency: eur, closedOn: day, command: Self.command, spentMinor: 210_000, limitMinor: nil,
+          medianExpenseMinor: nil)), in: store)
     try await roundTrip(
       SavingsGoalRecord(
         id: Self.goal, name: "New bike", symbol: "bicycle", targetMinor: 120_000, currency: eur, targetDate: try MemoirStoreFixture.date("2027-06-01"),
@@ -175,9 +180,10 @@ struct MoneyRecordTests {
     let eur = try MemoirStoreFixture.currency("EUR")
     let periodStart = try MemoirStoreFixture.date("2026-11-01")
     let closedOn = try MemoirStoreFixture.date("2026-12-04")
-    let earlier = SavingsDeposit(amountMinor: 1_000, currency: eur, closedOn: closedOn, command: Self.command)
+    let earlier = SavingsDeposit(amountMinor: 1_000, currency: eur, closedOn: closedOn, command: Self.command, spentMinor: 40_000, limitMinor: 50_000, medianExpenseMinor: 2_500)
     let later = SavingsDeposit(
-      amountMinor: 2_000, currency: eur, rate: try MemoirStoreFixture.decimal("0.0061"), closedOn: closedOn, command: MemoirStoreFixture.commandID(9))
+      amountMinor: 2_000, currency: eur, rate: try MemoirStoreFixture.decimal("0.0061"), closedOn: closedOn, command: MemoirStoreFixture.commandID(9), spentMinor: 30_000,
+      limitMinor: 60_000, medianExpenseMinor: 1_500)
     _ = try await second.write { transaction in try SavingsDepositRecord(budget: Self.budget, periodStart: periodStart, deposit: earlier).create(in: &transaction) }
     clock.advance()
     _ = try await first.write { transaction in try SavingsDepositRecord(budget: Self.budget, periodStart: periodStart, deposit: later).create(in: &transaction) }

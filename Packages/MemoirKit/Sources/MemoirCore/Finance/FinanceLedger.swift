@@ -30,7 +30,7 @@ public struct FinanceLedger: Sendable {
     return try MonthSpend(monthOf: date, expenses: expenses, converter: converter)
   }
 
-  public func budgetStanding(today: LocalDate) throws(FinanceError) -> BudgetStanding? {
+  func budgetStanding(today: LocalDate) throws(FinanceError) -> BudgetStanding? {
     guard let settings, let converter else { return nil }
     return try BudgetStanding(settings: settings, expenses: expenses, converter: converter, today: today)
   }

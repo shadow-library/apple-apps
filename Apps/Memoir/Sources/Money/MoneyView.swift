@@ -46,9 +46,13 @@ struct MoneyView: View {
     let spend = overview.spend(model.range)
     let spent = MoneyText.formatted(spend.spent.totalMinor, overview.home, locale: locale)
     let period = MoneyLabels.periodTitle(model.range)
-    guard model.range == .month, let budget = overview.budget else { return Text("\(period) · \(spent)", tableName: "Money") }
-    return Text("\(period) · \(spent) of \(MoneyText.formatted(budget.budget, locale: locale))", tableName: "Money")
+    guard model.range == .month, let budget = overview.homeBudget, let limit = budget.limitMinor else { return Text("\(period) · \(spent)", tableName: "Money") }
+    return Text("\(period) · \(spent) of \(MoneyText.formatted(limit, budget.budget.currency, locale: locale))", tableName: "Money")
   }
+}
+
+extension MoneyOverview {
+  var homeBudget: BudgetPeriodStanding? { budgets.homeBudget.flatMap { $0.limitMinor == nil ? nil : $0 } }
 }
 
 /// Before the vault has settings there is no home currency to total in.
@@ -109,8 +113,8 @@ private struct MoneyOverviewContent: View {
   /// memoir-web `BudgetKpi`: what is left of the month's budget, or how far over it the month is, whichever range is shown.
   @ViewBuilder
   private func budgetStatistic(_ spend: RangeSpend) -> some View {
-    if let budget = overview.budget {
-      let over = budget.leftMinor < 0
+    if let budget = overview.homeBudget, let left = budget.leftMinor {
+      let over = left < 0
       let monthly = model.range == .month
       let label: Text =
         switch (over, monthly) {
@@ -119,7 +123,7 @@ private struct MoneyOverviewContent: View {
         case (false, true): Text("Left of budget", tableName: "Money")
         case (false, false): Text("Left of this month’s budget", tableName: "Money")
         }
-      ShadowStatistic(label, value: money(budget.leftMinor == .min ? .max : abs(budget.leftMinor)), caption: Text(verbatim: budgetNote(budget, monthly: monthly)))
+      ShadowStatistic(label, value: money(left == .min ? .max : abs(left)), caption: Text(verbatim: budgetNote(budget, monthly: monthly)))
     } else {
       ShadowStatistic(
         Text("Monthly budget", tableName: "Money"), value: Text("No monthly budget", tableName: "Money"),
@@ -127,12 +131,13 @@ private struct MoneyOverviewContent: View {
     }
   }
 
-  private func budgetNote(_ budget: BudgetStanding, monthly: Bool) -> String {
-    let days = MoneyNotes.daysLeft(budget.daysLeft)
-    let pending = MoneyNotes.leftOut(awaitingRate: budget.spend.awaitingRate, unconvertible: budget.spend.unconvertible)
+  private func budgetNote(_ budget: BudgetPeriodStanding, monthly: Bool) -> String {
+    let days = MoneyNotes.daysLeft(budget.phase.daysLeft ?? 0)
+    let pending = MoneyNotes.leftOut(awaitingRate: budget.spend.pending.awaitingRate, unconvertible: budget.spend.pending.unconvertible)
     guard monthly else { return ([String(localized: "Budget is monthly", table: "Money"), days] + pending).joined(separator: " · ") }
-    let spent = MoneyText.formatted(budget.spend.spentMinor, overview.home, locale: locale)
-    let of = String(localized: "\(spent) of \(MoneyText.formatted(budget.budget, locale: locale))", table: "Money")
+    let currency = budget.budget.currency
+    let spent = MoneyText.formatted(budget.spend.spentMinor, currency, locale: locale)
+    let of = String(localized: "\(spent) of \(MoneyText.formatted(budget.limitMinor ?? 0, currency, locale: locale))", table: "Money")
     return ([of, days] + pending).joined(separator: " · ")
   }
 }

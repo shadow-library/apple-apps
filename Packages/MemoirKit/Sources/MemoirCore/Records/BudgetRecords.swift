@@ -73,7 +73,7 @@ public struct StagedAmount: Hashable, Sendable, StoredValue {
 /// A named spending limit in its own currency. The currency and the day it was created are written once; the name, the limit, a raise staged for a
 /// later period and the owner's one-off threshold are registers. The name and the limit may be absent, so a device that only makes sure Home exists
 /// writes no register that could undo a limit another device set.
-public struct BudgetRecord: IdentifiedRecord, RemovableMemoirRecord {
+public struct BudgetRecord: IdentifiedRecord, RemovableMemoirRecord, Hashable {
   public static let kind = MemoirKind.budget
   public static let homeIDDomain = "com.shadow.library.memoircore.home-budget"
   public static let homeID = derivedID(homeIDDomain, "home")
@@ -126,21 +126,31 @@ public struct BudgetRecord: IdentifiedRecord, RemovableMemoirRecord {
   }
 }
 
-/// What a monthly budget's close put into savings, in the home currency, with the rate a foreign budget converted at and the close command it was
-/// written with.
+/// What a budget's close put into savings, in the home currency (zero when it put nothing in), with the rate a foreign budget converted at, the close
+/// command it was written with, and the period's spending, limit and median single expense (nil without a positive one) in the budget's currency as the
+/// close judged them, which every later read of the period takes instead of the expenses as they stand.
 public struct SavingsDeposit: Hashable, Sendable, StoredValue {
   public let amountMinor: Int64
   public let currency: CurrencyCode
   public let rate: DecimalText?
   public let closedOn: LocalDate
   public let command: UUID
+  public let spentMinor: Int64
+  public let limitMinor: Int64?
+  public let medianExpenseMinor: Int64?
 
-  public init(amountMinor: Int64, currency: CurrencyCode, rate: DecimalText? = nil, closedOn: LocalDate, command: UUID) {
+  public init(
+    amountMinor: Int64, currency: CurrencyCode, rate: DecimalText? = nil, closedOn: LocalDate, command: UUID, spentMinor: Int64, limitMinor: Int64?,
+    medianExpenseMinor: Int64?
+  ) {
     self.amountMinor = amountMinor
     self.currency = currency
     self.rate = rate
     self.closedOn = closedOn
     self.command = command
+    self.spentMinor = spentMinor
+    self.limitMinor = limitMinor
+    self.medianExpenseMinor = medianExpenseMinor
   }
 
   public init?(stored: JSONValue) {
@@ -150,7 +160,8 @@ public struct SavingsDeposit: Hashable, Sendable, StoredValue {
         { reader throws(MemoirUnreadable) in
           SavingsDeposit(
             amountMinor: try reader.required(.amountMinor), currency: try reader.required(.currency), rate: try reader.optional(.rate),
-            closedOn: try reader.required(.closedOn), command: try reader.required(.command))
+            closedOn: try reader.required(.closedOn), command: try reader.required(.command), spentMinor: try reader.required(.spentMinor),
+            limitMinor: try reader.optional(.limitMinor), medianExpenseMinor: try reader.optional(.medianExpenseMinor))
         })
     else { return nil }
     self = deposit
@@ -163,6 +174,9 @@ public struct SavingsDeposit: Hashable, Sendable, StoredValue {
     members.put(.rate, rate)
     members.put(.closedOn, closedOn)
     members.put(.command, command)
+    members.put(.spentMinor, spentMinor)
+    members.put(.limitMinor, limitMinor)
+    members.put(.medianExpenseMinor, medianExpenseMinor)
     return members.json
   }
 }
